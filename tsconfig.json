@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "lib",
+    "target": "es5",
+    "noLib": true,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "inlineSourceMap": true,
+    "inlineSources": true
+  },
+  "files": [
+    "./node_modules/typescript/lib/typescriptServices.d.ts",
+    "./node_modules/typescript/lib/lib.d.ts",
+    "./src/main.ts",
+    "./src/triton.ts",
+    "./src/hammer/utils.ts"
+  ]
+}
