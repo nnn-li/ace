@@ -28,9 +28,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import lang = require("./lib/lang");
-import oop = require("./lib/oop");
-import rng = require("./range");
+import { copyObject, escapeRegExp, getMatchOffsets } from "./lib/lang";
+import { mixin } from "./lib/oop";
+import { Range } from "./range";
 
 /**
  * @class Search
@@ -57,7 +57,7 @@ import rng = require("./range");
  * @constructor
  **/
 
-class Search {
+export default class Search {
     $options;
     constructor() {
         this.$options = {};
@@ -71,7 +71,7 @@ class Search {
      * @chainable
     **/
     set(options) {
-        oop.mixin(this.$options, options);
+        mixin(this.$options, options);
         return this;
     }
 
@@ -80,7 +80,7 @@ class Search {
      * @returns {Object}
     **/
     getOptions() {
-        return lang.copyObject(this.$options);
+        return copyObject(this.$options);
     }
     
     /**
@@ -109,7 +109,7 @@ class Search {
         iterator.forEach(function(range, row, offset) {
             if (!range.start) {
                 var column = range.offset + (offset || 0);
-                firstRange = new rng.Range(row, column, row, column + range.length);
+                firstRange = new Range(row, column, row, column + range.length);
             } else
                 firstRange = range;
             return true;
@@ -157,7 +157,7 @@ class Search {
                 ) {
                     continue;
                 }
-                ranges.push(prevRange = new rng.Range(
+                ranges.push(prevRange = new Range(
                     row, startIndex, row + len - 1, endIndex
                 ));
                 if (len > 2)
@@ -165,10 +165,10 @@ class Search {
             }
         } else {
             for (var i = 0; i < lines.length; i++) {
-                var matches = lang.getMatchOffsets(lines[i], re);
+                var matches = getMatchOffsets(lines[i], re);
                 for (var j = 0; j < matches.length; j++) {
                     var match = matches[j];
-                    ranges.push(new rng.Range(i, match.offset, i, match.offset + match.length));
+                    ranges.push(new Range(i, match.offset, i, match.offset + match.length));
                 }
             }
         }
@@ -254,7 +254,7 @@ class Search {
 
                 var endIndex = line.match(re[len - 1])[0].length;
 
-                var range = new rng.Range(row, startIndex, row + len - 1, endIndex);
+                var range = new Range(row, startIndex, row + len - 1, endIndex);
                 if (re.offset == 1) {
                     range.start.row--;
                     range.start.column = Number.MAX_VALUE;
@@ -266,14 +266,14 @@ class Search {
             };
         } else if (backwards) {
             var matchIterator = function(line, row, startIndex) {
-                var matches = lang.getMatchOffsets(line, re);
+                var matches = getMatchOffsets(line, re);
                 for (var i = matches.length - 1; i >= 0; i--)
                     if (callback(matches[i], row, startIndex))
                         return true;
             };
         } else {
             var matchIterator = function(line, row, startIndex) {
-                var matches = lang.getMatchOffsets(line, re);
+                var matches = getMatchOffsets(line, re);
                 for (var i = 0; i < matches.length; i++)
                     if (callback(matches[i], row, startIndex))
                         return true;
@@ -298,7 +298,7 @@ class Search {
             return options.re = false;
 
         if (!options.regExp)
-            needle = lang.escapeRegExp(needle);
+            needle = escapeRegExp(needle);
 
         if (options.wholeWord)
             needle = "\\b" + needle + "\\b";
@@ -391,5 +391,3 @@ class Search {
     }
 
 }
-
-export = Search;

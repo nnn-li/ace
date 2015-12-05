@@ -28,14 +28,15 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import event = require("../lib/event");
-import useragent = require("../lib/useragent");
-import dom = require("../lib/dom");
-import lang = require("../lib/lang");
-var BROKEN_SETDATA = useragent.isChrome < 18;
-var USE_IE_MIME_TYPE = useragent.isIE;
+import { addCommandKeyListener, addListener, capture, preventDefault } from "../lib/event"
+import { isChrome, isGecko, isIE, isMac, isOldIE, isTouchPad, isWebKit, isWin } from "../lib/useragent"
+import { computedStyle, createElement } from "../lib/dom"
+import { delayedCall } from "../lib/lang";
 
-class TextInput {
+var BROKEN_SETDATA = isChrome < 18;
+var USE_IE_MIME_TYPE = isIE;
+
+export default class TextInput {
     focus() { };
     blur() { };
     isFocused() { };
@@ -51,10 +52,10 @@ class TextInput {
     constructor(parentNode: Element, host) {
         // FIXME: I'm sure this shuld become a property.
         // Don't know why we have all these monkey patched methods?!.
-        var text = <HTMLTextAreaElement>dom.createElement("textarea");
+        var text = <HTMLTextAreaElement>createElement("textarea");
         text.className = "ace_text-input";
 
-        if (useragent.isTouchPad) {
+        if (isTouchPad) {
             text.setAttribute("x-palm-disable-auto-cap", 'true');
         }
 
@@ -78,11 +79,11 @@ class TextInput {
         // ie9 throws error if document.activeElement is accessed too soon
         try { var isFocused = document.activeElement === text; } catch (e) { }
 
-        event.addListener(text, "blur", function() {
+        addListener(text, "blur", function() {
             host.onBlur();
             isFocused = false;
         });
-        event.addListener(text, "focus", function() {
+        addListener(text, "focus", function() {
             isFocused = true;
             host.onFocus();
             resetSelection();
@@ -94,10 +95,10 @@ class TextInput {
         };
 
         // modifying selection of blured textarea can focus it (chrome mac/linux)
-        var syncSelection = lang.delayedCall(function() {
+        var syncSelection = delayedCall(function() {
             isFocused && resetSelection(isSelectionEmpty);
         });
-        var syncValue = lang.delayedCall(function() {
+        var syncValue = delayedCall(function() {
             if (!inComposition) {
                 text.value = PLACEHOLDER;
                 isFocused && resetSelection();
@@ -125,11 +126,11 @@ class TextInput {
                 return;
             text.value = PLACEHOLDER;
             //http://code.google.com/p/chromium/issues/detail?id=76516
-            if (useragent.isWebKit)
+            if (isWebKit)
                 syncValue.schedule();
         }
 
-        useragent.isWebKit || host.addEventListener('changeSelection', function() {
+        isWebKit || host.addEventListener('changeSelection', function() {
             if (host.selection.isEmpty() != isSelectionEmpty) {
                 isSelectionEmpty = !isSelectionEmpty;
                 syncSelection.schedule();
@@ -163,7 +164,7 @@ class TextInput {
                 return range.text == text.value;
             }
         }
-        if (useragent.isOldIE) {
+        if (isOldIE) {
             var inPropertyChange = false;
             var onPropertyChange = function(e) {
                 if (inPropertyChange)
@@ -181,11 +182,11 @@ class TextInput {
                 resetValue();
                 inPropertyChange = false;
             };
-            var syncProperty = lang.delayedCall(onPropertyChange);
-            event.addListener(text, "propertychange", onPropertyChange);
+            var syncProperty = delayedCall(onPropertyChange);
+            addListener(text, "propertychange", onPropertyChange);
 
             var keytable = { 13: 1, 27: 1 };
-            event.addListener(text, "keyup", function(e) {
+            addListener(text, "keyup", function(e) {
                 if (inComposition && (!text.value || keytable[e.keyCode]))
                     setTimeout(onCompositionEnd, 0);
                 if ((text.value.charCodeAt(0) || 0) < 129) {
@@ -195,7 +196,7 @@ class TextInput {
             });
             // when user presses backspace after focusing the editor 
             // propertychange isn't called for the next character
-            event.addListener(text, "keydown", function(e) {
+            addListener(text, "keydown", function(e) {
                 syncProperty.schedule(50);
             });
         }
@@ -276,11 +277,11 @@ class TextInput {
         var doCopy = function(e, isCut) {
             var data = host.getCopyText();
             if (!data)
-                return event.preventDefault(e);
+                return preventDefault(e);
 
             if (handleClipboardData(e, data)) {
                 isCut ? host.onCut() : host.onCopy();
-                event.preventDefault(e);
+                preventDefault(e);
             } else {
                 copied = true;
                 text.value = data;
@@ -307,9 +308,9 @@ class TextInput {
             if (typeof data === "string") {
                 if (data)
                     host.onPaste(data);
-                if (useragent.isIE)
+                if (isIE)
                     setTimeout(resetSelection);
-                event.preventDefault(e);
+                preventDefault(e);
             }
             else {
                 text.value = "";
@@ -317,21 +318,21 @@ class TextInput {
             }
         };
 
-        event.addCommandKeyListener(text, host.onCommandKey.bind(host));
+        addCommandKeyListener(text, host.onCommandKey.bind(host));
 
-        event.addListener(text, "select", onSelect);
+        addListener(text, "select", onSelect);
 
-        event.addListener(text, "input", onInput);
+        addListener(text, "input", onInput);
 
-        event.addListener(text, "cut", onCut);
-        event.addListener(text, "copy", onCopy);
-        event.addListener(text, "paste", onPaste);
+        addListener(text, "cut", onCut);
+        addListener(text, "copy", onCopy);
+        addListener(text, "paste", onPaste);
 
 
         // Opera has no clipboard events
         if (!('oncut' in text) || !('oncopy' in text) || !('onpaste' in text)) {
-            event.addListener(parentNode, "keydown", function(e) {
-                if ((useragent.isMac && !e.metaKey) || !e.ctrlKey)
+            addListener(parentNode, "keydown", function(e) {
+                if ((isMac && !e.metaKey) || !e.ctrlKey)
                     return;
 
                 switch (e.keyCode) {
@@ -425,16 +426,17 @@ class TextInput {
 
 
 
-        var syncComposition = lang.delayedCall(onCompositionUpdate, 50);
+        var syncComposition = delayedCall(onCompositionUpdate, 50);
 
-        event.addListener(text, "compositionstart", onCompositionStart);
-        if (useragent.isGecko) {
-            event.addListener(text, "text", function() { syncComposition.schedule() });
-        } else {
-            event.addListener(text, "keyup", function() { syncComposition.schedule() });
-            event.addListener(text, "keydown", function() { syncComposition.schedule() });
+        addListener(text, "compositionstart", onCompositionStart);
+        if (isGecko) {
+            addListener(text, "text", function() { syncComposition.schedule() });
         }
-        event.addListener(text, "compositionend", onCompositionEnd);
+        else {
+            addListener(text, "keyup", function() { syncComposition.schedule() });
+            addListener(text, "keydown", function() { syncComposition.schedule() });
+        }
+        addListener(text, "compositionend", onCompositionEnd);
 
         this.getElement = function() {
             return text;
@@ -456,10 +458,10 @@ class TextInput {
                 tempStyle = text.style.cssText;
             text.style.cssText = (bringToFront ? "z-index:100000;" : "")
                 + "height:" + text.style.height + ";"
-                + (useragent.isIE ? "opacity:0.1;" : "");
+                + (isIE ? "opacity:0.1;" : "");
 
             var rect = host.container.getBoundingClientRect();
-            var style = dom.computedStyle(host.container);
+            var style = computedStyle(host.container);
             var top = rect.top + (parseInt(style.borderTopWidth) || 0);
             var left = rect.left + (parseInt(rect.borderLeftWidth) || 0);
             var maxTop = rect.bottom - top - text.clientHeight - 2;
@@ -476,8 +478,8 @@ class TextInput {
                 host.renderer.$keepTextAreaAtCursor = null;
 
             // on windows context menu is opened after mouseup
-            if (useragent.isWin)
-                event.capture(host.container, move, onContextMenuClose);
+            if (isWin)
+                capture(host.container, move, onContextMenuClose);
         };
 
         this.onContextMenuClose = onContextMenuClose;
@@ -498,9 +500,7 @@ class TextInput {
             host.textInput.onContextMenu(e);
             onContextMenuClose();
         };
-        event.addListener(host.renderer.scroller, "contextmenu", onContextMenu);
-        event.addListener(text, "contextmenu", onContextMenu);
+        addListener(host.renderer.scroller, "contextmenu", onContextMenu);
+        addListener(text, "contextmenu", onContextMenu);
     }
 }
-
-export = TextInput;

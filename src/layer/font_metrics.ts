@@ -28,31 +28,31 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import oop = require("../lib/oop");
-import dom = require("../lib/dom");
-import lang = require("../lib/lang");
-import useragent = require("../lib/useragent");
-import eve = require("../lib/event_emitter");
+import { createElement } from "../lib/dom";
+import {stringRepeat} from "../lib/lang";
+import {isIE} from "../lib/useragent";
+import { EventEmitterClass } from "../lib/event_emitter";
 
 var CHAR_COUNT = 0;
 
-export class FontMetrics extends eve.EventEmitterClass {
+// FIXME: This is the only export so make it the default.
+export class FontMetrics extends EventEmitterClass {
     private el: HTMLDivElement;
     private $main: HTMLDivElement;
     private $measureNode: HTMLDivElement;
     public $characterSize = { width: 0, height: 0 };
-    private charSizes;
+    private charSizes: { [ch: string]: number };
     private allowBoldFonts: boolean;
-    private $pollSizeChangesTimer;
+    private $pollSizeChangesTimer: number;
     constructor(parentEl: HTMLElement, interval) {
         super();
-        this.el = <HTMLDivElement>dom.createElement("div");
+        this.el = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(this.el.style, true);
 
-        this.$main = <HTMLDivElement>dom.createElement("div");
+        this.$main = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(this.$main.style);
 
-        this.$measureNode = <HTMLDivElement>dom.createElement("div");
+        this.$measureNode = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(this.$measureNode.style);
 
 
@@ -62,14 +62,14 @@ export class FontMetrics extends eve.EventEmitterClass {
 
         if (!CHAR_COUNT)
             this.$testFractionalRect();
-        this.$measureNode.innerHTML = lang.stringRepeat("X", CHAR_COUNT);
+        this.$measureNode.innerHTML = stringRepeat("X", CHAR_COUNT);
 
         this.$characterSize = { width: 0, height: 0 };
         this.checkForSizeChanges();
     }
 
     private $testFractionalRect() {
-        var el = <HTMLDivElement>dom.createElement("div");
+        var el = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(el.style);
         el.style.width = "0.2px";
         document.documentElement.appendChild(el);
@@ -88,7 +88,7 @@ export class FontMetrics extends eve.EventEmitterClass {
         style.position = "fixed";
         style.whiteSpace = "pre";
 
-        if (useragent.isIE < 8) {
+        if (isIE < 8) {
             style["font-family"] = "inherit";
         } else {
             style.font = "inherit";
@@ -154,13 +154,13 @@ export class FontMetrics extends eve.EventEmitterClass {
         return size;
     }
 
-    private $measureCharWidth(ch) {
-        this.$main.innerHTML = lang.stringRepeat(ch, CHAR_COUNT);
+    private $measureCharWidth(ch: string) {
+        this.$main.innerHTML = stringRepeat(ch, CHAR_COUNT);
         var rect = this.$main.getBoundingClientRect();
         return rect.width / CHAR_COUNT;
     }
 
-    private getCharacterWidth(ch) {
+    private getCharacterWidth(ch: string) {
         var w = this.charSizes[ch];
         if (w === undefined) {
             this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;

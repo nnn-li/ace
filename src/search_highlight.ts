@@ -28,9 +28,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import lang = require("./lib/lang");
-import oop = require("./lib/oop");
-import rmo = require("./range");
+import { getMatchOffsets } from "./lib/lang";
+import {} from "./lib/oop";
+import { Range } from "./range";
 
 // needed to prevent long lines from freezing the browser
 var MAX_RANGES = 500;
@@ -39,21 +39,21 @@ export class SearchHighlight {
     private regExp: RegExp;
     private clazz;
     private type: string;
-    private cache: rmo.Range[][];
+    private cache: Range[][];
     constructor(regExp: RegExp, clazz, type: string) {
         this.setRegexp(regExp);
         this.clazz = clazz;
         this.type = type || "text";
     }
-    
+
     setRegexp(regExp: RegExp) {
-        if (this.regExp+"" == regExp+"")
+        if (this.regExp + "" == regExp + "")
             return;
         this.regExp = regExp;
         this.cache = [];
     }
 
-    update(html, markerLayer, session, config: {firstRow: number; lastRow: number}) {
+    update(html, markerLayer, session, config: { firstRow: number; lastRow: number }) {
         if (!this.regExp)
             return;
         var start = config.firstRow, end = config.lastRow;
@@ -61,18 +61,18 @@ export class SearchHighlight {
         for (var i = start; i <= end; i++) {
             var ranges = this.cache[i];
             if (ranges == null) {
-                var matches = lang.getMatchOffsets(session.getLine(i), this.regExp);
+                var matches = getMatchOffsets(session.getLine(i), this.regExp);
                 if (matches.length > MAX_RANGES) {
                     matches = matches.slice(0, MAX_RANGES);
                 }
                 ranges = matches.map(function(match) {
-                    return new rmo.Range(i, match.offset, i, match.offset + match.length);
+                    return new Range(i, match.offset, i, match.offset + match.length);
                 });
                 // TODO: The zero-length case was the empty string, but that does not pass the compiler.
                 this.cache[i] = ranges.length ? ranges : [];
             }
 
-            for (var j = ranges.length; j --; ) {
+            for (var j = ranges.length; j--;) {
                 markerLayer.drawSingleLineMarker(
                     html, ranges[j].toScreenRange(session), this.clazz, config);
             }

@@ -27,8 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import oop = require("./lib/oop");
-import dom = require("./lib/dom");
+import {} from "./lib/oop";
+import { addCssClass, createElement, setInnerText } from "./lib/dom";
 
 /**
  * @class Tooltip
@@ -61,7 +61,7 @@ export class Tooltip {
      * @private
      */
     private $init(): HTMLElement {
-        this.$element = <HTMLElement>dom.createElement('div');
+        this.$element = <HTMLElement>createElement('div');
         this.$element.className = "ace_tooltip";
         this.$element.style.display = "none";
         this.$parentElement.appendChild(this.$element);
@@ -84,7 +84,7 @@ export class Tooltip {
      * @return {void}
      */
     setText(text: string): void {
-        dom.setInnerText(this.getElement(), text);
+        setInnerText(this.getElement(), text);
     }
 
     /**
@@ -117,7 +117,7 @@ export class Tooltip {
      * @return {void}
      */
     setClassName(className: string): void {
-        dom.addCssClass(this.getElement(), className);
+        addCssClass(this.getElement(), className);
     }
 
     /**

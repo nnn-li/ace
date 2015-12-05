@@ -1,4 +1,4 @@
-/*
+/**
  * based on code from:
  *
  * @license RequireJS text 0.25.0 Copyright (c) 2010-2011, The Dojo Foundation All Rights Reserved.
@@ -6,7 +6,7 @@
  * see: http://github.com/jrburke/requirejs for details
  */
 
-import dom = require("./dom");
+import { getDocumentHead } from './dom';
 
 /**
  * Executes a 'GET' HTTP request with a responseText callback.
@@ -29,7 +29,7 @@ export function get(url: string, callback: (responseText: string) => any) {
  */
 export function loadScript(path: string, callback: () => any): void {
     // TODO: This is a standard trick. Are there any best practices?
-    var head: HTMLElement = dom.getDocumentHead();
+    var head: HTMLElement = getDocumentHead();
     var s: HTMLScriptElement = document.createElement('script');
 
     s.src = path;

@@ -27,8 +27,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import esm = require('./edit_session');
-
 export var comparePoints = function(p1: { row: number; column: number }, p2: { row: number; column: number }) {
     return p1.row - p2.row || p1.column - p2.column;
 };
@@ -521,21 +519,6 @@ export class Range {
             return new Range(this.start.row, 0, Math.max(this.start.row, this.end.row - 1), 0)
         else
             return new Range(this.start.row, 0, this.end.row, 0)
-    }
-
-    /**
-     * Given the current `EditorRange`, this function converts those starting and ending points into screen positions, and then returns a new `EditorRange` object.
-     * @param {EditSession} session The `EditSession` to retrieve coordinates from
-     *
-     *
-     * @returns {EditorRange}
-    **/
-    toScreenRange(session: esm.EditSession) {
-
-        var screenPosStart = session.documentToScreenPosition(this.start.row, this.start.column);
-        var screenPosEnd = session.documentToScreenPosition(this.end.row, this.end.column);
-
-        return new Range(screenPosStart.row, screenPosStart.column, screenPosEnd.row, screenPosEnd.column);
     }
 
     /* experimental */

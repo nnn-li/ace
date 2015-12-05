@@ -43,7 +43,7 @@ export var OS = {
   WINDOWS: "WINDOWS"
 };
 
-/*
+/**
  * Return an exports.OS constant
  */
 export function getOS() {

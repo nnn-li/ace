@@ -28,34 +28,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import event = require("./lib/event");
+import { requestAnimationFrame } from './lib/event';
 
 /**
  * Batches changes (that force something to be redrawn) in the background.
  * @class RenderLoop
  */
 export class RenderLoop {
-  private onRender: (changes: number) => void;
-  private pending: boolean = false;
-  private changes: number = 0;
-  private $window: Window;
-  constructor(onRender: (changes: number) => void, $window: Window) {
-    this.onRender = onRender;
-    this.$window = $window || window;
-  }
-  schedule(change: number) {
-    this.changes = this.changes | change;
-    if (!this.pending && this.changes) {
-      this.pending = true;
-      var _self = this;
-      event.requestAnimationFrame(function() {
-        _self.pending = false;
-        var changes;
-        while (changes = _self.changes) {
-          _self.changes = 0;
-          _self.onRender(changes);
-        }
-      }, this.$window);
+    private onRender: (changes: number) => void;
+    private pending: boolean = false;
+    private changes: number = 0;
+    private $window: Window;
+    constructor(onRender: (changes: number) => void, $window: Window) {
+        this.onRender = onRender;
+        this.$window = $window || window;
     }
-  }
+    schedule(change: number) {
+        this.changes = this.changes | change;
+        if (!this.pending && this.changes) {
+            this.pending = true;
+            var _self = this;
+            requestAnimationFrame(function() {
+                _self.pending = false;
+                var changes;
+                while (changes = _self.changes) {
+                    _self.changes = 0;
+                    _self.onRender(changes);
+                }
+            }, this.$window);
+        }
+    }
 }

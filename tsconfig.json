@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es6",
     "outDir": "lib",
-    "target": "es5",
+    "target": "es6",
     "noLib": true,
     "removeComments": true,
     "moduleResolution": "node",
@@ -10,10 +10,33 @@
     "inlineSources": true
   },
   "files": [
+    "./src/lib/asserts.ts",
+    "./src/lib/async.ts",
+    "./src/lib/dom.ts",
+    "./src/lib/event.ts",
+    "./src/lib/event_emitter.ts",
+    "./src/lib/keys.ts",
+    "./src/lib/net.ts",
+    "./src/lib/oop.ts",
+    "./src/lib/useragent.ts",
+
+    "./src/keyboard/keybinding.ts",
+    "./src/keyboard/textinput.ts",
+
+    "./src/layer/font_metrics.ts",
+
+    "./src/anchor.ts",
+    "./src/background_tokenizer.ts",
+    "./src/document.ts",
+    "./src/Tokenizer.ts",
+    "./src/renderloop.ts",
+    "./src/range.ts",
+    "./src/scrollbar.ts",
+    "./src/search.ts",
+    "./src/tooltip.ts",
+    "./src/unicode.ts",
+
     "./node_modules/typescript/lib/typescriptServices.d.ts",
-    "./node_modules/typescript/lib/lib.d.ts",
-    "./src/main.ts",
-    "./src/triton.ts",
-    "./src/hammer/utils.ts"
+    "./node_modules/typescript/lib/lib.es6.d.ts"
   ]
 }

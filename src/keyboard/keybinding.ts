@@ -28,10 +28,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import keyUtil = require("../lib/keys");
-import event = require("../lib/event");
+import { keyCodeToString } from "../lib/keys"
+import { stopEvent } from "../lib/event"
 
-class KeyBinding {
+// FIXME: type safety
+export default class KeyBinding {
     $editor;
     $data;
     $handlers;
@@ -114,7 +115,7 @@ class KeyBinding {
             if (success && e && hashId != -1 &&
                 toExecute.passEvent != true && toExecute.command.passEvent != true
             ) {
-                event.stopEvent(e);
+                stopEvent(e);
             }
             if (success)
                 break;
@@ -123,7 +124,7 @@ class KeyBinding {
     }
 
     onCommandKey(e, hashId, keyCode) {
-        var keyString = keyUtil.keyCodeToString(keyCode);
+        var keyString = keyCodeToString(keyCode);
         this.$callKeyboardHandlers(hashId, keyString, keyCode, e);
     }
 
@@ -133,5 +134,3 @@ class KeyBinding {
             this.$editor.commands.exec("insertstring", this.$editor, text);
     }
 }
-
-export = KeyBinding;

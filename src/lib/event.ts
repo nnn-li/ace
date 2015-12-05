@@ -27,8 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import keys = require("./keys");
-import useragent = require("./useragent");
+import { FUNCTION_KEYS, KEY_MODS, MODIFIER_KEYS, PRINTABLE_KEYS } from './keys';
+import { isChromeOS, isIE, isMac, isOldGecko, isOldIE, isOpera } from './useragent';
 
 export interface ListenerTarget extends EventTarget {
 }
@@ -80,7 +80,7 @@ export function preventDefault(e: Event): void {
 export function getButton(e: MouseEvent): number {
     if (e.type == "dblclick")
         return 0;
-    if (e.type == "contextmenu" || (useragent.isMac && (e.ctrlKey && !e.altKey && !e.shiftKey)))
+    if (e.type == "contextmenu" || (isMac && (e.ctrlKey && !e.altKey && !e.shiftKey)))
         return 2;
 
     // DOM Event
@@ -190,7 +190,7 @@ export function addMultiMouseDownListener(el, timeouts, eventHandler, callbackNa
         } else {
             clicks = 1;
         }
-        if (useragent.isIE) {
+        if (isIE) {
             var isNewClick = Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5;
             if (!timer || isNewClick)
                 clicks = 1;
@@ -215,7 +215,7 @@ export function addMultiMouseDownListener(el, timeouts, eventHandler, callbackNa
             return eventHandler[callbackName](eventNames[clicks], e);
     });
 
-    if (useragent.isOldIE) {
+    if (isOldIE) {
         addListener(el, "dblclick", function(e) {
             clicks = 2;
             if (timer)
@@ -227,7 +227,7 @@ export function addMultiMouseDownListener(el, timeouts, eventHandler, callbackNa
     }
 }
 
-var getModifierHash = useragent.isMac && useragent.isOpera && !("KeyboardEvent" in window)
+var getModifierHash = isMac && isOpera && !("KeyboardEvent" in window)
     ? function(e) {
         return 0 | (e.metaKey ? 1 : 0) | (e.altKey ? 2 : 0) | (e.shiftKey ? 4 : 0) | (e.ctrlKey ? 8 : 0);
     }
@@ -236,13 +236,13 @@ var getModifierHash = useragent.isMac && useragent.isOpera && !("KeyboardEvent" 
     };
 
 export function getModifierString(e) {
-    return keys.KEY_MODS[getModifierHash(e)];
+    return KEY_MODS[getModifierHash(e)];
 }
 
 function normalizeCommandKeys(callback, e: KeyboardEvent, keyCode: number) {
     var hashId = getModifierHash(e);
 
-    if (!useragent.isMac && pressedKeys) {
+    if (!isMac && pressedKeys) {
         if (pressedKeys[91] || pressedKeys[92])
             hashId |= 8;
         if (pressedKeys.altGr) {
@@ -264,8 +264,8 @@ function normalizeCommandKeys(callback, e: KeyboardEvent, keyCode: number) {
         }
     }
 
-    if (keyCode in keys.MODIFIER_KEYS) {
-        switch (keys.MODIFIER_KEYS[keyCode]) {
+    if (keyCode in MODIFIER_KEYS) {
+        switch (MODIFIER_KEYS[keyCode]) {
             case "Alt":
                 hashId = 2;
                 break;
@@ -294,7 +294,7 @@ function normalizeCommandKeys(callback, e: KeyboardEvent, keyCode: number) {
         }
     }
 
-    if (useragent.isChromeOS && hashId & 8) {
+    if (isChromeOS && hashId & 8) {
         callback(e, hashId, keyCode);
         if (e.defaultPrevented)
             return;
@@ -305,7 +305,7 @@ function normalizeCommandKeys(callback, e: KeyboardEvent, keyCode: number) {
     // If there is no hashId and the keyCode is not a function key, then
     // we don't call the callback as we don't handle a command key here
     // (it's a normal key/character input).
-    if (!hashId && !(keyCode in keys.FUNCTION_KEYS) && !(keyCode in keys.PRINTABLE_KEYS)) {
+    if (!hashId && !(keyCode in FUNCTION_KEYS) && !(keyCode in PRINTABLE_KEYS)) {
         return false;
     }
 
@@ -320,7 +320,7 @@ function resetPressedKeys(e) {
 
 var ts = 0;
 export function addCommandKeyListener(el, callback) {
-    if (useragent.isOldGecko || (useragent.isOpera && !("KeyboardEvent" in window))) {
+    if (isOldGecko || (isOpera && !("KeyboardEvent" in window))) {
         // Old versions of Gecko aka. Firefox < 4.0 didn't repeat the keydown
         // event if the user pressed the key for a longer time. Instead, the
         // keydown event was fired once and later on only the keypress event.
@@ -365,7 +365,7 @@ export function addCommandKeyListener(el, callback) {
 
 // FIXME: Conditional exports not supported by TypeScript or Harmony/ES6.
 declare var exports: any;
-if (window.postMessage && !useragent.isOldIE) {
+if (window.postMessage && !isOldIE) {
     var postMessageId = 1;
     exports.nextTick = function(callback, win) {
         win = win || window;

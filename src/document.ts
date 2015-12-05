@@ -28,13 +28,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import oop = require('./lib/oop');
-import eve = require('./lib/event_emitter');
-import rangeModule = require('./range');
-import anchorModule = require('./anchor');
-
-var Anchor = anchorModule.Anchor;
-var Range = rangeModule.Range;
+import { EventEmitterClass } from './lib/event_emitter';
+import { Range } from './range';
+import { Anchor } from './anchor';
 
 var $split: (text: string) => string[] = (function() {
     function foo(text: string): string[] {
@@ -73,7 +69,8 @@ function $clipPosition(doc: Document, position: { row: number; column: number })
  * @param {String | Array} text The starting text
  * @constructor
  */
-export class Document extends eve.EventEmitterClass {
+// FIXME: This is the only export, make it the default.
+export class Document extends EventEmitterClass {
     private $lines: string[] = [];
     private $autoNewLine: string = "";
     private $newLineMode: string = "auto";

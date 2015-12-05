@@ -27,10 +27,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import oop = require("./lib/oop");
-import dcm = require('./document')
-import eve = require("./lib/event_emitter");
-import Tokenizer = require('./Tokenizer')
+import {} from "./lib/oop"
+import { Document } from './document'
+import { EventEmitterClass } from "./lib/event_emitter"
+import Tokenizer from './Tokenizer'
 
 /**
  * Tokenizes the current [[Document `Document`]] in the background, and caches the tokenized rows for future use. 
@@ -47,7 +47,7 @@ import Tokenizer = require('./Tokenizer')
  *
  * @constructor
  **/
-export class BackgroundTokenizer extends eve.EventEmitterClass {
+export class BackgroundTokenizer extends EventEmitterClass {
     /**
      * This is the value returned by setTimeout, so it's really a timer handle.
      * There are some conditionals looking for a falsey value, so we use zero where needed.
@@ -57,7 +57,7 @@ export class BackgroundTokenizer extends eve.EventEmitterClass {
     private states: string[] = [];
     private currentLine: number = 0;
     private tokenizer: Tokenizer;
-    private doc: dcm.Document;
+    private doc: Document;
     private $worker;
     constructor(tokenizer: Tokenizer, editor?) {
         super();
@@ -119,7 +119,7 @@ export class BackgroundTokenizer extends eve.EventEmitterClass {
      * Sets a new document to associate with this object.
      * @param {Document} doc The new document to associate with
      **/
-    setDocument(doc: dcm.Document) {
+    setDocument(doc: Document) {
         this.doc = doc;
         this.lines = [];
         this.states = [];

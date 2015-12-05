@@ -31,7 +31,7 @@ For more information about SproutCore, visit http://www.sproutcore.com
 
 // Most of the following code is taken from SproutCore with a few changes.
 
-import oop = require("./oop");
+import { mixin } from './oop';
 
 declare var exports: any;
 
@@ -123,9 +123,9 @@ for (i in Keys.PRINTABLE_KEYS) {
 }
 
 // Add the MODIFIER_KEYS, FUNCTION_KEYS and PRINTABLE_KEYS to the KEY variables as well.
-oop.mixin(Keys, Keys.MODIFIER_KEYS);
-oop.mixin(Keys, Keys.PRINTABLE_KEYS);
-oop.mixin(Keys, Keys.FUNCTION_KEYS);
+mixin(Keys, Keys.MODIFIER_KEYS);
+mixin(Keys, Keys.PRINTABLE_KEYS);
+mixin(Keys, Keys.FUNCTION_KEYS);
 
 
 // workaround for firefox bug
@@ -153,7 +153,7 @@ export var enter = Keys["return"];
 export var escape = Keys.esc;
 export var del = Keys["delete"];
 
-oop.mixin(exports, Keys);
+mixin(exports, Keys);
 
 export function keyCodeToString(keyCode) {
     // Language-switching keystroke in Chrome/Linux emits keyCode 0.

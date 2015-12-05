@@ -41,7 +41,7 @@ var MAX_TOKEN_COUNT = 1000;
  *
  * @constructor
  **/
-class Tokenizer {
+export default class Tokenizer {
     private states;
     private regExps;
     private matchMappings;
@@ -352,5 +352,3 @@ class Tokenizer {
         };
     }
 }
-
-export = Tokenizer;

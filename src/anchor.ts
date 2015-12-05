@@ -28,9 +28,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import oop = require('./lib/oop');
-import eve = require('./lib/event_emitter');
-import asserts = require('./lib/asserts');
+import { EventEmitterClass } from './lib/event_emitter';
+import { assert } from './lib/asserts';
 
 /**
  *
@@ -47,7 +46,7 @@ import asserts = require('./lib/asserts');
  * @constructor
  **/
 
-export class Anchor extends eve.EventEmitterClass {
+export class Anchor extends EventEmitterClass {
     public row: number;
     public column: number;
     private document;
@@ -55,8 +54,8 @@ export class Anchor extends eve.EventEmitterClass {
     private $insertRight;
     constructor(doc, row: number, column: number) {
         super();
-        asserts.assert(typeof row === 'number', "row must be a number");
-        asserts.assert(typeof column === 'number', "column must be a number");
+        assert(typeof row === 'number', "row must be a number");
+        assert(typeof column === 'number', "column must be a number");
         this.$onChange = this.onChange.bind(this);
         this.attach(doc);
         this.setPosition(row, column);
@@ -179,7 +178,7 @@ export class Anchor extends eve.EventEmitterClass {
         }
 
         if (this.row === pos.row && this.column === pos.column) {
-          return;
+            return;
         }
 
         var old = {

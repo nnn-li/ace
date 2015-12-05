@@ -27,11 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-import oop = require("./lib/oop");
-import dom = require("./lib/dom");
-import event = require("./lib/event");
-import eem = require("./lib/event_emitter");
+import { createElement, scrollbarWidth } from "./lib/dom";
+import { addListener } from "./lib/event";
+import { EventEmitterClass } from "./lib/event_emitter";
 
 /**
  * An abstract class representing a native scrollbar control.
@@ -44,26 +42,26 @@ import eem = require("./lib/event_emitter");
  *
  * @constructor
  **/
-export class ScrollBar extends eem.EventEmitterClass {
+export class ScrollBar extends EventEmitterClass {
     public element: HTMLDivElement;
     public inner: HTMLDivElement;
     public isVisible: boolean;
     public skipEvent;
     constructor(parent, classSuffix: string) {
         super();
-        this.element = <HTMLDivElement>dom.createElement("div");
+        this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_scrollbar ace_scrollbar" + classSuffix;
-    
-        this.inner = <HTMLDivElement>dom.createElement("div");
+
+        this.inner = <HTMLDivElement>createElement("div");
         this.inner.className = "ace_scrollbar-inner";
         this.element.appendChild(this.inner);
-    
+
         parent.appendChild(this.element);
-    
+
         this.setVisible(false);
         this.skipEvent = false;
-    
-        event.addListener(this.element, "mousedown", event.preventDefault);
+
+        addListener(this.element, "mousedown", event.preventDefault);
     }
     setVisible(isVisible) {
         this.element.style.display = isVisible ? "" : "none";
@@ -84,7 +82,7 @@ export class ScrollBar extends eem.EventEmitterClass {
  * @constructor
  **/
 export class VScrollBar extends ScrollBar {
-    
+
     private _scrollTop = 0;
     private _width: number;
 
@@ -95,11 +93,11 @@ export class VScrollBar extends ScrollBar {
         // of 0px
         // in Firefox 6+ scrollbar is hidden if element has the same width as scrollbar
         // make element a little bit wider to retain scrollbar when page is zoomed 
-        renderer.$scrollbarWidth = 
-        this._width = dom.scrollbarWidth(parent.ownerDocument);
+        renderer.$scrollbarWidth =
+            this._width = scrollbarWidth(parent.ownerDocument);
         this.inner.style.width =
-        this.element.style.width = (this._width || 15) + 5 + "px";
-        event.addListener(this.element, "scroll", this.onScroll.bind(this));
+            this.element.style.width = (this._width || 15) + 5 + "px";
+        addListener(this.element, "scroll", this.onScroll.bind(this));
     }
 
     /**
@@ -110,7 +108,7 @@ export class VScrollBar extends ScrollBar {
     onScroll() {
         if (!this.skipEvent) {
             this._scrollTop = this.element.scrollTop;
-            this._emit("scroll", {data: this._scrollTop});
+            this._emit("scroll", { data: this._scrollTop });
         }
         this.skipEvent = false;
     }
@@ -160,7 +158,7 @@ export class VScrollBar extends ScrollBar {
             this._scrollTop = this.element.scrollTop = scrollTop;
         }
     }
-    
+
     get scrollTop(): number {
         return this._scrollTop;
     }
@@ -179,10 +177,10 @@ export class VScrollBar extends ScrollBar {
  * @constructor
  **/
 export class HScrollBar extends ScrollBar {
-    
+
     private _scrollLeft = 0;
     private _height: number;
-    
+
     constructor(parent, renderer) {
         super(parent, '-h');
 
@@ -193,8 +191,8 @@ export class HScrollBar extends ScrollBar {
         // make element a little bit wider to retain scrollbar when page is zoomed 
         this._height = renderer.$scrollbarWidth;
         this.inner.style.height =
-        this.element.style.height = (this._height || 15) + 5 + "px";
-        event.addListener(this.element, "scroll", this.onScroll.bind(this));
+            this.element.style.height = (this._height || 15) + 5 + "px";
+        addListener(this.element, "scroll", this.onScroll.bind(this));
     }
 
     /**
@@ -205,7 +203,7 @@ export class HScrollBar extends ScrollBar {
     onScroll() {
         if (!this.skipEvent) {
             this._scrollLeft = this.element.scrollLeft;
-            this._emit("scroll", {data: this._scrollLeft});
+            this._emit("scroll", { data: this._scrollLeft });
         }
         this.skipEvent = false;
     }
