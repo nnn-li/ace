@@ -1,16 +1,16 @@
-import utils = require('./utils');
+import { addEventListeners, each, getWindowForElement, hasParent, inArray, inStr, prefixed, removeEventListeners, splitStr, TEST_ELEMENT, toArray, uniqueArray, uniqueId } from './utils';
 
 export interface Touch {
-  clientX: number;
-  clientY: number;
-  pageX: number;
-  pageY: number;
+    clientX: number;
+    clientY: number;
+    pageX: number;
+    pageY: number;
 }
 
 export interface TouchEvent extends Event {
-  type: string;
-  touches: Touch[];
-  changedTouches: Touch[];
+    type: string;
+    touches: Touch[];
+    changedTouches: Touch[];
 }
 
 // magical touchAction value
@@ -25,118 +25,118 @@ var STOP = 1;
 var FORCED_STOP = 2;
 
 export class VectorE2 {
-  public x;
-  public y;
-  constructor(x: number, y:number) {
-    this.x = x;
-    this.y = y;
-  }
-  add(other: VectorE2): VectorE2 {
-    return new VectorE2(this.x + other.x, this.y + other.y);
-  }
-  sub(other: VectorE2): VectorE2 {
-    return new VectorE2(this.x - other.x, this.y - other.y);
-  }
-  div(other: number): VectorE2 {
-    return new VectorE2(this.x / other, this.y / other);
-  }
-  dot(other: VectorE2): number {
-    return this.x * other.x + this.y * other.y;
-  }
-  norm(): number {
-    return Math.sqrt(this.quadrance());
-  }
-  quadrance(): number {
-    return this.x * this.x + this.y * this.y;
-  }
-  toString(): string {
-    return 'VectorE2(' + this.x + ', ' + this.y + ')';
-  }
+    public x;
+    public y;
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+    add(other: VectorE2): VectorE2 {
+        return new VectorE2(this.x + other.x, this.y + other.y);
+    }
+    sub(other: VectorE2): VectorE2 {
+        return new VectorE2(this.x - other.x, this.y - other.y);
+    }
+    div(other: number): VectorE2 {
+        return new VectorE2(this.x / other, this.y / other);
+    }
+    dot(other: VectorE2): number {
+        return this.x * other.x + this.y * other.y;
+    }
+    norm(): number {
+        return Math.sqrt(this.quadrance());
+    }
+    quadrance(): number {
+        return this.x * this.x + this.y * this.y;
+    }
+    toString(): string {
+        return 'VectorE2(' + this.x + ', ' + this.y + ')';
+    }
 }
 
 export class ClientLocation {
-  public clientX;
-  public clientY;
-  constructor(clientX: number, clientY: number) {
-    this.clientX = clientX;
-    this.clientY = clientY;
-  }
-  moveTo(clientX: number, clientY: number) {
-    this.clientX = clientX;
-    this.clientY = clientY;
-  }
-  sub(other: ClientLocation): VectorE2 {
-    return new VectorE2(this.clientX - other.clientX, this.clientY - other.clientY);
-  }
-  static fromTouch(touch: { clientX: number; clientY: number}) {
-    return new ClientLocation(touch.clientX, touch.clientY);
-  }
-  toString(): string {
-    return 'ClientLocation(' + this.clientX + ', ' + this.clientY + ')';
-  }
+    public clientX;
+    public clientY;
+    constructor(clientX: number, clientY: number) {
+        this.clientX = clientX;
+        this.clientY = clientY;
+    }
+    moveTo(clientX: number, clientY: number) {
+        this.clientX = clientX;
+        this.clientY = clientY;
+    }
+    sub(other: ClientLocation): VectorE2 {
+        return new VectorE2(this.clientX - other.clientX, this.clientY - other.clientY);
+    }
+    static fromTouch(touch: { clientX: number; clientY: number }) {
+        return new ClientLocation(touch.clientX, touch.clientY);
+    }
+    toString(): string {
+        return 'ClientLocation(' + this.clientX + ', ' + this.clientY + ')';
+    }
 }
 
 export interface IComputedEvent {
-  eventType: number;
-  touchesLength: number;
-  timeStamp: number;
-  center: ClientLocation;
-  rotation: number;
-  deltaTime: number;
-  distance: number;
-  movement: VectorE2;
-  direction: number;
-  scale: number;
-  velocity: VectorE2;
+    eventType: number;
+    touchesLength: number;
+    timeStamp: number;
+    center: ClientLocation;
+    rotation: number;
+    deltaTime: number;
+    distance: number;
+    movement: VectorE2;
+    direction: number;
+    scale: number;
+    velocity: VectorE2;
 }
 
 /**
  * Maintains the history of events for a gesture recognition.
  */
 export class Session {
-  public startTime: number;
-  public stopped: number;
-  public curRecognizer: IRecognizer;
-  private compEvents: IComputedEvent[] = [];
-  constructor() {
-    this.reset();
-  }
-  reset(): void {
-    this.startTime = Date.now();
-    this.compEvents = [];
-    this.curRecognizer = undefined;
-  }
-  push(compEvent: IComputedEvent): void {
-    this.compEvents.push(compEvent);
-  }
-  computeMovement(center: ClientLocation): VectorE2 {
-    if (center) {
-      if (this.compEvents.length > 0) {
-        var prev: IComputedEvent = this.compEvents[this.compEvents.length - 1];
-        return center.sub(prev.center);
-      }
-      else {
-        return undefined;
-      }
+    public startTime: number;
+    public stopped: number;
+    public curRecognizer: IRecognizer;
+    private compEvents: IComputedEvent[] = [];
+    constructor() {
+        this.reset();
     }
-    else {
-      return undefined;
+    reset(): void {
+        this.startTime = Date.now();
+        this.compEvents = [];
+        this.curRecognizer = undefined;
     }
-  }
-  computeVelocity(center: ClientLocation, deltaTime: number): VectorE2 {
-    if (center) {
-      if (this.compEvents.length > 0) {
-        var prev: IComputedEvent = this.compEvents[this.compEvents.length - 1];
-        return center.sub(prev.center).div(deltaTime - prev.deltaTime);
-      }
-      else {
-        return undefined;
-      }
+    push(compEvent: IComputedEvent): void {
+        this.compEvents.push(compEvent);
     }
-    else {
-      return undefined;
+    computeMovement(center: ClientLocation): VectorE2 {
+        if (center) {
+            if (this.compEvents.length > 0) {
+                var prev: IComputedEvent = this.compEvents[this.compEvents.length - 1];
+                return center.sub(prev.center);
+            }
+            else {
+                return undefined;
+            }
+        }
+        else {
+            return undefined;
+        }
     }
-}
+    computeVelocity(center: ClientLocation, deltaTime: number): VectorE2 {
+        if (center) {
+            if (this.compEvents.length > 0) {
+                var prev: IComputedEvent = this.compEvents[this.compEvents.length - 1];
+                return center.sub(prev.center).div(deltaTime - prev.deltaTime);
+            }
+            else {
+                return undefined;
+            }
+        }
+        else {
+            return undefined;
+        }
+    }
 
 }
 
@@ -144,257 +144,257 @@ export class Session {
  * The contract for what the Manager requires from a Recognizer.
  */
 export interface IRecognizer {
-  eventName: string;
-  canRecognizeWith(recognizer: IRecognizer): boolean;
-  recognizeWith(recognizer: IRecognizer): IRecognizer;
-  requireFailure(recognizer: IRecognizer): IRecognizer;
-  recognize(inputData: IComputedEvent): void;
-  reset(): void;
-  state: number;
-  manager: IRecognizerCallback;
-  id: number;
+    eventName: string;
+    canRecognizeWith(recognizer: IRecognizer): boolean;
+    recognizeWith(recognizer: IRecognizer): IRecognizer;
+    requireFailure(recognizer: IRecognizer): IRecognizer;
+    recognize(inputData: IComputedEvent): void;
+    reset(): void;
+    state: number;
+    manager: IRecognizerCallback;
+    id: number;
 }
 
 export interface IRecognizerCallback {
-  emit(eventName: string, data?);
-  get(eventName: string): IRecognizer;
-  updateTouchAction(): void;
+    emit(eventName: string, data?);
+    get(eventName: string): IRecognizer;
+    updateTouchAction(): void;
 }
 
 export class Manager implements IRecognizerCallback {
-  public handlers = {};
-  public session = new Session();
-  public recognizers: IRecognizer[] = [];
-  public element;
-  public input;
-  private touchAction: TouchAction;
-  // The following properties are defaults.
-  private domEvents = false;
-  public enable = true;  // What does this enable?
-  public inputTarget;
-  private cssProps = {};
-  private callback: IRecognizerCallback;
-  /**
-   * Manager
-   * @param {HTMLElement} element
-   * @constructor
-   */
-  constructor(element: HTMLElement) {
-    this.element = element;
-    this.inputTarget = element; // Why would this be different?
-    this.input = new TouchInput(this, inputHandler);
-    this.touchAction = new TouchAction(this, TOUCH_ACTION_COMPUTE);
-    this.toggleCssProps(true);
-  }
-
-  /**
-   * stop recognizing for this session.
-   * This session will be discarded, when a new [input]start event is fired.
-   * When forced, the recognizer cycle is stopped immediately.
-   * @param {Boolean} [force]
-   */
-  stop(force: boolean) {
-    this.session.stopped = force ? FORCED_STOP : STOP;
-  }
-
-  /**
-   * run the recognizers!
-   * called by the inputHandler function on every movement of the pointers (touches)
-   * it walks through all the recognizers and tries to detect the gesture that is being made
-   * @param {Object} inputData
-   */
-  recognize(inputData: IComputedEvent, touchEvent: TouchEvent): void {
-    var session = this.session;
-    if (session.stopped) {
-      return;
+    public handlers = {};
+    public session = new Session();
+    public recognizers: IRecognizer[] = [];
+    public element;
+    public input;
+    private touchAction: TouchAction;
+    // The following properties are defaults.
+    private domEvents = false;
+    public enable = true;  // What does this enable?
+    public inputTarget;
+    private cssProps = {};
+    private callback: IRecognizerCallback;
+    /**
+     * Manager
+     * @param {HTMLElement} element
+     * @constructor
+     */
+    constructor(element: HTMLElement) {
+        this.element = element;
+        this.inputTarget = element; // Why would this be different?
+        this.input = new TouchInput(this, inputHandler);
+        this.touchAction = new TouchAction(this, TOUCH_ACTION_COMPUTE);
+        this.toggleCssProps(true);
     }
 
-    // run the touch-action polyfill
-    this.touchAction.preventDefaults(inputData, touchEvent);
-
-    var recognizer: IRecognizer;
-    var recognizers = this.recognizers;
-
-    // this holds the recognizer that is being recognized.
-    // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
-    // if no recognizer is detecting a thing, it is set to `null`
-    var curRecognizer = session.curRecognizer;
-
-    // reset when the last recognizer is recognized
-    // or when we're in a new session
-    if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
-        curRecognizer = session.curRecognizer = null;
+    /**
+     * stop recognizing for this session.
+     * This session will be discarded, when a new [input]start event is fired.
+     * When forced, the recognizer cycle is stopped immediately.
+     * @param {Boolean} [force]
+     */
+    stop(force: boolean) {
+        this.session.stopped = force ? FORCED_STOP : STOP;
     }
 
-    var i = 0;
-    while (i < recognizers.length) {
-      recognizer = recognizers[i];
+    /**
+     * run the recognizers!
+     * called by the inputHandler function on every movement of the pointers (touches)
+     * it walks through all the recognizers and tries to detect the gesture that is being made
+     * @param {Object} inputData
+     */
+    recognize(inputData: IComputedEvent, touchEvent: TouchEvent): void {
+        var session = this.session;
+        if (session.stopped) {
+            return;
+        }
 
-      // find out if we are allowed try to recognize the input for this one.
-      // 1.   allow if the session is NOT forced stopped (see the .stop() method)
-      // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
-      //      that is being recognized.
-      // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
-      //      this can be setup with the `recognizeWith()` method on the recognizer.
-      if (session.stopped !== FORCED_STOP && ( // 1
-              !curRecognizer || recognizer == curRecognizer || // 2
-              recognizer.canRecognizeWith(curRecognizer))) { // 3
+        // run the touch-action polyfill
+        this.touchAction.preventDefaults(inputData, touchEvent);
 
-          recognizer.recognize(inputData);
-      }
-      else {
-        recognizer.reset();
-      }
+        var recognizer: IRecognizer;
+        var recognizers = this.recognizers;
 
-      // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
-      // current active recognizer. but only if we don't already have an active recognizer
-      if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_RECOGNIZED)) {
-          curRecognizer = session.curRecognizer = recognizer;
-      }
-      i++;
+        // this holds the recognizer that is being recognized.
+        // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
+        // if no recognizer is detecting a thing, it is set to `null`
+        var curRecognizer = session.curRecognizer;
+
+        // reset when the last recognizer is recognized
+        // or when we're in a new session
+        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+            curRecognizer = session.curRecognizer = null;
+        }
+
+        var i = 0;
+        while (i < recognizers.length) {
+            recognizer = recognizers[i];
+
+            // find out if we are allowed try to recognize the input for this one.
+            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+            //      that is being recognized.
+            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+            //      this can be setup with the `recognizeWith()` method on the recognizer.
+            if (session.stopped !== FORCED_STOP && ( // 1
+                !curRecognizer || recognizer == curRecognizer || // 2
+                recognizer.canRecognizeWith(curRecognizer))) { // 3
+
+                recognizer.recognize(inputData);
+            }
+            else {
+                recognizer.reset();
+            }
+
+            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+            // current active recognizer. but only if we don't already have an active recognizer
+            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_RECOGNIZED)) {
+                curRecognizer = session.curRecognizer = recognizer;
+            }
+            i++;
+        }
     }
-  }
 
-  /**
-   * get a recognizer by its event name.
-   */
-  get(eventName: string): IRecognizer {
-    var recognizers = this.recognizers;
-    for (var i = 0; i < recognizers.length; i++) {
-      if (recognizers[i].eventName === eventName) {
-        return recognizers[i];
-      }
-    }
-    return null;
-  }
-
-  /**
-   * add a recognizer to the manager
-   * existing recognizers with the same event name will be removed
-   * @param {Recognizer} recognizer
-   */
-  add(recognizer: IRecognizer): IRecognizer {
-    var existing = this.get(recognizer.eventName);
-    if (existing) {
-      this.remove(existing);
+    /**
+     * get a recognizer by its event name.
+     */
+    get(eventName: string): IRecognizer {
+        var recognizers = this.recognizers;
+        for (var i = 0; i < recognizers.length; i++) {
+            if (recognizers[i].eventName === eventName) {
+                return recognizers[i];
+            }
+        }
+        return null;
     }
 
-    this.recognizers.push(recognizer);
-    recognizer.manager = this;
+    /**
+     * add a recognizer to the manager
+     * existing recognizers with the same event name will be removed
+     * @param {Recognizer} recognizer
+     */
+    add(recognizer: IRecognizer): IRecognizer {
+        var existing = this.get(recognizer.eventName);
+        if (existing) {
+            this.remove(existing);
+        }
 
-    this.touchAction.update();
-    return recognizer;
-  }
+        this.recognizers.push(recognizer);
+        recognizer.manager = this;
 
-  /**
-   * remove a recognizer by name or instance
-   * @param {Recognizer|String} recognizer
-   * @returns {Manager}
-   */
-  remove(recognizer: IRecognizer) {
-      var recognizers = this.recognizers;
-      recognizer = this.get(recognizer.eventName);
-      recognizers.splice(utils.inArray(recognizers, recognizer), 1);
-
-      this.touchAction.update();
-      return this;
-  }
-
-  /**
-   * bind event
-   * @param {String} events
-   * @param {Function} handler
-   * @returns {EventEmitter} this
-   */
-  on(events: string, handler): Manager {
-      var handlers = this.handlers;
-      utils.each(utils.splitStr(events), function(event) {
-          handlers[event] = handlers[event] || [];
-          handlers[event].push(handler);
-      });
-      return this;
-  }
-
-  /**
-   * unbind event, leave emit blank to remove all handlers
-   * @param {String} events
-   * @param {Function} [handler]
-   * @returns {EventEmitter} this
-   */
-  off(events: string, handler): Manager {
-    var handlers = this.handlers;
-    utils.each(utils.splitStr(events), function(event) {
-      if (!handler) {
-          delete handlers[event];
-      }
-      else {
-          handlers[event].splice(utils.inArray(handlers[event], handler), 1);
-      }
-    });
-    return this;
-  }
-
-  /**
-   * emit event to the listeners
-   * @param {String} event
-   * @param {IComputedEvent} data
-   */
-  emit(eventName: string, data: Event) {
-      // we also want to trigger dom events
-      if (this.domEvents) {
-          triggerDomEvent(event, data);
-      }
-
-      // no handlers, so skip it all
-      var handlers = this.handlers[eventName] && this.handlers[eventName].slice();
-      if (!handlers || !handlers.length) {
-          return;
-      }
-
-      // Make it look like a normal DOM event?
-      /*
-      data.type = eventName;
-      data.preventDefault = function() {
-        data.srcEvent.preventDefault();
-      };
-      */
-
-      var i = 0;
-      while (i < handlers.length) {
-        handlers[i](data);
-        i++;
-      }
-  }
-
-  updateTouchAction(): void {
-    this.touchAction.update();
-  }
-
-  /**
-   * destroy the manager and unbinds all events
-   * it doesn't unbind dom events, that is the user own responsibility
-   */
-  destroy() {
-      this.element && this.toggleCssProps(false);
-
-      this.handlers = {};
-      this.session = undefined;
-      this.input.destroy();
-      this.element = null;
-  }
-  
-  toggleCssProps(add: boolean) {
-    if (!this.element.style) {
-        return;
+        this.touchAction.update();
+        return recognizer;
     }
-    var element = this.element;
-    utils.each(this.cssProps, function(value, name) {
-      element.style[utils.prefixed(element.style, name)] = add ? value : '';
-    });
-  }
 
-  cancelContextMenu(): void {
-  }
+    /**
+     * remove a recognizer by name or instance
+     * @param {Recognizer|String} recognizer
+     * @returns {Manager}
+     */
+    remove(recognizer: IRecognizer) {
+        var recognizers = this.recognizers;
+        recognizer = this.get(recognizer.eventName);
+        recognizers.splice(inArray(recognizers, recognizer), 1);
+
+        this.touchAction.update();
+        return this;
+    }
+
+    /**
+     * bind event
+     * @param {String} events
+     * @param {Function} handler
+     * @returns {EventEmitter} this
+     */
+    on(events: string, handler): Manager {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);
+        });
+        return this;
+    }
+
+    /**
+     * unbind event, leave emit blank to remove all handlers
+     * @param {String} events
+     * @param {Function} [handler]
+     * @returns {EventEmitter} this
+     */
+    off(events: string, handler): Manager {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            if (!handler) {
+                delete handlers[event];
+            }
+            else {
+                handlers[event].splice(inArray(handlers[event], handler), 1);
+            }
+        });
+        return this;
+    }
+
+    /**
+     * emit event to the listeners
+     * @param {String} event
+     * @param {IComputedEvent} data
+     */
+    emit(eventName: string, data: Event) {
+        // we also want to trigger dom events
+        if (this.domEvents) {
+            triggerDomEvent(event, data);
+        }
+
+        // no handlers, so skip it all
+        var handlers = this.handlers[eventName] && this.handlers[eventName].slice();
+        if (!handlers || !handlers.length) {
+            return;
+        }
+
+        // Make it look like a normal DOM event?
+        /*
+        data.type = eventName;
+        data.preventDefault = function() {
+          data.srcEvent.preventDefault();
+        };
+        */
+
+        var i = 0;
+        while (i < handlers.length) {
+            handlers[i](data);
+            i++;
+        }
+    }
+
+    updateTouchAction(): void {
+        this.touchAction.update();
+    }
+
+    /**
+     * destroy the manager and unbinds all events
+     * it doesn't unbind dom events, that is the user own responsibility
+     */
+    destroy() {
+        this.element && this.toggleCssProps(false);
+
+        this.handlers = {};
+        this.session = undefined;
+        this.input.destroy();
+        this.element = null;
+    }
+
+    toggleCssProps(add: boolean) {
+        if (!this.element.style) {
+            return;
+        }
+        var element = this.element;
+        each(this.cssProps, function(value, name) {
+            element.style[prefixed(element.style, name)] = add ? value : '';
+        });
+    }
+
+    cancelContextMenu(): void {
+    }
 }
 
 /**
@@ -403,36 +403,36 @@ export class Manager implements IRecognizerCallback {
  * @param {Object} data
  */
 function triggerDomEvent(event, data) {
-  var gestureEvent = document.createEvent('Event');
-  gestureEvent.initEvent(event, true, true);
-  gestureEvent['gesture'] = data;
-  data.target.dispatchEvent(gestureEvent);
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent['gesture'] = data;
+    data.target.dispatchEvent(gestureEvent);
 }
 
 var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
 
 var SUPPORT_TOUCH = ('ontouchstart' in window);
-var SUPPORT_POINTER_EVENTS = utils.prefixed(window, 'PointerEvent') !== undefined;
+var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
 var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
 
-var PREFIXED_TOUCH_ACTION = utils.prefixed(utils.TEST_ELEMENT.style, 'touchAction');
+var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
 class TouchAction {
-  public manager: Manager;
-  public actions: string;
-  private prevented;
-  /**
-   * Touch Action
-   * sets the touchAction property or uses the js alternative
-   * @param {Manager} manager
-   * @param {String} value
-   * @constructor
-   */
-  constructor(manager: Manager, value: string) {
-      this.manager = manager;
-      this.set(value);
-  }
+    public manager: Manager;
+    public actions: string;
+    private prevented;
+    /**
+     * Touch Action
+     * sets the touchAction property or uses the js alternative
+     * @param {Manager} manager
+     * @param {String} value
+     * @constructor
+     */
+    constructor(manager: Manager, value: string) {
+        this.manager = manager;
+        this.set(value);
+    }
     /**
      * set the touchAction value on the element or enable the polyfill
      * @param {String} value
@@ -453,7 +453,7 @@ class TouchAction {
      * just re-set the touchAction value
      */
     update() {
-      this.set(TOUCH_ACTION_COMPUTE);
+        this.set(TOUCH_ACTION_COMPUTE);
     }
 
     /**
@@ -463,7 +463,7 @@ class TouchAction {
     compute() {
         var actions: string[] = [];
         // FIXME: Make this type-safe automagically
-        utils.each(this.manager.recognizers, function(recognizer: Recognizer) {
+        each(this.manager.recognizers, function(recognizer: Recognizer) {
             if (recognizer.enabled) {
                 actions = actions.concat(recognizer.getTouchAction());
             }
@@ -489,9 +489,9 @@ class TouchAction {
         }
         /*
         var actions = this.actions;
-        var hasNone = utils.inStr(actions, TOUCH_ACTION_NONE);
-        var hasPanY = utils.inStr(actions, TOUCH_ACTION_PAN_Y);
-        var hasPanX = utils.inStr(actions, TOUCH_ACTION_PAN_X);
+        var hasNone = inStr(actions, TOUCH_ACTION_NONE);
+        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
 
         if (hasNone ||
             (hasPanY && direction & DIRECTION_HORIZONTAL) ||
@@ -518,12 +518,12 @@ class TouchAction {
  */
 function cleanTouchActions(actions: string): string {
     // none
-    if (utils.inStr(actions, TOUCH_ACTION_NONE)) {
+    if (inStr(actions, TOUCH_ACTION_NONE)) {
         return TOUCH_ACTION_NONE;
     }
 
-    var hasPanX = utils.inStr(actions, TOUCH_ACTION_PAN_X);
-    var hasPanY = utils.inStr(actions, TOUCH_ACTION_PAN_Y);
+    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
 
     // pan-x and pan-y can be combined
     if (hasPanX && hasPanY) {
@@ -536,7 +536,7 @@ function cleanTouchActions(actions: string): string {
     }
 
     // manipulation
-    if (utils.inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
         return TOUCH_ACTION_MANIPULATION;
     }
 
@@ -556,23 +556,23 @@ export var INPUT_END = 4;
 export var INPUT_CANCEL = 8;
 
 export function decodeEventType(eventType: number) {
-  switch(eventType) {
-    case INPUT_START: {
-      return "START";
+    switch (eventType) {
+        case INPUT_START: {
+            return "START";
+        }
+        case INPUT_MOVE: {
+            return "MOVE";
+        }
+        case INPUT_END: {
+            return "END";
+        }
+        case INPUT_CANCEL: {
+            return "CANCEL";
+        }
+        default: {
+            return "eventType=" + eventType;
+        }
     }
-    case INPUT_MOVE: {
-      return "MOVE";
-    }
-    case INPUT_END: {
-      return "END";
-    }
-    case INPUT_CANCEL: {
-      return "CANCEL";
-    }
-    default : {
-      return "eventType=" + eventType;
-    }
-  }
 }
 
 export var DIRECTION_UNDEFINED = 0;
@@ -589,65 +589,65 @@ var PROPS_XY = ['x', 'y'];
 var PROPS_CLIENT_XY = ['clientX', 'clientY'];
 
 class Input {
-  public manager: Manager;
-  public element;
-  public target;
-  public domHandler;
-  private evEl;
-  private evTarget;
-  private evWin;
-  /**
-   * create new input type manager
-   * @param {Manager} manager
-   * @returns {Input}
-   * @constructor
-   */
-  constructor(
-    manager: Manager,
-    touchElementEvents: string,
-    touchTargetEvents: string,
-    touchWindowEvents: string) {
-    var self = this;
-    this.manager = manager;
-    this.evEl = touchElementEvents;
-    this.evTarget = touchTargetEvents;
-    this.evWin = touchWindowEvents;
-    this.element = manager.element;
-    this.target = manager.inputTarget;
+    public manager: Manager;
+    public element;
+    public target;
+    public domHandler;
+    private evEl;
+    private evTarget;
+    private evWin;
+    /**
+     * create new input type manager
+     * @param {Manager} manager
+     * @returns {Input}
+     * @constructor
+     */
+    constructor(
+        manager: Manager,
+        touchElementEvents: string,
+        touchTargetEvents: string,
+        touchWindowEvents: string) {
+        var self = this;
+        this.manager = manager;
+        this.evEl = touchElementEvents;
+        this.evTarget = touchTargetEvents;
+        this.evWin = touchWindowEvents;
+        this.element = manager.element;
+        this.target = manager.inputTarget;
 
-    // smaller wrapper around the handler, for the scope and the enabled state of the manager,
-    // so when disabled the input events are completely bypassed.
-    this.domHandler = function(event: TouchEvent) {
-      if (manager.enable) {
-        self.handler(event);
-      }
-    };
+        // smaller wrapper around the handler, for the scope and the enabled state of the manager,
+        // so when disabled the input events are completely bypassed.
+        this.domHandler = function(event: TouchEvent) {
+            if (manager.enable) {
+                self.handler(event);
+            }
+        };
 
-    this.init();
-  }
-  /**
-   * should handle the inputEvent data and trigger the callback
-   * @virtual
-   */
-  handler(event: any) { }
+        this.init();
+    }
+    /**
+     * should handle the inputEvent data and trigger the callback
+     * @virtual
+     */
+    handler(event: any) { }
 
-  /**
-   * bind the events
-   */
-  init() {
-      this.evEl && utils.addEventListeners(this.element, this.evEl, this.domHandler);
-      this.evTarget && utils.addEventListeners(this.target, this.evTarget, this.domHandler);
-      this.evWin && utils.addEventListeners(utils.getWindowForElement(this.element), this.evWin, this.domHandler);
-  }
+    /**
+     * bind the events
+     */
+    init() {
+        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    }
 
-  /**
-   * unbind the events
-   */
-  destroy() {
-      this.evEl && utils.removeEventListeners(this.element, this.evEl, this.domHandler);
-      this.evTarget && utils.removeEventListeners(this.target, this.evTarget, this.domHandler);
-      this.evWin && utils.removeEventListeners(utils.getWindowForElement(this.element), this.evWin, this.domHandler);
-  }
+    /**
+     * unbind the events
+     */
+    destroy() {
+        this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    }
 }
 
 /**
@@ -658,11 +658,11 @@ class Input {
  */
 function inputHandler(manager: Manager, eventType: number, touchEvent: TouchEvent) {
 
-  var compEvent: IComputedEvent = computeIComputedEvent(manager, eventType, touchEvent);
+    var compEvent: IComputedEvent = computeIComputedEvent(manager, eventType, touchEvent);
 
-  manager.recognize(compEvent, touchEvent);
+    manager.recognize(compEvent, touchEvent);
 
-  manager.session.push(compEvent);
+    manager.session.push(compEvent);
 }
 
 /**
@@ -671,82 +671,82 @@ function inputHandler(manager: Manager, eventType: number, touchEvent: TouchEven
  * @param {IComputedEvent} input
  */
 function computeIComputedEvent(manager: Manager, eventType: number, touchEvent: TouchEvent): IComputedEvent {
-  var touchesLength = touchEvent.touches.length;
-  var changedPointersLen = touchEvent.changedTouches.length;
-  var isFirst: boolean = (eventType & INPUT_START && (touchesLength - changedPointersLen === 0));
-  var isFinal: boolean = (eventType & (INPUT_END | INPUT_CANCEL) && (touchesLength - changedPointersLen === 0));
+    var touchesLength = touchEvent.touches.length;
+    var changedPointersLen = touchEvent.changedTouches.length;
+    var isFirst: boolean = (eventType & INPUT_START && (touchesLength - changedPointersLen === 0));
+    var isFinal: boolean = (eventType & (INPUT_END | INPUT_CANCEL) && (touchesLength - changedPointersLen === 0));
 
-//var compEvent: any/*IComputedEvent*/ = {};
-//compEvent.isFirst = !!isFirst;
-//compEvent.isFinal = !!isFinal;
+    //var compEvent: any/*IComputedEvent*/ = {};
+    //compEvent.isFirst = !!isFirst;
+    //compEvent.isFinal = !!isFinal;
 
-  if (isFirst) {
-    manager.session.reset();
-  }
+    if (isFirst) {
+        manager.session.reset();
+    }
 
-  // source event is the normalized value of the domEvents
-  // like 'touchstart, mouseup, pointerdown'
-  var session = manager.session;
-//  var pointers = input.pointers;
-//  var pointersLength = pointers.length;
+    // source event is the normalized value of the domEvents
+    // like 'touchstart, mouseup, pointerdown'
+    var session = manager.session;
+    //  var pointers = input.pointers;
+    //  var pointersLength = pointers.length;
 
-  var center: ClientLocation = computeCenter(touchEvent.touches);
-  var movement: VectorE2 = session.computeMovement(center);
+    var center: ClientLocation = computeCenter(touchEvent.touches);
+    var movement: VectorE2 = session.computeMovement(center);
 
-  // store the first input to calculate the distance and direction
-  /*
-  if (!session.firstInput) {
-    session.firstInput = snapshot(touchEvent, movement);
-  }
+    // store the first input to calculate the distance and direction
+    /*
+    if (!session.firstInput) {
+      session.firstInput = snapshot(touchEvent, movement);
+    }
+  
+    // to compute scale and rotation we need to store the multiple touches
+    if (touchesLength > 1 && !session.firstMultiple) {
+      session.firstMultiple = snapshot(touchEvent, movement);
+    }
+    else if (touchesLength === 1) {
+      session.firstMultiple = undefined;
+    }
+  
+    var firstInput = session.firstInput;
+    var firstMultiple = session.firstMultiple;
+    var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+    */
 
-  // to compute scale and rotation we need to store the multiple touches
-  if (touchesLength > 1 && !session.firstMultiple) {
-    session.firstMultiple = snapshot(touchEvent, movement);
-  }
-  else if (touchesLength === 1) {
-    session.firstMultiple = undefined;
-  }
+    var timeStamp = Date.now();
+    var movementTime = timeStamp - session.startTime;
 
-  var firstInput = session.firstInput;
-  var firstMultiple = session.firstMultiple;
-  var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
-  */
+    //var angle = getAngle(offsetCenter, center);
+    var distance: number = movement ? movement.norm() : 0;
+    var direction: number = getDirection(movement);
 
-  var timeStamp = Date.now();
-  var movementTime = timeStamp - session.startTime;
+    // var scale = firstMultiple ? getScale(firstMultiple.pointers, touchEvent.touches) : 1;
+    // var rotation = firstMultiple ? getRotation(firstMultiple.pointers, touchEvent.touches) : 0;
 
-//var angle = getAngle(offsetCenter, center);
-  var distance: number = movement ? movement.norm() : 0;
-  var direction: number = getDirection(movement);
+    var velocity: VectorE2 = session.computeVelocity(center, movementTime);
 
-  // var scale = firstMultiple ? getScale(firstMultiple.pointers, touchEvent.touches) : 1;
-  // var rotation = firstMultiple ? getRotation(firstMultiple.pointers, touchEvent.touches) : 0;
-
-  var velocity: VectorE2 = session.computeVelocity(center, movementTime);
-
-  // find the correct target
-  /*
-  var target = manager.element;
-  if (utils.hasParent(touchEvent.target, target)) {
-      target = input.srcEvent.target;
-  }
-  */
-//  input.target = target;
-  var compEvent: IComputedEvent = {
-    center: center,
-    movement: movement,
-    deltaTime: movementTime,
-    direction: direction,
-    distance: distance,
-    eventType: eventType,
-    rotation: 0,
-    timeStamp: timeStamp,
-    touchesLength: touchEvent.touches.length,
-    // type: touchEvent.type,
-    scale: 1,
-    velocity: velocity
-  };
-  return compEvent;
+    // find the correct target
+    /*
+    var target = manager.element;
+    if (hasParent(touchEvent.target, target)) {
+        target = input.srcEvent.target;
+    }
+    */
+    //  input.target = target;
+    var compEvent: IComputedEvent = {
+        center: center,
+        movement: movement,
+        deltaTime: movementTime,
+        direction: direction,
+        distance: distance,
+        eventType: eventType,
+        rotation: 0,
+        timeStamp: timeStamp,
+        touchesLength: touchEvent.touches.length,
+        // type: touchEvent.type,
+        scale: 1,
+        velocity: velocity
+    };
+    return compEvent;
 }
 
 /**
@@ -757,19 +757,19 @@ function computeIComputedEvent(manager: Manager, eventType: number, touchEvent: 
 function computeCenter(touches: Touch[]): ClientLocation {
     var touchesLength = touches.length;
     if (touchesLength === 1) {
-      return ClientLocation.fromTouch(touches[0]);
+        return ClientLocation.fromTouch(touches[0]);
     }
     else if (touchesLength === 0) {
-      return undefined;
+        return undefined;
     }
     else {
-      var x = 0, y = 0, i = 0;
-      while (i < touchesLength) {
-          x += touches[i].clientX;
-          y += touches[i].clientY;
-          i++;
-      }
-      return new ClientLocation(Math.round(x / touchesLength), Math.round(y / touchesLength));
+        var x = 0, y = 0, i = 0;
+        while (i < touchesLength) {
+            x += touches[i].clientX;
+            y += touches[i].clientY;
+            i++;
+        }
+        return new ClientLocation(Math.round(x / touchesLength), Math.round(y / touchesLength));
     }
 }
 
@@ -780,8 +780,8 @@ function computeCenter(touches: Touch[]): ClientLocation {
  * @param {Number} y
  * @return {Object} velocity `x` and `y`
  */
-function getVelocity(deltaTime: number, x: number, y: number): { x: number;y:number} {
-    return {x: x / deltaTime || 0, y: y / deltaTime || 0};
+function getVelocity(deltaTime: number, x: number, y: number): { x: number; y: number } {
+    return { x: x / deltaTime || 0, y: y / deltaTime || 0 };
 }
 
 /**
@@ -791,33 +791,33 @@ function getVelocity(deltaTime: number, x: number, y: number): { x: number;y:num
  * @return {Number} direction
  */
 function getDirection(movement: VectorE2): number {
-  var N = new VectorE2(0,-1);
-  var S = new VectorE2(0,+1);
-  var E = new VectorE2(+1,0);
-  var W = new VectorE2(-1,0);
-  // Allow combinations of the cardinal directions.
-  // A cardinal direction matches if we are within 22.5 degrees either side.
-  var cosineThreshold = Math.cos(7 * Math.PI / 16);
-  if (movement) {
-    var unit = movement.div(movement.norm());
-    var direction = DIRECTION_UNDEFINED;
-    if (unit.dot(N) > cosineThreshold) {
-      direction |= DIRECTION_UP;
+    var N = new VectorE2(0, -1);
+    var S = new VectorE2(0, +1);
+    var E = new VectorE2(+1, 0);
+    var W = new VectorE2(-1, 0);
+    // Allow combinations of the cardinal directions.
+    // A cardinal direction matches if we are within 22.5 degrees either side.
+    var cosineThreshold = Math.cos(7 * Math.PI / 16);
+    if (movement) {
+        var unit = movement.div(movement.norm());
+        var direction = DIRECTION_UNDEFINED;
+        if (unit.dot(N) > cosineThreshold) {
+            direction |= DIRECTION_UP;
+        }
+        if (unit.dot(S) > cosineThreshold) {
+            direction |= DIRECTION_DOWN;
+        }
+        if (unit.dot(E) > cosineThreshold) {
+            direction |= DIRECTION_RIGHT;
+        }
+        if (unit.dot(W) > cosineThreshold) {
+            direction |= DIRECTION_LEFT;
+        }
+        return direction;
     }
-    if (unit.dot(S) > cosineThreshold) {
-      direction |= DIRECTION_DOWN;
+    else {
+        return DIRECTION_UNDEFINED;
     }
-    if (unit.dot(E) > cosineThreshold) {
-      direction |= DIRECTION_RIGHT;
-    }
-    if (unit.dot(W) > cosineThreshold) {
-      direction |= DIRECTION_LEFT;
-    }
-    return direction;
-  }
-  else {
-    return DIRECTION_UNDEFINED;
-  }
 }
 
 /**
@@ -874,7 +874,7 @@ function getScale(start, end) {
     return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
 }
 
-var TOUCH_INPUT_MAP:  { [s: string]: number; } = {
+var TOUCH_INPUT_MAP: { [s: string]: number; } = {
     touchstart: INPUT_START,
     touchmove: INPUT_MOVE,
     touchend: INPUT_END,
@@ -884,23 +884,23 @@ var TOUCH_INPUT_MAP:  { [s: string]: number; } = {
 var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
 
 class TouchInput extends Input {
-  private targetIds = {};
-  private callback: (manager: Manager, type: number, data: TouchEvent) => void;
-  /**
-   * Multi-user touch events input
-   * @constructor
-   * @extends Input
-   */
-  constructor(manager: Manager, callback: (manager: Manager, type: number, data: TouchEvent)=>void) {
-    // FIXME: The base class registers handlers and could be firing events
-    // before this constructor has initialized callback?
-    super(manager, undefined, TOUCH_TARGET_EVENTS, undefined);
-    this.callback = callback;
-  }
-  handler(event: TouchEvent) {
-    var eventType: number = TOUCH_INPUT_MAP[event.type];
-    this.callback(this.manager, eventType, event);
-  }
+    private targetIds = {};
+    private callback: (manager: Manager, type: number, data: TouchEvent) => void;
+    /**
+     * Multi-user touch events input
+     * @constructor
+     * @extends Input
+     */
+    constructor(manager: Manager, callback: (manager: Manager, type: number, data: TouchEvent) => void) {
+        // FIXME: The base class registers handlers and could be firing events
+        // before this constructor has initialized callback?
+        super(manager, undefined, TOUCH_TARGET_EVENTS, undefined);
+        this.callback = callback;
+    }
+    handler(event: TouchEvent) {
+        var eventType: number = TOUCH_INPUT_MAP[event.type];
+        this.callback(this.manager, eventType, event);
+    }
 }
 
 /**
@@ -910,7 +910,7 @@ class TouchInput extends Input {
  * @returns {undefined|Array} [all, changed]
  */
 function getTouches(event: TouchEvent, type: number) {
-    var allTouches = utils.toArray(event.touches);
+    var allTouches = toArray(event.touches);
     var targetIds = this.targetIds;
 
     // when there is only one touch, the process can be simplified
@@ -921,13 +921,13 @@ function getTouches(event: TouchEvent, type: number) {
 
     var i,
         targetTouches,
-        changedTouches = utils.toArray(event.changedTouches),
+        changedTouches = toArray(event.changedTouches),
         changedTargetTouches = [],
         target = this.target;
 
     // get target touches from touches
     targetTouches = allTouches.filter(function(touch) {
-        return utils.hasParent(touch.target, target);
+        return hasParent(touch.target, target);
     });
 
     // collect touches
@@ -959,7 +959,7 @@ function getTouches(event: TouchEvent, type: number) {
 
     return [
         // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
-        utils.uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
+        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
         changedTargetTouches
     ];
 }
@@ -1000,38 +1000,38 @@ export var STATE_CANCELLED = 16;
 export var STATE_FAILED = 32;
 
 export class Recognizer implements IRecognizer {
-  public id;
-  public manager: IRecognizerCallback;
-  public eventName: string;
-  public enabled: boolean;
-  public state: number;
-  public simultaneous = {}; // TODO: Type as map of string to Recognizer.
-  public requireFail: IRecognizer[] = [];
-  /**
-   * Recognizer
-   * Every recognizer needs to extend from this class.
-   * @constructor
-   */
-  constructor(eventName: string, enabled: boolean) {
-    this.eventName = eventName;
-    this.enabled = enabled;
-    this.id = utils.uniqueId();
+    public id;
+    public manager: IRecognizerCallback;
+    public eventName: string;
+    public enabled: boolean;
+    public state: number;
+    public simultaneous = {}; // TODO: Type as map of string to Recognizer.
+    public requireFail: IRecognizer[] = [];
+    /**
+     * Recognizer
+     * Every recognizer needs to extend from this class.
+     * @constructor
+     */
+    constructor(eventName: string, enabled: boolean) {
+        this.eventName = eventName;
+        this.enabled = enabled;
+        this.id = uniqueId();
 
-    this.manager = null;
-//      this.options = utils.merge(options || {}, this.defaults);
+        this.manager = null;
+        //      this.options = merge(options || {}, this.defaults);
 
-    // default is enable true
-//      this.options.enable = utils.ifUndefined(this.options.enable, true);
+        // default is enable true
+        //      this.options.enable = ifUndefined(this.options.enable, true);
 
-    this.state = STATE_POSSIBLE;
-  }
-  set(options) {
-//      utils.extend(this.options, options);
+        this.state = STATE_POSSIBLE;
+    }
+    set(options) {
+        //      extend(this.options, options);
 
-      // also update the touchAction, in case something changed about the directions/enabled state
-      this.manager && this.manager.updateTouchAction();
-      return this;
-  }
+        // also update the touchAction, in case something changed about the directions/enabled state
+        this.manager && this.manager.updateTouchAction();
+        return this;
+    }
 
     /**
      * recognize simultaneous with an other recognizer.
@@ -1065,7 +1065,7 @@ export class Recognizer implements IRecognizer {
     requireFailure(otherRecognizer: IRecognizer): IRecognizer {
         var requireFail = this.requireFail;
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
-        if (utils.inArray(requireFail, otherRecognizer) === -1) {
+        if (inArray(requireFail, otherRecognizer) === -1) {
             requireFail.push(otherRecognizer);
             otherRecognizer.requireFailure(this);
         }
@@ -1079,7 +1079,7 @@ export class Recognizer implements IRecognizer {
      */
     dropRequireFailure(otherRecognizer: IRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
-        var index = utils.inArray(this.requireFail, otherRecognizer);
+        var index = inArray(this.requireFail, otherRecognizer);
         if (index > -1) {
             this.requireFail.splice(index, 1);
         }
@@ -1139,7 +1139,7 @@ export class Recognizer implements IRecognizer {
      */
     tryEmit() {
         if (this.canEmit()) {
-          return this.emit();
+            return this.emit();
         }
         else {
         }
@@ -1168,23 +1168,23 @@ export class Recognizer implements IRecognizer {
      */
     recognize(compEvent: IComputedEvent): void {
 
-      if (!this.enabled) {
-          this.reset();
-          this.state = STATE_FAILED;
-          return;
-      }
+        if (!this.enabled) {
+            this.reset();
+            this.state = STATE_FAILED;
+            return;
+        }
 
-      // reset when we've reached the end
-      if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
-          this.state = STATE_POSSIBLE;
-      }
+        // reset when we've reached the end
+        if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+            this.state = STATE_POSSIBLE;
+        }
 
-      this.state = this.process(compEvent);
+        this.state = this.process(compEvent);
 
-      // the recognizer has recognized a gesture so trigger an event
-      if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_RECOGNIZED | STATE_CANCELLED)) {
-        this.tryEmit();
-      }
+        // the recognizer has recognized a gesture so trigger an event
+        if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_RECOGNIZED | STATE_CANCELLED)) {
+            this.tryEmit();
+        }
     }
 
     /**
@@ -1195,7 +1195,7 @@ export class Recognizer implements IRecognizer {
      * @returns {Const} STATE
      */
     process(inputData: IComputedEvent): number {
-      return STATE_UNDEFINED;
+        return STATE_UNDEFINED;
     }
 
     /**
@@ -1221,16 +1221,16 @@ export class Recognizer implements IRecognizer {
  */
 export function stateStr(state: number): string {
     if (state & STATE_CANCELLED) {
-      return 'cancel';
+        return 'cancel';
     }
     else if (state & STATE_RECOGNIZED) {
-      return 'end';
+        return 'end';
     }
     else if (state & STATE_CHANGED) {
-      return 'move';
+        return 'move';
     }
     else if (state & STATE_BEGAN) {
-      return 'start';
+        return 'start';
     }
     return '';
 }
@@ -1241,32 +1241,32 @@ export function stateStr(state: number): string {
  * Sine the state is a bit field, show all bits even though they may/should be exclusive.
  */
 export function stateDecode(state: number): string {
-  var states: string[] = [];
-  if (state & STATE_POSSIBLE) {
-    states.push('STATE_POSSIBLE');
-  }
-  else if (state & STATE_CANCELLED) {
-    states.push('STATE_CANCELLED');
-  }
-  else if (state & STATE_RECOGNIZED) {
-    states.push('STATE_RECOGNIZED');
-  }
-  else if (state & STATE_CHANGED) {
-    states.push('STATE_CHANGED');
-  }
-  else if (state & STATE_BEGAN) {
-    states.push('STATE_BEGAN');
-  }
-  else if (state & STATE_UNDEFINED) {
-    states.push('STATE_UNDEFINED');
-  }
-  else if (state & STATE_FAILED) {
-    states.push('STATE_FAILED');
-  }
-  else {
-    states.push('' + state);
-  }
-  return states.join(' ');
+    var states: string[] = [];
+    if (state & STATE_POSSIBLE) {
+        states.push('STATE_POSSIBLE');
+    }
+    else if (state & STATE_CANCELLED) {
+        states.push('STATE_CANCELLED');
+    }
+    else if (state & STATE_RECOGNIZED) {
+        states.push('STATE_RECOGNIZED');
+    }
+    else if (state & STATE_CHANGED) {
+        states.push('STATE_CHANGED');
+    }
+    else if (state & STATE_BEGAN) {
+        states.push('STATE_BEGAN');
+    }
+    else if (state & STATE_UNDEFINED) {
+        states.push('STATE_UNDEFINED');
+    }
+    else if (state & STATE_FAILED) {
+        states.push('STATE_FAILED');
+    }
+    else {
+        states.push('' + state);
+    }
+    return states.join(' ');
 }
 
 /**
@@ -1276,20 +1276,20 @@ export function stateDecode(state: number): string {
  * @returns {String}
  */
 export function directionStr(direction: number): string {
-  var ds: string[] = [];
-  if (direction & DIRECTION_DOWN) {
-    ds.push('down');
-  }
-  if (direction & DIRECTION_UP) {
-    ds.push('up');
-  }
-  if (direction & DIRECTION_LEFT) {
-    ds.push('left');
-  }
-  if (direction & DIRECTION_RIGHT) {
-    ds.push('right');
-  }
-  return ds.join(' ');
+    var ds: string[] = [];
+    if (direction & DIRECTION_DOWN) {
+        ds.push('down');
+    }
+    if (direction & DIRECTION_UP) {
+        ds.push('up');
+    }
+    if (direction & DIRECTION_LEFT) {
+        ds.push('left');
+    }
+    if (direction & DIRECTION_RIGHT) {
+        ds.push('right');
+    }
+    return ds.join(' ');
 }
 
 /**
@@ -1300,7 +1300,7 @@ export function directionStr(direction: number): string {
  */
 function getRecognizerByNameIfManager(recognizer: IRecognizer, manager: IRecognizerCallback): IRecognizer {
     if (manager) {
-      return manager.get(recognizer.eventName);
+        return manager.get(recognizer.eventName);
     }
     return recognizer;
 }

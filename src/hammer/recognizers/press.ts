@@ -1,7 +1,16 @@
-import hammer = require('../hammer');
-import utils = require('../utils');
+import {
+IComputedEvent,
+INPUT_START,
+INPUT_CANCEL,
+INPUT_END,
+Recognizer,
+STATE_RECOGNIZED,
+STATE_FAILED,
+TOUCH_ACTION_AUTO
+} from '../hammer';
+import {setTimeoutContext} from '../utils';
 
-export class PressRecognizer extends hammer.Recognizer {
+export class PressRecognizer extends Recognizer {
     private _timer;
     private _input;
     private pointers = 1;
@@ -21,10 +30,10 @@ export class PressRecognizer extends hammer.Recognizer {
     }
 
     getTouchAction(): string[] {
-        return [hammer.TOUCH_ACTION_AUTO];
+        return [TOUCH_ACTION_AUTO];
     }
 
-    process(input: hammer.IComputedEvent): number {
+    process(input: IComputedEvent): number {
         var validPointers = input.touchesLength === this.pointers;
         var validMovement = input.distance < this.threshold;
         var validTime = input.deltaTime > this.time;
@@ -33,20 +42,20 @@ export class PressRecognizer extends hammer.Recognizer {
 
         // we only allow little movement
         // and we've reached an end event, so a tap is possible
-        if (!validMovement || !validPointers || (input.eventType & (hammer.INPUT_END | hammer.INPUT_CANCEL) && !validTime)) {
+        if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
             this.reset();
         }
-        else if (input.eventType & hammer.INPUT_START) {
+        else if (input.eventType & INPUT_START) {
             this.reset();
-            this._timer = utils.setTimeoutContext(function() {
-                this.state = hammer.STATE_RECOGNIZED;
+            this._timer = setTimeoutContext(function() {
+                this.state = STATE_RECOGNIZED;
                 this.tryEmit();
             }, this.time, this);
         }
-        else if (input.eventType & hammer.INPUT_END) {
-            return hammer.STATE_RECOGNIZED;
+        else if (input.eventType & INPUT_END) {
+            return STATE_RECOGNIZED;
         }
-        return hammer.STATE_FAILED;
+        return STATE_FAILED;
     }
 
     reset(): void {
@@ -54,7 +63,7 @@ export class PressRecognizer extends hammer.Recognizer {
     }
 
     emit(): void {
-        if (this.state !== hammer.STATE_RECOGNIZED) {
+        if (this.state !== STATE_RECOGNIZED) {
             return;
         }
 

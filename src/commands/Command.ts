@@ -11,4 +11,4 @@ interface Command {
     scrollIntoView?: string;
 }
 
-export = Command;
+export default Command;

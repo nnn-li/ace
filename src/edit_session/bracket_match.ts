@@ -28,9 +28,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import TokenIterator = require("../TokenIterator");
-import TokenIteratorHost = require("../TokenIteratorHost");
-import ram = require("../range");
+import TokenIterator from "../TokenIterator";
+import TokenIteratorHost from "../TokenIteratorHost";
+import { Range } from "../range";
 
 /**
  * Contract to be provided
@@ -40,10 +40,10 @@ export interface BracketMatcherHost extends TokenIteratorHost {
 }
 
 export interface BracketMatcher {
-    findMatchingBracket(position: {row: number; column: number}, chr: string): {row: number; column: number};
-    getBracketRange(pos: {row: number; column: number}): ram.Range;
-    $findOpeningBracket(bracket: string, position: {row: number; column: number}, typeRe?: RegExp): {row: number; column: number};
-    $findClosingBracket(bracket: string, position: {row: number; column: number}, typeRe?: RegExp): {row: number; column: number};
+    findMatchingBracket(position: { row: number; column: number }, chr: string): { row: number; column: number };
+    getBracketRange(pos: { row: number; column: number }): ram.Range;
+    $findOpeningBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number };
+    $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number };
 }
 
 /**
@@ -67,10 +67,10 @@ export class BracketMatchService implements BracketMatcher {
         this.$host = host;
     }
 
-    findMatchingBracket(position: {row: number; column: number}, chr: string): {row: number; column: number} {
+    findMatchingBracket(position: { row: number; column: number }, chr: string): { row: number; column: number } {
         if (position.column === 0) return null;
 
-        var charBeforeCursor: string = chr || this.$host.getLine(position.row).charAt(position.column-1);
+        var charBeforeCursor: string = chr || this.$host.getLine(position.row).charAt(position.column - 1);
         if (charBeforeCursor === "") return null;
 
         var match = charBeforeCursor.match(/([\(\[\{])|([\)\]\}])/);
@@ -82,17 +82,17 @@ export class BracketMatchService implements BracketMatcher {
         else
             return this.$findOpeningBracket(match[2], position);
     }
-    
-    getBracketRange(pos: {row: number; column: number}): ram.Range {
+
+    getBracketRange(pos: { row: number; column: number }): ram.Range {
         var line = this.$host.getLine(pos.row);
         var before = true;
         var range: ram.Range;
 
-        var chr = line.charAt(pos.column-1);
+        var chr = line.charAt(pos.column - 1);
         var match = chr && chr.match(/([\(\[\{])|([\)\]\}])/);
         if (!match) {
             chr = line.charAt(pos.column);
-            pos = {row: pos.row, column: pos.column + 1};
+            pos = { row: pos.row, column: pos.column + 1 };
             match = chr && chr.match(/([\(\[\{])|([\)\]\}])/);
             before = false;
         }
@@ -120,12 +120,11 @@ export class BracketMatchService implements BracketMatcher {
             }
             range['cursor'] = range.start;
         }
-        
+
         return range;
     }
 
-    $findOpeningBracket(bracket: string, position: {row: number; column: number}, typeRe?: RegExp): {row: number; column: number}
-    {
+    $findOpeningBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
         var openBracket = this.$brackets[bracket];
         var depth = 1;
 
@@ -135,25 +134,25 @@ export class BracketMatchService implements BracketMatcher {
             token = iterator.stepForward();
         if (!token)
             return;
-        
-        if (!typeRe)
-        {
+
+        if (!typeRe) {
             typeRe = new RegExp("(\\.?" + token.type.replace(".", "\\.").replace("rparen", ".paren").replace(/\b(?:end|start|begin)\b/, "") + ")+");
         }
         
         // Start searching in token, just before the character at position.column
         var valueIndex = position.column - iterator.getCurrentTokenColumn() - 2;
         var value = token.value;
-        
-        while (true)
-        {
+
+        while (true) {
             while (valueIndex >= 0) {
                 var chr = value.charAt(valueIndex);
                 if (chr == openBracket) {
                     depth -= 1;
                     if (depth === 0) {
-                        return {row: iterator.getCurrentTokenRow(),
-                            column: valueIndex + iterator.getCurrentTokenColumn()};
+                        return {
+                            row: iterator.getCurrentTokenRow(),
+                            column: valueIndex + iterator.getCurrentTokenColumn()
+                        };
                     }
                 }
                 else if (chr === bracket) {
@@ -170,16 +169,15 @@ export class BracketMatchService implements BracketMatcher {
 
             if (token === null)
                 break;
-                
+
             value = token.value;
             valueIndex = value.length - 1;
         }
-        
+
         return null;
     }
 
-    $findClosingBracket(bracket: string, position: {row: number; column: number}, typeRe?: RegExp): {row: number; column: number}
-    {
+    $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
         var closingBracket = this.$brackets[bracket];
         var depth = 1;
 
@@ -191,8 +189,7 @@ export class BracketMatchService implements BracketMatcher {
         if (!token)
             return;
 
-        if (!typeRe)
-        {
+        if (!typeRe) {
             typeRe = new RegExp("(\\.?" + token.type.replace(".", "\\.").replace("lparen", ".paren").replace(/\b(?:end|start|begin)\b/, "") + ")+");
         }
 
@@ -208,8 +205,10 @@ export class BracketMatchService implements BracketMatcher {
                 if (chr == closingBracket) {
                     depth -= 1;
                     if (depth === 0) {
-                        return {row: iterator.getCurrentTokenRow(),
-                            column: valueIndex + iterator.getCurrentTokenColumn()};
+                        return {
+                            row: iterator.getCurrentTokenRow(),
+                            column: valueIndex + iterator.getCurrentTokenColumn()
+                        };
                     }
                 }
                 else if (chr === bracket) {
@@ -229,7 +228,7 @@ export class BracketMatchService implements BracketMatcher {
 
             valueIndex = 0;
         }
-        
+
         return null;
     }
 }

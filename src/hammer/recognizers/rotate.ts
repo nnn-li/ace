@@ -1,6 +1,5 @@
-import attribute = require('./attribute');
-import hammer = require('../hammer');
-import utils = require('../utils');
+import {ContinuousRecognizer} from './attribute';
+import {IComputedEvent, STATE_BEGAN, TOUCH_ACTION_NONE} from '../hammer';
 
 /**
  * Rotate
@@ -8,19 +7,19 @@ import utils = require('../utils');
  * @constructor
  * @extends ContinuousRecognizer
  */
-export class RotateRecognizer extends attribute.ContinuousRecognizer {
+export class RotateRecognizer extends ContinuousRecognizer {
 
-  private threshold = 0;
+    private threshold = 0;
 
-  constructor(eventName: string, enabled: boolean) {
-    super(eventName, enabled, 2);
-  }
+    constructor(eventName: string, enabled: boolean) {
+        super(eventName, enabled, 2);
+    }
 
-  getTouchAction(): string[] {
-    return [hammer.TOUCH_ACTION_NONE];
-  }
+    getTouchAction(): string[] {
+        return [TOUCH_ACTION_NONE];
+    }
 
-  attributeTest(input: hammer.IComputedEvent): boolean {
-    return super.attributeTest(input) && (Math.abs(input.rotation) > this.threshold || (this.state & hammer.STATE_BEGAN) > 0);
-  }
+    attributeTest(input: IComputedEvent): boolean {
+        return super.attributeTest(input) && (Math.abs(input.rotation) > this.threshold || (this.state & STATE_BEGAN) > 0);
+    }
 }
