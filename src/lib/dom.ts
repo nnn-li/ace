@@ -148,10 +148,7 @@ export function importCssStylsheet(uri: string, doc?: Document) {
 
     getDocumentHead(doc).appendChild(link);
 }
-
-// FIXME: This seems kinda hacky.
-declare var exports: any;
-
+/*
 export function getInnerWidth(element: HTMLElement): number {
     return (
         parseInt(exports.computedStyle(element, "paddingLeft"), 10) +
@@ -159,7 +156,8 @@ export function getInnerWidth(element: HTMLElement): number {
         element.clientWidth
     );
 }
-
+*/
+/*
 export function getInnerHeight(element: HTMLElement): number {
     return (
         parseInt(exports.computedStyle(element, "paddingTop"), 10) +
@@ -167,7 +165,8 @@ export function getInnerHeight(element: HTMLElement): number {
         element.clientHeight
     );
 }
-
+*/
+/*
 if (window.pageYOffset !== undefined) {
     exports.getPageScrollTop = function() {
         return window.pageYOffset;
@@ -186,7 +185,7 @@ else {
         return document.body.scrollLeft;
     };
 }
-
+*/
 function makeComputedStyle(): (element: HTMLElement, style?: string) => any {
     if (window.getComputedStyle) {
         return function(element: HTMLElement, style?: string): any {
@@ -207,7 +206,8 @@ function makeComputedStyle(): (element: HTMLElement, style?: string) => any {
 }
 
 export var computedStyle = makeComputedStyle();
-
+// FIXME
+/*
 if (window.getComputedStyle)
     exports.computedStyle = function(element, style): any {
         if (style)
@@ -220,7 +220,7 @@ else
             return element.currentStyle[style];
         return element.currentStyle;
     };
-
+*/
 export function scrollbarWidth(document) {
     var inner: any = createElement("ace_inner");
     inner.style.width = "100%";
