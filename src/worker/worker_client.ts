@@ -47,8 +47,16 @@ export class WorkerClient extends EventEmitterClass {
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
         this.changeListener = this.changeListener.bind(this);
         this.onMessage = this.onMessage.bind(this);
-    
+
+        // FIXME: We need to populate this
+        /**
+         *
+         */
+        var tlns: { [ns: string]: string } = {};
+
         // nameToUrl is renamed to toUrl in requirejs 2
+        // FIXME: Get this working again without AMD.
+        /*
         if (require['nameToUrl'] && !require.toUrl) {
             require.toUrl = require['nameToUrl'];
         }
@@ -66,6 +74,7 @@ export class WorkerClient extends EventEmitterClass {
                 tlns[ns] = normalizePath(require.toUrl(ns).replace(/(\.js)?(\?.*)?$/, ""));
             });
         }
+        */
 
         try {
             this.$worker = new Worker(workerUrl);

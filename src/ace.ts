@@ -34,29 +34,29 @@
  * @class Ace
  **/
 
-require("./lib/fixoldbrowsers");
+//require("./lib/fixoldbrowsers");
 
-import dom = require("./lib/dom");
-import event = require("./lib/event");
+import {getInnerText} from "./lib/dom";
+import {addListener, removeListener} from "./lib/event";
 
-import triton = require('./triton');
-import Editor = require("./Editor");
-import esm = require("./edit_session");
-import undo = require("./undomanager");
-import vrm = require("./virtual_renderer");
-import wsm = require("./workspace/workspace");
-import cfg = require('./config');
+import {wrap} from './triton';
+import Editor from "./Editor";
+import {} from "./edit_session";
+import {} from "./undomanager";
+import {VirtualRenderer} from "./virtual_renderer";
+import {workspace, Workspace} from "./workspace/workspace";
+import {} from './config';
 
 // The following require()s are for inclusion in the built ace file
-require("./worker/worker_client");
-require("./keyboard/hash_handler");
-require("./placeholder");
-require("./multi_select");
-require("./mode/folding/fold_mode");
-require("./theme/textmate");
-require("./ext/error_marker");
+//require("./worker/worker_client");
+//require("./keyboard/hash_handler");
+//require("./placeholder");
+//require("./multi_select");
+//require("./mode/folding/fold_mode");
+//require("./theme/textmate");
+//require("./ext/error_marker");
 
-export var config = cfg;
+// export var config = cfg;
 
 /**
  * Provides access to require in packed noconflict mode
@@ -70,7 +70,7 @@ export var config = cfg;
  * Embeds the Ace editor into the DOM, at the element provided by `el`.
  * @param {String | DOMElement} el Either the id of an element, or the element itself
  */
-export function edit(source: any, workspace: wsm.Workspace) {
+export function edit(source: any, workspace: Workspace) {
     var element: HTMLElement;
     if (typeof source === 'string') {
         var id: string = source;
@@ -95,13 +95,13 @@ export function edit(source: any, workspace: wsm.Workspace) {
         oldNode.parentNode.replaceChild(element, oldNode);
     }
     else {
-        value = dom.getInnerText(element);
+        value = getInnerText(element);
         element.innerHTML = '';
     }
 
     var editSession = createEditSession(value);
 
-    var editor = new Editor(new vrm.VirtualRenderer(element));
+    var editor = new Editor(new VirtualRenderer(element));
     editor.setSession(editSession);
 
     // FIXME: The first property is incorrectly named.
@@ -112,20 +112,20 @@ export function edit(source: any, workspace: wsm.Workspace) {
     };
 
     if (oldNode) env['textarea'] = oldNode;
-    event.addListener(window, "resize", env.onResize);
+    addListener(window, "resize", env.onResize);
     editor.on("destroy", function() {
-        event.removeListener(window, "resize", env.onResize);
+        removeListener(window, "resize", env.onResize);
         env.editor.container['env'] = null; // prevent memory leak on old ie
     });
     editor.container['env'] = editor['env'] = env;
-    return triton.wrap(editor, element, workspace, document);
+    return wrap(editor, element, workspace, document);
 };
 
 /**
  * Functional constructor for creating a new Workspace.
  */
 export function workspace() {
-    return wsm.workspace();
+    return workspace();
 };
 
 /**
@@ -135,11 +135,11 @@ export function workspace() {
  * 
  **/
 export function createEditSession(text, mode?) {
-    var doc = new esm.EditSession(text, mode);
-    doc.setUndoManager(new undo.UndoManager());
+    var doc = new EditSession(text, mode);
+    doc.setUndoManager(new UndoManager());
     return doc;
 };
 
-export var EditSession = esm.EditSession;
+export var EditSession = EditSession;
 
-export var UndoManager = undo.UndoManager;
+export var UndoManager = UndoManager;

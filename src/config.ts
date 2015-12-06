@@ -136,7 +136,8 @@ export function loadModule(moduleName, onLoad: (m: any) => any) {
     }
 
     try {
-        module = require(moduleName);
+        // FIXME: What does this do?
+        // module = require(moduleName);
     }
     catch (e) { }
     // require(moduleName) can return empty object if called after require([moduleName], callback)
@@ -153,18 +154,21 @@ export function loadModule(moduleName, onLoad: (m: any) => any) {
         return;
 
     var afterLoad = function() {
+        // FIXME: Re-instate
+        /*
         require([moduleName], function(module) {
             exports._emit("load.module", { name: moduleName, module: module });
-            /**
-             * A local copy of all the listeners who want to hear when the module has loaded.
-             * We make a local copy because we are going to clear the entry for the module.
-             */
+            //
+            // A local copy of all the listeners who want to hear when the module has loaded.
+            // We make a local copy because we are going to clear the entry for the module.
+            //
             var listeners = $loading[moduleName];
             $loading[moduleName] = null;
             listeners.forEach(function(onLoad) {
                 onLoad && onLoad(module);
             });
         });
+        */
     };
 
     // What is this special name?
@@ -183,7 +187,8 @@ declare var module: any;
  * Who calls this function?
  */
 export function init(packaged: boolean) {
-    options.packaged = packaged || require['packaged'] || module.packaged || (global.define && define['packaged']);
+    // FIXME: Restore require of 'packaged' and define.
+    options.packaged = packaged /*|| require['packaged']*/ || module.packaged /*|| (global.define && define['packaged'])*/;
 
     if (!global.document)
         return "";

@@ -39,6 +39,7 @@
 
     "./src/layer/font_metrics.ts",
 
+    "./src/ace.ts",
     "./src/anchor.ts",
     "./src/background_tokenizer.ts",
     "./src/edit_session.ts",
