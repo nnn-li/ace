@@ -30,29 +30,29 @@
 
 //require("./lib/fixoldbrowsers");
 
-import oop = require("./lib/oop");
-import dom = require("./lib/dom");
-import lang = require("./lib/lang");
-import userAgent = require("./lib/useragent");
-import gum = require("./layer/gutter");
-import TextInput = require("./keyboard/textinput");
-import KeyBinding = require("./keyboard/keybinding");
-import esm = require("./edit_session");
-import Search = require("./search");
-import rng = require("./range");
-import CursorRange = require('./CursorRange')
-import eve = require("./lib/event_emitter");
-import CommandManager = require("./commands/CommandManager");
-import defaultCommands = require("./commands/default_commands");
-import config = require("./config");
-import TokenIterator = require("./TokenIterator");
-import protocol = require('./editor_protocol');
-import vrm = require('./virtual_renderer');
-import acm = require("./autocomplete");
-import sem = require('./selection');
-import event = require("./lib/event");
-import touch = require('./touch/touch');
-import ttm = require("./tooltip");
+import {mixin} from "./lib/oop";
+import {computedStyle, hasCssClass, setCssClass} from "./lib/dom";
+import {delayedCall, stringRepeat} from "./lib/lang";
+import {isIE, isMac, isMobile, isOldIE, isWebKit} from "./lib/useragent";
+import {Gutter} from "./layer/gutter";
+import TextInput from "./keyboard/textinput";
+import KeyBinding from "./keyboard/keybinding";
+import {EditSession} from "./edit_session";
+import Search from "./search";
+import {Range} from "./range";
+import CursorRange from './CursorRange'
+import {EventEmitterClass} from "./lib/event_emitter";
+import CommandManager from "./commands/CommandManager";
+import defaultCommands from "./commands/default_commands";
+import {defineOptions, loadModule, resetOptions, _signal} from "./config";
+import TokenIterator from "./TokenIterator";
+import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
+import {VirtualRenderer} from './virtual_renderer';
+import {Completer} from "./autocomplete";
+import {Selection} from './selection';
+import {addListener, addMouseWheelListener, addMultiMouseDownListener, capture, getButton, preventDefault, stopEvent, stopPropagation} from "./lib/event";
+import {touchManager} from './touch/touch';
+import {Tooltip} from "./tooltip";
 
 //var DragdropHandler = require("./mouse/dragdrop_handler").DragdropHandler;
 
@@ -74,19 +74,19 @@ import ttm = require("./tooltip");
  *
  * @constructor
  */
-class Editor extends eve.EventEmitterClass {
-    public renderer: vrm.VirtualRenderer;
-    public session: esm.EditSession;
+export default class Editor extends EventEmitterClass {
+    public renderer: VirtualRenderer;
+    public session: EditSession;
     private $touchHandler: IGestureHandler;
     private $mouseHandler: IGestureHandler;
     public getOption;
     public setOption;
     public setOptions;
     public $isFocused;
-    public commands = new CommandManager(userAgent.isMac ? "mac" : "win", defaultCommands);
+    public commands = new CommandManager(isMac ? "mac" : "win", defaultCommands);
     public keyBinding;
     // FIXME: This is really an optional extension and so does not belong here.
-    public completers: acm.Completer[];
+    public completers: Completer[];
 
     /**
      * The renderer container element.
@@ -136,7 +136,7 @@ class Editor extends eve.EventEmitterClass {
     private $onSelectionChange;
     public exitMultiSelectMode;
     public forEachSelection;
-    constructor(renderer: vrm.VirtualRenderer, session?: esm.EditSession) {
+    constructor(renderer: VirtualRenderer, session?: EditSession) {
         super();
         this.container = renderer.getContainerElement();
         this.renderer = renderer;
@@ -145,12 +145,12 @@ class Editor extends eve.EventEmitterClass {
         this.renderer.textarea = this.textInput.getElement();
         this.keyBinding = new KeyBinding(this);
 
-        if (userAgent.isMobile) {
-            this.$touchHandler = touch.touchManager(this);
+        if (isMobile) {
+            this.$touchHandler = touchManager(this);
             this.$mouseHandler = new MouseHandler(this);
         }
         else {
-            this.$touchHandler = touch.touchManager(this);
+            this.$touchHandler = touchManager(this);
             this.$mouseHandler = new MouseHandler(this);
         }
 
@@ -166,7 +166,7 @@ class Editor extends eve.EventEmitterClass {
 
         this.$initOperationListeners();
 
-        this._$emitInputEvent = lang.delayedCall(function() {
+        this._$emitInputEvent = delayedCall(function() {
             this._signal("input", {});
             this.session.bgTokenizer && this.session.bgTokenizer.scheduleStart();
         }.bind(this));
@@ -175,16 +175,16 @@ class Editor extends eve.EventEmitterClass {
             _self._$emitInputEvent.schedule(31);
         });
 
-        this.setSession(session || new esm.EditSession(""));
-        config.resetOptions(this);
-        config._signal("editor", this);
+        this.setSession(session || new EditSession(""));
+        resetOptions(this);
+        _signal("editor", this);
     }
 
     cancelMouseContextMenu() {
         this.$mouseHandler.cancelContextMenu();
     }
 
-    get selection(): sem.Selection {
+    get selection(): Selection {
         return this.session.getSelection();
     }
 
@@ -217,7 +217,7 @@ class Editor extends eve.EventEmitterClass {
             this.endOperation(e);
         }.bind(this), true);
 
-        this.$opResetTimer = lang.delayedCall(this.endOperation.bind(this));
+        this.$opResetTimer = delayedCall(this.endOperation.bind(this));
 
         this.on("change", function() {
             this.curOp || this.startOperation();
@@ -335,7 +335,7 @@ class Editor extends eve.EventEmitterClass {
         else if (typeof keyboardHandler === "string") {
             this.$keybindingId = keyboardHandler;
             var _self = this;
-            config.loadModule(["keybinding", keyboardHandler], function(module) {
+            loadModule(["keybinding", keyboardHandler], function(module) {
                 if (_self.$keybindingId == keyboardHandler)
                     _self.keyBinding.setKeyboardHandler(module && module.handler);
             });
@@ -518,7 +518,7 @@ class Editor extends eve.EventEmitterClass {
      * Returns the currently highlighted selection.
      * @returns {String} The highlighted selection
      **/
-    getSelection(): sem.Selection {
+    getSelection(): Selection {
         return this.selection;
     }
 
@@ -572,7 +572,7 @@ class Editor extends eve.EventEmitterClass {
      * Gets the current font size of the editor text.
      */
     getFontSize(): string {
-        return this.getOption("fontSize") || dom.computedStyle(this.container, "fontSize");
+        return this.getOption("fontSize") || computedStyle(this.container, "fontSize");
     }
 
     /**
@@ -603,9 +603,9 @@ class Editor extends eve.EventEmitterClass {
 
             var pos = self.session.findMatchingBracket(self.getCursorPosition());
             if (pos) {
-                var range = new rng.Range(pos.row, pos.column, pos.row, pos.column + 1);
+                var range = new Range(pos.row, pos.column, pos.row, pos.column + 1);
             } else if (self.session.$mode.getMatching) {
-                var range: rng.Range = self.session.$mode.getMatching(self.session);
+                var range: Range = self.session.$mode.getMatching(self.session);
             }
             if (range)
                 self.session.$bracketHighlight = self.session.addMarker(range, "ace_bracket", "text");
@@ -682,7 +682,7 @@ class Editor extends eve.EventEmitterClass {
 
             var row = iterator.getCurrentTokenRow();
             var column = iterator.getCurrentTokenColumn();
-            var range = new rng.Range(row, column, row, column + token.value.length);
+            var range = new Range(row, column, row, column + token.value.length);
 
             //remove range if different
             if (session.$tagHighlight && range.compareRange(session.$backMarkers[session.$tagHighlight].range) !== 0) {
@@ -777,7 +777,7 @@ class Editor extends eve.EventEmitterClass {
         else
             lastRow = Infinity;
 
-        var r: vrm.VirtualRenderer = this.renderer;
+        var r: VirtualRenderer = this.renderer;
         r.updateLines(range.start.row, lastRow, this.session.$useWrapMode);
 
         this._signal("change", e);
@@ -834,7 +834,7 @@ class Editor extends eve.EventEmitterClass {
             session.$highlightLineMarker = null;
         }
         else if (!session.$highlightLineMarker && highlight) {
-            var range: any = new rng.Range(highlight.row, highlight.column, highlight.row, Infinity);
+            var range: any = new Range(highlight.row, highlight.column, highlight.row, Infinity);
             range.id = session.addMarker(range, "ace_active-line", "screenLine");
             session.$highlightLineMarker = range;
         }
@@ -1042,7 +1042,7 @@ class Editor extends eve.EventEmitterClass {
             this.clearSelection();
         }
         else if (this.session.getOverwrite()) {
-            var range = rng.Range.fromPoints(cursor, cursor);
+            var range = Range.fromPoints(cursor, cursor);
             range.end.column += text.length;
             this.session.remove(range);
         }
@@ -1065,11 +1065,11 @@ class Editor extends eve.EventEmitterClass {
         if (transform && transform.selection) {
             if (transform.selection.length == 2) { // Transform relative to the current column
                 this.selection.setSelectionRange(
-                    new rng.Range(cursor.row, start + transform.selection[0],
+                    new Range(cursor.row, start + transform.selection[0],
                         cursor.row, start + transform.selection[1]));
             } else { // Transform relative to the current row.
                 this.selection.setSelectionRange(
-                    new rng.Range(cursor.row + transform.selection[0],
+                    new Range(cursor.row + transform.selection[0],
                         transform.selection[1],
                         cursor.row + transform.selection[2],
                         transform.selection[3]));
@@ -1089,7 +1089,7 @@ class Editor extends eve.EventEmitterClass {
         this.keyBinding.onTextInput(text);
         // TODO: This should be pluggable.
         if (text === '.') {
-            this.commands.exec(protocol.COMMAND_NAME_AUTO_COMPLETE);
+            this.commands.exec(COMMAND_NAME_AUTO_COMPLETE);
         }
         else if (this.getSession().getDocument().isNewLine(text)) {
             var lineNumber = this.getCursorPosition().row;
@@ -1491,11 +1491,11 @@ class Editor extends eve.EventEmitterClass {
         var swap, range;
         if (column < line.length) {
             swap = line.charAt(column) + line.charAt(column - 1);
-            range = new rng.Range(cursor.row, column - 1, cursor.row, column + 1);
+            range = new Range(cursor.row, column - 1, cursor.row, column + 1);
         }
         else {
             swap = line.charAt(column - 1) + line.charAt(column - 2);
-            range = new rng.Range(cursor.row, column - 2, cursor.row, column);
+            range = new Range(cursor.row, column - 2, cursor.row, column);
         }
         this.session.replace(range, swap);
     }
@@ -1559,7 +1559,7 @@ class Editor extends eve.EventEmitterClass {
 
         if (this.session.getUseSoftTabs()) {
             var count = (size - column % size);
-            var indentString = lang.stringRepeat(" ", count);
+            var indentString = stringRepeat(" ", count);
         } else {
             var count = column % size;
             while (line[range.start.column] == " " && count) {
@@ -1605,7 +1605,7 @@ class Editor extends eve.EventEmitterClass {
             return 0;
         });
 
-        var deleteRange = new rng.Range(0, 0, 0, 0);
+        var deleteRange = new Range(0, 0, 0, 0);
         for (var i = rows.first; i <= rows.last; i++) {
             var line = session.getLine(i);
             deleteRange.start.row = i;
@@ -1663,7 +1663,7 @@ class Editor extends eve.EventEmitterClass {
         var column = this.selection.getCursor().column;
 
         // get the char before the cursor
-        var charRange = new rng.Range(row, column - 1, row, column);
+        var charRange = new Range(row, column - 1, row, column);
 
         var c = parseFloat(this.session.getTextRange(charRange));
         // if the char is a digit
@@ -1690,7 +1690,7 @@ class Editor extends eve.EventEmitterClass {
                 var nnr = t.toFixed(decimals);
 
                 //update number
-                var replaceRange = new rng.Range(row, nr.start, row, nr.end);
+                var replaceRange = new Range(row, nr.start, row, nr.end);
                 this.session.replace(replaceRange, nnr);
 
                 //reposition the cursor
@@ -1708,9 +1708,9 @@ class Editor extends eve.EventEmitterClass {
         var rows = this.$getSelectedRows();
         var range;
         if (rows.first === 0 || rows.last + 1 < this.session.getLength())
-            range = new rng.Range(rows.first, 0, rows.last + 1, 0);
+            range = new Range(rows.first, 0, rows.last + 1, 0);
         else
-            range = new rng.Range(
+            range = new Range(
                 rows.first - 1, this.session.getLine(rows.first - 1).length,
                 rows.last, this.session.getLine(rows.last).length
             );
@@ -2054,7 +2054,7 @@ class Editor extends eve.EventEmitterClass {
      * @returns {Range}
      * @related Selection.getRange
      **/
-    getSelectionRange(): rng.Range {
+    getSelectionRange(): Range {
         return this.selection.getRange();
     }
 
@@ -2190,11 +2190,11 @@ class Editor extends eve.EventEmitterClass {
             return;
         }
 
-        var range: rng.Range;
+        var range: Range;
         if (matchType === 'bracket') {
             range = this.session.getBracketRange(cursor);
             if (!range) {
-                range = new rng.Range(
+                range = new Range(
                     iterator.getCurrentTokenRow(),
                     iterator.getCurrentTokenColumn() + i - 1,
                     iterator.getCurrentTokenRow(),
@@ -2212,7 +2212,7 @@ class Editor extends eve.EventEmitterClass {
             else
                 return;
 
-            var range = new rng.Range(
+            var range = new Range(
                 iterator.getCurrentTokenRow(),
                 iterator.getCurrentTokenColumn() - 2,
                 iterator.getCurrentTokenRow(),
@@ -2520,7 +2520,7 @@ class Editor extends eve.EventEmitterClass {
         if (typeof needle == "string" || needle instanceof RegExp)
             options.needle = needle;
         else if (typeof needle == "object")
-            oop.mixin(options, needle);
+            mixin(options, needle);
 
         var range = this.selection.getRange();
         if (options.needle == null) {
@@ -2686,13 +2686,11 @@ class Editor extends eve.EventEmitterClass {
             return;
         cursorLayer.setSmoothBlinking(/smooth/.test(style));
         cursorLayer.isBlinking = !this.$readOnly && style != "wide";
-        dom.setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
+        setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
     }
 }
 
-export = Editor;
-
-config.defineOptions(Editor.prototype, "editor", {
+defineOptions(Editor.prototype, "editor", {
     selectionStyle: {
         set: function(style) {
             this.onSelectionChange();
@@ -2859,7 +2857,7 @@ class MouseHandler {
     public mousedownEvent: EditorMouseEvent;
     private $mouseMoved;
     private $onCaptureMouseMove;
-    public $clickSelection: rng.Range = null;
+    public $clickSelection: Range = null;
     public $lastScrollTime: number;
     public selectByLines: () => void;
     public selectByWords: () => void;
@@ -2890,33 +2888,33 @@ class MouseHandler {
         };
 
         var mouseTarget: HTMLDivElement = editor.renderer.getMouseEventTarget();
-        event.addListener(mouseTarget, "click", this.onMouseEvent.bind(this, "click"));
-        event.addListener(mouseTarget, "mousemove", this.onMouseMove.bind(this, "mousemove"));
-        event.addMultiMouseDownListener(mouseTarget, [400, 300, 250], this, "onMouseEvent");
+        addListener(mouseTarget, "click", this.onMouseEvent.bind(this, "click"));
+        addListener(mouseTarget, "mousemove", this.onMouseMove.bind(this, "mousemove"));
+        addMultiMouseDownListener(mouseTarget, [400, 300, 250], this, "onMouseEvent");
         if (editor.renderer.scrollBarV) {
-            event.addMultiMouseDownListener(editor.renderer.scrollBarV.inner, [400, 300, 250], this, "onMouseEvent");
-            event.addMultiMouseDownListener(editor.renderer.scrollBarH.inner, [400, 300, 250], this, "onMouseEvent");
-            if (userAgent.isIE) {
-                event.addListener(editor.renderer.scrollBarV.element, "mousedown", onMouseDown);
+            addMultiMouseDownListener(editor.renderer.scrollBarV.inner, [400, 300, 250], this, "onMouseEvent");
+            addMultiMouseDownListener(editor.renderer.scrollBarH.inner, [400, 300, 250], this, "onMouseEvent");
+            if (isIE) {
+                addListener(editor.renderer.scrollBarV.element, "mousedown", onMouseDown);
                 // TODO: I wonder if we should be responding to mousedown (by symmetry)?
-                event.addListener(editor.renderer.scrollBarH.element, "mousemove", onMouseDown);
+                addListener(editor.renderer.scrollBarH.element, "mousemove", onMouseDown);
             }
         }
 
         // We hook 'mousewheel' using the portable 
-        event.addMouseWheelListener(editor.container, this.emitEditorMouseWheelEvent.bind(this, "mousewheel"));
+        addMouseWheelListener(editor.container, this.emitEditorMouseWheelEvent.bind(this, "mousewheel"));
 
         var gutterEl = editor.renderer.$gutter;
-        event.addListener(gutterEl, "mousedown", this.onMouseEvent.bind(this, "guttermousedown"));
-        event.addListener(gutterEl, "click", this.onMouseEvent.bind(this, "gutterclick"));
-        event.addListener(gutterEl, "dblclick", this.onMouseEvent.bind(this, "gutterdblclick"));
-        event.addListener(gutterEl, "mousemove", this.onMouseEvent.bind(this, "guttermousemove"));
+        addListener(gutterEl, "mousedown", this.onMouseEvent.bind(this, "guttermousedown"));
+        addListener(gutterEl, "click", this.onMouseEvent.bind(this, "gutterclick"));
+        addListener(gutterEl, "dblclick", this.onMouseEvent.bind(this, "gutterdblclick"));
+        addListener(gutterEl, "mousemove", this.onMouseEvent.bind(this, "guttermousemove"));
 
-        event.addListener(mouseTarget, "mousedown", onMouseDown);
+        addListener(mouseTarget, "mousedown", onMouseDown);
 
-        event.addListener(gutterEl, "mousedown", function(e) {
+        addListener(gutterEl, "mousedown", function(e) {
             editor.focus();
-            return event.preventDefault(e);
+            return preventDefault(e);
         });
 
         // Handle `mousemove` while the mouse is over the editing area (and not the gutter).
@@ -2985,7 +2983,7 @@ class MouseHandler {
                 if (!mouseEvent) return;
                 // if editor is loaded inside iframe, and mouseup event is outside
                 // we won't recieve it, so we cancel on first mousemove without button
-                if (userAgent.isWebKit && !mouseEvent.which && mouseHandler.releaseMouse) {
+                if (isWebKit && !mouseEvent.which && mouseHandler.releaseMouse) {
                     // TODO: For backwards compatibility I'm passing undefined,
                     // but it would probably make more sense to pass the mouse event
                     // since that is the final event.
@@ -3023,12 +3021,12 @@ class MouseHandler {
             }
         })(this);
 
-        if (userAgent.isOldIE && ev.domEvent.type == "dblclick") {
+        if (isOldIE && ev.domEvent.type == "dblclick") {
             return setTimeout(function() { onCaptureEnd(ev); });
         }
 
         this.$onCaptureMouseMove = onMouseMove;
-        this.releaseMouse = event.capture(this.editor.container, onMouseMove, onCaptureEnd);
+        this.releaseMouse = capture(this.editor.container, onMouseMove, onCaptureEnd);
         var timerId = setInterval(onCaptureInterval, 20);
     }
 
@@ -3039,7 +3037,7 @@ class MouseHandler {
             }
             this.editor.off("nativecontextmenu", stop);
             if (e && e.domEvent) {
-                event.stopEvent(e.domEvent);
+                stopEvent(e.domEvent);
             }
         }.bind(this);
         setTimeout(stop, 10);
@@ -3123,9 +3121,9 @@ class MouseHandler {
 
 }
 
-config.defineOptions(MouseHandler.prototype, "mouseHandler", {
+defineOptions(MouseHandler.prototype, "mouseHandler", {
     scrollSpeed: { initialValue: 2 },
-    dragDelay: { initialValue: (userAgent.isMac ? 150 : 0) },
+    dragDelay: { initialValue: (isMac ? 150 : 0) },
     dragEnabled: { initialValue: true },
     focusTimout: { initialValue: 0 },
     tooltipFollowsMouse: { initialValue: true }
@@ -3168,12 +3166,12 @@ class EditorMouseEvent {
     }
 
     stopPropagation() {
-        event.stopPropagation(this.domEvent);
+        stopPropagation(this.domEvent);
         this.propagationStopped = true;
     }
 
     preventDefault() {
-        event.preventDefault(this.domEvent);
+        preventDefault(this.domEvent);
         this.defaultPrevented = true;
     }
 
@@ -3223,7 +3221,7 @@ class EditorMouseEvent {
      * @return {Number} 0 for left button, 1 for middle button, 2 for right button
      */
     getButton() {
-        return event.getButton(this.domEvent);
+        return getButton(this.domEvent);
     }
     
     /*
@@ -3233,7 +3231,7 @@ class EditorMouseEvent {
         return this.domEvent.shiftKey;
     }
 
-    getAccelKey = userAgent.isMac ? function() { return this.domEvent.metaKey; } : function() { return this.domEvent.ctrlKey; };
+    getAccelKey = isMac ? function() { return this.domEvent.metaKey; } : function() { return this.domEvent.ctrlKey; };
 }
 
 var DRAG_OFFSET = 0; // pixels
@@ -3388,7 +3386,7 @@ function calcDistance(ax: number, ay: number, bx: number, by: number) {
     return Math.sqrt(Math.pow(bx - ax, 2) + Math.pow(by - ay, 2));
 }
 
-function calcRangeOrientation(range: rng.Range, cursor: { row: number; column: number }): { cursor: { row: number; column: number }; anchor: { row: number; column: number } } {
+function calcRangeOrientation(range: Range, cursor: { row: number; column: number }): { cursor: { row: number; column: number }; anchor: { row: number; column: number } } {
     if (range.start.row == range.end.row) {
         var cmp = 2 * cursor.column - range.start.column - range.end.column;
     }
@@ -3410,7 +3408,7 @@ function calcRangeOrientation(range: rng.Range, cursor: { row: number; column: n
 class GutterHandler {
     constructor(mouseHandler: MouseHandler) {
         var editor: Editor = mouseHandler.editor;
-        var gutter: gum.Gutter = editor.renderer.$gutterLayer;
+        var gutter: Gutter = editor.renderer.$gutterLayer;
         var tooltip = new GutterTooltip(editor.container);
 
         mouseHandler.editor.setDefaultHandler("guttermousedown", function(e: EditorMouseEvent) {
@@ -3505,7 +3503,7 @@ class GutterHandler {
         mouseHandler.editor.setDefaultHandler("guttermousemove", function(e: EditorMouseEvent) {
             // FIXME: Obfuscating the type of target to thwart compiler.
             var target: any = e.domEvent.target || e.domEvent.srcElement;
-            if (dom.hasCssClass(target, "ace_fold-widget")) {
+            if (hasCssClass(target, "ace_fold-widget")) {
                 return hideTooltip();
             }
 
@@ -3526,7 +3524,7 @@ class GutterHandler {
             }, 50);
         });
 
-        event.addListener(editor.renderer.$gutter, "mouseout", function(e: MouseEvent) {
+        addListener(editor.renderer.$gutter, "mouseout", function(e: MouseEvent) {
             mouseEvent = null;
             if (!tooltipAnnotation || tooltipTimeout)
                 return;
@@ -3545,7 +3543,7 @@ class GutterHandler {
  * @class GutterTooltip
  * @extends Tooltip
  */
-class GutterTooltip extends ttm.Tooltip {
+class GutterTooltip extends Tooltip {
     constructor(parentNode: HTMLElement) {
         super(parentNode);
     }

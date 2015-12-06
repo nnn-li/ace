@@ -28,10 +28,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import lang = require("./lib/lang");
-import oop = require("./lib/oop");
-import net = require("./lib/net");
-import eve = require('./lib/event_emitter');
+import {copyObject} from "./lib/lang";
+import {implement} from "./lib/oop";
+import {loadScript} from "./lib/net";
+import {EventEmitter} from './lib/event_emitter';
 
 var global = (function() {
     return this || typeof window !== 'undefined' && window;
@@ -63,21 +63,21 @@ export function set(key: string, value) {
 }
 
 export function all() {
-    return lang.copyObject(options);
+    return copyObject(options);
 }
 
 // module loading
 // FIXME: This is a lazy way of transferring functions from EventEmitter to config.
 // It breaks TypeScript analysis. Use the explicit approach as below, as needed.
 declare var exports: any;
-oop.implement(exports, eve.EventEmitter);
+implement(exports, EventEmitter);
 
 export function _emit(eventName: string, e?: any) {
-    return eve.EventEmitter._emit(eventName, e);
+    return EventEmitter._emit(eventName, e);
 }
 
 export function _signal(eventName: string, e?: any) {
-    return eve.EventEmitter._signal(eventName, e);
+    return EventEmitter._signal(eventName, e);
 }
 
 /**
@@ -173,7 +173,7 @@ export function loadModule(moduleName, onLoad: (m: any) => any) {
     }
 
     // Delegate the loading of the script but hook the notification.
-    net.loadScript(moduleUrl(moduleName, moduleType), afterLoad);
+    loadScript(moduleUrl(moduleName, moduleType), afterLoad);
 }
 
 
@@ -306,7 +306,7 @@ export function defineOptions(obj, path: string, options) {
     });
 
     // implement option provider interface
-    oop.implement(obj, optionsProvider);
+    implement(obj, optionsProvider);
 
     return this;
 }

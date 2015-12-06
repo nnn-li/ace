@@ -27,21 +27,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import oop = require('../lib/oop');
-import net = require('../lib/net');
-import dcm = require("../document");
-import eve = require('../lib/event_emitter');
-import config = require("../config");
+import {} from '../lib/oop';
+import {qualifyURL} from '../lib/net';
+import {Document} from "../document";
+import {EventEmitterClass} from '../lib/event_emitter';
+import {get, moduleUrl} from "../config";
 
 /**
  * WorkerClient manages the communication with a Web Worker.
  */
-export class WorkerClient extends eve.EventEmitterClass {
+export class WorkerClient extends EventEmitterClass {
     private $worker
     private deltaQueue;
     private callbacks = {};
     private callbackId: number = 1;
-    private $doc: dcm.Document;
+    private $doc: Document;
     constructor(topLevelNamespaces: string[], mod: string, classname: string, workerUrl?: string) {
         super();
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
@@ -53,8 +53,8 @@ export class WorkerClient extends eve.EventEmitterClass {
             require.toUrl = require['nameToUrl'];
         }
 
-        if (config.get("packaged") || !require.toUrl) {
-            workerUrl = workerUrl || config.moduleUrl(mod, "worker");
+        if (get("packaged") || !require.toUrl) {
+            workerUrl = workerUrl || moduleUrl(mod, "worker");
         }
         else {
             var normalizePath = this.$normalizePath;
@@ -115,7 +115,7 @@ export class WorkerClient extends eve.EventEmitterClass {
     }
 
     private $normalizePath(path: string): string {
-        return net.qualifyURL(path);
+        return qualifyURL(path);
     }
 
     terminate() {
@@ -150,7 +150,7 @@ export class WorkerClient extends eve.EventEmitterClass {
         }
     }
 
-    attachToDocument(doc: dcm.Document) {
+    attachToDocument(doc: Document) {
         if (this.$doc) {
             this.terminate();
         }
@@ -191,10 +191,11 @@ export class WorkerClient extends eve.EventEmitterClass {
     $workerBlob(workerUrl: string): Blob {
         // workerUrl can be protocol relative
         // importScripts only takes fully qualified urls
-        var script = "importScripts('" + net.qualifyURL(workerUrl) + "');";
+        var script = "importScripts('" + qualifyURL(workerUrl) + "');";
         try {
             return new Blob([script], { "type": "application/javascript" });
-        } catch (e) { // Backwards-compatibility
+        }
+        catch (e) { // Backwards-compatibility
             var BlobBuilder = window['BlobBuilder'] || window['WebKitBlobBuilder'] || window['MozBlobBuilder'];
             var blobBuilder = new BlobBuilder();
             blobBuilder.append(script);

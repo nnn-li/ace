@@ -33,8 +33,6 @@ For more information about SproutCore, visit http://www.sproutcore.com
 
 import { mixin } from './oop';
 
-declare var exports: any;
-
 /*
  * Helper functions and hashes for key handling.
  */
@@ -153,8 +151,6 @@ export var enter = Keys["return"];
 export var escape = Keys.esc;
 export var del = Keys["delete"];
 
-mixin(exports, Keys);
-
 export function keyCodeToString(keyCode) {
     // Language-switching keystroke in Chrome/Linux emits keyCode 0.
     var keyString = Keys[keyCode];
@@ -162,3 +158,5 @@ export function keyCodeToString(keyCode) {
         keyString = String.fromCharCode(keyCode);
     return keyString.toLowerCase();
 }
+
+export default Keys;

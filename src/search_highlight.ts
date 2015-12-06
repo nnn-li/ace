@@ -31,6 +31,7 @@
 import { getMatchOffsets } from "./lib/lang";
 import {} from "./lib/oop";
 import { Range } from "./range";
+import toScreenRange from './toScreenRange'
 
 // needed to prevent long lines from freezing the browser
 var MAX_RANGES = 500;
@@ -74,7 +75,7 @@ export class SearchHighlight {
 
             for (var j = ranges.length; j--;) {
                 markerLayer.drawSingleLineMarker(
-                    html, ranges[j].toScreenRange(session), this.clazz, config);
+                    html, toScreenRange(ranges[j], session), this.clazz, config);
             }
         }
     }

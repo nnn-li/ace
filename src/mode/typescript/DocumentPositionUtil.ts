@@ -1,4 +1,4 @@
-import dcm = require('../../document');
+import {Document} from '../../document';
 
 export function getLinesChars(lines: string[]): number {
     var count = 0;
@@ -9,11 +9,11 @@ export function getLinesChars(lines: string[]): number {
     return count;
 }
 
-export function getChars(doc: dcm.Document, pos: { row: number; column: number }): number {
+export function getChars(doc: Document, pos: { row: number; column: number }): number {
     return getLinesChars(doc.getLines(0, pos.row - 1)) + pos.column;
 };
 
-export function getPosition(doc: dcm.Document, chars: number): { row: number; column: number } {
+export function getPosition(doc: Document, chars: number): { row: number; column: number } {
     var i;
     var line: string;
 

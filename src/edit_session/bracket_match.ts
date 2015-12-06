@@ -41,7 +41,7 @@ export interface BracketMatcherHost extends TokenIteratorHost {
 
 export interface BracketMatcher {
     findMatchingBracket(position: { row: number; column: number }, chr: string): { row: number; column: number };
-    getBracketRange(pos: { row: number; column: number }): ram.Range;
+    getBracketRange(pos: { row: number; column: number }): Range;
     $findOpeningBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number };
     $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number };
 }
@@ -83,10 +83,10 @@ export class BracketMatchService implements BracketMatcher {
             return this.$findOpeningBracket(match[2], position);
     }
 
-    getBracketRange(pos: { row: number; column: number }): ram.Range {
+    getBracketRange(pos: { row: number; column: number }): Range {
         var line = this.$host.getLine(pos.row);
         var before = true;
-        var range: ram.Range;
+        var range: Range;
 
         var chr = line.charAt(pos.column - 1);
         var match = chr && chr.match(/([\(\[\{])|([\)\]\}])/);
@@ -103,7 +103,7 @@ export class BracketMatchService implements BracketMatcher {
             var closingPos = this.$findClosingBracket(match[1], pos);
             if (!closingPos)
                 return null;
-            range = ram.Range.fromPoints(pos, closingPos);
+            range = Range.fromPoints(pos, closingPos);
             if (!before) {
                 range.end.column++;
                 range.start.column--;
@@ -113,7 +113,7 @@ export class BracketMatchService implements BracketMatcher {
             var openingPos = this.$findOpeningBracket(match[2], pos);
             if (!openingPos)
                 return null;
-            range = ram.Range.fromPoints(openingPos, pos);
+            range = Range.fromPoints(openingPos, pos);
             if (!before) {
                 range.start.column++;
                 range.end.column--;

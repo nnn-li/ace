@@ -29,31 +29,31 @@
  * ***** END LICENSE BLOCK ***** */
 
 // FIXME: For some reason the generated file causes a breakage in the mouse/mouse_handler_test
-import Tokenizer = require("../Tokenizer");
-import TextHighlightRules = require("./text_highlight_rules");
-import bm = require("./behaviour");
-import unicode = require("../unicode");
-import lang = require("../lib/lang");
-import TokenIterator = require("../TokenIterator");
-import rng = require("../range");
-import esm = require('../edit_session');
-import Editor = require('../Editor');
+import Tokenizer from "../Tokenizer";
+import TextHighlightRules from "./text_highlight_rules";
+import {Behaviour} from "./behaviour";
+import {packages} from "../unicode";
+import {escapeRegExp} from "../lib/lang";
+import TokenIterator from "../TokenIterator";
+import {Range} from "../range";
+import {EditSession} from '../edit_session';
+import Editor from '../Editor';
 
 export class Mode {
     private HighlightRules = TextHighlightRules;
-    private $behaviour = new bm.Behaviour();
+    private $behaviour = new Behaviour();
     private tokenRe = new RegExp("^["
-        + unicode.packages.L
-        + unicode.packages.Mn + unicode.packages.Mc
-        + unicode.packages.Nd
-        + unicode.packages.Pc + "\\$_]+", "g"
+        + packages.L
+        + packages.Mn + packages.Mc
+        + packages.Nd
+        + packages.Pc + "\\$_]+", "g"
     );
 
     private nonTokenRe = new RegExp("^(?:[^"
-        + unicode.packages.L
-        + unicode.packages.Mn + unicode.packages.Mc
-        + unicode.packages.Nd
-        + unicode.packages.Pc + "\\$_]|\\s])+", "g"
+        + packages.L
+        + packages.Mn + packages.Mc
+        + packages.Nd
+        + packages.Pc + "\\$_]|\\s])+", "g"
     );
 
     private lineCommentStart: any = "";
@@ -77,7 +77,7 @@ export class Mode {
         return this.$tokenizer;
     }
 
-    toggleCommentLines(state, session: esm.EditSession, startRow, endRow) {
+    toggleCommentLines(state, session: EditSession, startRow, endRow) {
         var doc = session.doc;
 
         var ignoreBlankLines = true;
@@ -91,8 +91,8 @@ export class Mode {
                 return false;
             var lineCommentStart = this.blockComment.start;
             var lineCommentEnd = this.blockComment.end;
-            var regexpStart = new RegExp("^(\\s*)(?:" + lang.escapeRegExp(lineCommentStart) + ")");
-            var regexpEnd = new RegExp("(?:" + lang.escapeRegExp(lineCommentEnd) + ")\\s*$");
+            var regexpStart = new RegExp("^(\\s*)(?:" + escapeRegExp(lineCommentStart) + ")");
+            var regexpEnd = new RegExp("(?:" + escapeRegExp(lineCommentEnd) + ")\\s*$");
 
             var comment = function(line: string, i: number) {
                 if (testRemove(line, i))
@@ -123,11 +123,11 @@ export class Mode {
         }
         else {
             if (Array.isArray(this.lineCommentStart)) {
-                var regexpStartString: string = this.lineCommentStart.map(lang.escapeRegExp).join("|");
+                var regexpStartString: string = this.lineCommentStart.map(escapeRegExp).join("|");
                 var lineCommentStart = this.lineCommentStart[0];
             }
             else {
-                var regexpStartString: string = lang.escapeRegExp(this.lineCommentStart);
+                var regexpStartString: string = escapeRegExp(this.lineCommentStart);
                 var lineCommentStart = this.lineCommentStart;
             }
             regexpStart = new RegExp("^(\\s*)(?:" + regexpStartString + ") ?");
@@ -203,7 +203,7 @@ export class Mode {
         iter(shouldRemove ? uncomment : comment);
     }
 
-    toggleBlockComment(state, session: esm.EditSession, range, cursor: { row: number; column: number }) {
+    toggleBlockComment(state, session: EditSession, range, cursor: { row: number; column: number }) {
         var comment = this.blockComment;
         if (!comment)
             return;
@@ -224,7 +224,7 @@ export class Mode {
                 if (i != -1) {
                     var row = iterator.getCurrentTokenRow();
                     var column = iterator.getCurrentTokenColumn() + i;
-                    startRange = new rng.Range(row, column, row, column + comment.start.length);
+                    startRange = new Range(row, column, row, column + comment.start.length);
                     break;
                 }
                 token = iterator.stepBackward();
@@ -237,7 +237,7 @@ export class Mode {
                 if (i != -1) {
                     var row = iterator.getCurrentTokenRow();
                     var column = iterator.getCurrentTokenColumn() + i;
-                    endRange = new rng.Range(row, column, row, column + comment.end.length);
+                    endRange = new Range(row, column, row, column + comment.end.length);
                     break;
                 }
                 token = iterator.stepForward();
@@ -278,7 +278,7 @@ export class Mode {
         return line.match(/^\s*/)[0];
     }
 
-    createWorker(session: esm.EditSession) {
+    createWorker(session: EditSession) {
         return null;
     }
 
@@ -324,7 +324,7 @@ export class Mode {
         return defaultHandler ? ret : undefined;
     }
 
-    transformAction(state, action, editor: Editor, session: esm.EditSession, param) {
+    transformAction(state, action, editor: Editor, session: EditSession, param) {
         if (this.$behaviour) {
             var behaviours = this.$behaviour.getBehaviours();
             for (var key in behaviours) {
@@ -375,7 +375,7 @@ export class Mode {
         return this.$keywordList = this.$highlightRules.$keywordList || [];
     }
 
-    getCompletions(state, session: esm.EditSession, pos, prefix) {
+    getCompletions(state, session: EditSession, pos, prefix) {
         var keywords = this.$keywordList || this.$createKeywordList();
         return keywords.map(function(word) {
             return {

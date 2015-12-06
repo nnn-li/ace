@@ -1,20 +1,17 @@
-import autoCompleteNew = require('./mode/typescript/autoComplete');
-import CompletionService = require('./mode/typescript/CompletionService');
-import EditorPosition = require('./mode/typescript/EditorPosition');
-import DocumentPositionUtil = require('./mode/typescript/DocumentPositionUtil');
-import async = require("./lib/async");
-import dom = require("./lib/dom");
-import Editor = require('./Editor');
-import esm = require('./edit_session');
-import ram = require('./range');
-import lang = require("./lib/lang");
-import typeInfoTip = require("./typeInfoTip");
-import wsm = require('./workspace/workspace');
-import protocol = require('./editor_protocol');
+import autoComplete from './mode/typescript/autoComplete';
+import CompletionService from './mode/typescript/CompletionService';
+import EditorPosition from './mode/typescript/EditorPosition';
+import {getPosition} from './mode/typescript/DocumentPositionUtil';
+import {parallel} from "./lib/async";
+import Editor from './Editor';
+import {EditSession} from './edit_session';
+import {Range} from './range';
+import {deferredCall} from "./lib/lang";
+import typeInfoTip from "./typeInfoTip";
+import {workspace, Workspace} from './workspace/workspace';
+import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
 //import CommandManager = require('./commands/CommandManager');
-import sem = require('./selection');
-
-var deferredCall = lang.deferredCall;
+import {} from './selection';
 
 /**
  * The functional constructor pattern used to create a facade that
@@ -41,7 +38,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
     var _errorMarkers: number[] = [];
 
     var _typeInfo = typeInfoTip(doc, editor, workspace, () => _fileName, rootElement);
-    var _autoComplete = autoCompleteNew(editor, () => _fileName, _completionService);
+    var _autoComplete = autoComplete(editor, () => _fileName, _completionService);
 
     _typeInfo.startUp();
 
@@ -66,7 +63,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
     }
 
     editor.commands.addCommands([{
-        name: protocol.COMMAND_NAME_AUTO_COMPLETE,
+        name: COMMAND_NAME_AUTO_COMPLETE,
         bindKey: "Ctrl-Space",
         exec: function(editor) {
             if (!_autoComplete.isActive()) {
@@ -301,13 +298,13 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
 
     // Handle the compiled notification
     editor.getSession().on("compiled", function(message) {
-        var session: esm.EditSession = editor.getSession();
+        var session: EditSession = editor.getSession();
         // FIXME: Document here conflicts with the browser document type.
         var doc: any = session.getDocument();
         function convertError(error: { message: string; start: number; length: number }): { row: number; column: number; text: string; type: string } {
             var minChar = error.start;
             var limChar = minChar + error.length;
-            var pos = DocumentPositionUtil.getPosition(doc, minChar);
+            var pos = getPosition(doc, minChar);
             return { row: pos.row, column: pos.column, text: error.message, type: 'error' };
         }
         // FIXME: The type of the callback should be known.
@@ -329,7 +326,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
             }
         }
         // Request syntax and semantic errors from the workspace, set markers and annotations.
-        async.parallel([getSyntaxErrors, getSemanticErrors], function(err, results: any[][]) {
+        parallel([getSyntaxErrors, getSemanticErrors], function(err, results: any[][]) {
             if (!err) {
                 var errors = results[0].concat(results[1]);
                 var annotations = [];
@@ -348,7 +345,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
                     var limChar = minChar + error.length;
                     var start = _editorPositionService.getPositionFromChars(minChar);
                     var end = _editorPositionService.getPositionFromChars(limChar);
-                    var range = new ram.Range(start.row, start.column, end.row, end.column);
+                    var range = new Range(start.row, start.column, end.row, end.column);
                     // Add a new marker to the given Range. The last argument (inFront) causes a
                     // front marker to be defined and the 'changeFrontMarker' event fires.
                     // The class parameter is a css stylesheet class so you must have it in your CSS.
@@ -406,7 +403,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
 }
 
 // We can't export this yet until we can create the inner editor in TypeScript.
-function edit(source: any, workspace: wsm.Workspace, doc: Document = window.document) {
+function edit(source: any, workspace: Workspace, doc: Document = window.document) {
 
     var rootElement = (function(): HTMLElement {
         if (typeof source === "string") {
@@ -433,5 +430,5 @@ function edit(source: any, workspace: wsm.Workspace, doc: Document = window.docu
 }
 
 export function workspace() {
-    return wsm.workspace();
+    return workspace();
 }

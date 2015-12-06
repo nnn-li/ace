@@ -28,11 +28,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import lang = require("../lib/lang");
-import config = require("../config");
-import rng = require("../range");
-import Command = require('./Command')
-//import Editor = require('../Editor')
+import {stringRepeat, stringTrimLeft, stringTrimRight} from "../lib/lang";
+import {loadModule} from "../config";
+import {Range} from "../range";
+import Command from './Command';
+import Editor from '../Editor';
 
 function bindKey(win: string, mac: string) {
     return { win: win, mac: mac };
@@ -46,7 +46,7 @@ var commands: Command[] = [{
     name: "showSettingsMenu",
     bindKey: bindKey("Ctrl-,", "Command-,"),
     exec: function(editor/*: Editor*/) {
-        config.loadModule("ace/ext/settings_menu", function(module) {
+        loadModule("ace/ext/settings_menu", function(module) {
             module.init(editor);
             editor.showSettingsMenu();
         });
@@ -56,7 +56,7 @@ var commands: Command[] = [{
         name: "goToNextError",
         bindKey: bindKey("Alt-E", "Ctrl-E"),
         exec: function(editor/*: Editor*/) {
-            config.loadModule("ace/ext/error_marker", function(module) {
+            loadModule("ace/ext/error_marker", function(module) {
                 module.showErrorMarker(editor, 1);
             });
         },
@@ -66,7 +66,7 @@ var commands: Command[] = [{
         name: "goToPreviousError",
         bindKey: bindKey("Alt-Shift-E", "Ctrl-Shift-E"),
         exec: function(editor/*: Editor*/) {
-            config.loadModule("ace/ext/error_marker", function(module) {
+            loadModule("ace/ext/error_marker", function(module) {
                 module.showErrorMarker(editor, -1);
             });
         },
@@ -179,12 +179,12 @@ var commands: Command[] = [{
         name: "find",
         bindKey: bindKey("Ctrl-F", "Command-F"),
         exec: function(editor/*: Editor*/) {
-            config.loadModule("ace/ext/searchbox", function(e) { e.Search(editor) });
+            loadModule("ace/ext/searchbox", function(e) { e.Search(editor) });
         },
         readOnly: true
     }, {
         name: "overwrite",
-        bindKey: bindKey("Insert","Insert"),
+        bindKey: bindKey("Insert", "Insert"),
         exec: function(editor/*: Editor*/) { editor.toggleOverwrite(); },
         readOnly: true
     }, {
@@ -471,7 +471,7 @@ var commands: Command[] = [{
         name: "replace",
         bindKey: bindKey("Ctrl-H", "Command-Option-F"),
         exec: function(editor) {
-            config.loadModule("ace/ext/searchbox", function(e) { e.Search(editor, true) });
+            loadModule("ace/ext/searchbox", function(e) { e.Search(editor, true) });
         }
     }, {
         name: "undo",
@@ -584,7 +584,7 @@ var commands: Command[] = [{
     }, {
         name: "inserttext",
         exec: function(editor, args) {
-            editor.insert(lang.stringRepeat(args.text || "", args.times || 1));
+            editor.insert(stringRepeat(args.text || "", args.times || 1));
         },
         multiSelectAction: "forEach",
         scrollIntoView: "cursor"
@@ -638,7 +638,7 @@ var commands: Command[] = [{
             var insertLine = editor.session.doc.getLine(selectionStart.row);
 
             for (var i = selectionStart.row + 1; i <= selectionEnd.row + 1; i++) {
-                var curLine = lang.stringTrimLeft(lang.stringTrimRight(editor.session.doc.getLine(i)));
+                var curLine = stringTrimLeft(stringTrimRight(editor.session.doc.getLine(i)));
                 if (curLine.length !== 0) {
                     curLine = " " + curLine;
                 }
@@ -651,7 +651,7 @@ var commands: Command[] = [{
             }
 
             editor.clearSelection();
-            editor.session.doc.replace(new rng.Range(selectionStart.row, 0, selectionEnd.row + 2, 0), insertLine);
+            editor.session.doc.replace(new Range(selectionStart.row, 0, selectionEnd.row + 2, 0), insertLine);
 
             if (selectedCount > 0) {
                 // Select the text that was previously selected
@@ -683,17 +683,17 @@ var commands: Command[] = [{
                 if (i == (ranges.length - 1)) {
                     // The last selection must connect to the end of the document, unless it already does
                     if (!(ranges[i].end.row === endRow && ranges[i].end.column === endCol)) {
-                        newRanges.push(new rng.Range(ranges[i].end.row, ranges[i].end.column, endRow, endCol));
+                        newRanges.push(new Range(ranges[i].end.row, ranges[i].end.column, endRow, endCol));
                     }
                 }
 
                 if (i === 0) {
                     // The first selection must connect to the start of the document, unless it already does
                     if (!(ranges[i].start.row === 0 && ranges[i].start.column === 0)) {
-                        newRanges.push(new rng.Range(0, 0, ranges[i].start.row, ranges[i].start.column));
+                        newRanges.push(new Range(0, 0, ranges[i].start.row, ranges[i].start.column));
                     }
                 } else {
-                    newRanges.push(new rng.Range(ranges[i - 1].end.row, ranges[i - 1].end.column, ranges[i].start.row, ranges[i].start.column));
+                    newRanges.push(new Range(ranges[i - 1].end.row, ranges[i - 1].end.column, ranges[i].start.row, ranges[i].start.column));
                 }
             }
 
@@ -708,4 +708,4 @@ var commands: Command[] = [{
         scrollIntoView: "none"
     }];
 
-export = commands;
+export default commands;

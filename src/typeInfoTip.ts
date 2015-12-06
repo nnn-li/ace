@@ -1,16 +1,16 @@
-import ttm = require('./tooltip');
-import wsm = require('./workspace/workspace');
+import {Tooltip} from './tooltip';
+import {Workspace} from './workspace/workspace';
 
 /**
  * The User Interface element leverages the existing Tooltip for consistency.
  */
-class TypeInfoTooltip extends ttm.Tooltip {
+class TypeInfoTooltip extends Tooltip {
     constructor(parentElement: HTMLElement) {
         super(parentElement);
     }
 }
 
-var typeInfoTip = function(doc: Document, editor, workspace: wsm.Workspace, fileNameProvider: () => string, rootElement: HTMLElement) {
+export default function typeInfoTip(doc: Document, editor, workspace: Workspace, fileNameProvider: () => string, rootElement: HTMLElement) {
 
     var _tooltip = new TypeInfoTooltip(editor.container);
 
@@ -85,5 +85,4 @@ var typeInfoTip = function(doc: Document, editor, workspace: wsm.Workspace, file
         tearDown: () => { rootElement.removeEventListener("mousemove", _onMouseMove) }
     };
     return that;
-};
-export = typeInfoTip;
+}

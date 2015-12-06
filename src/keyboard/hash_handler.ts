@@ -28,10 +28,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import keyUtil = require("../lib/keys");
-import useragent = require("../lib/useragent");
-import Editor = require('../Editor');
-import Command = require('../commands/Command');
+import {FUNCTION_KEYS, KEY_MODS} from "../lib/keys";
+import keyCodes from "../lib/keys";
+import {isMac} from "../lib/useragent";
+import {} from '../Editor';
+import {} from '../commands/Command';
 
 export class HashHandler {
     public platform;
@@ -40,7 +41,7 @@ export class HashHandler {
 
     constructor(config?, platform?) {
 
-        this.platform = platform || (useragent.isMac ? "mac" : "win");
+        this.platform = platform || (isMac ? "mac" : "win");
         this.commands = {};
         this.commandKeyBinding = {};
 
@@ -148,9 +149,9 @@ export class HashHandler {
         var parts = keys.toLowerCase().split(/[\-\+]([\-\+])?/).filter(function(x: any) { return x; });
         var key = parts.pop();
 
-        var keyCode = keyUtil[key];
-        if (keyUtil.FUNCTION_KEYS[keyCode])
-            key = keyUtil.FUNCTION_KEYS[keyCode].toLowerCase();
+        var keyCode = keyCodes[key];
+        if (FUNCTION_KEYS[keyCode])
+            key = FUNCTION_KEYS[keyCode].toLowerCase();
         else if (!parts.length)
             return { key: key, hashId: -1 };
         else if (parts.length == 1 && parts[0] == "shift")
@@ -158,7 +159,7 @@ export class HashHandler {
 
         var hashId: number = 0;
         for (var i = parts.length; i--;) {
-            var modifier = keyUtil.KEY_MODS[parts[i]];
+            var modifier = KEY_MODS[parts[i]];
             if (modifier === null) {
                 if (typeof console != "undefined")
                     console.error("invalid modifier " + parts[i] + " in " + keys);

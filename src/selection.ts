@@ -28,14 +28,13 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import docm = require("./document");
-import oop = require("./lib/oop");
-import lang = require("./lib/lang");
-import evem = require("./lib/event_emitter");
-import rng = require("./range");
-import rlm = require("./range_list");
-import esm = require("./edit_session");
-import anm = require("./anchor");
+import {Document} from "./document";
+import {stringReverse} from "./lib/lang";
+import {EventEmitterClass} from "./lib/event_emitter";
+import {Range} from "./range";
+import {RangeList} from "./range_list";
+import {EditSession} from "./edit_session";
+import {Anchor} from "./anchor";
 
 /**
  * Contains the cursor position and the text selection of an edit session.
@@ -61,21 +60,21 @@ import anm = require("./anchor");
  * 
  * @constructor
  **/
-export class Selection extends evem.EventEmitterClass {
-    private session: esm.EditSession;
-    private doc: docm.Document;
+export class Selection extends EventEmitterClass {
+    private session: EditSession;
+    private doc: Document;
     // Why do we seem to have copies?
-    public lead: anm.Anchor;
-    public anchor: anm.Anchor;
-    private selectionLead: anm.Anchor;
-    private selectionAnchor: anm.Anchor;
+    public lead: Anchor;
+    public anchor: Anchor;
+    private selectionLead: Anchor;
+    private selectionAnchor: Anchor;
     private $isEmpty: boolean;
     private $keepDesiredColumnOnChange: boolean;
     private $desiredColumn;  // Is this used anywhere?
     private rangeCount;
     public ranges;
-    public rangeList: rlm.RangeList;
-    constructor(session: esm.EditSession) {
+    public rangeList: RangeList;
+    constructor(session: EditSession) {
         super();
         this.session = session;
         this.doc = session.getDocument();
@@ -216,13 +215,13 @@ export class Selection extends evem.EventEmitterClass {
         var lead = this.lead;
 
         if (this.isEmpty())
-            return rng.Range.fromPoints(lead, lead);
+            return Range.fromPoints(lead, lead);
 
         if (this.isBackwards()) {
-            return rng.Range.fromPoints(lead, anchor);
+            return Range.fromPoints(lead, anchor);
         }
         else {
-            return rng.Range.fromPoints(anchor, lead);
+            return Range.fromPoints(anchor, lead);
         }
     }
 
@@ -438,7 +437,7 @@ export class Selection extends evem.EventEmitterClass {
         this.setSelectionRange(range);
     }
 
-    getLineRange(row?: number, excludeLastChar?: boolean): rng.Range {
+    getLineRange(row?: number, excludeLastChar?: boolean): Range {
         var rowStart = typeof row == "number" ? row : this.lead.row;
         var rowEnd;
 
@@ -452,10 +451,10 @@ export class Selection extends evem.EventEmitterClass {
         }
 
         if (excludeLastChar) {
-            return new rng.Range(rowStart, 0, rowEnd, this.session.getLine(rowEnd).length);
+            return new Range(rowStart, 0, rowEnd, this.session.getLine(rowEnd).length);
         }
         else {
-            return new rng.Range(rowStart, 0, rowEnd + 1, 0);
+            return new Range(rowStart, 0, rowEnd + 1, 0);
         }
     }
 
@@ -664,7 +663,7 @@ export class Selection extends evem.EventEmitterClass {
             str = this.doc.getLine(row).substring(0, column)
         }
 
-        var leftOfCursor = lang.stringReverse(str);
+        var leftOfCursor = stringReverse(str);
         var match;
         this.session.nonTokenRe.lastIndex = 0;
         this.session.tokenRe.lastIndex = 0;
@@ -777,7 +776,7 @@ export class Selection extends evem.EventEmitterClass {
                 line = ""
         }
 
-        var leftOfCursor = lang.stringReverse(line);
+        var leftOfCursor = stringReverse(line);
         var index = this.$shortWordEndIndex(leftOfCursor);
 
         return this.moveCursorTo(row, column - index);
@@ -921,9 +920,9 @@ export class Selection extends evem.EventEmitterClass {
         try {
             func.call(null, this);
             var end = this.getCursor();
-            return rng.Range.fromPoints(start, end);
+            return Range.fromPoints(start, end);
         } catch (e) {
-            return rng.Range.fromPoints(start, start);
+            return Range.fromPoints(start, start);
         } finally {
             this.moveCursorToPosition(start);
         }
@@ -956,7 +955,7 @@ export class Selection extends evem.EventEmitterClass {
             if (this.rangeList) {
                 this.toSingleRange(data[0]);
                 for (var i = data.length; i--;) {
-                    var r: any = rng.Range.fromPoints(data[i].start, data[i].end);
+                    var r: any = Range.fromPoints(data[i].start, data[i].end);
                     if (data.isBackwards)
                         r.cursor = r.start;
                     this.addRange(r, true);

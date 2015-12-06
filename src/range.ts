@@ -536,11 +536,11 @@ export class Range {
      *
      * @returns {EditorRange}
     **/
-    static fromPoints(start: { row: number; column: number }, end: { row: number; column: number }) {
+    public static fromPoints(start: { row: number; column: number }, end: { row: number; column: number }) {
         return new Range(start.row, start.column, end.row, end.column);
     }
 
-    static comparePoints(p1: { row: number; column: number }, p2: { row: number; column: number }) {
+    public static comparePoints(p1: { row: number; column: number }, p2: { row: number; column: number }) {
         return p1.row - p2.row || p1.column - p2.column;
     }
 }

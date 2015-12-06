@@ -27,8 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import esm = require('./edit_session');
-import TokenIteratorHost = require('./TokenIteratorHost');
+//import {EditSession} from './edit_session';
+import TokenIteratorHost from './TokenIteratorHost';
 
 /**
  * 
@@ -45,7 +45,7 @@ import TokenIteratorHost = require('./TokenIteratorHost');
  *
  * @constructor
  **/
-class TokenIterator {
+export default class TokenIterator {
     private $session: TokenIteratorHost;
     private $row: number;
     private $rowTokens: { start: number; type: string; value: string }[];
@@ -147,5 +147,3 @@ class TokenIterator {
         return column;
     }
 }
-
-export = TokenIterator;

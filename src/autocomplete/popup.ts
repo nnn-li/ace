@@ -28,13 +28,13 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import esm = require("../edit_session");
-import vrm = require("../virtual_renderer");
-import Editor = require("../Editor");
-import rm = require("../range");
-import event = require("../lib/event");
-import lng = require("../lib/lang");
-import dom = require("../lib/dom");
+import {EditSession} from "../edit_session";
+import {VirtualRenderer} from "../virtual_renderer";
+import Editor from "../Editor";
+import {Range} from "../range";
+import {addListener} from "../lib/event";
+import {stringRepeat} from "../lib/lang";
+import {addCssClass, createElement, importCssString, removeCssClass} from "../lib/dom";
 
 var noop = function() { };
 
@@ -59,9 +59,9 @@ export class ListViewPopup implements ListView {
     private editor: Editor;
     private $borderSize = 1;
     private $imageSize = 0;
-    private hoverMarker = new rm.Range(-1, 0, -1, Infinity);
+    private hoverMarker = new Range(-1, 0, -1, Infinity);
     private hoverMarkerId: number;
-    private selectionMarker = new rm.Range(-1, 0, -1, Infinity);
+    private selectionMarker = new Range(-1, 0, -1, Infinity);
     private selectionMarkerId: number;
     public isOpen = false;
     private isTopdown = false;
@@ -74,7 +74,7 @@ export class ListViewPopup implements ListView {
         var self = this;
 
         function createEditor(el: HTMLDivElement) {
-            var renderer = new vrm.VirtualRenderer(el);
+            var renderer = new VirtualRenderer(el);
 
             renderer.content.style.cursor = "default";
             renderer.setStyle("ace_autocomplete");
@@ -103,7 +103,7 @@ export class ListViewPopup implements ListView {
             return editor;
         }
 
-        var el: HTMLDivElement = <HTMLDivElement>dom.createElement("div");
+        var el: HTMLDivElement = <HTMLDivElement>createElement("div");
         this.editor = createEditor(el);
 
         if (parentNode) {
@@ -158,15 +158,15 @@ export class ListViewPopup implements ListView {
             if (selected == t['selectedNode'])
                 return;
             if (t['selectedNode'])
-                dom.removeCssClass(t['selectedNode'], "ace_selected");
+                removeCssClass(t['selectedNode'], "ace_selected");
             t['selectedNode'] = selected;
             if (selected)
-                dom.addCssClass(selected, "ace_selected");
+                addCssClass(selected, "ace_selected");
         });
 
         function hideHoverMarker() { self.setHoverMarker(-1) }
 
-        event.addListener(this.editor.container, "mouseout", hideHoverMarker);
+        addListener(this.editor.container, "mouseout", hideHoverMarker);
         this.editor.on("hide", hideHoverMarker);
         this.editor.on("changeSelection", hideHoverMarker);
 
@@ -271,7 +271,7 @@ export class ListViewPopup implements ListView {
     }
     setData(list) {
         this.data = list || [];
-        this.editor.setValue(lng.stringRepeat("\n", list.length), -1);
+        this.editor.setValue(stringRepeat("\n", list.length), -1);
         this.setRow(0);
     }
     getData(row: number) {
@@ -339,7 +339,7 @@ export class ListViewPopup implements ListView {
     }
 }
 
-dom.importCssString("\
+importCssString("\
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {\
     background-color: #CAD6FA;\
     z-index: 1;\

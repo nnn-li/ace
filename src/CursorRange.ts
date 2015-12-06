@@ -1,8 +1,8 @@
-import CursorPosition = require('./CursorPosition')
+import CursorPosition from './CursorPosition'
 
 interface CursorRange {
     start: CursorPosition;
     end: CursorPosition;
 }
 
-export = CursorRange;
+export default CursorRange;

@@ -27,20 +27,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import rm = require("../range");
-import dm = require('../document');
-import sm = require('../edit_session');
-import Editor = require('../Editor');
+import {Range} from "../range";
+import {Document} from '../document';
+import {EditSession} from '../edit_session';
+import Editor from '../Editor';
 
 /**
  * Does a distance analysis of the word `prefix` at position `pos` in `doc`.
  * @return Map of string to number.
  */
-function wordDistance(pos: { row: number; column: number }, session: sm.EditSession) {
+function wordDistance(pos: { row: number; column: number }, session: EditSession) {
     var splitRegex: RegExp = /[^a-zA-Z_0-9\$\-\u00C0-\u1FFF\u2C00-\uD7FF\w]+/;
 
     function getWordIndex(): number {
-        var textBefore = session.getTextRange(rm.Range.fromPoints({ row: 0, column: 0 }, pos));
+        var textBefore = session.getTextRange(Range.fromPoints({ row: 0, column: 0 }, pos));
         return textBefore.split(splitRegex).length - 1;
     }
 
@@ -67,7 +67,7 @@ function wordDistance(pos: { row: number; column: number }, session: sm.EditSess
 /**
  * This textual completer is rather dumb.
  */
-export function getCompletions(editor: Editor, session: sm.EditSession, pos: { row: number; column: number }, prefix: string, callback: (err, completions: { caption: string; value: string; score: number; meta: string }[]) => void) {
+export function getCompletions(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback: (err, completions: { caption: string; value: string; score: number; meta: string }[]) => void) {
 
     var wordScore = wordDistance(pos, session);
 

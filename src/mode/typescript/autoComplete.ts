@@ -1,12 +1,12 @@
 declare var $: any;
 
-import CursorPosition = require('../../CursorPosition');
-import hhm = require('../../keyboard/hash_handler');
-import oop = require("../../lib/oop");
-import eve = require('../../lib/event_emitter');
-import Editor = require('../../Editor');
-import CompletionService = require('./CompletionService');
-import AutoCompleteView = require('../../mode/typescript/AutoCompleteView');
+import CursorPosition from '../../CursorPosition';
+import {HashHandler} from '../../keyboard/hash_handler';
+import {} from "../../lib/oop";
+import {EventEmitterClass} from '../../lib/event_emitter';
+import Editor from '../../Editor';
+import CompletionService from './CompletionService';
+import AutoCompleteView from '../../mode/typescript/AutoCompleteView';
 //import popup = require('../../autocomplete/popup');
 
 /**
@@ -38,7 +38,7 @@ function makeCompareFn(text: string) {
  *
  * Accordingly, the function is camelCase and is not called using the 'new' operator.
  */
-var autoComplete = function(editor: Editor, fileNameProvider: () => string, completionService: CompletionService) {
+export default function autoComplete(editor: Editor, fileNameProvider: () => string, completionService: CompletionService) {
     /**
      * Declare the return object now because the AutoCompleteView needs a reference.
      */
@@ -53,7 +53,7 @@ var autoComplete = function(editor: Editor, fileNameProvider: () => string, comp
     /**
      *
      */
-    var _eventEmitter = new eve.EventEmitterClass();
+    var _eventEmitter = new EventEmitterClass();
 
     /**
      *
@@ -63,7 +63,7 @@ var autoComplete = function(editor: Editor, fileNameProvider: () => string, comp
     /**
      *
      */
-    var _handler: any = new hhm.HashHandler();
+    var _handler: any = new HashHandler();
 
     /**
      *
@@ -241,4 +241,3 @@ var autoComplete = function(editor: Editor, fileNameProvider: () => string, comp
 
     return that;
 }
-export = autoComplete;

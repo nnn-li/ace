@@ -1,19 +1,19 @@
 // TODO import jquery
 declare var $: any;
 
-import Editor = require('../../Editor');
-import hhm = require('../../keyboard/hash_handler');
+import Editor from '../../Editor';
+import {HashHandler} from '../../keyboard/hash_handler';
 
 var CLASSNAME = 'ace_autocomplete';
 var CLASSNAME_SELECTED = 'ace_autocomplete_selected';
 
-class AutoCompleteView {
+export default class AutoCompleteView {
     private editor: Editor;
     private autoComplete;
     private selectedClassName;
     public wrap: HTMLDivElement;    // Must be accessible.
     public listElement: HTMLUListElement; // Must be accessible.
-    private handler = new hhm.HashHandler();
+    private handler = new HashHandler();
     constructor(editor: Editor, autoComplete) {
         if (typeof editor === 'undefined') {
             throw new Error('editor must be defined');
@@ -29,7 +29,7 @@ class AutoCompleteView {
         this.listElement = document.createElement('ul');
         this.wrap.className = CLASSNAME;
         this.wrap.appendChild(this.listElement);
-        
+
         this.editor.container.appendChild(this.wrap);
 
         this.wrap.style.display = 'none';
@@ -37,14 +37,14 @@ class AutoCompleteView {
         this.wrap.style.position = 'fixed';
         this.wrap.style.zIndex = '1000';
     }
-    show(coords: {pageX: number; pageY: number}) {
+    show(coords: { pageX: number; pageY: number }) {
         this.setPosition(coords);
         return this.wrap.style.display = 'block';
     }
     hide() {
         return this.wrap.style.display = 'none';
     }
-    setPosition(coords: {pageX: number; pageY: number}) {
+    setPosition(coords: { pageX: number; pageY: number }) {
         var bottom, editorBottom, top;
         top = coords.pageY + 20;
         editorBottom = $(this.editor.container).offset().top + $(this.editor.container).height();
@@ -117,4 +117,3 @@ class AutoCompleteView {
         }
     }
 }
-export = AutoCompleteView;

@@ -5,4 +5,4 @@ interface TokenIteratorHost {
     getLength(): number;
 }
 
-export = TokenIteratorHost;
+export default TokenIteratorHost;

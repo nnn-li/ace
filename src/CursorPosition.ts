@@ -3,4 +3,4 @@ interface CursorPosition {
     column: number;
 }
 
-export = CursorPosition;
+export default CursorPosition;

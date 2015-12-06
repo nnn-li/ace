@@ -28,20 +28,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import hhm = require("./keyboard/hash_handler");
-import pop = require("./autocomplete/popup");
-import util = require("./autocomplete/util");
-import event = require("./lib/event");
-import lang = require("./lib/lang");
-import snm = require("./snippets");
-import Editor = require('./Editor');
-import esm = require('./edit_session');
-import anm = require('./anchor');
+import {HashHandler} from "./keyboard/hash_handler";
+import {ListViewPopup} from "./autocomplete/popup";
+import {retrievePrecedingIdentifier} from "./autocomplete/util";
+import {} from "./lib/event";
+import {delayedCall} from "./lib/lang";
+import {snippetManager} from "./snippets";
+import Editor from './Editor';
+import {EditSession} from './edit_session';
+import {Anchor} from './anchor';
 
 var EDITOR_EXT_COMPLETER = 'completer';
 
 export interface Completer {
-    getCompletions(editor: Editor, session: esm.EditSession, pos: { row: number; column: number }, prefix: string, callback);
+    getCompletions(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback);
 }
 
 export function getCompleter(editor: Editor): CompleterAggregate {
@@ -54,11 +54,11 @@ export function setCompleter(editor: Editor, completer: CompleterAggregate) {
 
 export class CompleterAggregate implements Completer {
     private editor: Editor;
-    private keyboardHandler = new hhm.HashHandler();
+    private keyboardHandler = new HashHandler();
     public activated: boolean;
     private changeTimer;
     private gatherCompletionsId = 0;
-    private base: anm.Anchor;
+    private base: Anchor;
     private completions: { filtered; filterText; setFilter };
     private commands;
     public autoSelect = true;
@@ -95,9 +95,9 @@ export class CompleterAggregate implements Completer {
         this.mousedownListener = this.mousedownListener.bind(this);
         this.mousewheelListener = this.mousewheelListener.bind(this);
 
-        this.changeTimer = lang.delayedCall(function() { this.updateCompletions(true); }.bind(this));
+        this.changeTimer = delayedCall(function() { this.updateCompletions(true); }.bind(this));
     }
-    public popup: pop.ListViewPopup;
+    public popup: ListViewPopup;
 
     /**
      * Implementation of the Completer interface.
@@ -128,7 +128,7 @@ export class CompleterAggregate implements Completer {
                 }
             }
             if (data.snippet) {
-                snm.snippetManager.insertSnippet(this.editor, data.snippet);
+                snippetManager.insertSnippet(this.editor, data.snippet);
             }
             else {
                 this.editor.execCommand("insertstring", data.value || data);
@@ -193,7 +193,7 @@ export class CompleterAggregate implements Completer {
                 var pos: { row: number; column: number } = editor.getCursorPosition();
                 var line = session.getLine(pos.row);
                 callback(null, {
-                    prefix: util.retrievePrecedingIdentifier(line, pos.column, results[0] && results[0].identifierRegex),
+                    prefix: retrievePrecedingIdentifier(line, pos.column, results[0] && results[0].identifierRegex),
                     matches: matches,
                     finished: (--total === 0)
                 });
@@ -225,7 +225,7 @@ export class CompleterAggregate implements Completer {
             var editor = this.editor;
             var session = editor.getSession();
             var line = session.getLine(pos.row);
-            prefix = util.retrievePrecedingIdentifier(line, pos.column);
+            prefix = retrievePrecedingIdentifier(line, pos.column);
             this.getCompletions(this.editor, session, this.editor.getCursorPosition(), prefix, function(err, results) {
                 // Only detach if result gathering is finished
                 var detachIfFinished = function() {
@@ -266,7 +266,7 @@ export class CompleterAggregate implements Completer {
 
     private openPopup(editor: Editor, prefix: string, keepPopupPosition: boolean) {
         if (!this.popup) {
-            this.popup = new pop.ListViewPopup(document.body || document.documentElement);
+            this.popup = new ListViewPopup(document.body || document.documentElement);
             this.popup.on("click", function(e) { this.insertMatch(); e.stop(); }.bind(this));
             this.popup.focus = this.editor.focus.bind(this.editor);
         }

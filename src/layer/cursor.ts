@@ -28,13 +28,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import dom = require("../lib/dom");
-import esm = require('../edit_session');
+import {addCssClass, createElement, removeCssClass, setCssClass} from "../lib/dom";
+import {EditSession} from '../edit_session';
+
 var IE8;
 
 export class Cursor {
     public element: HTMLDivElement;
-    private session: esm.EditSession;
+    private session: EditSession;
     private isVisible = false;
     public isBlinking = true;
     private blinkInterval = 1000;
@@ -50,7 +51,7 @@ export class Cursor {
     public $pixelPos;
 
     constructor(parentEl: HTMLDivElement) {
-        this.element = <HTMLDivElement>dom.createElement("div");
+        this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_layer ace_cursor-layer";
         parentEl.appendChild(this.element);
 
@@ -58,7 +59,7 @@ export class Cursor {
             IE8 = "opacity" in this.element;
 
         this.cursor = this.addCursor();
-        dom.addCssClass(this.element, "ace_hidden-cursors");
+        addCssClass(this.element, "ace_hidden-cursors");
         this.$updateCursors = this.$updateVisibility.bind(this);
     }
 
@@ -78,7 +79,7 @@ export class Cursor {
         this.$padding = padding;
     }
 
-    public setSession(session: esm.EditSession) {
+    public setSession(session: EditSession) {
         this.session = session;
     }
 
@@ -99,7 +100,7 @@ export class Cursor {
     public setSmoothBlinking(smoothBlinking) {
         if (smoothBlinking != this.smoothBlinking && !IE8) {
             this.smoothBlinking = smoothBlinking;
-            dom.setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
+            setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
             this.$updateCursors(true);
             this.$updateCursors = (smoothBlinking
                 ? this.$updateOpacity
@@ -109,7 +110,7 @@ export class Cursor {
     }
 
     private addCursor() {
-        var el: HTMLDivElement = <HTMLDivElement>dom.createElement("div");
+        var el: HTMLDivElement = <HTMLDivElement>createElement("div");
         el.className = "ace_cursor";
         this.element.appendChild(el);
         this.cursors.push(el);
@@ -126,13 +127,13 @@ export class Cursor {
 
     public hideCursor() {
         this.isVisible = false;
-        dom.addCssClass(this.element, "ace_hidden-cursors");
+        addCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
     public showCursor() {
         this.isVisible = true;
-        dom.removeCssClass(this.element, "ace_hidden-cursors");
+        removeCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
@@ -141,7 +142,7 @@ export class Cursor {
         clearInterval(this.intervalId);
         clearTimeout(this.timeoutId);
         if (this.smoothBlinking) {
-            dom.removeCssClass(this.element, "ace_smooth-blinking");
+            removeCssClass(this.element, "ace_smooth-blinking");
         }
 
         update(true);
@@ -151,7 +152,7 @@ export class Cursor {
 
         if (this.smoothBlinking) {
             setTimeout(function() {
-                dom.addCssClass(this.element, "ace_smooth-blinking");
+                addCssClass(this.element, "ace_smooth-blinking");
             }.bind(this));
         }
 
@@ -169,7 +170,7 @@ export class Cursor {
         blink();
     }
 
-    public getPixelPosition(position: {row: number;column: number}, onScreen?) {
+    public getPixelPosition(position: { row: number; column: number }, onScreen?) {
         if (!this.config || !this.session)
             return { left: 0, top: 0 };
 
@@ -223,9 +224,9 @@ export class Cursor {
         if (overwrite != this.overwrite) {
             this.overwrite = overwrite;
             if (overwrite)
-                dom.addCssClass(this.element, "ace_overwrite-cursors");
+                addCssClass(this.element, "ace_overwrite-cursors");
             else
-                dom.removeCssClass(this.element, "ace_overwrite-cursors");
+                removeCssClass(this.element, "ace_overwrite-cursors");
         }
     }
 

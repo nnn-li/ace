@@ -1,9 +1,9 @@
-import dcm = require("../document");
-import lang = require("../lib/lang");
+import {Document} from "../document";
+import {delayedCall} from "./lib/lang";
 
 export class Mirror {
     public sender/*FIXME: ace.WorkerSender*/;
-    public doc: dcm.Document;
+    public doc: Document;
     public deferredUpdate;
     public $timeout: number;
     /**
@@ -16,9 +16,9 @@ export class Mirror {
         this.sender = sender;
         this.$timeout = timeout;
 
-        var doc = this.doc = new dcm.Document("");
+        var doc = this.doc = new Document("");
 
-        var deferredUpdate = this.deferredUpdate = lang.delayedCall(this.onUpdate.bind(this));
+        var deferredUpdate = this.deferredUpdate = delayedCall(this.onUpdate.bind(this));
 
         // Binding for use in the following callback.        
         var _self = this;

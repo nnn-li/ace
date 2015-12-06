@@ -28,17 +28,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import dom = require("./lib/dom");
-import oop = require("./lib/oop");
-import eve = require("./lib/event_emitter");
-import lang = require("./lib/lang");
-import rm = require("./range");
-import am = require("./anchor");
-import hhm = require("./keyboard/hash_handler");
-import Tokenizer = require("./Tokenizer");
-import Editor = require('./Editor');
-
-var comparePoints = rm.Range.comparePoints;
+import {importCssString} from "./lib/dom";
+import {EventEmitterClass} from "./lib/event_emitter";
+import {delayedCall, escapeRegExp} from "./lib/lang";
+import {comparePoints, Range} from "./range";
+import {Anchor} from "./anchor";
+import {HashHandler} from "./keyboard/hash_handler";
+import Tokenizer from "./Tokenizer";
+import Editor from './Editor';
 
 var TABSTOP_MANAGER = 'tabstopManager';
 
@@ -53,7 +50,7 @@ function TabstopToken(str, _, stack): any[] {
     return [{ text: str }];
 }
 
-export class SnippetManager extends eve.EventEmitterClass {
+export class SnippetManager extends EventEmitterClass {
     public snippetMap = {};
     private snippetNameMap = {};
     private variables = {};
@@ -572,7 +569,7 @@ export class SnippetManager extends eve.EventEmitterClass {
             if (s.tabTrigger && !s.trigger) {
                 if (!s.guard && /^\w/.test(s.tabTrigger))
                     s.guard = "\\b";
-                s.trigger = lang.escapeRegExp(s.tabTrigger);
+                s.trigger = escapeRegExp(s.tabTrigger);
             }
 
             s.startRe = guardedRegexp(s.trigger, s.guard, true);
@@ -665,7 +662,7 @@ class TabstopManager {
     private $openTabstops;
     private selectedTabstop;
     private editor: Editor;
-    private keyboardHandler = new hhm.HashHandler();
+    private keyboardHandler = new HashHandler();
     private $onChange;
     private $onChangeSelection;
     private $onChangeSession;
@@ -674,7 +671,7 @@ class TabstopManager {
     constructor(editor: Editor) {
         editor[TABSTOP_MANAGER] = this;
         this.$onChange = this.onChange.bind(this);
-        this.$onChangeSelection = lang.delayedCall(this.onChangeSelection.bind(this)).schedule;
+        this.$onChangeSelection = delayedCall(this.onChangeSelection.bind(this)).schedule;
         this.$onChangeSession = this.onChangeSession.bind(this);
         this.$onAfterExec = this.onAfterExec.bind(this);
         this.attach(editor);
@@ -867,7 +864,7 @@ class TabstopManager {
             this.$openTabstops = [];
         // add final tabstop if missing
         if (!tabstops[0]) {
-            var p = rm.Range.fromPoints(end, end);
+            var p = Range.fromPoints(end, end);
             moveRelative(p.start, start);
             moveRelative(p.end, start);
             tabstops[0] = [p];
@@ -882,7 +879,7 @@ class TabstopManager {
 
             for (var i = ts.length; i--;) {
                 var p = ts[i];
-                var range: any = rm.Range.fromPoints(p.start, p.end || p.start);
+                var range: any = Range.fromPoints(p.start, p.end || p.start);
                 movePoint(range.start, start);
                 movePoint(range.end, start);
                 range.original = p;
@@ -950,7 +947,7 @@ class TabstopManager {
 
 
 var changeTracker: any = {};
-changeTracker.onChange = am.Anchor.prototype.onChange;
+changeTracker.onChange = Anchor.prototype.onChange;
 changeTracker.setPosition = function(row, column) {
     this.pos.row = row;
     this.pos.column = column;
@@ -974,7 +971,7 @@ var moveRelative = function(point, start) {
 };
 
 
-dom.importCssString("\
+importCssString("\
 .ace_snippet-marker {\
     -moz-box-sizing: border-box;\
     box-sizing: border-box;\

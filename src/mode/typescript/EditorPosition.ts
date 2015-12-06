@@ -1,13 +1,13 @@
-import CursorPosition = require('../../CursorPosition');
-import CursorRange = require('../../CursorRange');
-import dcm = require('../../document');
-import Editor = require('../../Editor');
+import CursorPosition from '../../CursorPosition';
+import CursorRange from '../../CursorRange';
+import {Document} from '../../document';
+import Editor from '../../Editor';
 /**
  * A wrapper around an Editor to perform conversions between linear character, {row;column} and TextRange representations.
  * 
  * The editor is integral to the conversion because it knows the lengths of each line.
  */
-class EditorPosition {
+export default class EditorPosition {
     private editor: Editor;
     constructor(editor: Editor) {
         this.editor = editor;
@@ -63,11 +63,11 @@ class EditorPosition {
         return count;
     }
 
-    getChars(doc: dcm.Document, pos: { row: number; column: number }): number {
+    getChars(doc: Document, pos: { row: number; column: number }): number {
         return this.getLinesChars(doc.getLines(0, pos.row - 1)) + pos.column;
     }
 
-    getPosition(doc: dcm.Document, chars: number) {
+    getPosition(doc: Document, chars: number) {
         var i;
         var line: string;
         var lines = doc.getAllLines();
@@ -91,4 +91,3 @@ class EditorPosition {
         };
     }
 }
-export = EditorPosition;

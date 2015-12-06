@@ -27,15 +27,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import esm = require('./edit_session');
-import rng = require('./range')
+import {EditSession} from './edit_session';
+import {Range} from './range';
 
 /**
  * This object maintains the undo stack for an [[EditSession `EditSession`]].
  * @class UndoManager
  */
 export class UndoManager {
-    private $editSession: esm.EditSession;
+    private $editSession: EditSession;
     private dirtyCounter: number;
     private $undoStack: any[];
     private $redoStack: any[];
@@ -82,9 +82,9 @@ export class UndoManager {
      *
      * @returns {Range} The range of the undo.
      **/
-    undo(dontSelect?: boolean): rng.Range {
+    undo(dontSelect?: boolean): Range {
         var deltas = this.$undoStack.pop();
-        var undoSelectionRange: rng.Range = null;
+        var undoSelectionRange: Range = null;
         if (deltas) {
             undoSelectionRange = this.$editSession.undoChanges(deltas, dontSelect);
             this.$redoStack.push(deltas);
@@ -99,7 +99,7 @@ export class UndoManager {
      **/
     redo(dontSelect?: boolean) {
         var deltas = this.$redoStack.pop();
-        var redoSelectionRange: rng.Range = null;
+        var redoSelectionRange: Range = null;
         if (deltas) {
             redoSelectionRange = this.$editSession.redoChanges(deltas, dontSelect);
             this.$undoStack.push(deltas);

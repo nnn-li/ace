@@ -28,9 +28,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import lang = require("../lib/lang");
+import {deepCopy} from "../lib/lang";
 
-class TextHighlightRules {
+export default class TextHighlightRules {
     $rules;
     $embeds;
     nextState;
@@ -93,7 +93,7 @@ class TextHighlightRules {
         if (escapeRules) {
             var addRules = Array.prototype[append ? "push" : "unshift"];
             for (var i = 0; i < states.length; i++)
-                addRules.apply(this.$rules[states[i]], lang.deepCopy(escapeRules));
+                addRules.apply(this.$rules[states[i]], deepCopy(escapeRules));
         }
 
         if (!this.$embeds)
@@ -231,6 +231,3 @@ class TextHighlightRules {
         return this.$keywords;
     }
 }
-
-export = TextHighlightRules;
-

@@ -1,5 +1,5 @@
-import wcm = require('../worker/worker_client');
-import protocol = require('./workspace_protocol');
+import {WorkerClient} from '../worker/worker_client';
+import {EVENT_NAME_COMPLETIONS} from './workspace_protocol';
 /**
  * A workspace is a collection of source files identified by name.
  */
@@ -62,7 +62,7 @@ export interface Workspace {
 export var workspace = function() {
 
     // N.B. The mod parameter must be absolute in order to work when requirejs is using individual files.
-    var workerProxy = new wcm.WorkerClient(['ace'], 'ace/workspace/workspace_worker', 'WorkspaceWorker');
+    var workerProxy = new WorkerClient(['ace'], 'ace/workspace/workspace_worker', 'WorkspaceWorker');
     var callbacks = {};
     var callbackId = 1;
 
@@ -98,7 +98,7 @@ export var workspace = function() {
         callback(null, errors);
     });
 
-    workerProxy.on(protocol.EVENT_NAME_COMPLETIONS, function(response: { data: { err: any; completions: any[]; callbackId: number } }) {
+    workerProxy.on(EVENT_NAME_COMPLETIONS, function(response: { data: { err: any; completions: any[]; callbackId: number } }) {
         // TODO: Standardize and introduce assertions and logging.
         var data = response.data;
         var id: number = data.callbackId;

@@ -41,13 +41,15 @@
 
     "./src/anchor.ts",
     "./src/background_tokenizer.ts",
-    "./src/document.ts",
+    "./src/edit_session.ts",
+    "./src/anchor.ts",
     "./src/Tokenizer.ts",
     "./src/renderloop.ts",
     "./src/range.ts",
     "./src/scrollbar.ts",
     "./src/search.ts",
     "./src/tooltip.ts",
+    "./src/triton.ts",
     "./src/unicode.ts",
 
     "./node_modules/typescript/lib/typescriptServices.d.ts",

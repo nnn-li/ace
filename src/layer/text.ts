@@ -28,16 +28,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import oop = require("../lib/oop");
-import dom = require("../lib/dom");
-import lang = require("../lib/lang");
-import useragent = require("../lib/useragent");
-import esm = require("../edit_session");
-import eve = require("../lib/event_emitter");
-import fmm = require("../layer/font_metrics");
+import {createElement} from "../lib/dom";
+import {stringRepeat} from "../lib/lang";
+import {EditSession} from "../edit_session";
+import {EventEmitterClass} from "../lib/event_emitter";
+import {FontMetrics} from "../layer/font_metrics";
 
-export class Text extends eve.EventEmitterClass {
-    public element = <HTMLDivElement>dom.createElement("div");
+export class Text extends EventEmitterClass {
+    public element = <HTMLDivElement>createElement("div");
     private $padding = 0;
     private EOF_CHAR = "\xB6";
     private EOL_CHAR_LF = "\xAC";
@@ -45,8 +43,8 @@ export class Text extends eve.EventEmitterClass {
     private EOL_CHAR;
     private TAB_CHAR = "\u2192"; //"\u21E5";
     private SPACE_CHAR = "\xB7";
-    private $fontMetrics: fmm.FontMetrics;
-    private session: esm.EditSession;
+    private $fontMetrics: FontMetrics;
+    private session: EditSession;
     private $pollSizeChangesTimer;
     private showInvisibles = false;
     private displayIndentGuides: boolean = true;
@@ -103,7 +101,7 @@ export class Text extends eve.EventEmitterClass {
         return this.$pollSizeChangesTimer = this.$fontMetrics.$pollSizeChanges();
     }
 
-    public setSession(session: esm.EditSession) {
+    public setSession(session: EditSession) {
         this.session = session;
         this.$computeTabString();
     }
@@ -144,10 +142,10 @@ export class Text extends eve.EventEmitterClass {
             if (this.showInvisibles) {
                 tabStr.push("<span class='ace_invisible ace_invisible_tab'>"
                     + this.TAB_CHAR
-                    + lang.stringRepeat("\xa0", i - 1)
+                    + stringRepeat("\xa0", i - 1)
                     + "</span>");
             } else {
-                tabStr.push(lang.stringRepeat("\xa0", i));
+                tabStr.push(stringRepeat("\xa0", i));
             }
         }
         if (this.displayIndentGuides) {
@@ -159,10 +157,10 @@ export class Text extends eve.EventEmitterClass {
                 className += " ace_invisible";
                 spaceClass = " ace_invisible_space";
                 tabClass = " ace_invisible_tab";
-                var spaceContent = lang.stringRepeat(this.SPACE_CHAR, this.tabSize);
-                var tabContent = this.TAB_CHAR + lang.stringRepeat("\xa0", this.tabSize - 1);
+                var spaceContent = stringRepeat(this.SPACE_CHAR, this.tabSize);
+                var tabContent = this.TAB_CHAR + stringRepeat("\xa0", this.tabSize - 1);
             } else {
-                var spaceContent = lang.stringRepeat("\xa0", this.tabSize);
+                var spaceContent = stringRepeat("\xa0", this.tabSize);
                 var tabContent = spaceContent;
             }
 
@@ -279,7 +277,7 @@ export class Text extends eve.EventEmitterClass {
             if (row > lastRow)
                 break;
 
-            var container = <HTMLDivElement>dom.createElement("div");
+            var container = <HTMLDivElement>createElement("div");
 
             var html = [];
             // Get the tokens per line as there might be some lines in between
@@ -342,8 +340,8 @@ export class Text extends eve.EventEmitterClass {
         var replaceFunc = function(c, a, b, tabIdx, idx4) {
             if (a) {
                 return self.showInvisibles ?
-                    "<span class='ace_invisible ace_invisible_space'>" + lang.stringRepeat(self.SPACE_CHAR, c.length) + "</span>" :
-                    lang.stringRepeat("\xa0", c.length);
+                    "<span class='ace_invisible ace_invisible_space'>" + stringRepeat(self.SPACE_CHAR, c.length) + "</span>" :
+                    stringRepeat("\xa0", c.length);
             } else if (c == "&") {
                 return "&#38;";
             } else if (c == "<") {
@@ -391,10 +389,10 @@ export class Text extends eve.EventEmitterClass {
             return value;
         if (value[0] == " ") {
             cols -= cols % this.tabSize;
-            stringBuilder.push(lang.stringRepeat(this.$tabStrings[" "], cols / this.tabSize));
+            stringBuilder.push(stringRepeat(this.$tabStrings[" "], cols / this.tabSize));
             return value.substr(cols);
         } else if (value[0] == "\t") {
-            stringBuilder.push(lang.stringRepeat(this.$tabStrings["\t"], cols));
+            stringBuilder.push(stringRepeat(this.$tabStrings["\t"], cols));
             return value.substr(cols);
         }
         return value;

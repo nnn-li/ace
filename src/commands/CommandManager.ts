@@ -1,12 +1,11 @@
-import mix = require("../lib/mix");
-import oop = require("../lib/oop");
-import hhm = require("../keyboard/hash_handler");
-import eem = require("../lib/event_emitter");
-import Command = require('./Command');
-import Editor = require('../Editor');
+import {applyMixins} from "../lib/mix";
+import {HashHandler} from "../keyboard/hash_handler";
+import {EventEmitterClass} from "../lib/event_emitter";
+import Command from './Command';
+import Editor from '../Editor';
 
-class CommandManager extends eem.EventEmitterClass implements hhm.HashHandler {
-    private hashHandler = new hhm.HashHandler();
+export default class CommandManager extends EventEmitterClass implements HashHandler {
+    private hashHandler = new HashHandler();
     public platform;
     private byName;
     private $inReplay;
@@ -22,7 +21,7 @@ class CommandManager extends eem.EventEmitterClass implements hhm.HashHandler {
      */
     constructor(platform: string, commands: Command[]) {
         super();
-        hhm.HashHandler.call(this, commands, platform);
+        HashHandler.call(this, commands, platform);
         this.byName = this.hashHandler.commands;
         this.setDefaultHandler("exec", function(e: { command: Command; editor: Editor; args }) {
             return e.command.exec(e.editor, e.args || {});
@@ -150,6 +149,4 @@ class CommandManager extends eem.EventEmitterClass implements hhm.HashHandler {
     }
 }
 
-mix.applyMixins(CommandManager, [hhm.HashHandler]);
-
-export = CommandManager;
+applyMixins(CommandManager, [HashHandler]);

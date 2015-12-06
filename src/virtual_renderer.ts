@@ -28,23 +28,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import oop = require("./lib/oop");
-import dom = require("./lib/dom");
-import config = require("./config");
-import useragent = require("./lib/useragent");
-import gum = require("./layer/gutter");
-import mam = require("./layer/marker");
-import txm = require("./layer/text");
-import csm = require("./layer/cursor");
-import scrollbar = require("./scrollbar");
-import rlm = require("./renderloop");
-import fmm = require("./layer/font_metrics");
-import eve = require("./lib/event_emitter");
-import esm = require('./edit_session');
+import {addCssClass, createElement, importCssString, removeCssClass, setCssClass} from "./lib/dom";
+import {_emit, defineOptions, loadModule, resetOptions} from "./config";
+import {isOldIE} from "./lib/useragent";
+import {Gutter} from "./layer/gutter";
+import {Marker} from "./layer/marker";
+import {Text} from "./layer/text";
+import {Cursor} from "./layer/cursor";
+import {HScrollBar, VScrollBar} from "./scrollbar";
+import {RenderLoop} from "./renderloop";
+import {FontMetrics} from "./layer/font_metrics";
+import {EventEmitterClass} from "./lib/event_emitter";
+import {EditSession} from './edit_session';
 
 // FIXME
 // import editorCss = require("./requirejs/text!./css/editor.css");
-// dom.importCssString(editorCss, "ace_editor");
+// importCssString(editorCss, "ace_editor");
 
 var CHANGE_CURSOR = 1;
 var CHANGE_MARKER = 2;
@@ -63,7 +62,7 @@ var CHANGE_H_SCROLL = 1024;
  * @related editor.renderer 
  * @class VirtualRenderer
  **/
-export class VirtualRenderer extends eve.EventEmitterClass {
+export class VirtualRenderer extends EventEmitterClass {
     public textarea: HTMLTextAreaElement;
     public container: HTMLElement;
     public scrollLeft = 0;
@@ -84,8 +83,8 @@ export class VirtualRenderer extends eve.EventEmitterClass {
     };
     public $maxLines: number;
     public $minLines: number;
-    public $cursorLayer: csm.Cursor;
-    public $gutterLayer: gum.Gutter;
+    public $cursorLayer: Cursor;
+    public $gutterLayer: Gutter;
 
     public $padding: number = 0;
     private $frozen = false;
@@ -103,16 +102,16 @@ export class VirtualRenderer extends eve.EventEmitterClass {
     public $gutter;
     public scroller;
     public content: HTMLDivElement;
-    public $textLayer: txm.Text;
-    private $markerFront: mam.Marker;
-    private $markerBack: mam.Marker;
+    public $textLayer: Text;
+    private $markerFront: Marker;
+    private $markerBack: Marker;
     private canvas: HTMLDivElement;
     private $horizScroll: boolean;
     private $vScroll;
-    public scrollBarH: scrollbar.HScrollBar;
-    public scrollBarV: scrollbar.VScrollBar;
+    public scrollBarH: HScrollBar;
+    public scrollBarV: VScrollBar;
     private $scrollAnimation: { from: number; to: number; steps: number[] };
-    private session: esm.EditSession;
+    private session: EditSession;
     private scrollMargin = {
         left: 0,
         right: 0,
@@ -162,49 +161,49 @@ export class VirtualRenderer extends eve.EventEmitterClass {
 
         var _self = this;
 
-        this.container = container || <HTMLDivElement>dom.createElement("div");
+        this.container = container || <HTMLDivElement>createElement("div");
 
         // TODO: this breaks rendering in Cloud9 with multiple ace instances
         // // Imports CSS once per DOM document ('ace_editor' serves as an identifier).
-        // dom.importCssString(editorCss, "ace_editor", container.ownerDocument);
+        // importCssString(editorCss, "ace_editor", container.ownerDocument);
 
         // in IE <= 9 the native cursor always shines through
-        this.$keepTextAreaAtCursor = !useragent.isOldIE;
+        this.$keepTextAreaAtCursor = !isOldIE;
 
-        dom.addCssClass(this.container, "ace_editor");
+        addCssClass(this.container, "ace_editor");
 
         this.setTheme(theme);
 
-        this.$gutter = dom.createElement("div");
+        this.$gutter = createElement("div");
         this.$gutter.className = "ace_gutter";
         this.container.appendChild(this.$gutter);
 
-        this.scroller = dom.createElement("div");
+        this.scroller = createElement("div");
         this.scroller.className = "ace_scroller";
         this.container.appendChild(this.scroller);
 
-        this.content = <HTMLDivElement>dom.createElement("div");
+        this.content = <HTMLDivElement>createElement("div");
         this.content.className = "ace_content";
         this.scroller.appendChild(this.content);
 
-        this.$gutterLayer = new gum.Gutter(this.$gutter);
+        this.$gutterLayer = new Gutter(this.$gutter);
         this.$gutterLayer.on("changeGutterWidth", this.onGutterResize.bind(this));
 
-        this.$markerBack = new mam.Marker(this.content);
+        this.$markerBack = new Marker(this.content);
 
-        var textLayer = this.$textLayer = new txm.Text(this.content);
+        var textLayer = this.$textLayer = new Text(this.content);
         this.canvas = textLayer.element;
 
-        this.$markerFront = new mam.Marker(this.content);
+        this.$markerFront = new Marker(this.content);
 
-        this.$cursorLayer = new csm.Cursor(this.content);
+        this.$cursorLayer = new Cursor(this.content);
 
         // Indicates whether the horizontal scrollbar is visible
         this.$horizScroll = false;
         this.$vScroll = false;
 
-        this.scrollBarV = new scrollbar.VScrollBar(this.container, this);
-        this.scrollBarH = new scrollbar.HScrollBar(this.container, this);
+        this.scrollBarV = new VScrollBar(this.container, this);
+        this.scrollBarH = new HScrollBar(this.container, this);
         this.scrollBarV.addEventListener("scroll", function(e) {
             if (!_self.$scrollAnimation) {
                 _self.session.setScrollTop(e.data - _self.scrollMargin.top);
@@ -221,7 +220,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
             column: 0
         };
 
-        this.$fontMetrics = new fmm.FontMetrics(this.container, 500);
+        this.$fontMetrics = new FontMetrics(this.container, 500);
         this.$textLayer.$setFontMetrics(this.$fontMetrics);
         this.$textLayer.addEventListener("changeCharacterSize", function(e) {
             _self.updateCharacterSize();
@@ -237,7 +236,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
             $dirty: true
         };
 
-        this.$loop = new rlm.RenderLoop(
+        this.$loop = new RenderLoop(
             this.$renderChanges.bind(this),
             this.container.ownerDocument.defaultView
         );
@@ -245,8 +244,8 @@ export class VirtualRenderer extends eve.EventEmitterClass {
 
         this.updateCharacterSize();
         this.setPadding(4);
-        config.resetOptions(this);
-        config._emit("renderer", this);
+        resetOptions(this);
+        _emit("renderer", this);
     }
 
     set maxLines(maxLines: number) {
@@ -658,9 +657,9 @@ export class VirtualRenderer extends eve.EventEmitterClass {
             return;
 
         if (!this.$printMarginEl) {
-            var containerEl: HTMLDivElement = <HTMLDivElement>dom.createElement("div");
+            var containerEl: HTMLDivElement = <HTMLDivElement>createElement("div");
             containerEl.className = "ace_layer ace_print-margin-layer";
-            this.$printMarginEl = dom.createElement("div");
+            this.$printMarginEl = createElement("div");
             this.$printMarginEl.className = "ace_print-margin";
             containerEl.appendChild(this.$printMarginEl);
             this.content.insertBefore(containerEl, this.content.firstChild);
@@ -1512,7 +1511,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
     * Focuses the current container.
     **/
     visualizeFocus() {
-        dom.addCssClass(this.container, "ace_focus");
+        addCssClass(this.container, "ace_focus");
     }
 
     /**
@@ -1520,7 +1519,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
     * Blurs the current container.
     **/
     visualizeBlur() {
-        dom.removeCssClass(this.container, "ace_focus");
+        removeCssClass(this.container, "ace_focus");
     }
 
     /**
@@ -1536,7 +1535,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
             };
 
         this.$keepTextAreaAtCursor = true;
-        dom.addCssClass(this.textarea, "ace_composition");
+        addCssClass(this.textarea, "ace_composition");
         this.textarea.style.cssText = "";
         this.$moveTextAreaToCursor();
     }
@@ -1559,7 +1558,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
             return;
         }
 
-        dom.removeCssClass(this.textarea, "ace_composition");
+        removeCssClass(this.textarea, "ace_composition");
         this.$keepTextAreaAtCursor = this.$composition.keepTextAreaAtCursor;
         this.textarea.style.cssText = this.$composition.cssText;
         this.$composition = null;
@@ -1577,7 +1576,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
 
         if (!theme || typeof theme == "string") {
             var moduleName = theme || this.$options.theme.initialValue;
-            config.loadModule(["theme", moduleName], afterLoad);
+            loadModule(["theme", moduleName], afterLoad);
         }
         else {
             afterLoad(theme);
@@ -1588,14 +1587,14 @@ export class VirtualRenderer extends eve.EventEmitterClass {
                 return cb && cb();
             if (!module.cssClass)
                 return;
-            dom.importCssString(
+            importCssString(
                 module.cssText,
                 module.cssClass,
                 _self.container.ownerDocument
             );
 
             if (_self.theme)
-                dom.removeCssClass(_self.container, _self.theme.cssClass);
+                removeCssClass(_self.container, _self.theme.cssClass);
 
             var padding = "padding" in module ? module.padding : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
 
@@ -1607,8 +1606,8 @@ export class VirtualRenderer extends eve.EventEmitterClass {
             _self.$theme = module.cssClass;
 
             _self.theme = module;
-            dom.addCssClass(_self.container, module.cssClass);
-            dom.setCssClass(_self.container, "ace_dark", module.isDark);
+            addCssClass(_self.container, module.cssClass);
+            setCssClass(_self.container, "ace_dark", module.isDark);
 
             // force re-measure of the gutter width
             if (_self.$size) {
@@ -1639,7 +1638,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
      *
      */
     setStyle(style: string, include?: boolean): void {
-        dom.setCssClass(this.container, style, include !== false);
+        setCssClass(this.container, style, include !== false);
     }
 
     /**
@@ -1647,7 +1646,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
      * @param {String} style A class name
      */
     unsetStyle(style: string): void {
-        dom.removeCssClass(this.container, style);
+        removeCssClass(this.container, style);
     }
 
     setCursorStyle(style: string): void {
@@ -1672,7 +1671,7 @@ export class VirtualRenderer extends eve.EventEmitterClass {
     }
 }
 
-config.defineOptions(VirtualRenderer.prototype, "renderer", {
+defineOptions(VirtualRenderer.prototype, "renderer", {
     animatedScroll: { initialValue: false },
     showInvisibles: {
         set: function(value) {
@@ -1710,7 +1709,7 @@ config.defineOptions(VirtualRenderer.prototype, "renderer", {
     },
     fadeFoldWidgets: {
         set: function(show) {
-            dom.setCssClass(this.$gutter, "ace_fade-fold-widgets", show);
+            setCssClass(this.$gutter, "ace_fade-fold-widgets", show);
         },
         initialValue: false
     },
@@ -1735,7 +1734,7 @@ config.defineOptions(VirtualRenderer.prototype, "renderer", {
     highlightGutterLine: {
         set: function(shouldHighlight) {
             if (!this.$gutterLineHighlight) {
-                this.$gutterLineHighlight = dom.createElement("div");
+                this.$gutterLineHighlight = createElement("div");
                 this.$gutterLineHighlight.className = "ace_gutter-active-line";
                 this.$gutter.appendChild(this.$gutterLineHighlight);
                 return;

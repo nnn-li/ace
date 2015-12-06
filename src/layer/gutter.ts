@@ -28,13 +28,16 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import dom = require("../lib/dom");
-import oop = require("../lib/oop");
-import lang = require("../lib/lang");
-import evem = require("../lib/event_emitter");
-import esm = require("../edit_session");
+import {
+addCssClass,
+computedStyle,
+createElement,
+removeCssClass} from "../lib/dom";
+import {escapeHTML} from "../lib/lang";
+import {EventEmitterClass} from "../lib/event_emitter";
+import {EditSession} from "../edit_session";
 
-export class Gutter extends evem.EventEmitterClass {
+export class Gutter extends EventEmitterClass {
     public element: HTMLDivElement;
     public gutterWidth = 0;
     public $annotations = [];
@@ -42,18 +45,18 @@ export class Gutter extends evem.EventEmitterClass {
     private $fixedWidth = false;
     private $showLineNumbers = true;
     private $renderer: any = "";
-    private session: esm.EditSession;
+    private session: EditSession;
     private $showFoldWidgets = true;
     public $padding;
     constructor(parentEl: HTMLElement) {
         super();
-        this.element = <HTMLDivElement>dom.createElement("div");
+        this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_layer ace_gutter-layer";
         parentEl.appendChild(this.element);
         this.setShowFoldWidgets(this.$showFoldWidgets);
         this.$updateAnnotations = this.$updateAnnotations.bind(this);
     }
-    setSession(session: esm.EditSession) {
+    setSession(session: EditSession) {
         if (this.session) {
             this.session.removeEventListener("change", this.$updateAnnotations);
         }
@@ -86,7 +89,7 @@ export class Gutter extends evem.EventEmitterClass {
                 rowInfo = this.$annotations[row] = { text: [] };
 
             var annoText = annotation.text;
-            annoText = annoText ? lang.escapeHTML(annoText) : annotation.html || "";
+            annoText = annoText ? escapeHTML(annoText) : annotation.html || "";
 
             if (rowInfo.text.indexOf(annoText) === -1)
                 rowInfo.text.push(annoText);
@@ -156,7 +159,7 @@ export class Gutter extends evem.EventEmitterClass {
             cell = this.$cells[++index];
             if (!cell) {
                 cell = { element: null, textNode: null, foldWidget: null };
-                cell.element = dom.createElement("div");
+                cell.element = createElement("div");
                 cell.textNode = document.createTextNode('');
                 cell.element.appendChild(cell.textNode);
                 this.element.appendChild(cell.element);
@@ -186,7 +189,7 @@ export class Gutter extends evem.EventEmitterClass {
 
             if (c) {
                 if (!cell.foldWidget) {
-                    cell.foldWidget = dom.createElement("span");
+                    cell.foldWidget = createElement("span");
                     cell.element.appendChild(cell.foldWidget);
                 }
                 var className = "ace_fold-widget ace_" + c;
@@ -247,9 +250,9 @@ export class Gutter extends evem.EventEmitterClass {
 
     setShowFoldWidgets(show: boolean): void {
         if (show)
-            dom.addCssClass(this.element, "ace_folding-enabled");
+            addCssClass(this.element, "ace_folding-enabled");
         else
-            dom.removeCssClass(this.element, "ace_folding-enabled");
+            removeCssClass(this.element, "ace_folding-enabled");
 
         this.$showFoldWidgets = show;
         this.$padding = null;
@@ -264,7 +267,7 @@ export class Gutter extends evem.EventEmitterClass {
             return { left: 0, right: 0 };
         }
         // FIXME: The firstChild may not be an HTMLElement.
-        var style: CSSStyleDeclaration = dom.computedStyle(<HTMLElement>this.element.firstChild);
+        var style: CSSStyleDeclaration = computedStyle(<HTMLElement>this.element.firstChild);
         this.$padding = {};
         this.$padding.left = parseInt(style.paddingLeft) + 1 || 0;
         this.$padding.right = parseInt(style.paddingRight) || 0;

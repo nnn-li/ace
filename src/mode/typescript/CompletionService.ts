@@ -1,14 +1,14 @@
-import Editor = require('../../Editor');
-import CursorPosition = require('../../CursorPosition')
-import EditorPosition = require('./EditorPosition');
-import wsm = require('../../workspace/workspace')
+import Editor from '../../Editor';
+import CursorPosition from '../../CursorPosition'
+import EditorPosition from './EditorPosition';
+import {Workspace} from '../../workspace/workspace'
 
-class CompletionService {
+export default class CompletionService {
     private _editor: Editor;
-    private _workspace: wsm.Workspace;
+    private _workspace: Workspace;
     private _editorPos: EditorPosition;
     public matchText: string;
-    constructor(editor: Editor, workspace: wsm.Workspace) {
+    constructor(editor: Editor, workspace: Workspace) {
         this._editor = editor;
         this._workspace = workspace;
         this._editorPos = new EditorPosition(editor);
@@ -51,4 +51,3 @@ class CompletionService {
         this._getCompletionsAtPosition(fileName, position, memberMode, callback);
     }
 }
-export = CompletionService;
