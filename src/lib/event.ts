@@ -364,7 +364,8 @@ export function addCommandKeyListener(el, callback) {
 }
 
 // FIXME: Conditional exports not supported by TypeScript or Harmony/ES6.
-declare var exports: any;
+// declare var exports: any;
+/*
 if (window.postMessage && !isOldIE) {
     var postMessageId = 1;
     exports.nextTick = function(callback, win) {
@@ -380,7 +381,7 @@ if (window.postMessage && !isOldIE) {
         win.postMessage(messageName, "*");
     };
 }
-
+*/
 
 var nextFrameCandidate: (callback: () => void, $window: Window) => void = window.requestAnimationFrame ||
     window['mozRequestAnimationFrame'] ||

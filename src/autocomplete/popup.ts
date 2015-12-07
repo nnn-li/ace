@@ -28,10 +28,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {EditSession} from "../edit_session";
-import {VirtualRenderer} from "../virtual_renderer";
+import EditorDocument from "../EditorDocument";
+import EditSession from "../EditSession";
+import VirtualRenderer from "../VirtualRenderer";
 import Editor from "../Editor";
-import {Range} from "../range";
+import Range from "../Range";
 import {addListener} from "../lib/event";
 import {stringRepeat} from "../lib/lang";
 import {addCssClass, createElement, importCssString, removeCssClass} from "../lib/dom";
@@ -83,7 +84,9 @@ export class ListViewPopup implements ListView {
             renderer.$maxLines = 8;
             renderer.$keepTextAreaAtCursor = false;
 
-            var editor = new Editor(renderer);
+            var model = new EditorDocument("");
+            var editSession = new EditSession(model);
+            var editor = new Editor(renderer, editSession);
 
             editor.setHighlightActiveLine(false);
             editor.setShowPrintMargin(false);

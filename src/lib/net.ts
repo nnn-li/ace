@@ -25,14 +25,14 @@ export function get(url: string, callback: (responseText: string) => any) {
 }
 
 /**
- * Creates a <script> tag, sets the 'src' property and calls back when loaded.
+ * Creates a <script> tag, sets the 'src' property, and calls back when loaded.
  */
-export function loadScript(path: string, callback: () => any): void {
+export function loadScript(src: string, callback: () => any, doc: Document): void {
     // TODO: This is a standard trick. Are there any best practices?
     var head: HTMLElement = getDocumentHead();
-    var s: HTMLScriptElement = document.createElement('script');
+    var s: HTMLScriptElement = doc.createElement('script');
 
-    s.src = path;
+    s.src = src;
     head.appendChild(s);
 
     s.onload = s['onreadystatechange'] = function(_, isAbort?: boolean) {

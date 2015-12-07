@@ -28,13 +28,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {Document} from "./document";
+import EditorDocument from "./EditorDocument";
 import {stringReverse} from "./lib/lang";
 import {EventEmitterClass} from "./lib/event_emitter";
-import {Range} from "./range";
+import OrientedRange from "./OrientedRange";
+import Range from "./Range";
 import {RangeList} from "./range_list";
-import {EditSession} from "./edit_session";
-import {Anchor} from "./anchor";
+import EditSession from "./EditSession";
+import Anchor from "./Anchor";
 
 /**
  * Contains the cursor position and the text selection of an edit session.
@@ -62,7 +63,8 @@ import {Anchor} from "./anchor";
  **/
 export class Selection extends EventEmitterClass {
     private session: EditSession;
-    private doc: Document;
+    // FIXME: Maybe Selection should only couple to the EditSession?
+    private doc: EditorDocument;
     // Why do we seem to have copies?
     public lead: Anchor;
     public anchor: Anchor;
@@ -260,7 +262,8 @@ export class Selection extends EventEmitterClass {
         if (reverse) {
             this.setSelectionAnchor(range.end.row, range.end.column);
             this.selectTo(range.start.row, range.start.column);
-        } else {
+        }
+        else {
             this.setSelectionAnchor(range.start.row, range.start.column);
             this.selectTo(range.end.row, range.end.column);
         }
@@ -886,7 +889,7 @@ export class Selection extends EventEmitterClass {
         this.session = this.doc = null;
     }
 
-    fromOrientedRange(range) {
+    fromOrientedRange(range: OrientedRange) {
         this.setSelectionRange(range, range.cursor == range.start);
         this.$desiredColumn = range.desiredColumn || this.$desiredColumn;
     }
@@ -898,7 +901,8 @@ export class Selection extends EventEmitterClass {
             range.start.row = r.start.row;
             range.end.column = r.end.column;
             range.end.row = r.end.row;
-        } else {
+        }
+        else {
             range = r;
         }
 

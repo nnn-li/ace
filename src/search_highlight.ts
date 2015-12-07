@@ -29,9 +29,8 @@
  * ***** END LICENSE BLOCK ***** */
 
 import { getMatchOffsets } from "./lib/lang";
-import {} from "./lib/oop";
-import { Range } from "./range";
-import toScreenRange from './toScreenRange'
+import Range from "./Range";
+import EditSession from "./EditSession";
 
 // needed to prevent long lines from freezing the browser
 var MAX_RANGES = 500;
@@ -54,7 +53,7 @@ export class SearchHighlight {
         this.cache = [];
     }
 
-    update(html, markerLayer, session, config: { firstRow: number; lastRow: number }) {
+    update(html, markerLayer, session: EditSession, config: { firstRow: number; lastRow: number }) {
         if (!this.regExp)
             return;
         var start = config.firstRow, end = config.lastRow;
@@ -75,7 +74,7 @@ export class SearchHighlight {
 
             for (var j = ranges.length; j--;) {
                 markerLayer.drawSingleLineMarker(
-                    html, toScreenRange(ranges[j], session), this.clazz, config);
+                    html, session.documentToScreenRange(ranges[j]), this.clazz, config);
             }
         }
     }

@@ -27,16 +27,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 * * ***** END LICENSE BLOCK ***** */
-import {Range} from "../../range";
-import {EditSession} from "../../edit_session";
+import Range from "../../Range";
+import EditSession from "../../EditSession";
 
 export default class FoldMode {
 
-  foldingStartMarker = null;
-  foldingStopMarker = null;
- 
-  constructor() {
-  }
+    foldingStartMarker = null;
+    foldingStopMarker = null;
+
+    constructor() {
+    }
 
     // must return "" if there's no fold, to enable caching
     getFoldWidget(session: EditSession, foldStyle, row: number) {
@@ -44,8 +44,8 @@ export default class FoldMode {
         if (this.foldingStartMarker.test(line))
             return "start";
         if (foldStyle == "markbeginend"
-                && this.foldingStopMarker
-                && this.foldingStopMarker.test(line))
+            && this.foldingStopMarker
+            && this.foldingStopMarker.test(line))
             return "end";
         return "";
     }
@@ -85,7 +85,7 @@ export default class FoldMode {
     }
 
     openingBracketBlock(session: EditSession, bracket, row, column, typeRe?: RegExp) {
-        var start = {row: row, column: column + 1};
+        var start = { row: row, column: column + 1 };
         var end = session.$findClosingBracket(bracket, start, typeRe);
         if (!end)
             return;
@@ -95,14 +95,14 @@ export default class FoldMode {
             fw = session.getFoldWidget(end.row);
 
         if (fw == "start" && end.row > start.row) {
-            end.row --;
+            end.row--;
             end.column = session.getLine(end.row).length;
         }
         return Range.fromPoints(start, end);
     }
 
     closingBracketBlock(session: EditSession, bracket: string, row: number, column: number, typeRe?: RegExp) {
-        var end = {row: row, column: column};
+        var end = { row: row, column: column };
         var start = session.$findOpeningBracket(bracket, end);
 
         if (!start)
@@ -111,6 +111,6 @@ export default class FoldMode {
         start.column++;
         end.column--;
 
-        return  Range.fromPoints(start, end);
+        return Range.fromPoints(start, end);
     }
 }

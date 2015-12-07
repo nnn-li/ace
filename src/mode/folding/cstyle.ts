@@ -29,9 +29,9 @@
  * ***** END LICENSE BLOCK ***** */
 
 import {inherits} from "../../lib/oop";
-import {Range} from "../../range";
+import Range from "../../Range";
 import BaseFoldMode from "./fold_mode";
-import {EditSession} from "../../edit_session";
+import EditSession from "../../EditSession";
 
 export default class FoldMode extends BaseFoldMode {
     foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)/;

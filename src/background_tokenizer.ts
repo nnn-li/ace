@@ -28,12 +28,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 import {} from "./lib/oop"
-import { Document } from './document'
+import EditorDocument from './EditorDocument'
 import { EventEmitterClass } from "./lib/event_emitter"
 import Tokenizer from './Tokenizer'
 
 /**
- * Tokenizes the current [[Document `Document`]] in the background, and caches the tokenized rows for future use. 
+ * Tokenizes the current [[EditorDocument `EditorDocument`]] in the background, and caches the tokenized rows for future use. 
  * 
  * If a certain row is changed, everything below that row is re-tokenized.
  *
@@ -57,7 +57,7 @@ export class BackgroundTokenizer extends EventEmitterClass {
     private states: string[] = [];
     private currentLine: number = 0;
     private tokenizer: Tokenizer;
-    private doc: Document;
+    private doc: EditorDocument;
     private $worker;
     constructor(tokenizer: Tokenizer, editor?) {
         super();
@@ -117,9 +117,9 @@ export class BackgroundTokenizer extends EventEmitterClass {
 
     /**
      * Sets a new document to associate with this object.
-     * @param {Document} doc The new document to associate with
+     * @param {EditorDocument} doc The new document to associate with
      **/
-    setDocument(doc: Document) {
+    setDocument(doc: EditorDocument) {
         this.doc = doc;
         this.lines = [];
         this.states = [];

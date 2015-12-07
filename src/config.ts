@@ -127,7 +127,9 @@ export var $loading: { [name: string]: ((m) => any)[] } = {};
 // This is an important function.
 // FIXME. It would be more type-safe if the first argument where an array of strings.
 // What is the type of the module returned by the require function?
-export function loadModule(moduleName, onLoad: (m: any) => any) {
+// We're actually going to insert a script tag.
+export function loadModule(moduleName, onLoad: (m: any) => any, doc: Document = document) {
+    console.log("config.loadModule, moduleName = " + moduleName)
     var module;
     var moduleType: string;
     if (Array.isArray(moduleName)) {
@@ -177,7 +179,7 @@ export function loadModule(moduleName, onLoad: (m: any) => any) {
     }
 
     // Delegate the loading of the script but hook the notification.
-    loadScript(moduleUrl(moduleName, moduleType), afterLoad);
+    loadScript(moduleUrl(moduleName, moduleType), afterLoad, doc);
 }
 
 

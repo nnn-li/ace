@@ -32,11 +32,11 @@ import {inherits} from "../lib/oop";
 import Mode from "./Mode";
 import JavaScriptHighlightRules from "./javascript_highlight_rules";
 import MatchingBraceOutdent from "./matching_brace_outdent";
-import {Range} from "../range";
+import Range from "../Range";
 import {WorkerClient} from "../worker/worker_client";
 import CstyleBehaviour from "./behaviour/cstyle";
 import CStyleFoldMode from "./folding/cstyle";
-import {EditSession} from "../edit_session";
+import EditSession from "../EditSession";
 
 export default class JavaScriptMode extends Mode {
     $outdent: MatchingBraceOutdent;

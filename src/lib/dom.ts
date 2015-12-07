@@ -28,22 +28,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//"use strict";
-
-//if (typeof document == "undefined") {
-//    return;
-//}
-
 var XHTML_NS = "http://www.w3.org/1999/xhtml";
 
-export function getDocumentHead(doc?: Document): HTMLElement {
-    if (!doc) {
-        doc = document;
-    }
-    return <HTMLElement>(doc.head || doc.getElementsByTagName("head")[0] || doc.documentElement);
+export function getDocumentHead(doc: Document = document): HTMLHeadElement {
+    return <HTMLHeadElement>(doc.head || doc.getElementsByTagName("head")[0] || doc.documentElement);
 }
 
-export function createElement(tagName: string, namespaceURI?: string) {
+export function getDocumentBody(doc: Document = document): HTMLBodyElement {
+    return <HTMLBodyElement>(doc.body || doc.getElementsByTagName("body")[0]);
+}
+
+export function createElement(tagName: string, namespaceURI?: string): Element {
     return document.createElementNS ?
         document.createElementNS(namespaceURI || XHTML_NS, tagName) :
         document.createElement(tagName);
@@ -70,7 +65,7 @@ export function removeCssClass(element: HTMLElement, name: string): void {
     var classes: string[] = element.className.split(/\s+/g);
     while (true) {
         var index = classes.indexOf(name);
-        if (index == -1) {
+        if (index === -1) {
             break;
         }
         classes.splice(index, 1);
@@ -79,7 +74,8 @@ export function removeCssClass(element: HTMLElement, name: string): void {
 }
 
 export function toggleCssClass(element: HTMLElement, name: string): boolean {
-    var classes = element.className.split(/\s+/g), add = true;
+    var classes = element.className.split(/\s+/g);
+    var add = true;
     while (true) {
         var index = classes.indexOf(name);
         if (index == -1) {
@@ -113,39 +109,34 @@ export function hasCssString(id: string, doc: Document = document) {
     var sheets = doc.getElementsByTagName('style');
 
     if (sheets) {
-        while (index < sheets.length)
-            if (sheets[index++].id === id) return true;
+        while (index < sheets.length) {
+            if (sheets[index++].id === id) {
+                return true;
+            }
+        }
     }
-
     return false;
 }
 
-export function importCssString(cssText: string, id?: string, doc?: Document): void {
-    doc = doc || document;
+export function importCssString(cssText: string, id?: string, doc: Document = document): void {
     // If style is already imported return immediately.
     if (id && hasCssString(id, doc)) {
         return;
     }
-
-    var style;
-
-    style = doc.createElementNS
-        ? doc.createElementNS(XHTML_NS, "style")
-        : doc.createElement("style");
-
-    style.appendChild(doc.createTextNode(cssText));
-    if (id)
-        style.id = id;
-
-    getDocumentHead(doc).appendChild(style);
+    else {
+        let style = createElement('style');
+        style.appendChild(doc.createTextNode(cssText));
+        if (id) {
+            style.id = id;
+        }
+        getDocumentHead(doc).appendChild(style);
+    }
 }
 
-export function importCssStylsheet(uri: string, doc?: Document) {
-    var link = createElement('link');
-    // FIXME: Why do we need to use the literals?
-    link['rel'] = 'stylesheet';
-    link['href'] = uri;
-
+export function importCssStylsheet(href: string, doc?: Document) {
+    var link = <HTMLLinkElement>createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
     getDocumentHead(doc).appendChild(link);
 }
 /*
@@ -221,14 +212,14 @@ else
         return element.currentStyle;
     };
 */
-export function scrollbarWidth(document) {
-    var inner: any = createElement("ace_inner");
+export function scrollbarWidth(document: Document): number {
+    var inner: HTMLElement = <HTMLElement>createElement("ace_inner");
     inner.style.width = "100%";
     inner.style.minWidth = "0px";
     inner.style.height = "200px";
     inner.style.display = "block";
 
-    var outer: any = createElement("ace_outer");
+    var outer: HTMLElement = <HTMLElement>createElement("ace_outer");
     var style = outer.style;
 
     style.position = "absolute";
@@ -249,7 +240,7 @@ export function scrollbarWidth(document) {
     style.overflow = "scroll";
     var withScrollbar = inner.offsetWidth;
 
-    if (noScrollbar == withScrollbar) {
+    if (noScrollbar === withScrollbar) {
         withScrollbar = outer.clientWidth;
     }
 

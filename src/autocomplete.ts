@@ -35,8 +35,9 @@ import {} from "./lib/event";
 import {delayedCall} from "./lib/lang";
 import {snippetManager} from "./snippets";
 import Editor from './Editor';
-import {EditSession} from './edit_session';
-import {Anchor} from './anchor';
+import EditSession from './EditSession';
+import Anchor from './Anchor';
+import Range from './Range';
 
 var EDITOR_EXT_COMPLETER = 'completer';
 
@@ -179,7 +180,7 @@ export class CompleterAggregate implements Completer {
     /**
      * Implementation of the Completer interface.
      */
-    public getCompletions(editor: Editor, session, pos: { row: number; column: number }, prefix: string, callback) {
+    public getCompletions(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
 
         this.base = session.doc.createAnchor(pos.row, pos.column - prefix.length);
 
@@ -206,7 +207,8 @@ export class CompleterAggregate implements Completer {
         var pos = this.editor.getCursorPosition();
         var prefix: string;
         if (keepPopupPosition && this.base && this.completions) {
-            prefix = this.editor.session.getTextRange({ start: this.base, end: pos });
+            var range = new Range(this.base.row, this.base.column, pos.row, pos.column);
+            prefix = this.editor.session.getTextRange(range);
             if (prefix == this.completions.filterText)
                 return;
             this.completions.setFilter(prefix);

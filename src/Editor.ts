@@ -34,12 +34,12 @@ import {mixin} from "./lib/oop";
 import {computedStyle, hasCssClass, setCssClass} from "./lib/dom";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {isIE, isMac, isMobile, isOldIE, isWebKit} from "./lib/useragent";
-import {Gutter} from "./layer/gutter";
+import Gutter from "./layer/Gutter";
 import TextInput from "./keyboard/textinput";
 import KeyBinding from "./keyboard/keybinding";
-import {EditSession} from "./edit_session";
+import EditSession from "./EditSession";
 import Search from "./search";
-import {Range} from "./range";
+import Range from "./Range";
 import CursorRange from './CursorRange'
 import {EventEmitterClass} from "./lib/event_emitter";
 import CommandManager from "./commands/CommandManager";
@@ -47,7 +47,7 @@ import defaultCommands from "./commands/default_commands";
 import {defineOptions, loadModule, resetOptions, _signal} from "./config";
 import TokenIterator from "./TokenIterator";
 import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
-import {VirtualRenderer} from './virtual_renderer';
+import VirtualRenderer from './VirtualRenderer';
 import {Completer} from "./autocomplete";
 import {Selection} from './selection';
 import {addListener, addMouseWheelListener, addMultiMouseDownListener, capture, getButton, preventDefault, stopEvent, stopPropagation} from "./lib/event";
@@ -136,8 +136,9 @@ export default class Editor extends EventEmitterClass {
     private $onSelectionChange;
     public exitMultiSelectMode;
     public forEachSelection;
-    constructor(renderer: VirtualRenderer, session?: EditSession) {
+    constructor(renderer: VirtualRenderer, session: EditSession) {
         super();
+        console.log("Editor constructor()")
         this.container = renderer.getContainerElement();
         this.renderer = renderer;
 
@@ -175,7 +176,7 @@ export default class Editor extends EventEmitterClass {
             _self._$emitInputEvent.schedule(31);
         });
 
-        this.setSession(session || new EditSession(""));
+        this.setSession(session);
         resetOptions(this);
         _signal("editor", this);
     }
@@ -338,7 +339,7 @@ export default class Editor extends EventEmitterClass {
             loadModule(["keybinding", keyboardHandler], function(module) {
                 if (_self.$keybindingId == keyboardHandler)
                     _self.keyBinding.setKeyboardHandler(module && module.handler);
-            });
+            }, this.container.ownerDocument);
         }
         else {
             this.$keybindingId = null;

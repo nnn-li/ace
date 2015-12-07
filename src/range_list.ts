@@ -28,15 +28,15 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {comparePoints, Range} from "./range";
-import {EditSession} from "./edit_session";
+import Range from "./Range";
+import EditSession from "./EditSession";
+import comparePoints from "./comparePoints"
 
 export class RangeList {
     public ranges: Range[] = [];
     private session: EditSession;
     private onChange;
     constructor() {
-
     }
 
     pointIndex(pos: { row: number; column: number }, excludeEdges?: boolean, startIndex?: number): number {

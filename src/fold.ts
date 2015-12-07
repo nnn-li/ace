@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {Range} from "./range";
+import Range from "./Range";
 import {RangeList} from "./range_list";
 import {inherits} from "./lib/oop";
 /*

@@ -31,8 +31,9 @@
 import {importCssString} from "./lib/dom";
 import {EventEmitterClass} from "./lib/event_emitter";
 import {delayedCall, escapeRegExp} from "./lib/lang";
-import {comparePoints, Range} from "./range";
-import {Anchor} from "./anchor";
+import Range from "./Range";
+import comparePoints from "./comparePoints"
+import Anchor from "./Anchor";
 import {HashHandler} from "./keyboard/hash_handler";
 import Tokenizer from "./Tokenizer";
 import Editor from './Editor';

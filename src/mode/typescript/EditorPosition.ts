@@ -1,7 +1,7 @@
 import CursorPosition from '../../CursorPosition';
-import CursorRange from '../../CursorRange';
-import {Document} from '../../document';
+import EditorDocument from '../../EditorDocument';
 import Editor from '../../Editor';
+import Range from "../../Range";
 /**
  * A wrapper around an Editor to perform conversions between linear character, {row;column} and TextRange representations.
  * 
@@ -27,32 +27,12 @@ export default class EditorPosition {
         return this.getPositionLeftChar(this.editor.getCursorPosition());
     }
     getTextAtCursorPosition(cursor: CursorPosition): string {
-        var range: CursorRange;
-        range = {
-            start: {
-                row: cursor.row,
-                column: cursor.column
-            },
-            end: {
-                row: cursor.row,
-                column: cursor.column + 1
-            }
-        };
+        var range = new Range(cursor.row, cursor.column, cursor.row, cursor.column + 1);
         // The final function would probably have been better named 'getTextInRange'.
         return this.editor.getSession().getDocument().getTextRange(range);
     }
     getPositionLeftChar(cursor: CursorPosition): string {
-        var range: CursorRange;
-        range = {
-            start: {
-                row: cursor.row,
-                column: cursor.column
-            },
-            end: {
-                row: cursor.row,
-                column: cursor.column - 1
-            }
-        }
+        var range = new Range(cursor.row, cursor.column, cursor.row, cursor.column - 1);
         return this.editor.getSession().getDocument().getTextRange(range);
     }
     getLinesChars(lines: string[]): number {
@@ -63,11 +43,11 @@ export default class EditorPosition {
         return count;
     }
 
-    getChars(doc: Document, pos: { row: number; column: number }): number {
+    getChars(doc: EditorDocument, pos: { row: number; column: number }): number {
         return this.getLinesChars(doc.getLines(0, pos.row - 1)) + pos.column;
     }
 
-    getPosition(doc: Document, chars: number) {
+    getPosition(doc: EditorDocument, chars: number) {
         var i;
         var line: string;
         var lines = doc.getAllLines();

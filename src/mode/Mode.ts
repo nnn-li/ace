@@ -35,8 +35,8 @@ import Behaviour from "./behaviour";
 import {packages} from "../unicode";
 import {escapeRegExp} from "../lib/lang";
 import TokenIterator from "../TokenIterator";
-import {Range} from "../range";
-import {EditSession} from '../edit_session';
+import Range from "../Range";
+import EditSession from '../EditSession';
 import Editor from '../Editor';
 
 /**

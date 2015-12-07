@@ -43,7 +43,7 @@ import {wrap} from './triton';
 import Editor from "./Editor";
 import {} from "./edit_session";
 import {} from "./undomanager";
-import {VirtualRenderer} from "./virtual_renderer";
+import VirtualRenderer from "./VirtualRenderer";
 import {workspace, Workspace} from "./workspace/workspace";
 import {} from './config';
 
@@ -101,7 +101,7 @@ export function edit(source: any, workspace: Workspace) {
 
     var editSession = createEditSession(value);
 
-    var editor = new Editor(new VirtualRenderer(element));
+    var editor = new Editor(new VirtualRenderer(element), editSession);
     editor.setSession(editSession);
 
     // FIXME: The first property is incorrectly named.

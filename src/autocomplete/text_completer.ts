@@ -27,9 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import {Range} from "../range";
-import {Document} from '../document';
-import {EditSession} from '../edit_session';
+import Range from "../Range";
+import EditSession from '../EditSession';
 import Editor from '../Editor';
 
 /**

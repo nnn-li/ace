@@ -28,8 +28,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {Range} from "../range";
-import {EditSession} from "../edit_session";
+import Range from "../Range";
+import EditSession from "../EditSession";
 
 export default class MatchingBraceOutdent {
     constructor() {

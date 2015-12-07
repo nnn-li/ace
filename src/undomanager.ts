@@ -27,8 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import {EditSession} from './edit_session';
-import {Range} from './range';
+import EditSession from './EditSession';
+import Range from './Range';
 
 /**
  * This object maintains the undo stack for an [[EditSession `EditSession`]].

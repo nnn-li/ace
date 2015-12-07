@@ -29,8 +29,8 @@
  * ***** END LICENSE BLOCK ***** */
 
 import TokenIterator from "../TokenIterator";
-import {EditSession} from "../edit_session";
-import { Range } from "../range";
+import EditSession from "../EditSession";
+import Range from "../Range";
 
 /**
  * Utility service fo

@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 import {} from '../lib/oop';
 import {qualifyURL} from '../lib/net';
-import {Document} from "../document";
+import EditorDocument from "../EditorDocument";
 import {EventEmitterClass} from '../lib/event_emitter';
 import {get, moduleUrl} from "../config";
 
@@ -41,7 +41,7 @@ export class WorkerClient extends EventEmitterClass {
     private deltaQueue;
     private callbacks = {};
     private callbackId: number = 1;
-    private $doc: Document;
+    private $doc: EditorDocument;
     constructor(topLevelNamespaces: string[], mod: string, classname: string, workerUrl?: string) {
         super();
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
@@ -159,7 +159,7 @@ export class WorkerClient extends EventEmitterClass {
         }
     }
 
-    attachToDocument(doc: Document) {
+    attachToDocument(doc: EditorDocument) {
         if (this.$doc) {
             this.terminate();
         }

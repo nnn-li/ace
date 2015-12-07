@@ -30,7 +30,7 @@
 
 import {stringRepeat, stringTrimLeft, stringTrimRight} from "../lib/lang";
 import {loadModule} from "../config";
-import {Range} from "../range";
+import Range from "../Range";
 import Command from './Command';
 import Editor from '../Editor';
 

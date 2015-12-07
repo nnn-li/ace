@@ -10,6 +10,8 @@
     "inlineSources": true
   },
   "files": [
+    "./src/autocomplete/popup.ts",
+    "./src/autocomplete/text_completer.ts",
     "./src/autocomplete/util.ts",
 
     "./src/commands/Command.ts",
@@ -37,7 +39,8 @@
     "./src/keyboard/keybinding.ts",
     "./src/keyboard/textinput.ts",
 
-    "./src/layer/font_metrics.ts",
+    "./src/layer/Cursor.ts",
+    "./src/layer/FontMetrics.ts",
 
     "./src/mode/doc_comment_highlight_rules.ts",
     "./src/mode/JavaScriptMode.ts",
@@ -46,13 +49,13 @@
     "./src/mode/text_highlight_rules.ts",
 
     "./src/ace.ts",
-    "./src/anchor.ts",
+    "./src/Anchor.ts",
     "./src/background_tokenizer.ts",
-    "./src/edit_session.ts",
-    "./src/anchor.ts",
+    "./src/EditorDocument.ts",
+    "./src/EditSession.ts",
     "./src/Tokenizer.ts",
-    "./src/renderloop.ts",
-    "./src/range.ts",
+    "./src/RenderLoop.ts",
+    "./src/Range.ts",
     "./src/scrollbar.ts",
     "./src/search.ts",
     "./src/tooltip.ts",

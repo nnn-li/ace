@@ -1,21 +1,18 @@
 {
   "name": "davinci-triton",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Experimental Code Editor",
   "main": "lib/triton.js",
   "bin": {},
   "homepage": "https://github.com/geometryzen/davinci-triton",
   "author": "david.geo.holmes@gmail.com",
   "jspm": {
-    "format": "cjs",
-    "main": "editor",
-    "registry": "github",
-    "name": "geometryzen/davinci-triton",
-    "dependencies": {
-      "typescript": "npm:typescript@^1.7.3"
-    },
-    "directories": {
-      "lib": "lib"
+    "dependencies": {},
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+      "core-js": "npm:core-js@^1.1.4",
+      "typescript": "npm:typescript@^1.6.2"
     }
   },
   "keywords": [
@@ -36,12 +33,10 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "jspm": {
-    "devDependencies": {
-      "typescript": "npm:typescript@^1.6.2"
-    }
-  },
   "dependencies": {
     "typescript": "^1.7.3"
+  },
+  "devDependencies": {
+    "jspm": "^0.16.11"
   }
 }

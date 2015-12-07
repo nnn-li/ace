@@ -30,7 +30,7 @@
 
 import { copyObject, escapeRegExp, getMatchOffsets } from "./lib/lang";
 import { mixin } from "./lib/oop";
-import { Range } from "./range";
+import Range from "./Range";
 
 /**
  * @class Search
