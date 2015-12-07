@@ -42,11 +42,12 @@ var MAX_TOKEN_COUNT = 1000;
  * @constructor
  **/
 export default class Tokenizer {
-    private states;
-    private regExps;
+    // Mode wants access to the states (rules)
+    public states: { caseInsensitive; defaultToken; onMatch; regex; splitRegex; token; tokenArray }[][];
+    private regExps: { [state: string]: RegExp };
     private matchMappings;
     private tokenArray;
-    private splitRegex;
+    private splitRegex: RegExp;
     private token;
     constructor(rules) {
         this.states = rules;
@@ -80,16 +81,19 @@ export default class Tokenizer {
                 if (Array.isArray(rule.token)) {
                     if (rule.token.length == 1 || matchcount == 1) {
                         rule.token = rule.token[0];
-                    } else if (matchcount - 1 != rule.token.length) {
+                    }
+                    else if (matchcount - 1 != rule.token.length) {
                         throw new Error("number of classes and regexp groups in '" +
                             rule.token + "'\n'" + rule.regex + "' doesn't match\n"
                             + (matchcount - 1) + "!=" + rule.token.length);
-                    } else {
+                    }
+                    else {
                         rule.tokenArray = rule.token;
                         rule.token = null;
                         rule.onMatch = this.$arrayTokens;
                     }
-                } else if (typeof rule.token == "function" && !rule.onMatch) {
+                }
+                else if (typeof rule.token === "function" && !rule.onMatch) {
                     if (matchcount > 1)
                         rule.onMatch = this.$applyToken;
                     else
@@ -102,7 +106,8 @@ export default class Tokenizer {
                         adjustedregex = rule.regex.replace(/\\([0-9]+)/g, function(match, digit) {
                             return "\\" + (parseInt(digit, 10) + matchTotal + 1);
                         });
-                    } else {
+                    }
+                    else {
                         matchcount = 1;
                         adjustedregex = this.removeCapturingGroups(rule.regex);
                     }
@@ -155,9 +160,10 @@ export default class Tokenizer {
         return tokens;
     }
 
-    private $arrayTokens(str): any {
-        if (!str)
+    private $arrayTokens(str: string): any {
+        if (!str) {
             return [];
+        }
         var values = this.splitRegex.exec(str);
         if (!values)
             return "text";
@@ -173,7 +179,7 @@ export default class Tokenizer {
         return tokens;
     }
 
-    private removeCapturingGroups(src) {
+    private removeCapturingGroups(src: string): string {
         var r = src.replace(
             /\[(?:\\.|[^\]])*?\]|\\.|\(\?[:=!]|(\()/g,
             function(x, y) { return y ? "(?:" : x; }
@@ -302,12 +308,14 @@ export default class Tokenizer {
                 if (typeof type == "string") {
                     if ((!rule || rule.merge !== false) && token.type === type) {
                         token.value += value;
-                    } else {
+                    }
+                    else {
                         if (token.type)
                             tokens.push(token);
                         token = { type: type, value: value };
                     }
-                } else if (type) {
+                }
+                else if (type) {
                     if (token.type)
                         tokens.push(token);
                     token = { type: null, value: "" };

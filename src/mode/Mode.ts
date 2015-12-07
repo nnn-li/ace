@@ -43,8 +43,8 @@ import Editor from '../Editor';
  * @class Mode
  */
 export default class Mode {
-    private HighlightRules = TextHighlightRules;
-    private $behaviour = new Behaviour();
+    protected HighlightRules: any = TextHighlightRules;
+    protected $behaviour = new Behaviour();
     public tokenRe = new RegExp("^["
         + packages.L
         + packages.Mn + packages.Mc
@@ -59,11 +59,11 @@ export default class Mode {
         + packages.Pc + "\\$_]|\\s])+", "g"
     );
 
-    private lineCommentStart: any = "";
-    private blockComment: any = "";
+    protected lineCommentStart: any = "";
+    protected blockComment: any = "";
     public $id = "ace/mode/text";
-    private $tokenizer;
-    private $highlightRules;
+    private $tokenizer: Tokenizer;
+    private $highlightRules: any;
     private $keywordList;
     private $embeds;
     private $modes;
@@ -75,7 +75,7 @@ export default class Mode {
     constructor() {
     }
 
-    getTokenizer() {
+    getTokenizer(): Tokenizer {
         if (!this.$tokenizer) {
             this.$highlightRules = this.$highlightRules || new this.HighlightRules();
             this.$tokenizer = new Tokenizer(this.$highlightRules.getRules());
@@ -280,7 +280,7 @@ export default class Mode {
     autoOutdent(state, doc, row) {
     }
 
-    $getIndent(line) {
+    $getIndent(line: string): string {
         return line.match(/^\s*/)[0];
     }
 
@@ -344,11 +344,12 @@ export default class Mode {
         }
     }
 
-    getKeywords(append) {
+    getKeywords(append: boolean) {
         // this is for autocompletion to pick up regexp'ed keywords
         if (!this.completionKeywords) {
-            var rules = this.$tokenizer.rules;
-            var completionKeywords = [];
+
+            var rules = this.$tokenizer.states;
+            var completionKeywords: string[] = [];
             for (var rule in rules) {
                 var ruleItr = rules[rule];
                 for (var r = 0, l = ruleItr.length; r < l; r++) {
@@ -370,8 +371,9 @@ export default class Mode {
             this.completionKeywords = completionKeywords;
         }
         // this is for highlighting embed rules, like HAML/Ruby or Obj-C/C
-        if (!append)
+        if (!append) {
             return this.$keywordList;
+        }
         return completionKeywords.concat(this.$keywordList || []);
     }
 

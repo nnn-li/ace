@@ -29,45 +29,50 @@
  * ***** END LICENSE BLOCK ***** */
 
 import {inherits} from "../lib/oop";
-import TextMode from "./Mode";
+import Mode from "./Mode";
 import JavaScriptHighlightRules from "./javascript_highlight_rules";
 import MatchingBraceOutdent from "./matching_brace_outdent";
 import {Range} from "../range";
 import {WorkerClient} from "../worker/worker_client";
 import CstyleBehaviour from "./behaviour/cstyle";
 import CStyleFoldMode from "./folding/cstyle";
+import {EditSession} from "../edit_session";
 
-var Mode = function() {
-    this.HighlightRules = JavaScriptHighlightRules;
-    
-    this.$outdent = new MatchingBraceOutdent();
-    this.$behaviour = new CstyleBehaviour();
-    this.foldingRules = new CStyleFoldMode();
-};
-inherits(Mode, TextMode);
+export default class JavaScriptMode extends Mode {
+    $outdent: MatchingBraceOutdent;
+    lineCommentStart: string;
+    blockComment: { start: string; end: string };
+    constructor() {
+        super();
+        // The Tokenizer will be built using these rules.
+        this.HighlightRules = JavaScriptHighlightRules;
 
-(function() {
+        this.$outdent = new MatchingBraceOutdent();
+        this.$behaviour = new CstyleBehaviour();
+        this.foldingRules = new CStyleFoldMode();
+        this.lineCommentStart = "//";
+        this.blockComment = { start: "/*", end: "*/" };
 
-    this.lineCommentStart = "//";
-    this.blockComment = {start: "/*", end: "*/"};
-
-    this.getNextLineIndent = function(state, line, tab) {
+        this.$id = "ace/mode/javascript";
+    }
+    getNextLineIndent(state: string, line: string, tab: string): string {
         var indent = this.$getIndent(line);
 
         var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
         var tokens = tokenizedLine.tokens;
         var endState = tokenizedLine.state;
 
-        if (tokens.length && tokens[tokens.length-1].type == "comment") {
+        if (tokens.length && tokens[tokens.length - 1].type == "comment") {
             return indent;
         }
 
-        if (state == "start" || state == "no_regex") {
+        if (state === "start" || state === "no_regex") {
             var match = line.match(/^.*(?:\bcase\b.*\:|[\{\(\[])\s*$/);
             if (match) {
                 indent += tab;
             }
-        } else if (state == "doc-start") {
+        }
+        else if (state === "doc-start") {
             if (endState == "start" || endState == "no_regex") {
                 return "";
             }
@@ -81,20 +86,20 @@ inherits(Mode, TextMode);
         }
 
         return indent;
-    };
+    }
 
-    this.checkOutdent = function(state, line, input) {
+    checkOutdent(state, line: string, input: string): boolean {
         return this.$outdent.checkOutdent(line, input);
     };
 
-    this.autoOutdent = function(state, doc, row) {
-        this.$outdent.autoOutdent(doc, row);
+    autoOutdent(state, session: EditSession, row: number) {
+        this.$outdent.autoOutdent(session, row);
     };
 
-    this.createWorker = function(session) {
-        
+    createWorker(session: EditSession): WorkerClient {
+
         var worker = new WorkerClient(["ace"], "ace/mode/javascript_worker", "JavaScriptWorker");
-        
+
         worker.attachToDocument(session.getDocument());
 
         worker.on("jslint", function(results) {
@@ -106,7 +111,5 @@ inherits(Mode, TextMode);
         });
 
         return worker;
-    };
-
-    this.$id = "ace/mode/javascript";
-}).call(Mode.prototype);
+    }
+}

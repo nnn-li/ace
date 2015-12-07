@@ -34,7 +34,7 @@ export default class TextHighlightRules {
     $rules;
     $embeds;
     nextState;
-    $keywordList;
+    $keywordList: string[];
     constructor() {
 
         // regexp must not have capturing parentheses
@@ -228,7 +228,7 @@ export default class TextHighlightRules {
             : function(value) { return keywords[value] || defaultToken };
     }
 
-    getKeywords = function() {
-        return this.$keywords;
+    getKeywords(): string[] {
+        return this.$keywordList;
     }
 }

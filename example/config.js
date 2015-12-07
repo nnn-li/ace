@@ -17,7 +17,7 @@ System.config({
     "babel-runtime": "npm:babel-runtime@5.8.34",
     "core-js": "npm:core-js@1.2.6",
     "geometryzen/davinci-eight": "github:geometryzen/davinci-eight@2.169.0",
-    "geometryzen/davinci-triton": "github:geometryzen/davinci-triton@0.1.1",
+    "geometryzen/davinci-triton": "github:geometryzen/davinci-triton@0.1.2",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
     },
