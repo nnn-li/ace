@@ -433,8 +433,9 @@ export class SnippetManager extends EventEmitterClass {
         var scope = editor.session.$mode.$id || "";
         scope = scope.split("/").pop();
         if (scope === "html" || scope === "php") {
+            // FIXME: Coupling to PHP?
             // PHP is actually HTML
-            if (scope === "php" && !editor.session.$mode.inlinePhp)
+            if (scope === "php" && !editor.session.$mode['inlinePhp'])
                 scope = "html";
             var c = editor.getCursorPosition();
             var state = editor.session.getState(c.row);

@@ -53,7 +53,7 @@ export class BackgroundTokenizer extends EventEmitterClass {
      * There are some conditionals looking for a falsey value, so we use zero where needed.
      */
     private running: number = 0;
-    private lines: { type: string; value: string }[][] = [];
+    private lines: { start: number; type: string; value: string }[][] = [];
     private states: string[] = [];
     private currentLine: number = 0;
     private tokenizer: Tokenizer;
@@ -212,7 +212,7 @@ export class BackgroundTokenizer extends EventEmitterClass {
      * 
      *
      **/
-    getTokens(row: number): { type: string; value: string }[] {
+    getTokens(row: number): { start: number; type: string; value: string }[] {
         return this.lines[row] || this.$tokenizeRow(row);
     }
 
@@ -228,12 +228,12 @@ export class BackgroundTokenizer extends EventEmitterClass {
         return this.states[row] || "start";
     }
 
-    $tokenizeRow(row: number): { type: string; value: string }[] {
+    $tokenizeRow(row: number): { start: number; type: string; value: string }[] {
         var line: string = this.doc.getLine(row);
         var state = this.states[row - 1];
         
         // FIXME: There is no third argument in getLineTokens!
-        var data: { state: any; tokens: { type: string; value: string }[] } = this.tokenizer.getLineTokens(line, state/*, row*/);
+        var data: { state: any; tokens: { start: number; type: string; value: string }[] } = this.tokenizer.getLineTokens(line, state/*, row*/);
 
         if (this.states[row] + "" !== data.state + "") {
             this.states[row] = data.state;

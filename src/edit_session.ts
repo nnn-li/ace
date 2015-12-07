@@ -28,20 +28,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {} from "./lib/oop";
+import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
 import {EventEmitterClass} from "./lib/event_emitter";
-//import fld = require("./edit_session/folding")
+import FoldLine from "./fold_line";
+import Fold from "./fold";
 import {Selection} from "./selection";
-import {Mode} from "./mode/text";
+import Mode from "./mode/Mode";
 import {Range} from "./range";
 import {Document} from "./document";
 import {BackgroundTokenizer} from "./background_tokenizer";
 import {SearchHighlight} from "./search_highlight";
 import {assert} from './lib/asserts';
-import {BracketMatcher, BracketMatchService} from "./edit_session/bracket_match";
+import BracketMatch from "./edit_session/bracket_match";
 import {UndoManager} from './undomanager'
+import TokenIterator from './TokenIterator';
 
 // "Tokens"
 var CHAR = 1,
@@ -190,7 +192,7 @@ function isFullWidth(c: number): boolean {
  * @constructor
  **/
 
-export class EditSession extends EventEmitterClass implements BracketMatcher {
+export class EditSession extends EventEmitterClass {
   public $breakpoints: string[] = [];
   public $decorations: string[] = [];
   private $frontMarkers = {};
@@ -201,7 +203,13 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
   private $deltasDoc;
   private $deltasFold;
   private $fromUndo;
-  private $foldData = [];
+
+  private $updateFoldWidgets: () => any;
+  private $foldData: FoldLine[];
+  public foldWidgets: any[];
+  public getFoldWidget: (row: number) => any;
+  public getFoldWidgetRange: (row: number, forceMultiline?: boolean) => Range;
+
   public doc: Document;
   private $defaultUndoManager = { undo: function() { }, redo: function() { }, reset: function() { } };
   private $undoManager: UndoManager;
@@ -220,8 +228,14 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
   private getOption;
   private setOption;
   private $useWorker;
-  private $modes = {};
-  public $mode = null;
+  /**
+   *
+   */
+  private $modes: { [path: string]: Mode } = {};
+  /**
+   *
+   */
+  public $mode: Mode = null;
   private $modeId = null;
   private $worker;
   private $options;
@@ -249,19 +263,6 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
   private lineWidgetsWidth;
   private lineWidgetWidth;
   private $getWidgetScreenLength;
-  // TODO: FOLDING: These come from a under-the-radar mixin. Use the TypeScript way instead.
-  public getNextFoldLine
-  private addFolds
-  private getFoldsInRange;
-  public getRowFoldStart;
-  public getRowFoldEnd;
-  private $setFolding;
-  private removeFolds;
-  public getFoldLine;
-  private getFoldDisplayLine;
-  public getFoldAt;
-  public removeFold;
-  public expandFold;
   //
   public $tagHighlight;
   public $bracketHighlight: number;   // a marker.
@@ -270,9 +271,7 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
    * A number is a marker identifier, null indicates that no such marker exists. 
    */
   public $selectionMarker: number = null;
-  private $bracketMatcher: BracketMatchService = new BracketMatchService(this);
-  // FIXME: I don't see where this is initialized.
-  public unfold;
+  private $bracketMatcher = new BracketMatch(this);
   /**
    * @param [text] {string|Document} The document or string over which this edit session works.
    * @param [mode]
@@ -473,7 +472,7 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
    * @method getTokens
    * @param row {number} The row to start at.
    **/
-  public getTokens(row: number): { type: string; value: string }[] {
+  public getTokens(row: number): { start: number; type: string; value: string }[] {
     return this.bgTokenizer.getTokens(row);
   }
 
@@ -1017,8 +1016,9 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
     }
 
     // this is needed if ace isn't on require path (e.g tests in node)
-    if (!this.$modes["ace/mode/text"])
+    if (!this.$modes["ace/mode/text"]) {
       this.$modes["ace/mode/text"] = new Mode();
+    }
 
     if (this.$modes[path] && !options) {
       this.$onChangeMode(this.$modes[path]);
@@ -1027,7 +1027,7 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
     }
     // load on demand
     this.$modeId = path;
-    loadModule(["mode", path], function(m) {
+    loadModule(["mode", path], function(m: any) {
       if (this.$modeId !== path)
         return cb && cb();
       if (this.$modes[path] && !options)
@@ -1049,9 +1049,10 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
     }
   }
 
-  private $onChangeMode(mode, $isPlaceholder?) {
-    if (!$isPlaceholder)
+  private $onChangeMode(mode: Mode, $isPlaceholder?) {
+    if (!$isPlaceholder) {
       this.$modeId = mode.$id;
+    }
     if (this.$mode === mode)
       return;
 
@@ -1649,7 +1650,7 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
     };
   }
 
-  public $clipRangeToDocument(range: Range) {
+  public $clipRangeToDocument(range: Range): Range {
     if (range.start.row < 0) {
       range.start.row = 0;
       range.start.column = 0;
@@ -2497,7 +2498,7 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
   **/
   public getScreenLength(): number {
     var screenRows = 0;
-    var fold = null;
+    var fold: FoldLine = null;
     if (!this.$useWrapMode) {
       screenRows = this.getLength();
 
@@ -2507,7 +2508,8 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
         fold = foldData[i];
         screenRows -= fold.end.row - fold.start.row;
       }
-    } else {
+    }
+    else {
       var lastRow = this.$wrapData.length;
       var row = 0, i = 0;
       var fold = this.$foldData[i++];
@@ -2555,10 +2557,834 @@ export class EditSession extends EventEmitterClass implements BracketMatcher {
   $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
     return this.$bracketMatcher.$findClosingBracket(bracket, position, typeRe);
   }
+  private $foldMode;
+
+  // structured folding
+  $foldStyles = {
+    "manual": 1,
+    "markbegin": 1,
+    "markbeginend": 1
+  }
+  $foldStyle = "markbegin";
+  /*
+   * Looks up a fold at a given row/column. Possible values for side:
+   *   -1: ignore a fold if fold.start = row/column
+   *   +1: ignore a fold if fold.end = row/column
+   */
+  getFoldAt(row: number, column, side?) {
+    var foldLine = this.getFoldLine(row);
+    if (!foldLine)
+      return null;
+
+    var folds = foldLine.folds;
+    for (var i = 0; i < folds.length; i++) {
+      var fold = folds[i];
+      if (fold.range.contains(row, column)) {
+        if (side == 1 && fold.range.isEnd(row, column)) {
+          continue;
+        } else if (side == -1 && fold.range.isStart(row, column)) {
+          continue;
+        }
+        return fold;
+      }
+    }
+  }
+
+  /*
+   * Returns all folds in the given range. Note, that this will return folds
+   *
+   */
+  getFoldsInRange(range: Range) {
+    var start = range.start;
+    var end = range.end;
+    var foldLines = this.$foldData;
+    var foundFolds: Fold[] = [];
+
+    start.column += 1;
+    end.column -= 1;
+
+    for (var i = 0; i < foldLines.length; i++) {
+      var cmp = foldLines[i].range.compareRange(range);
+      if (cmp == 2) {
+        // Range is before foldLine. No intersection. This means,
+        // there might be other foldLines that intersect.
+        continue;
+      }
+      else if (cmp == -2) {
+        // Range is after foldLine. There can't be any other foldLines then,
+        // so let's give up.
+        break;
+      }
+
+      var folds = foldLines[i].folds;
+      for (var j = 0; j < folds.length; j++) {
+        var fold = folds[j];
+        cmp = fold.range.compareRange(range);
+        if (cmp == -2) {
+          break;
+        } else if (cmp == 2) {
+          continue;
+        } else
+          // WTF-state: Can happen due to -1/+1 to start/end column.
+          if (cmp == 42) {
+            break;
+          }
+        foundFolds.push(fold);
+      }
+    }
+    start.column -= 1;
+    end.column += 1;
+
+    return foundFolds;
+  }
+
+  getFoldsInRangeList(ranges) {
+    if (Array.isArray(ranges)) {
+      var folds: Fold[] = [];
+      ranges.forEach(function(range) {
+        folds = folds.concat(this.getFoldsInRange(range));
+      }, this);
+    }
+    else {
+      var folds = this.getFoldsInRange(ranges);
+    }
+    return folds;
+  }
+    
+  /*
+   * Returns all folds in the document
+   */
+  getAllFolds() {
+    var folds = [];
+    var foldLines = this.$foldData;
+
+    for (var i = 0; i < foldLines.length; i++)
+      for (var j = 0; j < foldLines[i].folds.length; j++)
+        folds.push(foldLines[i].folds[j]);
+
+    return folds;
+  }
+
+  /*
+   * Returns the string between folds at the given position.
+   * E.g.
+   *  foo<fold>b|ar<fold>wolrd -> "bar"
+   *  foo<fold>bar<fold>wol|rd -> "world"
+   *  foo<fold>bar<fo|ld>wolrd -> <null>
+   *
+   * where | means the position of row/column
+   *
+   * The trim option determs if the return string should be trimed according
+   * to the "side" passed with the trim value:
+   *
+   * E.g.
+   *  foo<fold>b|ar<fold>wolrd -trim=-1> "b"
+   *  foo<fold>bar<fold>wol|rd -trim=+1> "rld"
+   *  fo|o<fold>bar<fold>wolrd -trim=00> "foo"
+   */
+  getFoldStringAt(row: number, column: number, trim: number, foldLine?: FoldLine) {
+    foldLine = foldLine || this.getFoldLine(row);
+    if (!foldLine)
+      return null;
+
+    var lastFold = {
+      end: { column: 0 }
+    };
+    // TODO: Refactor to use getNextFoldTo function.
+    var str: string;
+    var fold: Fold;
+    for (var i = 0; i < foldLine.folds.length; i++) {
+      fold = foldLine.folds[i];
+      var cmp = fold.range.compareEnd(row, column);
+      if (cmp == -1) {
+        str = this.getLine(fold.start.row).substring(lastFold.end.column, fold.start.column);
+        break;
+      }
+      else if (cmp === 0) {
+        return null;
+      }
+      lastFold = fold;
+    }
+    if (!str)
+      str = this.getLine(fold.start.row).substring(lastFold.end.column);
+
+    if (trim == -1)
+      return str.substring(0, column - lastFold.end.column);
+    else if (trim == 1)
+      return str.substring(column - lastFold.end.column);
+    else
+      return str;
+  }
+
+  getFoldLine(docRow: number, startFoldLine?: FoldLine): FoldLine {
+    var foldData = this.$foldData;
+    var i = 0;
+    if (startFoldLine)
+      i = foldData.indexOf(startFoldLine);
+    if (i == -1)
+      i = 0;
+    for (i; i < foldData.length; i++) {
+      var foldLine = foldData[i];
+      if (foldLine.start.row <= docRow && foldLine.end.row >= docRow) {
+        return foldLine;
+      } else if (foldLine.end.row > docRow) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  // returns the fold which starts after or contains docRow
+  getNextFoldLine(docRow: number, startFoldLine?: FoldLine): FoldLine {
+    var foldData = this.$foldData;
+    var i = 0;
+    if (startFoldLine)
+      i = foldData.indexOf(startFoldLine);
+    if (i == -1)
+      i = 0;
+    for (i; i < foldData.length; i++) {
+      var foldLine = foldData[i];
+      if (foldLine.end.row >= docRow) {
+        return foldLine;
+      }
+    }
+    return null;
+  }
+
+  getFoldedRowCount(first: number, last: number): number {
+    var foldData = this.$foldData;
+    var rowCount = last - first + 1;
+    for (var i = 0; i < foldData.length; i++) {
+      var foldLine = foldData[i],
+        end = foldLine.end.row,
+        start = foldLine.start.row;
+      if (end >= last) {
+        if (start < last) {
+          if (start >= first)
+            rowCount -= last - start;
+          else
+            rowCount = 0;//in one fold
+        }
+        break;
+      } else if (end >= first) {
+        if (start >= first) //fold inside range
+          rowCount -= end - start;
+        else
+          rowCount -= end - first + 1;
+      }
+    }
+    return rowCount;
+  }
+
+  $addFoldLine(foldLine: FoldLine) {
+    this.$foldData.push(foldLine);
+    this.$foldData.sort(function(a, b) {
+      return a.start.row - b.start.row;
+    });
+    return foldLine;
+  }
+
+  /**
+   * Adds a new fold.
+   *
+   * @returns
+   *      The new created Fold object or an existing fold object in case the
+   *      passed in range fits an existing fold exactly.
+   */
+  addFold(placeholder: string | Fold, range: Range) {
+    var foldData = this.$foldData;
+    var added = false;
+    var fold: Fold;
+
+    if (placeholder instanceof Fold)
+      fold = placeholder;
+    else {
+      fold = new Fold(range, placeholder);
+      fold.collapseChildren = range.collapseChildren;
+    }
+    // FIXME: $clipRangeToDocument?
+    // fold.range = this.clipRange(fold.range);
+    fold.range = this.$clipRangeToDocument(fold.range)
+
+    var startRow = fold.start.row;
+    var startColumn = fold.start.column;
+    var endRow = fold.end.row;
+    var endColumn = fold.end.column;
+
+    // --- Some checking ---
+    if (!(startRow < endRow ||
+      startRow == endRow && startColumn <= endColumn - 2))
+      throw new Error("The range has to be at least 2 characters width");
+
+    var startFold = this.getFoldAt(startRow, startColumn, 1);
+    var endFold = this.getFoldAt(endRow, endColumn, -1);
+    if (startFold && endFold == startFold)
+      return startFold.addSubFold(fold);
+
+    if (
+      (startFold && !startFold.range.isStart(startRow, startColumn))
+      || (endFold && !endFold.range.isEnd(endRow, endColumn))
+    ) {
+      throw new Error("A fold can't intersect already existing fold" + fold.range + startFold.range);
+    }
+
+    // Check if there are folds in the range we create the new fold for.
+    var folds = this.getFoldsInRange(fold.range);
+    if (folds.length > 0) {
+      // Remove the folds from fold data.
+      this.removeFolds(folds);
+      // Add the removed folds as subfolds on the new fold.
+      folds.forEach(function(subFold) {
+        fold.addSubFold(subFold);
+      });
+    }
+
+    for (var i = 0; i < foldData.length; i++) {
+      var foldLine = foldData[i];
+      if (endRow == foldLine.start.row) {
+        foldLine.addFold(fold);
+        added = true;
+        break;
+      } else if (startRow == foldLine.end.row) {
+        foldLine.addFold(fold);
+        added = true;
+        if (!fold.sameRow) {
+          // Check if we might have to merge two FoldLines.
+          var foldLineNext = foldData[i + 1];
+          if (foldLineNext && foldLineNext.start.row == endRow) {
+            // We need to merge!
+            foldLine.merge(foldLineNext);
+            break;
+          }
+        }
+        break;
+      } else if (endRow <= foldLine.start.row) {
+        break;
+      }
+    }
+
+    if (!added)
+      foldLine = this.$addFoldLine(new FoldLine(this.$foldData, fold));
+
+    if (this.$useWrapMode)
+      this.$updateWrapData(foldLine.start.row, foldLine.start.row);
+    else
+      this.$updateRowLengthCache(foldLine.start.row, foldLine.start.row);
+
+    // Notify that fold data has changed.
+    this.setModified(true);
+    this._emit("changeFold", { data: fold, action: "add" });
+
+    return fold;
+  }
+
+  setModified(modified: boolean) {
+
+  }
+
+  addFolds(folds: Fold[]) {
+    folds.forEach(function(fold) {
+      this.addFold(fold);
+    }, this);
+  }
+
+  removeFold(fold: Fold) {
+    var foldLine = fold.foldLine;
+    var startRow = foldLine.start.row;
+    var endRow = foldLine.end.row;
+
+    var foldLines = this.$foldData;
+    var folds = foldLine.folds;
+    // Simple case where there is only one fold in the FoldLine such that
+    // the entire fold line can get removed directly.
+    if (folds.length == 1) {
+      foldLines.splice(foldLines.indexOf(foldLine), 1);
+    } else
+      // If the fold is the last fold of the foldLine, just remove it.
+      if (foldLine.range.isEnd(fold.end.row, fold.end.column)) {
+        folds.pop();
+        foldLine.end.row = folds[folds.length - 1].end.row;
+        foldLine.end.column = folds[folds.length - 1].end.column;
+      } else
+        // If the fold is the first fold of the foldLine, just remove it.
+        if (foldLine.range.isStart(fold.start.row, fold.start.column)) {
+          folds.shift();
+          foldLine.start.row = folds[0].start.row;
+          foldLine.start.column = folds[0].start.column;
+        } else
+          // We know there are more then 2 folds and the fold is not at the edge.
+          // This means, the fold is somewhere in between.
+          //
+          // If the fold is in one row, we just can remove it.
+          if (fold.sameRow) {
+            folds.splice(folds.indexOf(fold), 1);
+          } else
+          // The fold goes over more then one row. This means remvoing this fold
+          // will cause the fold line to get splitted up. newFoldLine is the second part
+          {
+            var newFoldLine = foldLine.split(fold.start.row, fold.start.column);
+            folds = newFoldLine.folds;
+            folds.shift();
+            newFoldLine.start.row = folds[0].start.row;
+            newFoldLine.start.column = folds[0].start.column;
+          }
+
+    if (!this.$updating) {
+      if (this.$useWrapMode)
+        this.$updateWrapData(startRow, endRow);
+      else
+        this.$updateRowLengthCache(startRow, endRow);
+    }
+        
+    // Notify that fold data has changed.
+    this.setModified(true);
+    this._emit("changeFold", { data: fold, action: "remove" });
+  }
+
+  removeFolds(folds: Fold[]) {
+    // We need to clone the folds array passed in as it might be the folds
+    // array of a fold line and as we call this.removeFold(fold), folds
+    // are removed from folds and changes the current index.
+    var cloneFolds = [];
+    for (var i = 0; i < folds.length; i++) {
+      cloneFolds.push(folds[i]);
+    }
+
+    cloneFolds.forEach(function(fold) {
+      this.removeFold(fold);
+    }, this);
+    this.setModified(true);
+  }
+
+  expandFold(fold: Fold) {
+    this.removeFold(fold);
+    fold.subFolds.forEach(function(subFold) {
+      fold.restoreRange(subFold);
+      this.addFold(subFold);
+    }, this);
+    if (fold.collapseChildren > 0) {
+      this.foldAll(fold.start.row + 1, fold.end.row, fold.collapseChildren - 1);
+    }
+    fold.subFolds = [];
+  }
+
+  expandFolds(folds: Fold[]) {
+    folds.forEach(function(fold) {
+      this.expandFold(fold);
+    }, this);
+  }
+
+  unfold(location?, expandInner?) {
+    var range, folds;
+    if (location == null) {
+      range = new Range(0, 0, this.getLength(), 0);
+      expandInner = true;
+    } else if (typeof location == "number")
+      range = new Range(location, 0, location, this.getLine(location).length);
+    else if ("row" in location)
+      range = Range.fromPoints(location, location);
+    else
+      range = location;
+
+    folds = this.getFoldsInRangeList(range);
+    if (expandInner) {
+      this.removeFolds(folds);
+    } else {
+      var subFolds = folds;
+      // TODO: might be better to remove and add folds in one go instead of using
+      // expandFolds several times.
+      while (subFolds.length) {
+        this.expandFolds(subFolds);
+        subFolds = this.getFoldsInRangeList(range);
+      }
+    }
+    if (folds.length)
+      return folds;
+  }
+
+  /*
+   * Checks if a given documentRow is folded. This is true if there are some
+   * folded parts such that some parts of the line is still visible.
+   **/
+  isRowFolded(docRow: number, startFoldRow: FoldLine): boolean {
+    return !!this.getFoldLine(docRow, startFoldRow);
+  }
+
+  getRowFoldEnd(docRow: number, startFoldRow?: FoldLine): number {
+    var foldLine = this.getFoldLine(docRow, startFoldRow);
+    return foldLine ? foldLine.end.row : docRow;
+  }
+
+  getRowFoldStart(docRow: number, startFoldRow?: FoldLine): number {
+    var foldLine = this.getFoldLine(docRow, startFoldRow);
+    return foldLine ? foldLine.start.row : docRow;
+  }
+
+  getFoldDisplayLine(foldLine: FoldLine, endRow?: number, endColumn?: number, startRow?: number, startColumn?: number): string {
+    if (startRow == null)
+      startRow = foldLine.start.row;
+    if (startColumn == null)
+      startColumn = 0;
+    if (endRow == null)
+      endRow = foldLine.end.row;
+    if (endColumn == null)
+      endColumn = this.getLine(endRow).length;
+        
+
+    // Build the textline using the FoldLine walker.
+    var self = this;
+    var textLine = "";
+
+    foldLine.walk(function(placeholder: string, row: number, column: number, lastColumn: number) {
+      if (row < startRow)
+        return;
+      if (row == startRow) {
+        if (column < startColumn)
+          return;
+        lastColumn = Math.max(startColumn, lastColumn);
+      }
+
+      if (placeholder != null) {
+        textLine += placeholder;
+      } else {
+        textLine += self.getLine(row).substring(lastColumn, column);
+      }
+    }, endRow, endColumn);
+    return textLine;
+  }
+
+  getDisplayLine(row: number, endColumn: number, startRow: number, startColumn: number): string {
+    var foldLine = this.getFoldLine(row);
+
+    if (!foldLine) {
+      var line: string;
+      line = this.getLine(row);
+      return line.substring(startColumn || 0, endColumn || line.length);
+    } else {
+      return this.getFoldDisplayLine(
+        foldLine, row, endColumn, startRow, startColumn);
+    }
+  }
+
+  $cloneFoldData() {
+    var fd = [];
+    fd = this.$foldData.map(function(foldLine) {
+      var folds = foldLine.folds.map(function(fold) {
+        return fold.clone();
+      });
+      return new FoldLine(fd, folds);
+    });
+
+    return fd;
+  }
+
+  toggleFold(tryToUnfold) {
+    var selection = this.selection;
+    var range: Range = selection.getRange();
+    var fold;
+    var bracketPos;
+
+    if (range.isEmpty()) {
+      var cursor = range.start;
+      fold = this.getFoldAt(cursor.row, cursor.column);
+
+      if (fold) {
+        this.expandFold(fold);
+        return;
+      } else if (bracketPos = this.findMatchingBracket(cursor)) {
+        if (range.comparePoint(bracketPos) == 1) {
+          range.end = bracketPos;
+        } else {
+          range.start = bracketPos;
+          range.start.column++;
+          range.end.column--;
+        }
+      } else if (bracketPos = this.findMatchingBracket({ row: cursor.row, column: cursor.column + 1 })) {
+        if (range.comparePoint(bracketPos) === 1)
+          range.end = bracketPos;
+        else
+          range.start = bracketPos;
+
+        range.start.column++;
+      } else {
+        range = this.getCommentFoldRange(cursor.row, cursor.column) || range;
+      }
+    } else {
+      var folds = this.getFoldsInRange(range);
+      if (tryToUnfold && folds.length) {
+        this.expandFolds(folds);
+        return;
+      } else if (folds.length == 1) {
+        fold = folds[0];
+      }
+    }
+
+    if (!fold)
+      fold = this.getFoldAt(range.start.row, range.start.column);
+
+    if (fold && fold.range.toString() == range.toString()) {
+      this.expandFold(fold);
+      return;
+    }
+
+    var placeholder = "...";
+    if (!range.isMultiLine()) {
+      placeholder = this.getTextRange(range);
+      if (placeholder.length < 4)
+        return;
+      placeholder = placeholder.trim().substring(0, 2) + "..";
+    }
+
+    this.addFold(placeholder, range);
+  }
+
+  getCommentFoldRange(row: number, column: number, dir?: number): Range {
+    var iterator = new TokenIterator(this, row, column);
+    var token = iterator.getCurrentToken();
+    if (token && /^comment|string/.test(token.type)) {
+      var range = new Range(0, 0, 0, 0);
+      var re = new RegExp(token.type.replace(/\..*/, "\\."));
+      if (dir != 1) {
+        do {
+          token = iterator.stepBackward();
+        } while (token && re.test(token.type));
+        iterator.stepForward();
+      }
+
+      range.start.row = iterator.getCurrentTokenRow();
+      range.start.column = iterator.getCurrentTokenColumn() + 2;
+
+      iterator = new TokenIterator(this, row, column);
+
+      if (dir != -1) {
+        do {
+          token = iterator.stepForward();
+        } while (token && re.test(token.type));
+        token = iterator.stepBackward();
+      } else
+        token = iterator.getCurrentToken();
+
+      range.end.row = iterator.getCurrentTokenRow();
+      range.end.column = iterator.getCurrentTokenColumn() + token.value.length - 2;
+      return range;
+    }
+  }
+
+  foldAll(startRow: number, endRow: number, depth: number) {
+    if (depth == undefined)
+      depth = 100000; // JSON.stringify doesn't hanle Infinity
+    var foldWidgets = this.foldWidgets;
+    if (!foldWidgets)
+      return; // mode doesn't support folding
+    endRow = endRow || this.getLength();
+    startRow = startRow || 0;
+    for (var row = startRow; row < endRow; row++) {
+      if (foldWidgets[row] == null)
+        foldWidgets[row] = this.getFoldWidget(row);
+      if (foldWidgets[row] != "start")
+        continue;
+
+      var range = this.getFoldWidgetRange(row);
+      // sometimes range can be incompatible with existing fold
+      // TODO change addFold to return null istead of throwing
+      if (range && range.isMultiLine()
+        && range.end.row <= endRow
+        && range.start.row >= startRow
+      ) {
+        row = range.end.row;
+        try {
+          // addFold can change the range
+          var fold = this.addFold("...", range);
+          if (fold)
+            fold.collapseChildren = depth;
+        } catch (e) { }
+      }
+    }
+  }
+
+  setFoldStyle(style: string) {
+    if (!this.$foldStyles[style])
+      throw new Error("invalid fold style: " + style + "[" + Object.keys(this.$foldStyles).join(", ") + "]");
+
+    if (this.$foldStyle === style)
+      return;
+
+    this.$foldStyle = style;
+
+    if (style === "manual")
+      this.unfold();
+        
+    // reset folding
+    var mode = this.$foldMode;
+    this.$setFolding(null);
+    this.$setFolding(mode);
+  }
+
+  $setFolding(foldMode) {
+    if (this.$foldMode == foldMode)
+      return;
+
+    this.$foldMode = foldMode;
+
+    this.removeListener('change', this.$updateFoldWidgets);
+    this._emit("changeAnnotation");
+
+    if (!foldMode || this.$foldStyle == "manual") {
+      this.foldWidgets = null;
+      return;
+    }
+
+    this.foldWidgets = [];
+    this.getFoldWidget = foldMode.getFoldWidget.bind(foldMode, this, this.$foldStyle);
+    this.getFoldWidgetRange = foldMode.getFoldWidgetRange.bind(foldMode, this, this.$foldStyle);
+
+    this.$updateFoldWidgets = this.updateFoldWidgets.bind(this);
+    this.on('change', this.$updateFoldWidgets);
+
+  }
+
+  getParentFoldRangeData(row: number, ignoreCurrent?: boolean): { range?: Range; firstRange?: Range } {
+    var fw = this.foldWidgets;
+    if (!fw || (ignoreCurrent && fw[row])) {
+      return {};
+    }
+
+    var i = row - 1;
+    var firstRange: Range;
+    while (i >= 0) {
+      var c = fw[i];
+      if (c == null)
+        c = fw[i] = this.getFoldWidget(i);
+
+      if (c == "start") {
+        var range = this.getFoldWidgetRange(i);
+        if (!firstRange)
+          firstRange = range;
+        if (range && range.end.row >= row)
+          break;
+      }
+      i--;
+    }
+
+    return {
+      range: i !== -1 && range,
+      firstRange: firstRange
+    };
+  }
+
+  onFoldWidgetClick(row, e) {
+    e = e.domEvent;
+    var options = {
+      children: e.shiftKey,
+      all: e.ctrlKey || e.metaKey,
+      siblings: e.altKey
+    };
+
+    var range = this.$toggleFoldWidget(row, options);
+    if (!range) {
+      var el = (e.target || e.srcElement)
+      if (el && /ace_fold-widget/.test(el.className))
+        el.className += " ace_invalid";
+    }
+  }
+
+  $toggleFoldWidget(row, options): Range {
+    if (!this.getFoldWidget)
+      return;
+    var type = this.getFoldWidget(row);
+    var line = this.getLine(row);
+
+    var dir = type === "end" ? -1 : 1;
+    var fold = this.getFoldAt(row, dir === -1 ? 0 : line.length, dir);
+
+    if (fold) {
+      if (options.children || options.all)
+        this.removeFold(fold);
+      else
+        this.expandFold(fold);
+      return;
+    }
+
+    var range = this.getFoldWidgetRange(row, true);
+    // sometimes singleline folds can be missed by the code above
+    if (range && !range.isMultiLine()) {
+      fold = this.getFoldAt(range.start.row, range.start.column, 1);
+      if (fold && range.isEqual(fold.range)) {
+        this.removeFold(fold);
+        return;
+      }
+    }
+
+    if (options.siblings) {
+      var data = this.getParentFoldRangeData(row);
+      if (data.range) {
+        var startRow = data.range.start.row + 1;
+        var endRow = data.range.end.row;
+      }
+      this.foldAll(startRow, endRow, options.all ? 10000 : 0);
+    }
+    else if (options.children) {
+      endRow = range ? range.end.row : this.getLength();
+      this.foldAll(row + 1, range.end.row, options.all ? 10000 : 0);
+    }
+    else if (range) {
+      if (options.all) {
+        // This is a bit ugly, but it corresponds to some code elsewhere.
+        range.collapseChildren = 10000;
+      }
+      this.addFold("...", range);
+    }
+
+    return range;
+  }
+
+
+
+  toggleFoldWidget(toggleParent) {
+    var row: number = this.selection.getCursor().row;
+    row = this.getRowFoldStart(row);
+    var range = this.$toggleFoldWidget(row, {});
+
+    if (range)
+      return;
+    // handle toggleParent
+    var data = this.getParentFoldRangeData(row, true);
+    range = data.range || data.firstRange;
+
+    if (range) {
+      row = range.start.row;
+      var fold = this.getFoldAt(row, this.getLine(row).length, 1);
+
+      if (fold) {
+        this.removeFold(fold);
+      } else {
+        this.addFold("...", range);
+      }
+    }
+  }
+
+  updateFoldWidgets(e: { data: { action: string; range: Range } }): void {
+    var delta = e.data;
+    var range = delta.range;
+    var firstRow = range.start.row;
+    var len = range.end.row - firstRow;
+
+    if (len === 0) {
+      this.foldWidgets[firstRow] = null;
+    }
+    else if (delta.action == "removeText" || delta.action == "removeLines") {
+      this.foldWidgets.splice(firstRow, len + 1, null);
+    }
+    else {
+      var args = Array(len + 1);
+      args.unshift(firstRow, 1);
+      this.foldWidgets.splice.apply(this.foldWidgets, args);
+    }
+  }
 }
 
 // FIXME: Restore
-// fld.Folding.call(EditSession.prototype);
+// Folding.call(EditSession.prototype);
 
 defineOptions(EditSession.prototype, "session", {
   wrap: {

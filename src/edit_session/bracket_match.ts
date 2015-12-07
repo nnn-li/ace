@@ -29,33 +29,19 @@
  * ***** END LICENSE BLOCK ***** */
 
 import TokenIterator from "../TokenIterator";
-import TokenIteratorHost from "../TokenIteratorHost";
+import {EditSession} from "../edit_session";
 import { Range } from "../range";
 
 /**
- * Contract to be provided
+ * Utility service fo
  */
-export interface BracketMatcherHost extends TokenIteratorHost {
-    getLine(row: number): string;
-}
-
-export interface BracketMatcher {
-    findMatchingBracket(position: { row: number; column: number }, chr: string): { row: number; column: number };
-    getBracketRange(pos: { row: number; column: number }): Range;
-    $findOpeningBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number };
-    $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number };
-}
-
-/**
- * Utility service for bracket matching that uses a BracketMatchHost
- */
-export class BracketMatchService implements BracketMatcher {
+export default class BracketMatch {
     /**
      * Maps an opening(closing) bracket string to the corresponding closing(opening) bracket.
      */
     private $brackets;
-    private $host: BracketMatcherHost;
-    constructor(host: BracketMatcherHost) {
+    private $host: EditSession;
+    constructor(host: EditSession) {
         this.$brackets = {
             ")": "(",
             "(": ")",

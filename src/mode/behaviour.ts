@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-export class Behaviour {
+export default class Behaviour {
 
     private $behaviours = {};
 

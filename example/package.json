@@ -14,7 +14,7 @@
   "jspm": {
     "dependencies": {
       "geometryzen/davinci-eight": "github:geometryzen/davinci-eight@^2.168.0",
-      "geometryzen/davinci-triton": "github:geometryzen/davinci-triton@^0.1.0"
+      "geometryzen/davinci-triton": "github:geometryzen/davinci-triton@^0.1.1"
     },
     "devDependencies": {
       "babel": "npm:babel-core@^5.8.24",

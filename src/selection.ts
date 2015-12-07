@@ -658,7 +658,7 @@ export class Selection extends EventEmitterClass {
         }
 
         // How does this get from the folding adapter onto the session?
-        var str = this.session['getFoldStringAt'](row, column, -1);
+        var str = this.session.getFoldStringAt(row, column, -1);
         if (str == null) {
             str = this.doc.getLine(row).substring(0, column)
         }

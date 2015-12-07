@@ -47,6 +47,7 @@ export var comparePoints = function(p1: { row: number; column: number }, p2: { r
 export class Range {
     public start: { row: number; column: number };
     public end: { row: number; column: number };
+    public collapseChildren: number;
     //  public cursor: Range;
     //  public isBackwards: boolean;
     /**

@@ -39,6 +39,12 @@
 
     "./src/layer/font_metrics.ts",
 
+    "./src/mode/doc_comment_highlight_rules.ts",
+    "./src/mode/javascript.ts",
+    "./src/mode/javascript_highlight_rules.ts",
+    "./src/mode/matching_brace_outdent.ts",
+    "./src/mode/text_highlight_rules.ts",
+
     "./src/ace.ts",
     "./src/anchor.ts",
     "./src/background_tokenizer.ts",

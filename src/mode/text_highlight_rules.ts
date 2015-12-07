@@ -34,6 +34,7 @@ export default class TextHighlightRules {
     $rules;
     $embeds;
     nextState;
+    $keywordList;
     constructor() {
 
         // regexp must not have capturing parentheses
@@ -76,7 +77,7 @@ export default class TextHighlightRules {
         return this.$rules;
     }
 
-    embedRules(HighlightRules, prefix, escapeRules, states, append) {
+    embedRules(HighlightRules, prefix, escapeRules, states?, append?) {
         var embedRules = (typeof HighlightRules === "function") ? new HighlightRules().getRules() : HighlightRules;
         if (states) {
             for (var i = 0; i < states.length; i++)
@@ -205,7 +206,7 @@ export default class TextHighlightRules {
         Object.keys(rules).forEach(processState, this);
     }
 
-    createKeywordMapper = function(map, defaultToken, ignoreCase, splitChar) {
+    createKeywordMapper(map, defaultToken, ignoreCase?, splitChar?) {
         var keywords = Object.create(null);
         Object.keys(map).forEach(function(className) {
             var a = map[className];

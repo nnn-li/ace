@@ -27,8 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-//import {EditSession} from './edit_session';
-import TokenIteratorHost from './TokenIteratorHost';
+import {EditSession} from './edit_session';
 
 /**
  * 
@@ -46,16 +45,16 @@ import TokenIteratorHost from './TokenIteratorHost';
  * @constructor
  **/
 export default class TokenIterator {
-    private $session: TokenIteratorHost;
+    private $session: EditSession;
     private $row: number;
     private $rowTokens: { start: number; type: string; value: string }[];
     private $tokenIndex: number;
-    constructor(session: TokenIteratorHost, initialRow: number, initialColumn: number) {
+    constructor(session: EditSession, initialRow: number, initialColumn: number) {
         this.$session = session;
         this.$row = initialRow;
         this.$rowTokens = session.getTokens(initialRow);
 
-        var token: { index } = session.getTokenAt(initialRow, initialColumn);
+        var token: { index?: number } = session.getTokenAt(initialRow, initialColumn);
         this.$tokenIndex = token ? token.index : -1;
 
     }

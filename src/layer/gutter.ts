@@ -141,7 +141,7 @@ export class Gutter extends EventEmitterClass {
 
         var cell = null;
         var index = -1;
-        var row = firstRow;
+        var row: number = firstRow;
         while (true) {
             if (row > foldStart) {
                 row = fold.end.row + 1;
@@ -184,7 +184,7 @@ export class Gutter extends EventEmitterClass {
                 var c = foldWidgets[row];
                 // check if cached value is invalidated and we need to recompute
                 if (c == null)
-                    c = foldWidgets[row] = session['getFoldWidget'](row);
+                    c = foldWidgets[row] = session.getFoldWidget(row);
             }
 
             if (c) {
