@@ -31,15 +31,15 @@
 import {FUNCTION_KEYS, KEY_MODS} from "../lib/keys";
 import keyCodes from "../lib/keys";
 import {isMac} from "../lib/useragent";
-import {} from '../Editor';
-import {} from '../commands/Command';
+import Editor from '../Editor';
+import Command from '../commands/Command';
 
-export class HashHandler {
-    public platform;
-    public commands;
-    public commandKeyBinding;
+export default class HashHandler {
+    public platform: string;
+    public commands: { [name: string]: Command };
+    public commandKeyBinding: { [hashId: number]: { [name: string]: Command } };
 
-    constructor(config?, platform?) {
+    constructor(config?, platform?: string) {
 
         this.platform = platform || (isMac ? "mac" : "win");
         this.commands = {};
@@ -47,9 +47,10 @@ export class HashHandler {
 
         this.addCommands(config);
     }
-    addCommand(command: { name: string; bindKey: string; exec: any }) {
-        if (this.commands[command.name])
+    addCommand(command: Command) {
+        if (this.commands[command.name]) {
             this.removeCommand(command);
+        }
 
         this.commands[command.name] = command;
 
@@ -57,7 +58,7 @@ export class HashHandler {
             this._buildKeyHash(command);
     }
 
-    removeCommand(command: any) {
+    removeCommand(command: string | Command) {
         var name = (typeof command === 'string' ? command : command.name);
         command = this.commands[name];
         delete this.commands[name];
@@ -73,7 +74,8 @@ export class HashHandler {
         }
     }
 
-    bindKey(key: string, command: { name: string }) {
+    bindKey(key: string, command: any) {
+        var self = this;
 
         if (!key)
             return;
@@ -84,10 +86,10 @@ export class HashHandler {
 
         var ckb = this.commandKeyBinding;
         key.split("|").forEach(function(keyPart) {
-            var binding = this.parseKeys(keyPart, command);
+            var binding = self.parseKeys(keyPart/*, command*/);
             var hashId = binding.hashId;
             (ckb[hashId] || (ckb[hashId] = {}))[binding.key] = command;
-        }, this);
+        }, self);
     }
 
     addCommands(commands) {
@@ -111,8 +113,9 @@ export class HashHandler {
                 return;
             }
 
-            if (!command.name)
+            if (!command.name) {
                 command.name = name;
+            }
 
             this.addCommand(command);
         }, this);
@@ -124,13 +127,14 @@ export class HashHandler {
         }, this);
     }
 
-    bindKeys(keyList) {
+    bindKeys(keyList: { [name: string]: (editor: Editor) => void }) {
+        var self = this;
         Object.keys(keyList).forEach(function(key) {
-            this.bindKey(key, keyList[key]);
-        }, this);
+            self.bindKey(key, keyList[key]);
+        }, self);
     }
 
-    public _buildKeyHash(command: { name; bindKey }) {
+    public _buildKeyHash(command: Command): void {
         var binding = command.bindKey;
         if (!binding)
             return;
@@ -141,7 +145,7 @@ export class HashHandler {
 
     // accepts keys in the form ctrl+Enter or ctrl-Enter
     // keys without modifiers or shift only 
-    parseKeys(keys: string): any {
+    parseKeys(keys: string): { key: string; hashId: number } {
         // todo support keychains 
         if (keys.indexOf(" ") != -1)
             keys = keys.split(/\s+/).pop();
@@ -161,21 +165,19 @@ export class HashHandler {
         for (var i = parts.length; i--;) {
             var modifier = KEY_MODS[parts[i]];
             if (modifier === null) {
-                if (typeof console != "undefined")
-                    console.error("invalid modifier " + parts[i] + " in " + keys);
-                return false;
+                throw new Error("invalid modifier " + parts[i] + " in " + keys);
             }
             hashId |= modifier;
         }
         return { key: key, hashId: hashId };
     }
 
-    findKeyCommand(hashId: number, keyString: string) {
+    findKeyCommand(hashId: number, keyString: string): Command {
         var ckbr = this.commandKeyBinding;
         return ckbr[hashId] && ckbr[hashId][keyString];
     }
 
-    handleKeyboard(data, hashId: number, keyString: string, keyCode) {
+    handleKeyboard(dataUnused, hashId: number, keyString: string, keyCodeUnused?, e?): { command: Command } {
         var response = {
             command: this.findKeyCommand(hashId, keyString)
         };

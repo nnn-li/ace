@@ -1,8 +1,7 @@
 declare var $: any;
 
 import CursorPosition from '../../CursorPosition';
-import {HashHandler} from '../../keyboard/hash_handler';
-import {} from "../../lib/oop";
+import HashHandler from '../../keyboard/HashHandler';
 import {EventEmitterClass} from '../../lib/event_emitter';
 import Editor from '../../Editor';
 import CompletionService from './CompletionService';

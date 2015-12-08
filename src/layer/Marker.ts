@@ -73,10 +73,10 @@ export default class Marker {
                 continue;
             }
 
-            var range = marker.range.clipRows(config.firstRow, config.lastRow);
+            var range: Range = marker.range.clipRows(config.firstRow, config.lastRow);
             if (range.isEmpty()) continue;
 
-            range = range.toScreenRange(this.session);
+            range = this.session.documentToScreenRange(range);
             if (marker.renderer) {
                 var top = this.$getTop(range.start.row, config);
                 var left = this.$padding + range.start.column * config.characterWidth;

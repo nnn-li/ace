@@ -151,11 +151,12 @@ export var enter = Keys["return"];
 export var escape = Keys.esc;
 export var del = Keys["delete"];
 
-export function keyCodeToString(keyCode) {
+export function keyCodeToString(keyCode: number): string {
     // Language-switching keystroke in Chrome/Linux emits keyCode 0.
     var keyString = Keys[keyCode];
-    if (typeof keyString != "string")
+    if (typeof keyString !== "string") {
         keyString = String.fromCharCode(keyCode);
+    }
     return keyString.toLowerCase();
 }
 

@@ -33,7 +33,7 @@ import Mode from "./Mode";
 import JavaScriptHighlightRules from "./javascript_highlight_rules";
 import MatchingBraceOutdent from "./matching_brace_outdent";
 import Range from "../Range";
-import {WorkerClient} from "../worker/worker_client";
+import WorkerClient from "../worker/WorkerClient";
 import CstyleBehaviour from "./behaviour/cstyle";
 import CStyleFoldMode from "./folding/cstyle";
 import EditSession from "../EditSession";

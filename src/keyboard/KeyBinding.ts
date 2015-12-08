@@ -30,30 +30,32 @@
 
 import { keyCodeToString } from "../lib/keys"
 import { stopEvent } from "../lib/event"
+import Editor from "../Editor"
+import HashHandler from "./HashHandler"
+import Command from "../commands/Command";
 
-// FIXME: type safety
 export default class KeyBinding {
-    $editor;
+    $editor: Editor;
     $data;
-    $handlers;
-    $defaultHandler;
+    $handlers: HashHandler[];
+    $defaultHandler: HashHandler;
 
-    constructor(editor) {
+    constructor(editor: Editor) {
         this.$editor = editor;
         this.$data = { editor: editor };
         this.$handlers = [];
         this.setDefaultHandler(editor.commands);
     }
 
-    setDefaultHandler(kb) {
+    setDefaultHandler(kb: HashHandler) {
         this.removeKeyboardHandler(this.$defaultHandler);
         this.$defaultHandler = kb;
         this.addKeyboardHandler(kb, 0);
     }
 
-    setKeyboardHandler(kb) {
+    setKeyboardHandler(kb: HashHandler) {
         var h = this.$handlers;
-        if (h[h.length - 1] == kb)
+        if (h[h.length - 1] === kb)
             return;
 
         while (h[h.length - 1] && h[h.length - 1] != this.$defaultHandler)
@@ -62,7 +64,7 @@ export default class KeyBinding {
         this.addKeyboardHandler(kb, 1);
     }
 
-    addKeyboardHandler(kb, pos) {
+    addKeyboardHandler(kb/*: CommandManager*/, pos?: number) {
         if (!kb)
             return;
         if (typeof kb == "function" && !kb.handleKeyboard)
@@ -71,7 +73,7 @@ export default class KeyBinding {
         if (i != -1)
             this.$handlers.splice(i, 1);
 
-        if (pos == undefined)
+        if (pos === void 0)
             this.$handlers.push(kb);
         else
             this.$handlers.splice(pos, 0, kb);
@@ -89,32 +91,30 @@ export default class KeyBinding {
         return true;
     }
 
-    getKeyboardHandler() {
+    getKeyboardHandler(): HashHandler {
         return this.$handlers[this.$handlers.length - 1];
     }
 
-    $callKeyboardHandlers(hashId, keyString, keyCode?, e?) {
-        var toExecute;
+    $callKeyboardHandlers(hashId: number, keyString: string, keyCode?: number, e?): boolean {
+        // FIXME: What is going on here?
+        var toExecute: { command/*: Command*/; args?; passEvent?};
         var success = false;
         var commands = this.$editor.commands;
 
         for (var i = this.$handlers.length; i--;) {
-            toExecute = this.$handlers[i].handleKeyboard(
-                this.$data, hashId, keyString, keyCode, e
-            );
+            toExecute = this.$handlers[i].handleKeyboard(this.$data, hashId, keyString, keyCode, e);
             if (!toExecute || !toExecute.command)
                 continue;
             
             // allow keyboardHandler to consume keys
             if (toExecute.command == "null") {
                 success = true;
-            } else {
-                success = commands.exec(toExecute.command, this.$editor, toExecute.args, e);
+            }
+            else {
+                success = commands.exec(toExecute.command, this.$editor, toExecute.args);
             }
             // do not stop input events to not break repeating
-            if (success && e && hashId != -1 &&
-                toExecute.passEvent != true && toExecute.command.passEvent != true
-            ) {
+            if (success && e && hashId != -1 && toExecute.passEvent != true && toExecute.command.passEvent != true) {
                 stopEvent(e);
             }
             if (success)
@@ -123,14 +123,15 @@ export default class KeyBinding {
         return success;
     }
 
-    onCommandKey(e, hashId, keyCode) {
+    onCommandKey(e, hashId: number, keyCode: number): void {
         var keyString = keyCodeToString(keyCode);
         this.$callKeyboardHandlers(hashId, keyString, keyCode, e);
     }
 
-    onTextInput(text) {
+    onTextInput(text: string): void {
         var success = this.$callKeyboardHandlers(-1, text);
-        if (!success)
+        if (!success) {
             this.$editor.commands.exec("insertstring", this.$editor, text);
+        }
     }
 }

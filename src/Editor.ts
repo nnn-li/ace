@@ -35,8 +35,8 @@ import {computedStyle, hasCssClass, setCssClass} from "./lib/dom";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {isIE, isMac, isMobile, isOldIE, isWebKit} from "./lib/useragent";
 import Gutter from "./layer/Gutter";
-import TextInput from "./keyboard/textinput";
-import KeyBinding from "./keyboard/keybinding";
+import TextInput from "./keyboard/TextInput";
+import KeyBinding from "./keyboard/KeyBinding";
 import EditSession from "./EditSession";
 import Search from "./search";
 import Range from "./Range";
@@ -83,8 +83,8 @@ export default class Editor extends EventEmitterClass {
     public setOption;
     public setOptions;
     public $isFocused;
-    public commands = new CommandManager(isMac ? "mac" : "win", defaultCommands);
-    public keyBinding;
+    public commands: CommandManager;
+    public keyBinding: KeyBinding;
     // FIXME: This is really an optional extension and so does not belong here.
     public completers: Completer[];
 
@@ -106,16 +106,15 @@ export default class Editor extends EventEmitterClass {
     private $mergeUndoDeltas;
     public $readOnly;
     private $scrollAnchor;
-    private $search;
+    private $search: Search;
     private _$emitInputEvent;
     private selections;
     private $selectionStyle;
     private $opResetTimer;
-    private curOp = null;
-    private prevOp: { command?; args?} = {};
+    private curOp;
+    private prevOp: { command?; args?};
     private previousCommand;
-    // TODO use property on commands instead of this
-    private $mergeableCommands = ["backspace", "del", "insertstring"];
+    private $mergeableCommands: string[];
     private mergeNextCommand;
     private $mergeNextCommand;
     private sequenceStartTime: number;
@@ -138,7 +137,10 @@ export default class Editor extends EventEmitterClass {
     public forEachSelection;
     constructor(renderer: VirtualRenderer, session: EditSession) {
         super();
-        console.log("Editor constructor()")
+        this.curOp = null;
+        this.prevOp = {};
+        this.$mergeableCommands = ["backspace", "del", "insertstring"];
+        this.commands = new CommandManager(isMac ? "mac" : "win", defaultCommands);
         this.container = renderer.getContainerElement();
         this.renderer = renderer;
 
@@ -158,9 +160,7 @@ export default class Editor extends EventEmitterClass {
         new FoldHandler(this);
 
         this.$blockScrolling = 0;
-        this.$search = new Search().set({
-            wrap: true
-        });
+        this.$search = new Search().set({ wrap: true });
 
         this.$historyTracker = this.$historyTracker.bind(this);
         this.commands.on("exec", this.$historyTracker);
@@ -187,6 +187,9 @@ export default class Editor extends EventEmitterClass {
 
     get selection(): Selection {
         return this.session.getSelection();
+    }
+    set selection(selection: Selection) {
+        this.session.setSelection(selection);
     }
 
     $initOperationListeners() {
@@ -288,7 +291,7 @@ export default class Editor extends EventEmitterClass {
         }
     }
 
-    $historyTracker(e) {
+    $historyTracker(e: { command; args }) {
         if (!this.$mergeUndoDeltas)
             return;
 
@@ -369,7 +372,7 @@ export default class Editor extends EventEmitterClass {
      * @param {EditSession} session The new session to use
      *
      **/
-    setSession(session) {
+    setSession(session: EditSession) {
         if (this.session == session)
             return;
 
@@ -476,7 +479,7 @@ export default class Editor extends EventEmitterClass {
      * Returns the current session being used.
      * @returns {EditSession}
      **/
-    getSession() {
+    getSession(): EditSession {
         return this.session;
     }
 
@@ -1107,7 +1110,7 @@ export default class Editor extends EventEmitterClass {
         }
     }
 
-    onCommandKey(e, hashId, keyCode) {
+    onCommandKey(e, hashId: number, keyCode: number) {
         this.keyBinding.onCommandKey(e, hashId, keyCode);
     }
 
@@ -2525,8 +2528,7 @@ export default class Editor extends EventEmitterClass {
 
         var range = this.selection.getRange();
         if (options.needle == null) {
-            needle = this.session.getTextRange(range)
-                || this.$search.$options.needle;
+            needle = this.session.getTextRange(range) || this.$search.$options.needle;
             if (!needle) {
                 range = this.session.getWordRange(range.start.row, range.start.column);
                 needle = this.session.getTextRange(range);
@@ -2925,7 +2927,7 @@ class MouseHandler {
             }
             // FIXME: Probably s/b clientXY
             var char = editor.renderer.screenToTextCoordinates(e.x, e.y);
-            var range = editor.session.selection.getRange();
+            var range = editor.session.getSelection().getRange();
             var renderer = editor.renderer;
 
             if (!range.isEmpty() && range.insideStart(char.row, char.column)) {
@@ -3424,7 +3426,7 @@ class GutterHandler {
             }
 
             var row = e.getDocumentPosition().row;
-            var selection = editor.session.selection;
+            var selection = editor.session.getSelection();
 
             if (e.getShiftKey()) {
                 selection.selectTo(row, 0);

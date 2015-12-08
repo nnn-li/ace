@@ -1,16 +1,14 @@
 import {applyMixins} from "../lib/mix";
-import {HashHandler} from "../keyboard/hash_handler";
+import HashHandler from "../keyboard/HashHandler";
 import {EventEmitterClass} from "../lib/event_emitter";
 import Command from './Command';
 import Editor from '../Editor';
 
 export default class CommandManager extends EventEmitterClass implements HashHandler {
-    private hashHandler = new HashHandler();
-    public platform;
-    private byName;
-    private $inReplay;
-    private recording;
-    private macro;
+    private hashHandler: HashHandler;
+    private $inReplay: boolean;
+    private recording: boolean;
+    private macro: any[][];
     private oldMacro;
     private $addCommandToMacro;
     _buildKeyHash
@@ -21,11 +19,14 @@ export default class CommandManager extends EventEmitterClass implements HashHan
      */
     constructor(platform: string, commands: Command[]) {
         super();
-        HashHandler.call(this, commands, platform);
-        this.byName = this.hashHandler.commands;
+        this.hashHandler = new HashHandler(commands, platform)
         this.setDefaultHandler("exec", function(e: { command: Command; editor: Editor; args }) {
             return e.command.exec(e.editor, e.args || {});
         });
+    }
+
+    get platform(): string {
+        return this.hashHandler.platform;
     }
 
     get commands() {
@@ -36,7 +37,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
         return this.hashHandler.commandKeyBinding;
     }
 
-    bindKey(key: string, command) {
+    bindKey(key: string, command: any) {
         return this.hashHandler.bindKey(key, command);
     }
 
@@ -44,7 +45,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
         return this.hashHandler.bindKeys(keyList);
     }
 
-    addCommand(command): void {
+    addCommand(command: Command): void {
         this.hashHandler.addCommand(command);
     }
 
@@ -52,7 +53,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
         this.hashHandler.removeCommand(commandName);
     }
 
-    findKeyCommand(hashId, keyString: string) {
+    findKeyCommand(hashId: number, keyString: string): Command {
         return this.hashHandler.findKeyCommand(hashId, keyString);
     }
 

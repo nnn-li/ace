@@ -36,8 +36,9 @@
     "./src/lib/oop.ts",
     "./src/lib/useragent.ts",
 
-    "./src/keyboard/keybinding.ts",
-    "./src/keyboard/textinput.ts",
+    "./src/keyboard/HashHandler.ts",
+    "./src/keyboard/KeyBinding.ts",
+    "./src/keyboard/TextInput.ts",
 
     "./src/layer/Cursor.ts",
     "./src/layer/FontMetrics.ts",
@@ -47,6 +48,8 @@
     "./src/mode/javascript_highlight_rules.ts",
     "./src/mode/matching_brace_outdent.ts",
     "./src/mode/text_highlight_rules.ts",
+
+    "./src/worker/Mirror.ts",
 
     "./src/ace.ts",
     "./src/Anchor.ts",

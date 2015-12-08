@@ -1,3 +1,151 @@
+import { createElement } from "../lib/dom";
+import { stringRepeat } from "../lib/lang";
+import { isIE } from "../lib/useragent";
+import { EventEmitterClass } from "../lib/event_emitter";
+
+var CHAR_COUNT = 0;
+
+export default class FontMetrics extends EventEmitterClass {
+    private el: HTMLDivElement;
+    private $main: HTMLDivElement;
+    private $measureNode: HTMLDivElement;
+    public $characterSize = { width: 0, height: 0 };
+    private charSizes: { [ch: string]: number };
+    private allowBoldFonts: boolean;
+    private $pollSizeChangesTimer: number;
+    constructor(parentEl: HTMLElement, interval) {
+        super();
+        this.el = <HTMLDivElement>createElement("div");
+        this.$setMeasureNodeStyles(this.el.style, true);
+
+        this.$main = <HTMLDivElement>createElement("div");
+        this.$setMeasureNodeStyles(this.$main.style);
+
+        this.$measureNode = <HTMLDivElement>createElement("div");
+        this.$setMeasureNodeStyles(this.$measureNode.style);
+
+        this.el.appendChild(this.$main);
+        this.el.appendChild(this.$measureNode);
+        parentEl.appendChild(this.el);
+
+        if (!CHAR_COUNT) {
+            this.$testFractionalRect();
+        }
+        this.$measureNode.innerHTML = stringRepeat("X", CHAR_COUNT);
+
+        this.$characterSize = { width: 0, height: 0 };
+        this.checkForSizeChanges();
+    }
+
+    private $testFractionalRect(): void {
+        var el = <HTMLDivElement>createElement("div");
+        this.$setMeasureNodeStyles(el.style);
+        el.style.width = "0.2px";
+        document.documentElement.appendChild(el);
+        var w = el.getBoundingClientRect().width;
+        // TODO; Use a ternary conditional...
+        if (w > 0 && w < 1) {
+            CHAR_COUNT = 1;
+        }
+        else {
+            CHAR_COUNT = 100;
+        }
+        el.parentNode.removeChild(el);
+    }
+
+    private $setMeasureNodeStyles(style: CSSStyleDeclaration, isRoot?: boolean): void {
+        style.width = style.height = "auto";
+        style.left = style.top = "-100px";
+        style.visibility = "hidden";
+        style.position = "fixed";
+        style.whiteSpace = "pre";
+
+        if (isIE < 8) {
+            style["font-family"] = "inherit";
+        }
+        else {
+            style.font = "inherit";
+        }
+        style.overflow = isRoot ? "hidden" : "visible";
+    }
+
+    public checkForSizeChanges(): void {
+        var size = this.$measureSizes();
+        if (size && (this.$characterSize.width !== size.width || this.$characterSize.height !== size.height)) {
+            this.$measureNode.style.fontWeight = "bold";
+            var boldSize = this.$measureSizes();
+            this.$measureNode.style.fontWeight = "";
+            this.$characterSize = size;
+            this.charSizes = Object.create(null);
+            this.allowBoldFonts = boldSize && boldSize.width === size.width && boldSize.height === size.height;
+            this._emit("changeCharacterSize", { data: size });
+        }
+    }
+
+    public $pollSizeChanges(): number {
+        if (this.$pollSizeChangesTimer) {
+            return this.$pollSizeChangesTimer;
+        }
+        var self = this;
+        return this.$pollSizeChangesTimer = setInterval(function() {
+            self.checkForSizeChanges();
+        }, 500);
+    }
+
+    private setPolling(val): void {
+        if (val) {
+            this.$pollSizeChanges();
+        }
+        else {
+            if (this.$pollSizeChangesTimer) {
+                this.$pollSizeChangesTimer;
+            }
+        }
+    }
+
+    private $measureSizes(): { width: number; height: number } {
+        if (CHAR_COUNT === 1) {
+            var rect: ClientRect = null;
+            try {
+                rect = this.$measureNode.getBoundingClientRect();
+            }
+            catch (e) {
+                rect = { width: 0, height: 0, left: 0, right: 0, top: 0, bottom: 0 };
+            }
+            var size = { height: rect.height, width: rect.width };
+        }
+        else {
+            var size = { height: this.$measureNode.clientHeight, width: this.$measureNode.clientWidth / CHAR_COUNT };
+        }
+        // Size and width can be null if the editor is not visible or
+        // detached from the document
+        if (size.width === 0 || size.height === 0) {
+            return null;
+        }
+        return size;
+    }
+
+    private $measureCharWidth(ch: string): number {
+        this.$main.innerHTML = stringRepeat(ch, CHAR_COUNT);
+        var rect = this.$main.getBoundingClientRect();
+        return rect.width / CHAR_COUNT;
+    }
+
+    private getCharacterWidth(ch: string): number {
+        var w = this.charSizes[ch];
+        if (w === undefined) {
+            this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;
+        }
+        return w;
+    }
+
+    private destroy(): void {
+        clearInterval(this.$pollSizeChangesTimer);
+        if (this.el && this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+        }
+    }
+}
 /* ***** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:
  *
@@ -27,149 +175,3 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-import { createElement } from "../lib/dom";
-import {stringRepeat} from "../lib/lang";
-import {isIE} from "../lib/useragent";
-import { EventEmitterClass } from "../lib/event_emitter";
-
-var CHAR_COUNT = 0;
-
-export default class FontMetrics extends EventEmitterClass {
-    private el: HTMLDivElement;
-    private $main: HTMLDivElement;
-    private $measureNode: HTMLDivElement;
-    public $characterSize = { width: 0, height: 0 };
-    private charSizes: { [ch: string]: number };
-    private allowBoldFonts: boolean;
-    private $pollSizeChangesTimer: number;
-    constructor(parentEl: HTMLElement, interval) {
-        super();
-        this.el = <HTMLDivElement>createElement("div");
-        this.$setMeasureNodeStyles(this.el.style, true);
-
-        this.$main = <HTMLDivElement>createElement("div");
-        this.$setMeasureNodeStyles(this.$main.style);
-
-        this.$measureNode = <HTMLDivElement>createElement("div");
-        this.$setMeasureNodeStyles(this.$measureNode.style);
-
-
-        this.el.appendChild(this.$main);
-        this.el.appendChild(this.$measureNode);
-        parentEl.appendChild(this.el);
-
-        if (!CHAR_COUNT)
-            this.$testFractionalRect();
-        this.$measureNode.innerHTML = stringRepeat("X", CHAR_COUNT);
-
-        this.$characterSize = { width: 0, height: 0 };
-        this.checkForSizeChanges();
-    }
-
-    private $testFractionalRect() {
-        var el = <HTMLDivElement>createElement("div");
-        this.$setMeasureNodeStyles(el.style);
-        el.style.width = "0.2px";
-        document.documentElement.appendChild(el);
-        var w = el.getBoundingClientRect().width;
-        if (w > 0 && w < 1)
-            CHAR_COUNT = 1;
-        else
-            CHAR_COUNT = 100;
-        el.parentNode.removeChild(el);
-    }
-
-    private $setMeasureNodeStyles(style, isRoot?) {
-        style.width = style.height = "auto";
-        style.left = style.top = "-100px";
-        style.visibility = "hidden";
-        style.position = "fixed";
-        style.whiteSpace = "pre";
-
-        if (isIE < 8) {
-            style["font-family"] = "inherit";
-        } else {
-            style.font = "inherit";
-        }
-        style.overflow = isRoot ? "hidden" : "visible";
-    }
-
-    public checkForSizeChanges() {
-        var size = this.$measureSizes();
-        if (size && (this.$characterSize.width !== size.width || this.$characterSize.height !== size.height)) {
-            this.$measureNode.style.fontWeight = "bold";
-            var boldSize = this.$measureSizes();
-            this.$measureNode.style.fontWeight = "";
-            this.$characterSize = size;
-            this.charSizes = Object.create(null);
-            this.allowBoldFonts = boldSize && boldSize.width === size.width && boldSize.height === size.height;
-            this._emit("changeCharacterSize", { data: size });
-        }
-    }
-
-    public $pollSizeChanges() {
-        if (this.$pollSizeChangesTimer)
-            return this.$pollSizeChangesTimer;
-        var self = this;
-        return this.$pollSizeChangesTimer = setInterval(function() {
-            self.checkForSizeChanges();
-        }, 500);
-    }
-
-    private setPolling(val) {
-        if (val) {
-            this.$pollSizeChanges();
-        }
-        else {
-            if (this.$pollSizeChangesTimer)
-                this.$pollSizeChangesTimer;
-        }
-    }
-
-    private $measureSizes() {
-        if (CHAR_COUNT === 1) {
-            var rect: ClientRect = null;
-            try {
-                rect = this.$measureNode.getBoundingClientRect();
-            }
-            catch (e) {
-                rect = { width: 0, height: 0, left: 0, right: 0, top: 0, bottom: 0 };
-            }
-            var size = {
-                height: rect.height,
-                width: rect.width
-            };
-        } else {
-            var size = {
-                height: this.$measureNode.clientHeight,
-                width: this.$measureNode.clientWidth / CHAR_COUNT
-            };
-        }
-        // Size and width can be null if the editor is not visible or
-        // detached from the document
-        if (size.width === 0 || size.height === 0)
-            return null;
-        return size;
-    }
-
-    private $measureCharWidth(ch: string) {
-        this.$main.innerHTML = stringRepeat(ch, CHAR_COUNT);
-        var rect = this.$main.getBoundingClientRect();
-        return rect.width / CHAR_COUNT;
-    }
-
-    private getCharacterWidth(ch: string) {
-        var w = this.charSizes[ch];
-        if (w === undefined) {
-            this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;
-        }
-        return w;
-    }
-
-    private destroy() {
-        clearInterval(this.$pollSizeChangesTimer);
-        if (this.el && this.el.parentNode)
-            this.el.parentNode.removeChild(this.el);
-    }
-}

@@ -2,7 +2,7 @@
 declare var $: any;
 
 import Editor from '../../Editor';
-import {HashHandler} from '../../keyboard/hash_handler';
+import HashHandler from '../../keyboard/HashHandler';
 
 var CLASSNAME = 'ace_autocomplete';
 var CLASSNAME_SELECTED = 'ace_autocomplete_selected';

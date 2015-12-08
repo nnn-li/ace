@@ -244,6 +244,7 @@ function deHyphenate(str: string): string {
     return str.replace(/-(.)/g, function(m: string, m1: string) { return m1.toUpperCase(); });
 }
 
+// FIXME: Make this an OptionsProviderMixIn
 var optionsProvider = {
     setOptions: function(optList) {
         Object.keys(optList).forEach(function(key) {
@@ -298,18 +299,21 @@ var defaultOptions = {};
  * option {name, value, initialValue, setterName, set, get }
  */
 export function defineOptions(obj, path: string, options) {
-    if (!obj.$options)
+    if (!obj.$options) {
         defaultOptions[path] = obj.$options = {};
+    }
 
     Object.keys(options).forEach(function(key) {
         var opt = options[key];
-        if (typeof opt == "string")
+        if (typeof opt === "string") {
             opt = { forwardTo: opt };
+        }
 
         opt.name || (opt.name = key);
         obj.$options[opt.name] = opt;
-        if ("initialValue" in opt)
+        if ("initialValue" in opt) {
             obj["$" + opt.name] = opt.initialValue;
+        }
     });
 
     // implement option provider interface
@@ -321,8 +325,9 @@ export function defineOptions(obj, path: string, options) {
 export function resetOptions(obj) {
     Object.keys(obj.$options).forEach(function(key) {
         var opt = obj.$options[key];
-        if ("value" in opt)
+        if ("value" in opt) {
             obj.setOption(key, opt.value);
+        }
     });
 }
 

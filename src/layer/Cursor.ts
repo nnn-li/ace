@@ -175,7 +175,7 @@ export default class Cursor {
             return { left: 0, top: 0 };
 
         if (!position) {
-            position = this.session.selection.getCursor();
+            position = this.session.getSelection().getCursor();
         }
         var pos = this.session.documentToScreenPosition(position.row, position.column);
         var cursorLeft = this.$padding + pos.column * this.config.characterWidth;

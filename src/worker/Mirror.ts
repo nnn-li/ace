@@ -1,14 +1,14 @@
-import {Document} from "../document";
-import {delayedCall} from "./lib/lang";
+import EditorDocument from "../EditorDocument";
+import {delayedCall} from "../lib/lang";
 
-export class Mirror {
+export default class Mirror {
     public sender/*FIXME: ace.WorkerSender*/;
-    public doc: Document;
+    public doc: EditorDocument;
     public deferredUpdate;
     public $timeout: number;
     /**
      * Initializes the 'sender' property to the specified argument.
-     * Initializes the 'doc' property to a new Document.
+     * Initializes the 'doc' property to a new EditDocument.
      * Initializes the 'deferredUpdate' property to a delayed call to 'onUpdate'.
      * Binds the 'sender' "change" event to a function
      */
@@ -16,7 +16,7 @@ export class Mirror {
         this.sender = sender;
         this.$timeout = timeout;
 
-        var doc = this.doc = new Document("");
+        var doc = this.doc = new EditorDocument("");
 
         var deferredUpdate = this.deferredUpdate = delayedCall(this.onUpdate.bind(this));
 

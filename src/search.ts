@@ -31,6 +31,7 @@
 import { copyObject, escapeRegExp, getMatchOffsets } from "./lib/lang";
 import { mixin } from "./lib/oop";
 import Range from "./Range";
+import EditSession from "./EditSession";
 
 /**
  * @class Search
@@ -99,7 +100,7 @@ export default class Search {
      * 
      * @returns {Range}
     **/
-    find(session) {
+    find(session: EditSession) {
         var iterator = this.$matchIterator(session, this.$options);
 
         if (!iterator)
@@ -233,7 +234,7 @@ export default class Search {
         return replacement;
     }
 
-    $matchIterator(session, options): any {
+    $matchIterator(session: EditSession, options): any {
         var re = this.$assembleRegExp(options);
         if (!re)
             return false;
@@ -318,13 +319,16 @@ export default class Search {
         return options.re = re;
     }
 
-    $assembleMultilineRegExp(needle, modifier): any {
+    $assembleMultilineRegExp(needle: string, modifier): any {
         var parts = needle.replace(/\r\n|\r|\n/g, "$\n^").split("\n");
         var re: RegExp[] = [];
-        for (var i = 0; i < parts.length; i++) try {
-            re.push(new RegExp(parts[i], modifier));
-        } catch (e) {
-            return false;
+        for (var i = 0; i < parts.length; i++) {
+            try {
+                re.push(new RegExp(parts[i], modifier));
+            }
+            catch (e) {
+                return false;
+            }
         }
         if (parts[0] == "") {
             re.shift();
@@ -336,14 +340,14 @@ export default class Search {
         return re;
     }
 
-    $lineIterator(session, options) {
+    $lineIterator(session: EditSession, options) {
         var backwards = options.backwards == true;
         var skipCurrent = options.skipCurrent != false;
 
         var range = options.range;
         var start = options.start;
         if (!start)
-            start = range ? range[backwards ? "end" : "start"] : session.selection.getRange();
+            start = range ? range[backwards ? "end" : "start"] : session.getSelection().getRange();
 
         if (start.start)
             start = start[skipCurrent != backwards ? "end" : "start"];

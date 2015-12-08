@@ -40,6 +40,7 @@ import RenderLoop from "./RenderLoop";
 import FontMetrics from "./layer/FontMetrics";
 import {EventEmitterClass} from "./lib/event_emitter";
 import EditSession from './EditSession';
+import OptionsProvider from "./OptionsProvider";
 
 // FIXME
 // import editorCss = require("./requirejs/text!./css/editor.css");
@@ -62,7 +63,7 @@ var CHANGE_H_SCROLL = 1024;
  * @related editor.renderer 
  * @class VirtualRenderer
  **/
-export default class VirtualRenderer extends EventEmitterClass {
+export default class VirtualRenderer extends EventEmitterClass implements OptionsProvider {
     public textarea: HTMLTextAreaElement;
     public container: HTMLElement;
     public scrollLeft = 0;
@@ -91,11 +92,11 @@ export default class VirtualRenderer extends EventEmitterClass {
 
     // The themeId is what is communicated in the API.
     private $themeId: string;
-    // What are these?
-    private theme;
-    private $theme;
+    /**
+     * The loaded theme object. This allows us to remove a theme.
+     */
+    private theme: { cssClass: string };
 
-    private $options;
     private $timer;
     private STEPS = 8;
     public $keepTextAreaAtCursor: boolean;
@@ -112,6 +113,7 @@ export default class VirtualRenderer extends EventEmitterClass {
     public scrollBarV: VScrollBar;
     private $scrollAnimation: { from: number; to: number; steps: number[] };
     private session: EditSession;
+
     private scrollMargin = {
         left: 0,
         right: 0,
@@ -121,11 +123,11 @@ export default class VirtualRenderer extends EventEmitterClass {
         h: 0
     };
 
-    private $fontMetrics;
+    private $fontMetrics: FontMetrics;
     private $allowBoldFonts;
     private cursorPos;
     public $size;
-    private $loop;
+    private $loop: RenderLoop;
     private $changedLines;
     private $changes = 0;
     private resizing;
@@ -149,16 +151,15 @@ export default class VirtualRenderer extends EventEmitterClass {
     private $scrollPastEnd;
     private $highlightGutterLine;
     private desiredHeight;
+
     /**
-     * Constructs a new `VirtualRenderer` within the `container` specified, applying the given `theme`.
+     * Constructs a new `VirtualRenderer` within the `container` specified.
      * @class VirtualRenderer
      * @constructor
-     * @param container {DOMElement} The root element of the editor
-     * @param [theme] {string} The starting theme
+     * @param container {HTMLElement} The root element of the editor
      */
-    constructor(container: HTMLElement, theme?: string) {
+    constructor(container: HTMLElement) {
         super();
-        console.log("VirtualRenderer constructor()")
 
         var _self = this;
 
@@ -172,8 +173,6 @@ export default class VirtualRenderer extends EventEmitterClass {
         this.$keepTextAreaAtCursor = !isOldIE;
 
         addCssClass(this.container, "ace_editor");
-
-        this.setTheme(theme);
 
         this.$gutter = createElement("div");
         this.$gutter.className = "ace_gutter";
@@ -237,10 +236,7 @@ export default class VirtualRenderer extends EventEmitterClass {
             $dirty: true
         };
 
-        this.$loop = new RenderLoop(
-            this.$renderChanges.bind(this),
-            this.container.ownerDocument.defaultView
-        );
+        this.$loop = new RenderLoop(this.$renderChanges.bind(this), this.container.ownerDocument.defaultView);
         this.$loop.schedule(CHANGE_FULL);
 
         this.updateCharacterSize();
@@ -257,21 +253,21 @@ export default class VirtualRenderer extends EventEmitterClass {
         this.$keepTextAreaAtCursor = keepTextAreaAtCursor;
     }
 
-    setDefaultCursorStyle() {
+    setDefaultCursorStyle(): void {
         this.content.style.cursor = "default";
     }
 
     /**
      * Not sure what the correct semantics should be for this.
      */
-    setCursorLayerOff() {
+    setCursorLayerOff(): void {
         var noop = function() { };
         this.$cursorLayer.restartTimer = noop;
         this.$cursorLayer.element.style.opacity = "0";
     }
 
-    updateCharacterSize() {
-        // FIXME: DGH allowBolFonts does not exist on Text
+    updateCharacterSize(): void {
+        // FIXME: DGH allowBoldFonts does not exist on Text
         if (this.$textLayer['allowBoldFonts'] != this.$allowBoldFonts) {
             this.$allowBoldFonts = this.$textLayer['allowBoldFonts'];
             this.setStyle("ace_nobold", !this.$allowBoldFonts);
@@ -283,16 +279,17 @@ export default class VirtualRenderer extends EventEmitterClass {
     }
 
     /**
-    *
-    * Associates the renderer with an [[EditSession `EditSession`]].
-    **/
-    setSession(session) {
-        if (this.session)
+     * Associates the renderer with an EditSession.
+     */
+    setSession(session: EditSession): void {
+        if (this.session) {
             this.session.doc.off("changeNewLineMode", this.onChangeNewLineMode);
+        }
 
         this.session = session;
-        if (!session)
+        if (!session) {
             return;
+        }
 
         if (this.scrollMargin.top && session.getScrollTop() <= 0)
             session.setScrollTop(-this.scrollMargin.top);
@@ -317,7 +314,7 @@ export default class VirtualRenderer extends EventEmitterClass {
     *
     *
     **/
-    updateLines(firstRow: number, lastRow: number, force?: boolean) {
+    updateLines(firstRow: number, lastRow: number, force?: boolean): void {
         if (lastRow === undefined) {
             lastRow = Infinity;
         }
@@ -354,12 +351,12 @@ export default class VirtualRenderer extends EventEmitterClass {
         this.$loop.schedule(CHANGE_LINES);
     }
 
-    onChangeNewLineMode() {
+    onChangeNewLineMode(): void {
         this.$loop.schedule(CHANGE_TEXT);
         this.$textLayer.$updateEolChar();
     }
 
-    onChangeTabSize() {
+    onChangeTabSize(): void {
         if (this.$loop) {
             if (this.$loop.schedule) {
                 this.$loop.schedule(CHANGE_TEXT | CHANGE_MARKER);
@@ -382,19 +379,17 @@ export default class VirtualRenderer extends EventEmitterClass {
     }
 
     /**
-    * Triggers a full update of the text, for all the rows.
-    **/
-    updateText() {
+     * Triggers a full update of the text, for all the rows.
+     */
+    updateText(): void {
         this.$loop.schedule(CHANGE_TEXT);
     }
 
     /**
-    * Triggers a full update of all the layers, for all the rows.
-    * @param {Boolean} force If `true`, forces the changes through
-    *
-    *
-    **/
-    updateFull(force?) {
+     * Triggers a full update of all the layers, for all the rows.
+     * @param {Boolean} force If `true`, forces the changes through
+     */
+    updateFull(force?: boolean): void {
         if (force)
             this.$renderChanges(CHANGE_FULL, true);
         else
@@ -402,18 +397,19 @@ export default class VirtualRenderer extends EventEmitterClass {
     }
 
     /**
-    *
-    * Updates the font size.
-    **/
-    updateFontSize() {
+     * Updates the font size.
+     */
+    updateFontSize(): void {
         this.$textLayer.checkForSizeChanges();
     }
 
     $updateSizeAsync() {
-        if (this.$loop.pending)
+        if (this.$loop.pending) {
             this.$size.$dirty = true;
-        else
+        }
+        else {
             this.onResize();
+        }
     }
 
     /**
@@ -644,7 +640,7 @@ export default class VirtualRenderer extends EventEmitterClass {
         var pos = this.$cursorLayer.$pixelPos;
         var height = this.layerConfig.lineHeight;
         if (this.session.getUseWrapMode()) {
-            var cursor = this.session.selection.getCursor();
+            var cursor = this.session.getSelection().getCursor();
             cursor.column = 0;
             pos = this.$cursorLayer.getPixelPosition(cursor, true);
             height *= this.session.getRowLength(cursor.row);
@@ -1151,23 +1147,6 @@ export default class VirtualRenderer extends EventEmitterClass {
 
     /**
     *
-    * Deprecated; (moved to [[EditSession]])
-    * @deprecated
-    **/
-    private addGutterDecoration(row, className) {
-        this.$gutterLayer.addGutterDecoration(row, className);
-    }
-
-    /**
-    * Deprecated; (moved to [[EditSession]])
-    * @deprecated
-    **/
-    private removeGutterDecoration(row, className) {
-        this.$gutterLayer.removeGutterDecoration(row, className);
-    }
-
-    /**
-    *
     * Redraw breakpoints.
     **/
     updateBreakpoints() {
@@ -1178,8 +1157,6 @@ export default class VirtualRenderer extends EventEmitterClass {
     *
     * Sets annotations for the gutter.
     * @param {Array} annotations An array containing annotations
-    *
-    *
     **/
     setAnnotations(annotations) {
         this.$gutterLayer.setAnnotations(annotations);
@@ -1571,14 +1548,14 @@ export default class VirtualRenderer extends EventEmitterClass {
      * @param {String} theme The path to a theme
      * @param {Function} cb optional callback
      */
-    setTheme(theme: string, cb?: () => any): void {
+    setTheme(theme: any, cb?: () => any): void {
         console.log("VirtualRenderer setTheme, theme = " + theme)
         var _self = this;
         this.$themeId = theme;
         _self._dispatchEvent('themeChange', { theme: theme });
 
         if (!theme || typeof theme === "string") {
-            var moduleName = theme || this.$options.theme.initialValue;
+            var moduleName = theme || this.getOption("theme").initialValue;
             console.log("moduleName => " + moduleName);
             // Loading a theme will insert a script that, upon execution, will
             // insert a style tag.
@@ -1588,33 +1565,31 @@ export default class VirtualRenderer extends EventEmitterClass {
             afterLoad(theme);
         }
 
-        function afterLoad(module) {
+        function afterLoad(modJs: { cssText: string; cssClass: string; isDark: boolean; padding: number }) {
+
             if (_self.$themeId !== theme) {
                 return cb && cb();
             }
-            if (!module.cssClass)
+
+            if (!modJs.cssClass) {
                 return;
-            importCssString(
-                module.cssText,
-                module.cssClass,
-                _self.container.ownerDocument
-            );
+            }
 
-            if (_self.theme)
+            importCssString(modJs.cssText, modJs.cssClass, _self.container.ownerDocument);
+
+            if (_self.theme) {
                 removeCssClass(_self.container, _self.theme.cssClass);
+            }
 
-            var padding = "padding" in module ? module.padding : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
+            var padding = "padding" in modJs ? modJs.padding : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
 
             if (_self.$padding && padding != _self.$padding) {
                 _self.setPadding(padding);
             }
 
-            // this is kept only for backwards compatibility
-            _self.$theme = module.cssClass;
-
-            _self.theme = module;
-            addCssClass(_self.container, module.cssClass);
-            setCssClass(_self.container, "ace_dark", module.isDark);
+            _self.theme = modJs;
+            addCssClass(_self.container, modJs.cssClass);
+            setCssClass(_self.container, "ace_dark", modJs.isDark);
 
             // force re-measure of the gutter width
             if (_self.$size) {
@@ -1622,13 +1597,13 @@ export default class VirtualRenderer extends EventEmitterClass {
                 _self.$updateSizeAsync();
             }
 
-            _self._dispatchEvent('themeLoaded', { theme: module });
+            _self._dispatchEvent('themeLoaded', { theme: modJs });
             cb && cb();
         }
     }
 
     /**
-     * [Returns the path of the current theme.]{: #VirtualRenderer.getTheme}
+     * Returns the path of the current theme.
      * @returns {String}
      */
     getTheme(): string {

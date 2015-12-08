@@ -1,33 +1,3 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * Distributed under the BSD license:
- *
- * Copyright (c) 2010, Ajax.org B.V.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Ajax.org B.V. nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***** END LICENSE BLOCK ***** */
-import {} from '../lib/oop';
 import {qualifyURL} from '../lib/net';
 import EditorDocument from "../EditorDocument";
 import {EventEmitterClass} from '../lib/event_emitter';
@@ -36,14 +6,19 @@ import {get, moduleUrl} from "../config";
 /**
  * WorkerClient manages the communication with a Web Worker.
  */
-export class WorkerClient extends EventEmitterClass {
-    private $worker
-    private deltaQueue;
-    private callbacks = {};
+export default class WorkerClient extends EventEmitterClass {
+    private $worker: Worker;
+    private deltaQueue: any[];
+    private callbacks: { [id: number]: (data: any) => any } = {};
     private callbackId: number = 1;
     private $doc: EditorDocument;
     constructor(topLevelNamespaces: string[], mod: string, classname: string, workerUrl?: string) {
         super();
+        console.log("WorkerClient constructor()")
+        console.log("topLevelNamespaces => " + JSON.stringify(topLevelNamespaces));
+        console.log("mod => " + mod);
+        console.log("classname => " + classname);
+        console.log("workerUrl => " + workerUrl);
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
         this.changeListener = this.changeListener.bind(this);
         this.onMessage = this.onMessage.bind(this);
@@ -88,21 +63,17 @@ export class WorkerClient extends EventEmitterClass {
 
                 this.$worker = new Worker(blobURL);
                 URL.revokeObjectURL(blobURL);
-            } else {
+            }
+            else {
                 throw e;
             }
         }
         // Sending a postMessage starts the worker.
-        this.$worker.postMessage({
-            init: true,
-            tlns: tlns,
-            module: mod,
-            classname: classname
-        });
+        this.$worker.postMessage({ init: true, tlns: tlns, module: mod, classname: classname });
 
         this.$worker.onmessage = this.onMessage;
     }
-    onMessage(e) {
+    onMessage(e: MessageEvent) {
         var msg = e.data;
         switch (msg.type) {
             case "log":
@@ -139,7 +110,7 @@ export class WorkerClient extends EventEmitterClass {
         this.$worker.postMessage({ command: cmd, args: args });
     }
 
-    call(cmd, args, callback?) {
+    call(cmd, args, callback?: (data: any) => any) {
         if (callback) {
             var id = this.callbackId++;
             this.callbacks[id] = callback;
@@ -154,8 +125,8 @@ export class WorkerClient extends EventEmitterClass {
             // TODO: cleanup event
             this.$worker.postMessage({ event: event, data: { data: data.data } });
         }
-        catch (ex) {
-            console.error(ex.stack);
+        catch (e) {
+            console.error(e.stack);
         }
     }
 
@@ -181,7 +152,8 @@ export class WorkerClient extends EventEmitterClass {
         if (!this.deltaQueue) {
             this.deltaQueue = [e.data];
             setTimeout(this.$sendDeltaQueue, 0);
-        } else {
+        }
+        else {
             this.deltaQueue.push(e.data);
         }
     }
@@ -193,7 +165,8 @@ export class WorkerClient extends EventEmitterClass {
         this.deltaQueue = null;
         if (q.length > 20 && q.length > doc.getLength() >> 1) {
             this.call("setValue", [doc.getValue()]);
-        } else
+        }
+        else
             this.emit("change", { data: q });
     }
 
@@ -212,4 +185,32 @@ export class WorkerClient extends EventEmitterClass {
         }
     }
 }
-
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */

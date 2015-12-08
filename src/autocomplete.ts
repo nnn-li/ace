@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {HashHandler} from "./keyboard/hash_handler";
+import HashHandler from "./keyboard/HashHandler";
 import {ListViewPopup} from "./autocomplete/popup";
 import {retrievePrecedingIdentifier} from "./autocomplete/util";
 import {} from "./lib/event";
@@ -61,7 +61,7 @@ export class CompleterAggregate implements Completer {
     private gatherCompletionsId = 0;
     private base: Anchor;
     private completions: { filtered; filterText; setFilter };
-    private commands;
+    private commands: { [name: string]: (editor: Editor) => void };
     public autoSelect = true;
     public autoInsert = true;
     constructor(editor: Editor) {

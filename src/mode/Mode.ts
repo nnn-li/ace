@@ -209,7 +209,7 @@ export default class Mode {
         iter(shouldRemove ? uncomment : comment);
     }
 
-    toggleBlockComment(state, session: EditSession, range, cursor: { row: number; column: number }) {
+    toggleBlockComment(state, session: EditSession, range: Range, cursor: { row: number; column: number }) {
         var comment = this.blockComment;
         if (!comment)
             return;
@@ -219,8 +219,8 @@ export default class Mode {
         var iterator = new TokenIterator(session, cursor.row, cursor.column);
         var token = iterator.getCurrentToken();
 
-        var sel = session.selection;
-        var initialRange = session.selection.toOrientedRange();
+        var selection = session.getSelection();
+        var initialRange = selection.toOrientedRange();
         var startRow, colDiff;
 
         if (token && /comment/.test(token.type)) {
@@ -266,7 +266,7 @@ export default class Mode {
             initialRange.start.column += colDiff;
         if (initialRange.end.row == startRow)
             initialRange.end.column += colDiff;
-        session.selection.fromOrientedRange(initialRange);
+        session.getSelection().fromOrientedRange(initialRange);
     }
 
     getNextLineIndent(state, line, tab) {

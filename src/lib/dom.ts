@@ -177,17 +177,16 @@ else {
     };
 }
 */
-function makeComputedStyle(): (element: HTMLElement, style?: string) => any {
+// FIXME: I don't like this because we lose type safety.
+function makeComputedStyle(): (element: HTMLElement, style: string) => CSSStyleDeclaration {
     if (window.getComputedStyle) {
-        return function(element: HTMLElement, style?: string): any {
-            if (style) {
-                return (window.getComputedStyle(element, "") || {})[style] || "";
-            }
-            return window.getComputedStyle(element, "") || {};
+        // You can also call getPropertyValue!
+        return function(element: HTMLElement, style: string): CSSStyleDeclaration {
+            return (window.getComputedStyle(element, "") || {})[style] || "";
         };
     }
     else {
-        return function(element: HTMLElement, style?: string): any {
+        return function(element: HTMLElement, style: string): CSSStyleDeclaration {
             if (style) {
                 return element['currentStyle'][style];
             }

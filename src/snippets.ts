@@ -34,7 +34,7 @@ import {delayedCall, escapeRegExp} from "./lib/lang";
 import Range from "./Range";
 import comparePoints from "./comparePoints"
 import Anchor from "./Anchor";
-import {HashHandler} from "./keyboard/hash_handler";
+import HashHandler from "./keyboard/HashHandler";
 import Tokenizer from "./Tokenizer";
 import Editor from './Editor';
 

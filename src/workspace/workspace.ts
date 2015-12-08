@@ -1,4 +1,4 @@
-import {WorkerClient} from '../worker/worker_client';
+import WorkerClient from '../worker/WorkerClient';
 import {EVENT_NAME_COMPLETIONS} from './workspace_protocol';
 /**
  * A workspace is a collection of source files identified by name.

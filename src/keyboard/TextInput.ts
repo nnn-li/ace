@@ -32,6 +32,7 @@ import { addCommandKeyListener, addListener, capture, preventDefault } from "../
 import { isChrome, isGecko, isIE, isMac, isOldIE, isTouchPad, isWebKit, isWin } from "../lib/useragent"
 import { computedStyle, createElement } from "../lib/dom"
 import { delayedCall } from "../lib/lang";
+import Editor from "../Editor";
 
 var BROKEN_SETDATA = isChrome < 18;
 var USE_IE_MIME_TYPE = isIE;
@@ -49,7 +50,7 @@ export default class TextInput {
     getElement() {
 
     };
-    constructor(parentNode: Element, host) {
+    constructor(parentNode: Element, host: Editor) {
         // FIXME: I'm sure this shuld become a property.
         // Don't know why we have all these monkey patched methods?!.
         var text = <HTMLTextAreaElement>createElement("textarea");
@@ -461,9 +462,9 @@ export default class TextInput {
                 + (isIE ? "opacity:0.1;" : "");
 
             var rect = host.container.getBoundingClientRect();
-            var style = computedStyle(host.container);
+            var style = window.getComputedStyle(host.container);
             var top = rect.top + (parseInt(style.borderTopWidth) || 0);
-            var left = rect.left + (parseInt(rect.borderLeftWidth) || 0);
+            var left = rect.left + (parseInt(style.borderLeftWidth) || 0);
             var maxTop = rect.bottom - top - text.clientHeight - 2;
             var move = function(e) {
                 text.style.left = e.clientX - left - 2 + "px";

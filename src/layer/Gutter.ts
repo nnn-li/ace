@@ -64,19 +64,6 @@ export default class Gutter extends EventEmitterClass {
         session.on("change", this.$updateAnnotations);
     }
 
-    addGutterDecoration(row, className) {
-        if (window.console) {
-            console.warn && console.warn("deprecated use session.addGutterDecoration");
-        }
-        this.session.addGutterDecoration(row, className);
-    }
-
-    removeGutterDecoration(row, className) {
-        if (window.console)
-            console.warn && console.warn("deprecated use session.removeGutterDecoration");
-        this.session.removeGutterDecoration(row, className);
-    }
-
     // FIXME: The text and html appear to be optional.
     setAnnotations(annotations: { html: string; row: number; text: string; type: string }[]) {
         // iterate over sparse array
@@ -267,7 +254,7 @@ export default class Gutter extends EventEmitterClass {
             return { left: 0, right: 0 };
         }
         // FIXME: The firstChild may not be an HTMLElement.
-        var style: CSSStyleDeclaration = computedStyle(<HTMLElement>this.element.firstChild);
+        var style = window.getComputedStyle(<Element>this.element.firstChild)
         this.$padding = {};
         this.$padding.left = parseInt(style.paddingLeft) + 1 || 0;
         this.$padding.right = parseInt(style.paddingRight) || 0;

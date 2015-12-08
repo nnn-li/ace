@@ -1,7 +1,7 @@
 davinci-triton
 ==============
 
-Editor for the Browser
+Browser Code Editor targeting ES6 written in TypeScript
 
 # Overview #
 
