@@ -1,13 +1,15 @@
 {
   "name": "deuce",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "main": "lib/triton.js",
   "bin": {},
   "homepage": "https://github.com/geometryzen/deuce",
   "author": "david.geo.holmes@gmail.com",
   "jspm": {
-    "dependencies": {},
+    "dependencies": {
+      "ts": "github:frankwallis/plugin-typescript@^2.4.0"
+    },
     "devDependencies": {
       "babel": "npm:babel-core@^5.8.24",
       "babel-runtime": "npm:babel-runtime@^5.8.24",
@@ -17,6 +19,8 @@
   },
   "keywords": [
     "editor",
+    "browser",
+    "deuce",
     "ACE",
     "systemjs",
     "es6",

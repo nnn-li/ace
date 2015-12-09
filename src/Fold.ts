@@ -28,6 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+import FoldLine from "./FoldLine";
 import Range from "./Range";
 import {RangeList} from "./range_list";
 import {inherits} from "./lib/oop";
@@ -35,16 +36,16 @@ import {inherits} from "./lib/oop";
  * Simple fold-data struct.
  **/
 export default class Fold extends RangeList {
-    foldLine;
-    placeholder;
+    foldLine: FoldLine;
+    placeholder: string;
     range: Range;
-    start;
-    end;
-    endRow;
+    start: { row: number; column: number };
+    end: { row: number; column: number };
+    endRow: number;
     sameRow: boolean;
-    subFolds;
+    subFolds: Fold[];
     collapseChildren: number;
-    constructor(range: Range, placeholder) {
+    constructor(range: Range, placeholder: string) {
         super()
         this.foldLine = null;
         this.placeholder = placeholder;
@@ -60,9 +61,9 @@ export default class Fold extends RangeList {
         return '"' + this.placeholder + '" ' + this.range.toString();
     }
 
-    setFoldLine(foldLine) {
+    setFoldLine(foldLine: FoldLine) {
         this.foldLine = foldLine;
-        this.subFolds.forEach(function(fold) {
+        this.subFolds.forEach(function(fold: Fold) {
             fold.setFoldLine(foldLine);
         });
     }
@@ -77,7 +78,7 @@ export default class Fold extends RangeList {
         return fold;
     }
 
-    addSubFold(fold) {
+    addSubFold(fold: Fold) {
         if (this.range.isEqual(fold))
             return;
 
@@ -116,26 +117,29 @@ export default class Fold extends RangeList {
         return fold;
     }
 
-    restoreRange(range) {
+    restoreRange(range: Fold) {
         return restoreRange(range, this.start);
     }
 }
 
-function consumePoint(point, anchor) {
+function consumePoint(point: { row: number; column: number }, anchor: { row: number; column: number }) {
     point.row -= anchor.row;
     if (point.row == 0)
         point.column -= anchor.column;
 }
-function consumeRange(range, anchor) {
+
+function consumeRange(range: Fold, anchor: { row: number; column: number }) {
     consumePoint(range.start, anchor);
     consumePoint(range.end, anchor);
 }
-function restorePoint(point, anchor) {
+
+function restorePoint(point: { row: number; column: number }, anchor: { row: number; column: number }) {
     if (point.row == 0)
         point.column += anchor.column;
     point.row += anchor.row;
 }
-function restoreRange(range, anchor) {
+
+function restoreRange(range: Fold, anchor: { row: number; column: number }) {
     restorePoint(range.start, anchor);
     restorePoint(range.end, anchor);
 }

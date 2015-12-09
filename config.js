@@ -2,6 +2,19 @@ System.config({
   baseURL: "/",
   defaultJSExtensions: true,
   transpiler: "babel",
+  "packages": {
+    "app": {
+      "defaultExtension": "ts",
+      "meta": {
+        "*.ts": {
+          "loader": "ts"
+        },
+        "*.js": {
+          "loader": "ts"
+        }
+      }
+    }
+  },
   babelOptions: {
     "optional": [
       "runtime",
@@ -19,7 +32,11 @@ System.config({
     "core-js": "npm:core-js@1.2.6",
     "geometryzen/davinci-eight": "github:geometryzen/davinci-eight@2.169.0",
     "geometryzen/davinci-triton": "github:geometryzen/davinci-triton@0.1.3",
+    "ts": "github:frankwallis/plugin-typescript@2.4.0",
     "typescript": "npm:typescript@1.7.3",
+    "github:frankwallis/plugin-typescript@2.4.0": {
+      "typescript": "npm:typescript@1.7.3"
+    },
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
     },

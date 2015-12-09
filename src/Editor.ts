@@ -331,10 +331,10 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Sets a new key handler, such as "vim" or "windows".
-     * @param {String} keyboardHandler The new key handler
+     * @param {string|HasgHandler} keyboardHandler The new key handler
      *
      **/
-    setKeyboardHandler(keyboardHandler) {
+    setKeyboardHandler(keyboardHandler: string | HashHandler) {
         if (!keyboardHandler) {
             this.keyBinding.setKeyboardHandler(null);
         }
@@ -562,7 +562,7 @@ export default class Editor extends EventEmitterClass {
      *
      * @related VirtualRenderer.setStyle
      **/
-    setStyle(style) {
+    setStyle(style: string) {
         this.renderer.setStyle(style);
     }
 
@@ -570,7 +570,7 @@ export default class Editor extends EventEmitterClass {
      * {:VirtualRenderer.unsetStyle}
      * @related VirtualRenderer.unsetStyle
      **/
-    unsetStyle(style) {
+    unsetStyle(style: string) {
         this.renderer.unsetStyle(style);
     }
 
@@ -591,7 +591,7 @@ export default class Editor extends EventEmitterClass {
         this.setOption("fontSize", fontSize);
     }
 
-    $highlightBrackets() {
+    private $highlightBrackets() {
         if (this.session.$bracketHighlight) {
             this.session.removeMarker(this.session.$bracketHighlight);
             this.session.$bracketHighlight = null;
@@ -619,7 +619,7 @@ export default class Editor extends EventEmitterClass {
     }
 
     // todo: move to mode.getMatching
-    $highlightTags() {
+    private $highlightTags() {
         var session = this.session;
 
         if (this.$highlightTagPending) {
@@ -824,7 +824,7 @@ export default class Editor extends EventEmitterClass {
         this._signal("changeSelection");
     }
 
-    $updateHighlightActiveLine() {
+    private $updateHighlightActiveLine() {
         var session = this.getSession();
 
         var highlight;
@@ -1001,7 +1001,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    onPaste(text) {
+    onPaste(text: string) {
         // todo this should change when paste becomes a command
         if (this.$readOnly)
             return;
@@ -1020,7 +1020,7 @@ export default class Editor extends EventEmitterClass {
      * @param {String} text The new text to add
      *
      **/
-    insert(text, pasted?) {
+    insert(text: string, pasted?: boolean): void {
         var session = this.session;
         var mode = session.getMode();
         var cursor = this.getCursorPosition();
@@ -1091,7 +1091,7 @@ export default class Editor extends EventEmitterClass {
             mode.autoOutdent(lineState, session, cursor.row);
     }
 
-    onTextInput(text: string) {
+    onTextInput(text: string): void {
         this.keyBinding.onTextInput(text);
         // TODO: This should be pluggable.
         if (text === '.') {
@@ -1385,7 +1385,7 @@ export default class Editor extends EventEmitterClass {
      * @param {String} direction The direction of the deletion to occur, either "left" or "right"
      *
      **/
-    remove(direction: string) {
+    remove(direction: string): void {
         if (this.selection.isEmpty()) {
             if (direction == "left")
                 this.selection.selectLeft();
@@ -1641,20 +1641,20 @@ export default class Editor extends EventEmitterClass {
      * Works like [[EditSession.getTokenAt]], except it returns a number.
      * @returns {Number}
      **/
-    getNumberAt(row: number, column: number) {
+    getNumberAt(row: number, column: number): { value: string; start: number; end: number } {
         var _numberRx = /[\-]?[0-9]+(?:\.[0-9]+)?/g;
         _numberRx.lastIndex = 0;
 
         var s = this.session.getLine(row);
         while (_numberRx.lastIndex < column) {
-            var m = _numberRx.exec(s);
+            var m: RegExpExecArray = _numberRx.exec(s);
             if (m.index <= column && m.index + m[0].length >= column) {
-                var number = {
+                var retval = {
                     value: m[0],
                     start: m.index,
                     end: m.index + m[0].length
                 };
-                return number;
+                return retval;
             }
         }
         return null;
@@ -1664,7 +1664,7 @@ export default class Editor extends EventEmitterClass {
      * If the character before the cursor is a number, this functions changes its value by `amount`.
      * @param {Number} amount The value to change the numeral by (can be negative to decrease value)
      */
-    modifyNumber(amount) {
+    modifyNumber(amount: number): void {
         var row = this.selection.getCursor().row;
         var column = this.selection.getCursor().column;
 
@@ -1810,7 +1810,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    $moveLines(mover) {
+    private $moveLines(mover) {
         var selection = this.selection;
         if (!selection['inMultiSelectMode'] || this.inVirtualSelectionMode) {
             var range = selection.toOrientedRange();
@@ -1853,7 +1853,7 @@ export default class Editor extends EventEmitterClass {
      *
      * @returns {Object}
      **/
-    $getSelectedRows(): { first: number; last: number } {
+    private $getSelectedRows(): { first: number; last: number } {
         var range = this.getSelectionRange().collapseRows();
 
         return {
@@ -1919,7 +1919,7 @@ export default class Editor extends EventEmitterClass {
      * Returns the number of currently visibile rows.
      * @returns {Number}
      **/
-    $getVisibleRowCount(): number {
+    private $getVisibleRowCount(): number {
         return this.renderer.getScrollBottomRow() - this.renderer.getScrollTopRow() + 1;
     }
 
@@ -1928,7 +1928,7 @@ export default class Editor extends EventEmitterClass {
      * @param direction +1 for page down, -1 for page up. Maybe N for N pages?
      * @param select true | false | undefined
      */
-    $moveByPage(direction: number, select?: boolean) {
+    private $moveByPage(direction: number, select?: boolean) {
         var renderer = this.renderer;
         var config = this.renderer.layerConfig;
         var rows = direction * Math.floor(config.height / config.lineHeight);
@@ -2017,14 +2017,14 @@ export default class Editor extends EventEmitterClass {
      *
      * @related VirtualRenderer.scrollToLine
      **/
-    scrollToLine(line: number, center: boolean, animate: boolean, callback?) {
+    scrollToLine(line: number, center: boolean, animate: boolean, callback?: () => any): void {
         this.renderer.scrollToLine(line, center, animate, callback);
     }
 
     /**
      * Attempts to center the current selection on the screen.
      **/
-    centerSelection() {
+    centerSelection(): void {
         var range = this.getSelectionRange();
         var pos = {
             row: Math.floor(range.start.row + (range.end.row - range.start.row) / 2),
@@ -2068,7 +2068,7 @@ export default class Editor extends EventEmitterClass {
      * Selects all the text in editor.
      * @related Selection.selectAll
      **/
-    selectAll() {
+    selectAll(): void {
         this.$blockScrolling += 1;
         this.selection.selectAll();
         this.$blockScrolling -= 1;
@@ -2078,7 +2078,7 @@ export default class Editor extends EventEmitterClass {
      * {:Selection.clearSelection}
      * @related Selection.clearSelection
      **/
-    clearSelection() {
+    clearSelection(): void {
         this.selection.clearSelection();
     }
 
@@ -2090,7 +2090,7 @@ export default class Editor extends EventEmitterClass {
      *
      * @related Selection.moveCursorTo
      **/
-    moveCursorTo(row: number, column: number, animate?: boolean) {
+    moveCursorTo(row: number, column: number, animate?: boolean): void {
         this.selection.moveCursorTo(row, column, animate);
     }
 
@@ -2109,7 +2109,7 @@ export default class Editor extends EventEmitterClass {
      * Moves the cursor's row and column to the next matching bracket or HTML tag.
      *
      **/
-    jumpToMatching(select) {
+    jumpToMatching(select: boolean) {
         var cursor = this.getCursorPosition();
         var iterator = new TokenIterator(this.session, cursor.row, cursor.column);
         var prevToken = iterator.getCurrentToken();
@@ -2301,7 +2301,7 @@ export default class Editor extends EventEmitterClass {
      *
      * @related Editor.moveCursorTo
      **/
-    navigateTo(row, column) {
+    navigateTo(row: number, column: number) {
         this.selection.moveTo(row, column);
     }
 
@@ -2311,7 +2311,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    navigateUp(times) {
+    navigateUp(times: number) {
         if (this.selection.isMultiLine() && !this.selection.isBackwards()) {
             var selectionStart = this.selection.anchor.getPosition();
             return this.moveCursorToPosition(selectionStart);
@@ -2326,7 +2326,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    navigateDown(times) {
+    navigateDown(times: number) {
         if (this.selection.isMultiLine() && this.selection.isBackwards()) {
             var selectionEnd = this.selection.anchor.getPosition();
             return this.moveCursorToPosition(selectionEnd);
@@ -2341,7 +2341,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    navigateLeft(times) {
+    navigateLeft(times: number) {
         if (!this.selection.isEmpty()) {
             var selectionStart = this.getSelectionRange().start;
             this.moveCursorToPosition(selectionStart);
@@ -2361,7 +2361,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    navigateRight(times) {
+    navigateRight(times: number) {
         if (!this.selection.isEmpty()) {
             var selectionEnd = this.getSelectionRange().end;
             this.moveCursorToPosition(selectionEnd);
@@ -2436,7 +2436,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    replace(replacement, options) {
+    replace(replacement: string, options): number {
         if (options)
             this.$search.set(options);
 
@@ -2463,7 +2463,7 @@ export default class Editor extends EventEmitterClass {
      *
      *
      **/
-    replaceAll(replacement, options) {
+    replaceAll(replacement: string, options): number {
         if (options) {
             this.$search.set(options);
         }
@@ -2490,7 +2490,7 @@ export default class Editor extends EventEmitterClass {
         return replaced;
     }
 
-    $tryReplace(range, replacement) {
+    private $tryReplace(range: Range, replacement: string): Range {
         var input = this.session.getTextRange(range);
         replacement = this.$search.replace(input, replacement);
         if (replacement !== null) {
@@ -2519,7 +2519,7 @@ export default class Editor extends EventEmitterClass {
      *
      * @related Search.find
      **/
-    find(needle: (string | RegExp), options, animate) {
+    find(needle: (string | RegExp), options, animate?: boolean): Range {
         if (!options)
             options = {};
 
@@ -2582,7 +2582,7 @@ export default class Editor extends EventEmitterClass {
         this.find(needle, { skipCurrent: true, backwards: true }, animate);
     }
 
-    revealRange(range: CursorRange, animate: boolean) {
+    revealRange(range: Range, animate: boolean): void {
         this.$blockScrolling += 1;
         this.session.unfold(range);
         this.selection.setSelectionRange(range);
@@ -2684,7 +2684,7 @@ export default class Editor extends EventEmitterClass {
     }
 
 
-    $resetCursorStyle() {
+    private $resetCursorStyle() {
         var style = this.$cursorStyle || "ace";
         var cursorLayer = this.renderer.$cursorLayer;
         if (!cursorLayer)

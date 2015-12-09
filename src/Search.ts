@@ -100,13 +100,14 @@ export default class Search {
      * 
      * @returns {Range}
     **/
-    find(session: EditSession) {
+    find(session: EditSession): Range {
         var iterator = this.$matchIterator(session, this.$options);
 
-        if (!iterator)
-            return false;
+        if (!iterator) {
+            return void 0;
+        }
 
-        var firstRange = null;
+        var firstRange: Range = null;
         iterator.forEach(function(range, row, offset) {
             if (!range.start) {
                 var column = range.offset + (offset || 0);
@@ -126,7 +127,7 @@ export default class Search {
      * 
      * @returns {[Range]}
     **/
-    findAll(session) {
+    findAll(session: EditSession): Range[] {
         var options = this.$options;
         if (!options.needle)
             return [];
@@ -137,7 +138,7 @@ export default class Search {
             ? session.getLines(range.start.row, range.end.row)
             : session.doc.getAllLines();
 
-        var ranges = [];
+        var ranges: Range[] = [];
         var re = options.re;
         if (options.$isMultiLine) {
             var len = re.length;
@@ -204,7 +205,7 @@ export default class Search {
      * 
      * @returns {String}
     **/
-    replace(input, replacement) {
+    replace(input: string, replacement: string): string {
         var options = this.$options;
 
         var re = this.$assembleRegExp(options);
@@ -220,21 +221,21 @@ export default class Search {
 
         replacement = input.replace(re, replacement);
         if (options.preserveCase) {
-            replacement = replacement.split("");
+            var parts: string[] = replacement.split("");
             for (var i = Math.min(input.length, input.length); i--;) {
                 var ch = input[i];
                 if (ch && ch.toLowerCase() != ch)
-                    replacement[i] = replacement[i].toUpperCase();
+                    parts[i] = parts[i].toUpperCase();
                 else
-                    replacement[i] = replacement[i].toLowerCase();
+                    parts[i] = parts[i].toLowerCase();
             }
-            replacement = replacement.join("");
+            replacement = parts.join("");
         }
 
         return replacement;
     }
 
-    $matchIterator(session: EditSession, options): any {
+    private $matchIterator(session: EditSession, options: { backwards: boolean; $isMultiLine: boolean }): any {
         var re = this.$assembleRegExp(options);
         if (!re)
             return false;
@@ -289,7 +290,8 @@ export default class Search {
         };
     }
 
-    $assembleRegExp(options, $disableFakeMultiline?) {
+    // FIXME: Editor needs access.
+    public $assembleRegExp(options, $disableFakeMultiline?: boolean) {
         if (options.needle instanceof RegExp)
             return options.re = options.needle;
 
@@ -319,7 +321,7 @@ export default class Search {
         return options.re = re;
     }
 
-    $assembleMultilineRegExp(needle: string, modifier): any {
+    private $assembleMultilineRegExp(needle: string, modifier): RegExp[] {
         var parts = needle.replace(/\r\n|\r|\n/g, "$\n^").split("\n");
         var re: RegExp[] = [];
         for (var i = 0; i < parts.length; i++) {
@@ -327,7 +329,7 @@ export default class Search {
                 re.push(new RegExp(parts[i], modifier));
             }
             catch (e) {
-                return false;
+                return void 0;
             }
         }
         if (parts[0] == "") {
@@ -340,7 +342,7 @@ export default class Search {
         return re;
     }
 
-    $lineIterator(session: EditSession, options) {
+    private $lineIterator(session: EditSession, options) {
         var backwards = options.backwards == true;
         var skipCurrent = options.skipCurrent != false;
 

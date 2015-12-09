@@ -38,10 +38,10 @@ export default class FoldLine {
     foldData
     folds: Fold[];
     range: Range;
-    start;
-    startRow;
-    end;
-    endRow;
+    start: { row: number; column: number };
+    startRow: number;
+    end: { row: number; column: number };
+    endRow: number;
     constructor(foldData, folds) {
         this.foldData = foldData;
         if (Array.isArray(folds)) {

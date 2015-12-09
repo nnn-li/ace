@@ -106,7 +106,7 @@ export default class Marker {
     }
 
     // Draws a marker, which spans a range of text on multiple lines 
-    private drawTextMarker(stringBuilder, range, clazz, layerConfig, extraStyle?) {
+    private drawTextMarker(stringBuilder, range: Range, clazz: string, layerConfig, extraStyle?) {
 
         function getBorderClass(tl, tr, br, bl) {
             return (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
@@ -138,7 +138,7 @@ export default class Marker {
     }
 
     // Draws a multi line marker, where lines span the full width
-    private drawMultiLineMarker(stringBuilder, range, clazz, config, extraStyle?) {
+    private drawMultiLineMarker(stringBuilder, range: Range, clazz, config, extraStyle?) {
         // from selection start to the end of the line
         var padding = this.$padding;
         var height = config.lineHeight;
@@ -186,7 +186,7 @@ export default class Marker {
     }
 
     // Draws a marker which covers part or whole width of a single screen line
-    private drawSingleLineMarker(stringBuilder, range, clazz, config, extraLength?, extraStyle?) {
+    public drawSingleLineMarker(stringBuilder, range: Range, clazz: string, config, extraLength?: number, extraStyle?) {
         var height = config.lineHeight;
         var width = (range.end.column + (extraLength || 0) - range.start.column) * config.characterWidth;
 
@@ -202,7 +202,7 @@ export default class Marker {
         );
     }
 
-    private drawFullLineMarker(stringBuilder, range, clazz, config, extraStyle?) {
+    private drawFullLineMarker(stringBuilder, range: Range, clazz: string, config, extraStyle?) {
         var top = this.$getTop(range.start.row, config);
         var height = config.lineHeight;
         if (range.start.row != range.end.row) {
@@ -217,7 +217,7 @@ export default class Marker {
         );
     }
 
-    private drawScreenLineMarker(stringBuilder, range, clazz, config, extraStyle?) {
+    private drawScreenLineMarker(stringBuilder, range: Range, clazz: string, config, extraStyle?) {
         var top = this.$getTop(range.start.row, config);
         var height = config.lineHeight;
 

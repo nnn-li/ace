@@ -100,7 +100,8 @@ export class ListViewPopup implements ListView {
             editor.$isFocused = true;
 
             editor.setHighlightActiveLine(false);
-            editor.session.highlight("");
+            // FIXME: This must be a RegExp.
+            // editor.session.highlight("");
             editor.session.$searchHighlight.clazz = "ace_highlight-marker";
 
             return editor;

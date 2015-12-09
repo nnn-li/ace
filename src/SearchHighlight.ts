@@ -31,16 +31,17 @@
 import { getMatchOffsets } from "./lib/lang";
 import Range from "./Range";
 import EditSession from "./EditSession";
+import Marker from "./layer/Marker";
 
 // needed to prevent long lines from freezing the browser
 var MAX_RANGES = 500;
 
 export default class SearchHighlight {
     private regExp: RegExp;
-    private clazz;
+    public clazz: string;
     private type: string;
     private cache: Range[][];
-    constructor(regExp: RegExp, clazz, type: string) {
+    constructor(regExp: RegExp, clazz: string, type: string) {
         this.setRegexp(regExp);
         this.clazz = clazz;
         this.type = type || "text";
@@ -53,7 +54,7 @@ export default class SearchHighlight {
         this.cache = [];
     }
 
-    update(html, markerLayer, session: EditSession, config: { firstRow: number; lastRow: number }) {
+    update(html, markerLayer: Marker, session: EditSession, config: { firstRow: number; lastRow: number }) {
         if (!this.regExp)
             return;
         var start = config.firstRow, end = config.lastRow;

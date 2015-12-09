@@ -70,7 +70,7 @@ export default class Range {
      *
      * @return {Boolean}
      **/
-    isEqual(range: Range) {
+    isEqual(range: { start: { row: number; column: number }; end: { row: number; column: number } }) {
         return this.start.row === range.start.row &&
             this.end.row === range.end.row &&
             this.start.column === range.start.column &&
@@ -186,7 +186,7 @@ export default class Range {
      * @returns {Boolean}
      * @related EditorRange.comparePoint
      **/
-    containsRange(range: Range) {
+    containsRange(range: { start: { row: number; column: number }; end: { row: number; column: number } }) {
         return this.comparePoint(range.start) === 0 && this.comparePoint(range.end) === 0;
     }
 

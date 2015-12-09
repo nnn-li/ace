@@ -117,7 +117,7 @@ export default class EditorDocument extends EventEmitterClass {
      * @method $split
      * @param {string} text The text to work with
      */
-    $detectNewLine(text: string): void {
+    private $detectNewLine(text: string): void {
         var match = text.match(/^.*?(\r\n|\r|\n)/m);
         this.$autoNewLine = match ? match[1] : "\n";
         this._signal("changeNewLineMode");
@@ -551,7 +551,7 @@ export default class EditorDocument extends EventEmitterClass {
     /**
     * Reverts any changes previously applied. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
     **/
-    revertDeltas(deltas) {
+    revertDeltas(deltas: { action: string; range: Range; lines: string[]; text: string }[]) {
         for (var i = deltas.length - 1; i >= 0; i--) {
             var delta = deltas[i];
 
@@ -611,7 +611,7 @@ export default class EditorDocument extends EventEmitterClass {
      * @param {Number} startRow=0 The row from which to start the conversion
      * @returns {Number} The index position in the document
      */
-    positionToIndex(pos, startRow) {
+    positionToIndex(pos: { row: number; column: number }, startRow: number): number {
         var lines = this.$lines || this.getAllLines();
         var newlineLength = this.getNewLineCharacter().length;
         var index = 0;
