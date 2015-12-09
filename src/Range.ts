@@ -46,6 +46,10 @@
 export default class Range {
     public start: { row: number; column: number };
     public end: { row: number; column: number };
+    /**
+     * A marker id that is being sneaked onto the Range.
+     */
+    public markerId: number;
     public collapseChildren: number;
     //  public cursor: Range;
     //  public isBackwards: boolean;
@@ -64,6 +68,7 @@ export default class Range {
             column: endColumn
         };
     }
+
     /**
      * Returns `true` if and only if the starting row and column, and ending row and column, are equivalent to those given by `range`.
      * @param {EditorRange} range A range to check against

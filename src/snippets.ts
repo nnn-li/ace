@@ -37,12 +37,14 @@ import Anchor from "./Anchor";
 import HashHandler from "./keyboard/HashHandler";
 import Tokenizer from "./Tokenizer";
 import Editor from './Editor';
+import Change from "./Change";
 
 var TABSTOP_MANAGER = 'tabstopManager';
 
 function escape(ch) {
     return "(?:[^\\\\" + ch + "]|\\\\.)";
 }
+
 function TabstopToken(str, _, stack): any[] {
     str = str.substr(1);
     if (/^\d+$/.test(str) && !stack.inFormatString) {
@@ -658,7 +660,7 @@ export class SnippetManager extends EventEmitterClass {
 }
 
 class TabstopManager {
-    private index;
+    private index: number;
     private ranges;
     private tabstops;
     private $openTabstops;
@@ -719,16 +721,16 @@ class TabstopManager {
         this.ranges = null;
         this.tabstops = null;
         this.selectedTabstop = null;
-        this.editor.removeListener("change", this.$onChange);
-        this.editor.removeListener("changeSelection", this.$onChangeSelection);
-        this.editor.removeListener("changeSession", this.$onChangeSession);
-        this.editor.commands.removeListener("afterExec", this.$onAfterExec);
+        this.editor.off("change", this.$onChange);
+        this.editor.off("changeSelection", this.$onChangeSelection);
+        this.editor.off("changeSession", this.$onChangeSession);
+        this.editor.commands.off("afterExec", this.$onAfterExec);
         this.editor.keyBinding.removeKeyboardHandler(this.keyboardHandler);
         this.editor[TABSTOP_MANAGER] = null;
         this.editor = null;
     }
 
-    private onChange(e) {
+    private onChange(e/*: Change*/, editor: Editor) {
         var changeRange = e.data.range;
         var isRemove = e.data.action[0] == "r";
         var start = changeRange.start;
@@ -800,7 +802,7 @@ class TabstopManager {
             this.updateLinkedFields();
     }
 
-    private onChangeSelection() {
+    private onChangeSelection(event, editor: Editor) {
         if (!this.editor)
             return;
         var lead = this.editor.selection.lead;
@@ -817,7 +819,7 @@ class TabstopManager {
         this.detach();
     }
 
-    private onChangeSession() {
+    private onChangeSession(event, editor: Editor) {
         this.detach();
     }
 
@@ -832,7 +834,7 @@ class TabstopManager {
             this.detach();
     }
 
-    private selectTabstop(index) {
+    private selectTabstop(index: number) {
         this.$openTabstops = null;
         var ts = this.tabstops[this.index];
         if (ts)
@@ -945,8 +947,6 @@ class TabstopManager {
         }
     }
 }
-
-
 
 var changeTracker: any = {};
 changeTracker.onChange = Anchor.prototype.onChange;

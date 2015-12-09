@@ -46,6 +46,8 @@ import UndoManager from './UndoManager'
 import TokenIterator from './TokenIterator';
 import FontMetrics from "./layer/FontMetrics";
 import WorkerClient from "./worker/WorkerClient";
+import LineWidget from './LineWidget';
+import LineWidgets from './LineWidgets';
 
 // "Tokens"
 var CHAR = 1,
@@ -108,11 +110,13 @@ export default class EditSession extends EventEmitterClass {
     private $deltasFold;
     private $fromUndo;
 
-    private $updateFoldWidgets: () => any;
+    public widgetManager: LineWidgets;
+    private $updateFoldWidgets: (event, editSession: EditSession) => any;
     private $foldData: FoldLine[];
     public foldWidgets: any[];
     public getFoldWidget: (row: number) => any;
     public getFoldWidgetRange: (row: number, forceMultiline?: boolean) => Range;
+    public _changedWidgets: LineWidget[];
 
     public doc: EditorDocument;
     private $defaultUndoManager = { undo: function() { }, redo: function() { }, reset: function() { } };
@@ -160,7 +164,6 @@ export default class EditSession extends EventEmitterClass {
         max: null
     };
     public $updating;
-    public lineWidgets = null;
     private $onChange = this.onChange.bind(this);
     private $syncInformUndoManager: () => void;
     public mergeUndoDeltas: boolean;
@@ -168,13 +171,20 @@ export default class EditSession extends EventEmitterClass {
     private $tabSize: number;
     private $wrapMethod;
     private screenWidth: number;
+    public lineWidgets: LineWidget[] = null;
     private lineWidgetsWidth: number;
-    private lineWidgetWidth: number;
-    private $getWidgetScreenLength;
+    public lineWidgetWidth: number;
+    public $getWidgetScreenLength;
     //
     public $tagHighlight;
-    public $bracketHighlight: number;   // a marker.
-    public $highlightLineMarker;        // Not a marker!
+    /**
+     * This is a marker identifier.
+     */
+    public $bracketHighlight: number;
+    /**
+     * This is really a Range with an added marker id.
+     */
+    public $highlightLineMarker: Range;
     /**
      * A number is a marker identifier, null indicates that no such marker exists. 
      */
@@ -207,7 +217,7 @@ export default class EditSession extends EventEmitterClass {
             throw new Error("doc must be a EditorDocument");
         }
         if (this.doc) {
-            this.doc.removeListener("change", this.$onChange);
+            this.doc.off("change", this.$onChange);
         }
 
         this.doc = doc;
@@ -286,7 +296,7 @@ export default class EditSession extends EventEmitterClass {
         this.$resetRowCache(fold.start.row);
     }
 
-    private onChange(e) {
+    private onChange(e, doc: EditorDocument) {
         var delta = e.data;
         this.$modified = true;
 
@@ -641,20 +651,20 @@ export default class EditSession extends EventEmitterClass {
     * Adds a new marker to the given `Range`. If `inFront` is `true`, a front marker is defined, and the `'changeFrontMarker'` event fires; otherwise, the `'changeBackMarker'` event fires.
     * @param {Range} range Define the range of the marker
     * @param {String} clazz Set the CSS class for the marker
-    * @param {Function | String} type Identify the type of the marker
+    * @param {Function | String} type Identify the type of the marker.
     * @param {Boolean} inFront Set to `true` to establish a front marker
     *
     *
     * @return {Number} The new marker id
     **/
-    public addMarker(range: Range, clazz: string, type: any, inFront?: boolean): number {
+    public addMarker(range: Range, clazz: string, type: string, inFront?: boolean): number {
         var id = this.$markerId++;
 
         // FIXME: Need more type safety here.
         var marker = {
             range: range,
             type: type || "line",
-            renderer: typeof type == "function" ? type : null,
+            renderer: typeof type === "function" ? type : null,
             clazz: clazz,
             inFront: !!inFront,
             id: id
@@ -735,17 +745,9 @@ export default class EditSession extends EventEmitterClass {
         this.$searchHighlight.setRegexp(re);
     }
 
-    // experimental
-    private highlightLines(startRow, endRow, clazz, inFront) {
-        if (typeof endRow != "number") {
-            clazz = endRow;
-            endRow = startRow;
-        }
-        if (!clazz)
-            clazz = "ace_step";
-
-        var range: any = new Range(startRow, 0, endRow, Infinity);
-        range.id = this.addMarker(range, clazz, "fullLine", inFront);
+    private highlightLines(startRow: number, endRow: number, clazz: string = "ace_step", inFront?: boolean): Range {
+        var range: Range = new Range(startRow, 0, endRow, Infinity);
+        range.markerId = this.addMarker(range, clazz, "fullLine", inFront);
         return range;
     }
 
@@ -982,8 +984,8 @@ export default class EditSession extends EventEmitterClass {
         if (!this.bgTokenizer) {
             this.bgTokenizer = new BackgroundTokenizer(tokenizer);
             var _self = this;
-            this.bgTokenizer.addEventListener("update", function(e) {
-                _self._signal("tokenizerUpdate", e);
+            this.bgTokenizer.on("update", function(event, bg: BackgroundTokenizer) {
+                _self._signal("tokenizerUpdate", event);
             });
         }
         else {
@@ -2099,7 +2101,7 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-    private getRowLineCount(row: number): number {
+    public getRowLineCount(row: number): number {
         if (!this.$useWrapMode || !this.$wrapData[row]) {
             return 1;
         }
@@ -3149,7 +3151,7 @@ export default class EditSession extends EventEmitterClass {
 
         this.$foldMode = foldMode;
 
-        this.removeListener('change', this.$updateFoldWidgets);
+        this.off('change', this.$updateFoldWidgets);
         this._emit("changeAnnotation");
 
         if (!foldMode || this.$foldStyle == "manual") {
@@ -3286,7 +3288,7 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-    updateFoldWidgets(e: { data: { action: string; range: Range } }): void {
+    updateFoldWidgets(e: { data: { action: string; range: Range } }, editSession: EditSession): void {
         var delta = e.data;
         var range = delta.range;
         var firstRow = range.start.row;

@@ -188,11 +188,11 @@ export class RangeList {
         if (!this.session) {
             return;
         }
-        this.session.removeListener('change', this.onChange);
+        this.session.off('change', this.onChange);
         this.session = null;
     }
 
-    $onChange(e) {
+    private $onChange(e, session: EditSession) {
         var changeRange: Range = e.data.range;
         if (e.data.action[0] == "i") {
             var start = changeRange.start;

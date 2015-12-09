@@ -47,7 +47,7 @@ export default class Cursor {
     private $padding = 0;
     private overwrite: boolean;
     private $updateCursors;
-    private config;
+    public config;
     public $pixelPos;
 
     constructor(parentEl: HTMLDivElement) {

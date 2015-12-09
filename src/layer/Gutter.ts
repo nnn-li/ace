@@ -58,7 +58,7 @@ export default class Gutter extends EventEmitterClass {
     }
     setSession(session: EditSession) {
         if (this.session) {
-            this.session.removeEventListener("change", this.$updateAnnotations);
+            this.session.off("change", this.$updateAnnotations);
         }
         this.session = session;
         session.on("change", this.$updateAnnotations);
@@ -91,7 +91,7 @@ export default class Gutter extends EventEmitterClass {
         }
     }
 
-    $updateAnnotations(e) {
+    $updateAnnotations(e, session: EditSession) {
         if (!this.$annotations.length)
             return;
         var delta = e.data;

@@ -51,7 +51,7 @@ export default class Anchor extends EventEmitterClass {
     public row: number;
     public column: number;
     private document: EditorDocument;
-    private $onChange: () => void;
+    private $onChange: (event, doc: EditorDocument) => void;
     private $insertRight: boolean;
     constructor(doc: EditorDocument, row: number, column: number) {
         super();
@@ -92,7 +92,7 @@ export default class Anchor extends EventEmitterClass {
      *  - `value`: An object describing the new Anchor position
      *
      **/
-    onChange(e: { data: { range: Range; action: string } }) {
+    onChange(e: { data: { range: Range; action: string } }, doc: EditorDocument) {
         var delta = e.data;
         var range = delta.range;
 
@@ -208,7 +208,7 @@ export default class Anchor extends EventEmitterClass {
      *
      **/
     detach(): void {
-        this.document.removeEventListener("change", this.$onChange);
+        this.document.off("change", this.$onChange);
     }
 
     attach(doc: EditorDocument): void {

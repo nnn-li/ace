@@ -10,7 +10,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
     private recording: boolean;
     private macro: any[][];
     private oldMacro;
-    private $addCommandToMacro;
+    private $addCommandToMacro: (event, cm: CommandManager) => any;
     _buildKeyHash
 
     /**
@@ -100,7 +100,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
         editor && editor._emit("changeStatus");
         if (this.recording) {
             this.macro.pop();
-            this.removeEventListener("exec", this.$addCommandToMacro);
+            this.off("exec", this.$addCommandToMacro);
 
             if (!this.macro.length)
                 this.macro = this.oldMacro;

@@ -7,166 +7,169 @@ var preventDefault = function() { this.defaultPrevented = true; };
  * designed to satisfy the compiler.
  */
 export default class EventEmitterClass {
-  /**
-   * Each event name has multiple callbacks.
-   */
-  public _eventRegistry: { [name: string]: ((event, ee: EventEmitterClass) => any)[] };
-  /**
-   * There may be one default handler for an event too.
-   */
-  private _defaultHandlers/*: { [name: string]: (event, ee: EventEmitterClass) => any }*/;
+    /**
+     * Each event name has multiple callbacks.
+     */
+    public _eventRegistry: { [name: string]: ((event, ee: EventEmitterClass) => any)[] };
+    /**
+     * There may be one default handler for an event too.
+     */
+    private _defaultHandlers/*: { [name: string]: (event, ee: EventEmitterClass) => any }*/;
 
-  constructor() {
-  }
-
-  _dispatchEvent(eventName: string, e: any) {
-    this._eventRegistry || (this._eventRegistry = {});
-    this._defaultHandlers || (this._defaultHandlers = {});
-
-    var listeners = this._eventRegistry[eventName] || [];
-    var defaultHandler = this._defaultHandlers[eventName];
-    if (!listeners.length && !defaultHandler)
-      return;
-
-    if (typeof e !== "object" || !e) {
-      e = {};
+    constructor() {
     }
 
-    if (!e.type)
-      e.type = eventName;
-    if (!e.stopPropagation)
-      e.stopPropagation = stopPropagation;
-    if (!e.preventDefault)
-      e.preventDefault = preventDefault;
+    _dispatchEvent(eventName: string, e: any) {
+        this._eventRegistry || (this._eventRegistry = {});
+        this._defaultHandlers || (this._defaultHandlers = {});
 
-    listeners = listeners.slice();
-    for (var i = 0; i < listeners.length; i++) {
-      listeners[i](e, this);
-      if (e['propagationStopped']) {
-        break;
-      }
+        var listeners = this._eventRegistry[eventName] || [];
+        var defaultHandler = this._defaultHandlers[eventName];
+        if (!listeners.length && !defaultHandler)
+            return;
+
+        if (typeof e !== "object" || !e) {
+            e = {};
+        }
+
+        if (!e.type)
+            e.type = eventName;
+        if (!e.stopPropagation)
+            e.stopPropagation = stopPropagation;
+        if (!e.preventDefault)
+            e.preventDefault = preventDefault;
+
+        listeners = listeners.slice();
+        for (var i = 0; i < listeners.length; i++) {
+            listeners[i](e, this);
+            if (e['propagationStopped']) {
+                break;
+            }
+        }
+
+        if (defaultHandler && !e.defaultPrevented)
+            return defaultHandler(e, this);
     }
 
-    if (defaultHandler && !e.defaultPrevented)
-      return defaultHandler(e, this);
-  }
-
-  /**
-   *
-   */
-  _emit(eventName: string, e?: any) {
-    return this._dispatchEvent(eventName, e);
-  }
-
-  /**
-   *
-   */
-  _signal(eventName: string, e?: any) {
-
-    var listeners = (this._eventRegistry || {})[eventName];
-
-    if (!listeners) {
-      return;
+    /**
+     *
+     */
+    _emit(eventName: string, e?: any) {
+        return this._dispatchEvent(eventName, e);
     }
 
-    // slice just makes a copy so that we don't mess up on array bounds.
-    // It's a bit expensive though?
-    listeners = listeners.slice();
-    for (var i = 0, iLength = listeners.length; i < iLength; i++)
-      listeners[i](e, this);
-  }
+    /**
+     *
+     */
+    _signal(eventName: string, e?: any) {
 
-  once(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
-    var _self = this;
-    callback && this.addEventListener(eventName, function newCallback() {
-      _self.removeEventListener(eventName, newCallback);
-      callback.apply(null, arguments);
-    });
-  }
+        var listeners = (this._eventRegistry || {})[eventName];
 
-  setDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
-    var handlers = this._defaultHandlers
-    if (!handlers)
-      handlers = this._defaultHandlers = { _disabled_: {} };
+        if (!listeners) {
+            return;
+        }
 
-    if (handlers[eventName]) {
-      var old = handlers[eventName];
-      var disabled = handlers._disabled_[eventName];
-      if (!disabled)
-        handlers._disabled_[eventName] = disabled = [];
-      disabled.push(old);
-      var i = disabled.indexOf(callback);
-      if (i != -1)
-        disabled.splice(i, 1);
-    }
-    handlers[eventName] = callback;
-  }
-
-  removeDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
-    var handlers = this._defaultHandlers
-    if (!handlers)
-      return;
-    var disabled = handlers._disabled_[eventName];
-
-    if (handlers[eventName] === callback) {
-      var old = handlers[eventName];
-      if (disabled)
-        this.setDefaultHandler(eventName, disabled.pop());
-    }
-    else if (disabled) {
-      var i = disabled.indexOf(callback);
-      if (i != -1)
-        disabled.splice(i, 1);
-    }
-  }
-
-  addEventListener(eventName: string, callback: (event?) => void, capturing?: boolean) {
-    this._eventRegistry = this._eventRegistry || {};
-
-    var listeners = this._eventRegistry[eventName];
-    if (!listeners) {
-      listeners = this._eventRegistry[eventName] = [];
+        // slice just makes a copy so that we don't mess up on array bounds.
+        // It's a bit expensive though?
+        listeners = listeners.slice();
+        for (var i = 0, iLength = listeners.length; i < iLength; i++)
+            listeners[i](e, this);
     }
 
-    if (listeners.indexOf(callback) === -1) {
-      if (capturing) {
-        listeners.unshift(callback);
-      }
-      else {
-        listeners.push(callback);
-      }
+    once(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+        var _self = this;
+        callback && this.addEventListener(eventName, function newCallback() {
+            _self.removeEventListener(eventName, newCallback);
+            callback.apply(null, arguments);
+        });
     }
-    return callback;
-  }
 
-  on(eventName: string, callback: (event?) => any, capturing?: boolean) {
-    return this.addEventListener(eventName, callback, capturing);
-  }
+    setDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+        var handlers = this._defaultHandlers
+        if (!handlers)
+            handlers = this._defaultHandlers = { _disabled_: {} };
 
-  removeEventListener(eventName, callback) {
-    this._eventRegistry = this._eventRegistry || {};
-
-    var listeners = this._eventRegistry[eventName];
-    if (!listeners)
-      return;
-
-    var index = listeners.indexOf(callback);
-    if (index !== -1) {
-      listeners.splice(index, 1);
+        if (handlers[eventName]) {
+            var old = handlers[eventName];
+            var disabled = handlers._disabled_[eventName];
+            if (!disabled)
+                handlers._disabled_[eventName] = disabled = [];
+            disabled.push(old);
+            var i = disabled.indexOf(callback);
+            if (i != -1)
+                disabled.splice(i, 1);
+        }
+        handlers[eventName] = callback;
     }
-  }
 
-  removeListener(eventName: string, callback) {
-    return this.removeEventListener(eventName, callback);
-  }
+    removeDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+        var handlers = this._defaultHandlers
+        if (!handlers)
+            return;
+        var disabled = handlers._disabled_[eventName];
 
-  off(eventName: string, callback) {
-    return this.removeEventListener(eventName, callback);
-  }
+        if (handlers[eventName] === callback) {
+            var old = handlers[eventName];
+            if (disabled)
+                this.setDefaultHandler(eventName, disabled.pop());
+        }
+        else if (disabled) {
+            var i = disabled.indexOf(callback);
+            if (i != -1)
+                disabled.splice(i, 1);
+        }
+    }
 
-  removeAllListeners(eventName: string) {
-    if (this._eventRegistry) this._eventRegistry[eventName] = [];
-  }
+    // Discourage usage.
+    private addEventListener(eventName: string, callback: (event, ee: EventEmitterClass) => void, capturing?: boolean) {
+        this._eventRegistry = this._eventRegistry || {};
+
+        var listeners = this._eventRegistry[eventName];
+        if (!listeners) {
+            listeners = this._eventRegistry[eventName] = [];
+        }
+
+        if (listeners.indexOf(callback) === -1) {
+            if (capturing) {
+                listeners.unshift(callback);
+            }
+            else {
+                listeners.push(callback);
+            }
+        }
+        return callback;
+    }
+
+    on(eventName: string, callback: (event, ee: EventEmitterClass) => any, capturing?: boolean) {
+        return this.addEventListener(eventName, callback, capturing);
+    }
+
+    // Discourage usage.
+    private removeEventListener(eventName, callback: (event, ee: EventEmitterClass) => any) {
+        this._eventRegistry = this._eventRegistry || {};
+
+        var listeners = this._eventRegistry[eventName];
+        if (!listeners)
+            return;
+
+        var index = listeners.indexOf(callback);
+        if (index !== -1) {
+            listeners.splice(index, 1);
+        }
+    }
+
+    // Discourage usage.
+    private removeListener(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+        return this.removeEventListener(eventName, callback);
+    }
+
+    public off(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+        return this.removeEventListener(eventName, callback);
+    }
+
+    removeAllListeners(eventName: string) {
+        if (this._eventRegistry) this._eventRegistry[eventName] = [];
+    }
 }
 /* ***** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:

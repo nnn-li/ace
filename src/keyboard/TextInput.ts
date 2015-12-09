@@ -131,7 +131,7 @@ export default class TextInput {
                 syncValue.schedule();
         }
 
-        isWebKit || host.addEventListener('changeSelection', function() {
+        isWebKit || host.on('changeSelection', function(event, editor: Editor) {
             if (host.selection.isEmpty() != isSelectionEmpty) {
                 isSelectionEmpty = !isSelectionEmpty;
                 syncSelection.schedule();
@@ -389,7 +389,7 @@ export default class TextInput {
             }
         };
 
-        var onCompositionEnd = function(e) {
+        var onCompositionEnd = function(e, editor: Editor) {
             if (!host.onCompositionEnd || host.$readOnly) return;
             // console.log("onCompositionEnd", inComposition &&inComposition.lastValue)
             var c = inComposition;
@@ -419,7 +419,7 @@ export default class TextInput {
                 return str;
             };
             host.onCompositionEnd();
-            host.removeListener("mousedown", onCompositionEnd);
+            host.off("mousedown", onCompositionEnd);
             if (e.type == "compositionend" && c.range) {
                 host.selection.setRange(c.range);
             }

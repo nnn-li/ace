@@ -113,11 +113,11 @@ export default class WorkerClient extends EventEmitterClass {
         }
         this.$doc = doc;
         this.call("setValue", [doc.getValue()]);
-        doc.addEventListener('change', this.changeListener);
+        doc.on('change', this.changeListener);
     }
 
     detachFromDocument() {
-        this.$doc.removeEventListener('change', this.changeListener);
+        this.$doc.off('change', this.changeListener);
         this.$doc = null;
     }
 
@@ -125,7 +125,7 @@ export default class WorkerClient extends EventEmitterClass {
      * This function is used as the basis for a function where this is bound safely.
      * It handles changes to the document by placing the messages in a queue
      */
-    private changeListener(e: { data }) {
+    private changeListener(e: { data }, doc: EditorDocument) {
         if (!this.deltaQueue) {
             this.deltaQueue = [e.data];
             setTimeout(this.$sendDeltaQueue, 0);

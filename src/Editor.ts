@@ -89,6 +89,8 @@ export default class Editor extends EventEmitterClass {
     // FIXME: This is really an optional extension and so does not belong here.
     public completers: Completer[];
 
+    public widgetManager;
+
     /**
      * The renderer container element.
      */
@@ -97,7 +99,7 @@ export default class Editor extends EventEmitterClass {
     public inMultiSelectMode: boolean;
     public inVirtualSelectionMode;
 
-    private $cursorStyle;
+    private $cursorStyle: string;
     private $keybindingId;
     private $blockScrolling;
     private $highlightActiveLine;
@@ -122,7 +124,7 @@ export default class Editor extends EventEmitterClass {
     private $onDocumentChange;
     private $onChangeMode;
     private $onTokenizerUpdate;
-    private $onChangeTabSize;
+    private $onChangeTabSize: (event, editSession: EditSession) => any;
     private $onChangeWrapLimit;
     private $onChangeWrapMode;
     private $onChangeFold;
@@ -133,7 +135,7 @@ export default class Editor extends EventEmitterClass {
     private $onCursorChange;
     private $onScrollTopChange;
     private $onScrollLeftChange;
-    private $onSelectionChange;
+    public $onSelectionChange: (event, selection: Selection) => void;
     public exitMultiSelectMode;
     public forEachSelection;
     constructor(renderer: VirtualRenderer, session: EditSession) {
@@ -380,91 +382,92 @@ export default class Editor extends EventEmitterClass {
 
         var oldSession = this.session;
         if (oldSession) {
-            this.session.removeEventListener("change", this.$onDocumentChange);
-            this.session.removeEventListener("changeMode", this.$onChangeMode);
-            this.session.removeEventListener("tokenizerUpdate", this.$onTokenizerUpdate);
-            this.session.removeEventListener("changeTabSize", this.$onChangeTabSize);
-            this.session.removeEventListener("changeWrapLimit", this.$onChangeWrapLimit);
-            this.session.removeEventListener("changeWrapMode", this.$onChangeWrapMode);
-            this.session.removeEventListener("onChangeFold", this.$onChangeFold);
-            this.session.removeEventListener("changeFrontMarker", this.$onChangeFrontMarker);
-            this.session.removeEventListener("changeBackMarker", this.$onChangeBackMarker);
-            this.session.removeEventListener("changeBreakpoint", this.$onChangeBreakpoint);
-            this.session.removeEventListener("changeAnnotation", this.$onChangeAnnotation);
-            this.session.removeEventListener("changeOverwrite", this.$onCursorChange);
-            this.session.removeEventListener("changeScrollTop", this.$onScrollTopChange);
-            this.session.removeEventListener("changeScrollLeft", this.$onScrollLeftChange);
+            this.session.off("change", this.$onDocumentChange);
+            this.session.off("changeMode", this.$onChangeMode);
+            this.session.off("tokenizerUpdate", this.$onTokenizerUpdate);
+            this.session.off("changeTabSize", this.$onChangeTabSize);
+            this.session.off("changeWrapLimit", this.$onChangeWrapLimit);
+            this.session.off("changeWrapMode", this.$onChangeWrapMode);
+            this.session.off("onChangeFold", this.$onChangeFold);
+            this.session.off("changeFrontMarker", this.$onChangeFrontMarker);
+            this.session.off("changeBackMarker", this.$onChangeBackMarker);
+            this.session.off("changeBreakpoint", this.$onChangeBreakpoint);
+            this.session.off("changeAnnotation", this.$onChangeAnnotation);
+            this.session.off("changeOverwrite", this.$onCursorChange);
+            this.session.off("changeScrollTop", this.$onScrollTopChange);
+            this.session.off("changeScrollLeft", this.$onScrollLeftChange);
 
             var selection = this.session.getSelection();
-            selection.removeEventListener("changeCursor", this.$onCursorChange);
-            selection.removeEventListener("changeSelection", this.$onSelectionChange);
+            selection.off("changeCursor", this.$onCursorChange);
+            selection.off("changeSelection", this.$onSelectionChange);
         }
 
         this.session = session;
         if (session) {
             this.$onDocumentChange = this.onDocumentChange.bind(this);
-            session.addEventListener("change", this.$onDocumentChange);
+            session.on("change", this.$onDocumentChange);
             this.renderer.setSession(session);
 
             this.$onChangeMode = this.onChangeMode.bind(this);
-            session.addEventListener("changeMode", this.$onChangeMode);
+            session.on("changeMode", this.$onChangeMode);
 
             this.$onTokenizerUpdate = this.onTokenizerUpdate.bind(this);
-            session.addEventListener("tokenizerUpdate", this.$onTokenizerUpdate);
+            session.on("tokenizerUpdate", this.$onTokenizerUpdate);
 
             this.$onChangeTabSize = this.renderer.onChangeTabSize.bind(this.renderer);
-            session.addEventListener("changeTabSize", this.$onChangeTabSize);
+            session.on("changeTabSize", this.$onChangeTabSize);
 
             this.$onChangeWrapLimit = this.onChangeWrapLimit.bind(this);
-            session.addEventListener("changeWrapLimit", this.$onChangeWrapLimit);
+            session.on("changeWrapLimit", this.$onChangeWrapLimit);
 
             this.$onChangeWrapMode = this.onChangeWrapMode.bind(this);
-            session.addEventListener("changeWrapMode", this.$onChangeWrapMode);
+            session.on("changeWrapMode", this.$onChangeWrapMode);
 
             this.$onChangeFold = this.onChangeFold.bind(this);
-            session.addEventListener("changeFold", this.$onChangeFold);
+            session.on("changeFold", this.$onChangeFold);
 
             this.$onChangeFrontMarker = this.onChangeFrontMarker.bind(this);
-            this.session.addEventListener("changeFrontMarker", this.$onChangeFrontMarker);
+            session.on("changeFrontMarker", this.$onChangeFrontMarker);
 
             this.$onChangeBackMarker = this.onChangeBackMarker.bind(this);
-            this.session.addEventListener("changeBackMarker", this.$onChangeBackMarker);
+            session.on("changeBackMarker", this.$onChangeBackMarker);
 
             this.$onChangeBreakpoint = this.onChangeBreakpoint.bind(this);
-            this.session.addEventListener("changeBreakpoint", this.$onChangeBreakpoint);
+            session.on("changeBreakpoint", this.$onChangeBreakpoint);
 
             this.$onChangeAnnotation = this.onChangeAnnotation.bind(this);
-            this.session.addEventListener("changeAnnotation", this.$onChangeAnnotation);
+            session.on("changeAnnotation", this.$onChangeAnnotation);
 
             this.$onCursorChange = this.onCursorChange.bind(this);
-            this.session.addEventListener("changeOverwrite", this.$onCursorChange);
+            session.on("changeOverwrite", this.$onCursorChange);
 
             this.$onScrollTopChange = this.onScrollTopChange.bind(this);
-            this.session.addEventListener("changeScrollTop", this.$onScrollTopChange);
+            session.on("changeScrollTop", this.$onScrollTopChange);
 
             this.$onScrollLeftChange = this.onScrollLeftChange.bind(this);
-            this.session.addEventListener("changeScrollLeft", this.$onScrollLeftChange);
+            session.on("changeScrollLeft", this.$onScrollLeftChange);
 
             this.selection = session.getSelection();
-            this.selection.addEventListener("changeCursor", this.$onCursorChange);
+            this.selection.on("changeCursor", this.$onCursorChange);
 
             this.$onSelectionChange = this.onSelectionChange.bind(this);
-            this.selection.addEventListener("changeSelection", this.$onSelectionChange);
+            this.selection.on("changeSelection", this.$onSelectionChange);
 
-            this.onChangeMode();
-
+            this.onChangeMode(void 0, this.session);
             this.$blockScrolling += 1;
-            this.onCursorChange();
+            this.onCursorChange(void 0, this.session);
             this.$blockScrolling -= 1;
 
-            this.onScrollTopChange();
-            this.onScrollLeftChange();
-            this.onSelectionChange();
-            this.onChangeFrontMarker();
-            this.onChangeBackMarker();
-            this.onChangeBreakpoint();
-            this.onChangeAnnotation();
-            this.session.getUseWrapMode() && this.renderer.adjustWrapLimit();
+            this.onScrollTopChange(void 0, this.session);
+            this.onScrollLeftChange(void 0, this.session);
+
+            this.onSelectionChange(void 0, this.selection);
+
+            this.onChangeFrontMarker(void 0, this.session);
+            this.onChangeBackMarker(void 0, this.session);
+            this.onChangeBreakpoint(void 0, this.session);
+            this.onChangeAnnotation(void 0, this.session);
+            session.getUseWrapMode() && this.renderer.adjustWrapLimit();
             this.renderer.updateFull();
         }
 
@@ -594,7 +597,7 @@ export default class Editor extends EventEmitterClass {
     private $highlightBrackets() {
         if (this.session.$bracketHighlight) {
             this.session.removeMarker(this.session.$bracketHighlight);
-            this.session.$bracketHighlight = null;
+            this.session.$bracketHighlight = void 0;
         }
 
         if (this.$highlightPending) {
@@ -773,7 +776,7 @@ export default class Editor extends EventEmitterClass {
      * @param {Object} e Contains a single property, `data`, which has the delta of changes
      *
      **/
-    onDocumentChange(e) {
+    onDocumentChange(e, editSession: EditSession) {
         var delta = e.data;
         var range = delta.range;
         var lastRow: number;
@@ -793,25 +796,24 @@ export default class Editor extends EventEmitterClass {
         this.$updateHighlightActiveLine();
     }
 
-    onTokenizerUpdate(e) {
-        var rows = e.data;
+    onTokenizerUpdate(event, editSession: EditSession) {
+        var rows = event.data;
         this.renderer.updateLines(rows.first, rows.last);
     }
 
 
-    onScrollTopChange() {
+    onScrollTopChange(event, editSession: EditSession) {
         this.renderer.scrollToY(this.session.getScrollTop());
     }
 
-    onScrollLeftChange() {
+    onScrollLeftChange(event, editSession: EditSession) {
         this.renderer.scrollToX(this.session.getScrollLeft());
     }
 
     /**
-     * Emitted when the selection changes.
-     *
-     **/
-    onCursorChange() {
+     * Handler for cursor or selection changes.
+     */
+    onCursorChange(event, editSession: EditSession) {
         this.$cursorChange();
 
         if (!this.$blockScrolling) {
@@ -821,27 +823,32 @@ export default class Editor extends EventEmitterClass {
         this.$highlightBrackets();
         this.$highlightTags();
         this.$updateHighlightActiveLine();
+        // TODO; How is signal different from emit?
         this._signal("changeSelection");
     }
 
-    private $updateHighlightActiveLine() {
-        var session = this.getSession();
+    public $updateHighlightActiveLine() {
+
+        var session = this.session;
+        var renderer = this.renderer;
 
         var highlight;
         if (this.$highlightActiveLine) {
-            if ((this.$selectionStyle != "line" || !this.selection.isMultiLine()))
+            if ((this.$selectionStyle != "line" || !this.selection.isMultiLine())) {
                 highlight = this.getCursorPosition();
-            if (this.renderer.$maxLines && this.session.getLength() === 1 && !(this.renderer.$minLines > 1))
+            }
+            if (renderer.$maxLines && session.getLength() === 1 && !(renderer.$minLines > 1)) {
                 highlight = false;
+            }
         }
 
         if (session.$highlightLineMarker && !highlight) {
-            session.removeMarker(session.$highlightLineMarker.id);
+            session.removeMarker(session.$highlightLineMarker.markerId);
             session.$highlightLineMarker = null;
         }
         else if (!session.$highlightLineMarker && highlight) {
-            var range: any = new Range(highlight.row, highlight.column, highlight.row, Infinity);
-            range.id = session.addMarker(range, "ace_active-line", "screenLine");
+            var range: Range = new Range(highlight.row, highlight.column, highlight.row, Infinity);
+            range.markerId = session.addMarker(range, "ace_active-line", "screenLine");
             session.$highlightLineMarker = range;
         }
         else if (highlight) {
@@ -852,7 +859,8 @@ export default class Editor extends EventEmitterClass {
         }
     }
 
-    onSelectionChange(e?) {
+    // This version has not been bound to `this`, so don't use it directly.
+    private onSelectionChange(event, selection: Selection): void {
         var session = this.session;
 
         if (typeof session.$selectionMarker === 'number') {
@@ -908,40 +916,42 @@ export default class Editor extends EventEmitterClass {
     }
 
 
-    onChangeFrontMarker() {
+    onChangeFrontMarker(event, editSession: EditSession) {
         this.renderer.updateFrontMarkers();
     }
 
-    onChangeBackMarker() {
+    onChangeBackMarker(event, editSession: EditSession) {
         this.renderer.updateBackMarkers();
     }
 
 
-    onChangeBreakpoint() {
+    onChangeBreakpoint(event, editSession: EditSession) {
         this.renderer.updateBreakpoints();
+        this._emit("changeBreakpoint", event);
     }
 
-    onChangeAnnotation() {
-        this.renderer.setAnnotations(this.session.getAnnotations());
+    onChangeAnnotation(event, editSession: EditSession) {
+        this.renderer.setAnnotations(editSession.getAnnotations());
+        this._emit("changeAnnotation", event);
     }
 
 
-    onChangeMode(e?) {
+    onChangeMode(event, editSession: EditSession) {
         this.renderer.updateText();
-        this._emit("changeMode", e);
+        this._emit("changeMode", event);
     }
 
 
-    onChangeWrapLimit() {
+    onChangeWrapLimit(event, editSession: EditSession) {
         this.renderer.updateFull();
     }
 
-    onChangeWrapMode() {
+    onChangeWrapMode(event, editSession: EditSession) {
         this.renderer.onResize(true);
     }
 
 
-    onChangeFold() {
+    onChangeFold(event, editSession: EditSession) {
         // Update the active line marker as due to folding changes the current
         // line range on the screen might have changed.
         this.$updateHighlightActiveLine();
@@ -2683,12 +2693,12 @@ export default class Editor extends EventEmitterClass {
         };
     }
 
-
-    private $resetCursorStyle() {
+    public $resetCursorStyle() {
         var style = this.$cursorStyle || "ace";
         var cursorLayer = this.renderer.$cursorLayer;
-        if (!cursorLayer)
+        if (!cursorLayer) {
             return;
+        }
         cursorLayer.setSmoothBlinking(/smooth/.test(style));
         cursorLayer.isBlinking = !this.$readOnly && style != "wide";
         setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
@@ -2698,17 +2708,24 @@ export default class Editor extends EventEmitterClass {
 defineOptions(Editor.prototype, "editor", {
     selectionStyle: {
         set: function(style) {
-            this.onSelectionChange();
-            this._signal("changeSelectionStyle", { data: style });
+            var that: Editor = this;
+            that.$onSelectionChange(void 0, that.selection);
+            that._signal("changeSelectionStyle", { data: style });
         },
         initialValue: "line"
     },
     highlightActiveLine: {
-        set: function() { this.$updateHighlightActiveLine(); },
+        set: function() {
+            var that: Editor = this;
+            that.$updateHighlightActiveLine();
+        },
         initialValue: true
     },
     highlightSelectedWord: {
-        set: function(shouldHighlight) { this.$onSelectionChange(); },
+        set: function(shouldHighlight) {
+            var that: Editor = this;
+            that.$onSelectionChange(void 0, that.selection);
+        },
         initialValue: true
     },
     readOnly: {
@@ -2720,7 +2737,10 @@ defineOptions(Editor.prototype, "editor", {
         initialValue: false
     },
     cursorStyle: {
-        set: function(val) { this.$resetCursorStyle(); },
+        set: function(val) {
+            var that: Editor = this;
+            that.$resetCursorStyle();
+        },
         values: ["ace", "slim", "smooth", "wide"],
         initialValue: "ace"
     },
@@ -2731,7 +2751,10 @@ defineOptions(Editor.prototype, "editor", {
     behavioursEnabled: { initialValue: true },
     wrapBehavioursEnabled: { initialValue: true },
     autoScrollEditorIntoView: {
-        set: function(val) { this.setAutoScrollEditorIntoView(val) }
+        set: function(enable: boolean) {
+            var that: Editor = this;
+            that.setAutoScrollEditorIntoView(enable);
+        }
     },
 
     hScrollBarAlwaysVisible: "renderer",
@@ -3455,7 +3478,7 @@ class GutterHandler {
             var row = mouseEvent.getDocumentPosition().row;
             var annotation = gutter.$annotations[row];
             if (!annotation) {
-                return hideTooltip();
+                return hideTooltip(void 0, editor);
             }
 
             var maxRow = editor.session.getLength();
@@ -3463,7 +3486,7 @@ class GutterHandler {
                 var screenRow = editor.renderer.pixelToScreenCoordinates(0, mouseEvent.clientY).row;
                 var pos = mouseEvent.getDocumentPosition();
                 if (screenRow > editor.session.documentToScreenRow(pos.row, pos.column)) {
-                    return hideTooltip();
+                    return hideTooltip(void 0, editor);
                 }
             }
 
@@ -3490,7 +3513,7 @@ class GutterHandler {
             }
         }
 
-        function hideTooltip() {
+        function hideTooltip(event, editor: Editor) {
             if (tooltipTimeout) {
                 clearTimeout(tooltipTimeout);
                 tooltipTimeout = undefined;
@@ -3498,7 +3521,7 @@ class GutterHandler {
             if (tooltipAnnotation) {
                 tooltip.hide();
                 tooltipAnnotation = null;
-                editor.removeEventListener("mousewheel", hideTooltip);
+                editor.off("mousewheel", hideTooltip);
             }
         }
 
@@ -3510,7 +3533,7 @@ class GutterHandler {
             // FIXME: Obfuscating the type of target to thwart compiler.
             var target: any = e.domEvent.target || e.domEvent.srcElement;
             if (hasCssClass(target, "ace_fold-widget")) {
-                return hideTooltip();
+                return hideTooltip(void 0, editor);
             }
 
             if (tooltipAnnotation && mouseHandler.$tooltipFollowsMouse) {
@@ -3526,7 +3549,7 @@ class GutterHandler {
                 if (mouseEvent && !mouseHandler.isMousePressed)
                     showTooltip();
                 else
-                    hideTooltip();
+                    hideTooltip(void 0, editor);
             }, 50);
         });
 
@@ -3537,7 +3560,7 @@ class GutterHandler {
 
             tooltipTimeout = setTimeout(function() {
                 tooltipTimeout = null;
-                hideTooltip();
+                hideTooltip(void 0, editor);
             }, 50);
         });
 

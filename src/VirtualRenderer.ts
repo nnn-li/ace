@@ -35,7 +35,8 @@ import Gutter from "./layer/Gutter";
 import Marker from "./layer/Marker";
 import Text from "./layer/Text";
 import Cursor from "./layer/Cursor";
-import {HScrollBar, VScrollBar} from "./scrollbar";
+import VScrollBar from "./VScrollBar";
+import HScrollBar from "./HScrollBar";
 import RenderLoop from "./RenderLoop";
 import FontMetrics from "./layer/FontMetrics";
 import EventEmitterClass from "./lib/event_emitter";
@@ -112,6 +113,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     public scrollBarH: HScrollBar;
     public scrollBarV: VScrollBar;
     private $scrollAnimation: { from: number; to: number; steps: number[] };
+    public $scrollbarWidth: number;
     private session: EditSession;
 
     private scrollMargin = {
@@ -132,8 +134,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     private $changes = 0;
     private resizing;
     private $gutterLineHighlight;
-    private gutterWidth;
-    private $gutterWidth;
+    // FIXME: Why do we have two?
+    public gutterWidth: number;
+    private $gutterWidth: number;
     private $showPrintMargin;
     private $printMarginEl;
     private getOption;
@@ -204,14 +207,14 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
         this.scrollBarV = new VScrollBar(this.container, this);
         this.scrollBarH = new HScrollBar(this.container, this);
-        this.scrollBarV.addEventListener("scroll", function(e) {
+        this.scrollBarV.on("scroll", function(event, scrollBar: VScrollBar) {
             if (!_self.$scrollAnimation) {
-                _self.session.setScrollTop(e.data - _self.scrollMargin.top);
+                _self.session.setScrollTop(event.data - _self.scrollMargin.top);
             }
         });
-        this.scrollBarH.addEventListener("scroll", function(e) {
+        this.scrollBarH.on("scroll", function(event, scrollBar: HScrollBar) {
             if (!_self.$scrollAnimation) {
-                _self.session.setScrollLeft(e.data - _self.scrollMargin.left);
+                _self.session.setScrollLeft(event.data - _self.scrollMargin.left);
             }
         });
 
@@ -222,10 +225,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
         this.$fontMetrics = new FontMetrics(this.container, 500);
         this.$textLayer.$setFontMetrics(this.$fontMetrics);
-        this.$textLayer.addEventListener("changeCharacterSize", function(e) {
+        this.$textLayer.on("changeCharacterSize", function(event, text: Text) {
             _self.updateCharacterSize();
             _self.onResize(true, _self.gutterWidth, _self.$size.width, _self.$size.height);
-            _self._signal("changeCharacterSize", e);
+            _self._signal("changeCharacterSize", event);
         });
 
         this.$size = {
@@ -1745,18 +1748,18 @@ defineOptions(VirtualRenderer.prototype, "renderer", {
         initialValue: false
     },
     fontSize: {
-        set: function(size) {
-            if (typeof size == "number")
-                size = size + "px";
-            this.container.style.fontSize = size;
-            this.updateFontSize();
+        set: function(fontSize: string) {
+            var that: VirtualRenderer = this;
+            that.container.style.fontSize = fontSize;
+            that.updateFontSize();
         },
-        initialValue: 12
+        initialValue: "12px"
     },
     fontFamily: {
-        set: function(name) {
-            this.container.style.fontFamily = name;
-            this.updateFontSize();
+        set: function(fontFamily: string) {
+            var that: VirtualRenderer = this;
+            that.container.style.fontFamily = fontFamily;
+            that.updateFontSize();
         }
     },
     maxLines: {
