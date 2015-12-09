@@ -98,9 +98,11 @@ export default class JavaScriptMode extends Mode {
 
     createWorker(session: EditSession): WorkerClient {
 
-        var worker = new WorkerClient(["ace"], "ace/mode/javascript_worker", "JavaScriptWorker");
+        var worker = new WorkerClient("lib/worker/worker-systemjs.js");
 
-        worker.attachToDocument(session.getDocument());
+        worker.on("initAfter", function() {
+            worker.attachToDocument(session.getDocument());
+        });
 
         worker.on("jslint", function(results) {
             session.setAnnotations(results.data);
@@ -109,6 +111,9 @@ export default class JavaScriptMode extends Mode {
         worker.on("terminate", function() {
             session.clearAnnotations();
         });
+
+        // FIXME: default exports would allow us to drop the class name.
+        worker.init("lib/mode/JavaScriptWorker", "JavaScriptWorker");
 
         return worker;
     }

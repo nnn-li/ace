@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 import {importCssString} from "./lib/dom";
-import {EventEmitterClass} from "./lib/event_emitter";
+import EventEmitterClass from "./lib/event_emitter";
 import {delayedCall, escapeRegExp} from "./lib/lang";
 import Range from "./Range";
 import comparePoints from "./comparePoints"

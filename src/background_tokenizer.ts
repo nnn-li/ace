@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 import {} from "./lib/oop"
 import EditorDocument from './EditorDocument'
-import { EventEmitterClass } from "./lib/event_emitter"
+import EventEmitterClass from "./lib/event_emitter"
 import Tokenizer from './Tokenizer'
 
 /**

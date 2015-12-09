@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import { EventEmitterClass } from './lib/event_emitter';
+import EventEmitterClass from './lib/event_emitter';
 import Range from './Range';
 import Anchor from './Anchor';
 

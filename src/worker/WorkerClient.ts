@@ -1,6 +1,6 @@
 import {qualifyURL} from '../lib/net';
 import EditorDocument from "../EditorDocument";
-import {EventEmitterClass} from '../lib/event_emitter';
+import EventEmitterClass from '../lib/event_emitter';
 import {get, moduleUrl} from "../config";
 
 /**
@@ -12,51 +12,20 @@ export default class WorkerClient extends EventEmitterClass {
     private callbacks: { [id: number]: (data: any) => any } = {};
     private callbackId: number = 1;
     private $doc: EditorDocument;
-    constructor(topLevelNamespaces: string[], mod: string, classname: string, workerUrl?: string) {
+    constructor(workerUrl: string) {
         super();
-        console.log("WorkerClient constructor()")
-        console.log("topLevelNamespaces => " + JSON.stringify(topLevelNamespaces));
-        console.log("mod => " + mod);
-        console.log("classname => " + classname);
-        console.log("workerUrl => " + workerUrl);
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
         this.changeListener = this.changeListener.bind(this);
         this.onMessage = this.onMessage.bind(this);
 
-        // FIXME: We need to populate this
-        /**
-         *
-         */
-        var tlns: { [ns: string]: string } = {};
-
-        // nameToUrl is renamed to toUrl in requirejs 2
-        // FIXME: Get this working again without AMD.
-        /*
-        if (require['nameToUrl'] && !require.toUrl) {
-            require.toUrl = require['nameToUrl'];
-        }
-
-        if (get("packaged") || !require.toUrl) {
-            workerUrl = workerUrl || moduleUrl(mod, "worker");
-        }
-        else {
-            var normalizePath = this.$normalizePath;
-            // This path is intentionally not relative.
-            workerUrl = workerUrl || normalizePath(require.toUrl("ace/worker/worker.js"));
-
-            var tlns = {};
-            topLevelNamespaces.forEach(function(ns) {
-                tlns[ns] = normalizePath(require.toUrl(ns).replace(/(\.js)?(\?.*)?$/, ""));
-            });
-        }
-        */
+        var workerUrl = qualifyURL(workerUrl);
 
         try {
             this.$worker = new Worker(workerUrl);
         }
         catch (e) {
             if (e instanceof window['DOMException']) {
-                // Likely same origin problem. Use importScripts from a shim Worker
+                // Likely same origin problem. Use importScripts from a shim Worker.
                 var blob: Blob = this.$workerBlob(workerUrl);
                 var URL: URL = window['URL'] || window['webkitURL'];
                 var blobURL: string = URL.createObjectURL(blob);
@@ -68,13 +37,21 @@ export default class WorkerClient extends EventEmitterClass {
                 throw e;
             }
         }
-        // Sending a postMessage starts the worker.
-        this.$worker.postMessage({ init: true, tlns: tlns, module: mod, classname: classname });
 
+        // Add an EventListener for data the worker returns.
         this.$worker.onmessage = this.onMessage;
     }
-    onMessage(e: MessageEvent) {
-        var msg = e.data;
+
+    init(moduleName: string, className: string): void {
+        var tlns: { [ns: string]: string } = {};
+        // Sending a postMessage starts the worker.
+        this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName, classname: className });
+    }
+
+    onMessage(event: MessageEvent) {
+        var origin: string = event.origin;
+        var source: Window = event.source;
+        var msg = event.data;
         switch (msg.type) {
             case "log":
                 window.console && console.log && console.log.apply(console, msg.data);

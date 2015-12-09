@@ -26,6 +26,7 @@
     "./src/hammer/recognizers/swipe.ts",
     "./src/hammer/recognizers/tap.ts",
 
+    "./src/lib/Sender.ts",
     "./src/lib/asserts.ts",
     "./src/lib/async.ts",
     "./src/lib/dom.ts",
@@ -45,11 +46,15 @@
 
     "./src/mode/doc_comment_highlight_rules.ts",
     "./src/mode/JavaScriptMode.ts",
+    "./src/mode/JavaScriptWorker.ts",
     "./src/mode/javascript_highlight_rules.ts",
     "./src/mode/matching_brace_outdent.ts",
     "./src/mode/text_highlight_rules.ts",
 
     "./src/worker/Mirror.ts",
+    "./src/worker/WorkerClient.ts",
+    "./src/worker/worker-amd.ts",
+    "./src/worker/worker-systemjs.ts",
 
     "./src/ace.ts",
     "./src/Anchor.ts",

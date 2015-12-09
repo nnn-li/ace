@@ -1,6 +1,6 @@
 {
   "name": "davinci-triton",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "main": "lib/triton.js",
   "bin": {},
@@ -17,7 +17,6 @@
   },
   "keywords": [
     "editor",
-    "triton",
     "ACE",
     "systemjs",
     "es6",

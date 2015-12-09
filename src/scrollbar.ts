@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 import { createElement, scrollbarWidth } from "./lib/dom";
 import { addListener } from "./lib/event";
-import { EventEmitterClass } from "./lib/event_emitter";
+import EventEmitterClass from "./lib/event_emitter";
 
 /**
  * An abstract class representing a native scrollbar control.

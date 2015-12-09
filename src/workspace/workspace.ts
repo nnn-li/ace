@@ -62,7 +62,8 @@ export interface Workspace {
 export var workspace = function() {
 
     // N.B. The mod parameter must be absolute in order to work when requirejs is using individual files.
-    var workerProxy = new WorkerClient(['ace'], 'ace/workspace/workspace_worker', 'WorkspaceWorker');
+    var workerProxy = new WorkerClient('ace/workspace/workspace_worker');
+
     var callbacks = {};
     var callbackId = 1;
 
@@ -120,6 +121,9 @@ export var workspace = function() {
     workerProxy.on("outputFiles", function(response: { data: { err: string; results: any; callbackId: number } }) {
         doCallback(response.data);
     });
+
+    // FIXME: Probably should be uppercase, and use default export.
+    workerProxy.init('ace/workspace/workspace_worker', 'WorkspaceWorker');
 
     function doCallback(data: { err: string; results: any; callbackId: number }) {
         var info = data.results;

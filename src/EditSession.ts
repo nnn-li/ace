@@ -31,7 +31,7 @@
 import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
-import {EventEmitterClass} from "./lib/event_emitter";
+import EventEmitterClass from "./lib/event_emitter";
 import FoldLine from "./fold_line";
 import Fold from "./fold";
 import {Selection} from "./selection";
@@ -45,6 +45,7 @@ import BracketMatch from "./edit_session/bracket_match";
 import {UndoManager} from './undomanager'
 import TokenIterator from './TokenIterator';
 import FontMetrics from "./layer/FontMetrics";
+import WorkerClient from "./worker/WorkerClient";
 
 // "Tokens"
 var CHAR = 1,
@@ -135,12 +136,16 @@ export default class EditSession extends EventEmitterClass {
      *
      */
     private $modes: { [path: string]: Mode } = {};
+
     /**
      *
      */
     public $mode: Mode = null;
     private $modeId = null;
-    private $worker;
+    /**
+     * The worker corresponding to the mode (i.e. Language).
+     */
+    private $worker: WorkerClient;
     private $options;
     public tokenRe: RegExp;
     public nonTokenRe: RegExp;
@@ -880,12 +885,12 @@ export default class EditSession extends EventEmitterClass {
     * @param {Boolean} useWorker Set to `true` to use a worker
     *
     **/
-    private setUseWorker(useWorker) { this.setOption("useWorker", useWorker); }
+    private setUseWorker(useWorker: boolean) { this.setOption("useWorker", useWorker); }
 
     /**
     * Returns `true` if workers are being used.
     **/
-    private getUseWorker() { return this.$useWorker; }
+    private getUseWorker(): boolean { return this.$useWorker; }
 
     /**
     * Reloads all the tokens on the current session. This function calls [[BackgroundTokenizer.start `BackgroundTokenizer.start ()`]] to all the rows; it also emits the `'tokenizerUpdate'` event.

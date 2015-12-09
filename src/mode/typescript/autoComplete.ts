@@ -2,7 +2,7 @@ declare var $: any;
 
 import CursorPosition from '../../CursorPosition';
 import HashHandler from '../../keyboard/HashHandler';
-import {EventEmitterClass} from '../../lib/event_emitter';
+import EventEmitterClass from '../../lib/event_emitter';
 import Editor from '../../Editor';
 import CompletionService from './CompletionService';
 import AutoCompleteView from '../../mode/typescript/AutoCompleteView';

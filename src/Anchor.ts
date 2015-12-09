@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 import EditorDocument from "./EditorDocument";
 import Range from "./Range";
-import { EventEmitterClass } from './lib/event_emitter';
+import EventEmitterClass from './lib/event_emitter';
 import { assert } from './lib/asserts';
 
 /**

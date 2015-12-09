@@ -31,7 +31,7 @@
 import {createElement} from "../lib/dom";
 import {stringRepeat} from "../lib/lang";
 import EditSession from "../EditSession";
-import {EventEmitterClass} from "../lib/event_emitter";
+import EventEmitterClass from "../lib/event_emitter";
 import FontMetrics from "../layer/FontMetrics";
 
 export default class Text extends EventEmitterClass {

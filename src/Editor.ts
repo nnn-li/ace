@@ -41,7 +41,7 @@ import EditSession from "./EditSession";
 import Search from "./search";
 import Range from "./Range";
 import CursorRange from './CursorRange'
-import {EventEmitterClass} from "./lib/event_emitter";
+import EventEmitterClass from "./lib/event_emitter";
 import CommandManager from "./commands/CommandManager";
 import defaultCommands from "./commands/default_commands";
 import {defineOptions, loadModule, resetOptions, _signal} from "./config";
@@ -172,8 +172,9 @@ export default class Editor extends EventEmitterClass {
             this.session.bgTokenizer && this.session.bgTokenizer.scheduleStart();
         }.bind(this));
 
-        this.on("change", function(_, _self) {
-            _self._$emitInputEvent.schedule(31);
+        var self = this;
+        this.on("change", function() {
+            self._$emitInputEvent.schedule(31);
         });
 
         this.setSession(session);
@@ -2944,8 +2945,9 @@ class MouseHandler {
     }
 
     onMouseMove(name: string, e: MouseEvent) {
+        // If nobody is listening, avoid the creation of the temporary wrapper.
         // optimization, because mousemove doesn't have a default handler.
-        var listeners = this.editor._eventRegistry && this.editor._eventRegistry.mousemove;
+        var listeners = this.editor._eventRegistry && this.editor._eventRegistry['mousemove'];
         if (!listeners || !listeners.length) {
             return;
         }

@@ -14,4 +14,4 @@ var renderer = new VirtualRenderer(element);
 // renderer.setTheme...
 var editor = new Editor(renderer, editSession);
 
-console.log("What's up?")
+console.log("main.js completed without errors")

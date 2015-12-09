@@ -34,7 +34,7 @@ computedStyle,
 createElement,
 removeCssClass} from "../lib/dom";
 import {escapeHTML} from "../lib/lang";
-import {EventEmitterClass} from "../lib/event_emitter";
+import EventEmitterClass from "../lib/event_emitter";
 import EditSession from "../EditSession";
 
 export default class Gutter extends EventEmitterClass {

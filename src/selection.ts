@@ -30,7 +30,7 @@
 
 import EditorDocument from "./EditorDocument";
 import {stringReverse} from "./lib/lang";
-import {EventEmitterClass} from "./lib/event_emitter";
+import EventEmitterClass from "./lib/event_emitter";
 import OrientedRange from "./OrientedRange";
 import Range from "./Range";
 import {RangeList} from "./range_list";

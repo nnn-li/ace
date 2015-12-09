@@ -1,44 +1,13 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * Distributed under the BSD license:
- *
- * Copyright (c) 2010, Ajax.org B.V.
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Ajax.org B.V. nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***** END LICENSE BLOCK ***** */
-
 import {copyObject} from "./lib/lang";
 import {implement} from "./lib/oop";
 import {loadScript} from "./lib/net";
-import {EventEmitter} from './lib/event_emitter';
+import EventEmitterClass from './lib/event_emitter';
 
 var global = (function() {
     return this || typeof window !== 'undefined' && window;
 })();
 
-// FIXME: Make this type-safe.
-var options = {
+var options: { packaged: boolean; workerPath: string; modePath: string; themePath: string; basePath: string; suffix: string; $moduleUrls: { [name: string]: string } } = {
     packaged: false,
     workerPath: null,
     modePath: null,
@@ -49,16 +18,16 @@ var options = {
 };
 
 export function get(key: string) {
-    if (!options.hasOwnProperty(key))
+    if (!options.hasOwnProperty(key)) {
         throw new Error("Unknown config key: " + key);
-
+    }
     return options[key];
 }
 
 export function set(key: string, value) {
-    if (!options.hasOwnProperty(key))
+    if (!options.hasOwnProperty(key)) {
         throw new Error("Unknown config key: " + key);
-
+    }
     options[key] = value;
 }
 
@@ -70,14 +39,15 @@ export function all() {
 // FIXME: This is a lazy way of transferring functions from EventEmitter to config.
 // It breaks TypeScript analysis. Use the explicit approach as below, as needed.
 declare var exports: any;
-implement(exports, EventEmitter);
+var eventEmitter = new EventEmitterClass();
+implement(exports, eventEmitter);
 
 export function _emit(eventName: string, e?: any) {
-    return EventEmitter._emit(eventName, e);
+    return eventEmitter._emit(eventName, e);
 }
 
 export function _signal(eventName: string, e?: any) {
-    return EventEmitter._signal(eventName, e);
+    return eventEmitter._signal(eventName, e);
 }
 
 /**
@@ -91,8 +61,8 @@ export function moduleUrl(name: string, component: string): string {
     var parts = name.split("/");
     component = component || parts[parts.length - 2] || "";
 
-    // todo make this configurable or get rid of '-'
-    var sep: string = component == "snippets" ? "/" : "-";
+    // TODO: Configurable or get rid of '-'?
+    var sep: string = component === "snippets" ? "/" : "-";
     var base: string = parts[parts.length - 1];
     if (component === 'worker' && sep === '-') {
         var re = new RegExp("^" + component + "[\\-_]|[\\-_]" + component + "$", "g");
@@ -102,7 +72,7 @@ export function moduleUrl(name: string, component: string): string {
     if ((!base || base == component) && parts.length > 1) {
         base = parts[parts.length - 2];
     }
-    var path = options[component + "Path"];
+    var path: string = options[component + "Path"];
     if (path == null) {
         path = options.basePath;
     }
@@ -112,7 +82,7 @@ export function moduleUrl(name: string, component: string): string {
     if (path && path.slice(-1) != "/") {
         path += "/";
     }
-    return path + component + sep + base + this.get("suffix");
+    return path + component + sep + base + get("suffix");
 }
 
 export function setModuleUrl(name: string, subst: string) {
@@ -129,7 +99,6 @@ export var $loading: { [name: string]: ((m) => any)[] } = {};
 // What is the type of the module returned by the require function?
 // We're actually going to insert a script tag.
 export function loadModule(moduleName, onLoad: (m: any) => any, doc: Document = document) {
-    console.log("config.loadModule, moduleName = " + moduleName)
     var module;
     var moduleType: string;
     if (Array.isArray(moduleName)) {
@@ -346,3 +315,32 @@ export function setDefaultValues(path, optionHash) {
         setDefaultValue(path, key, optionHash[key]);
     });
 }
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */

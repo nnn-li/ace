@@ -1,7 +1,7 @@
 import { createElement } from "../lib/dom";
 import { stringRepeat } from "../lib/lang";
 import { isIE } from "../lib/useragent";
-import { EventEmitterClass } from "../lib/event_emitter";
+import EventEmitterClass from "../lib/event_emitter";
 
 var CHAR_COUNT = 0;
 

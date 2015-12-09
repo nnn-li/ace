@@ -38,7 +38,7 @@ import Cursor from "./layer/Cursor";
 import {HScrollBar, VScrollBar} from "./scrollbar";
 import RenderLoop from "./RenderLoop";
 import FontMetrics from "./layer/FontMetrics";
-import {EventEmitterClass} from "./lib/event_emitter";
+import EventEmitterClass from "./lib/event_emitter";
 import EditSession from './EditSession';
 import OptionsProvider from "./OptionsProvider";
 

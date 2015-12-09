@@ -38,6 +38,7 @@ import TokenIterator from "../TokenIterator";
 import Range from "../Range";
 import EditSession from '../EditSession';
 import Editor from '../Editor';
+import WorkerClient from "../worker/WorkerClient";
 
 /**
  * @class Mode
@@ -284,7 +285,7 @@ export default class Mode {
         return line.match(/^\s*/)[0];
     }
 
-    createWorker(session: EditSession) {
+    createWorker(session: EditSession): WorkerClient {
         return null;
     }
 

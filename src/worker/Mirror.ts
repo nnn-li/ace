@@ -1,8 +1,10 @@
 import EditorDocument from "../EditorDocument";
 import {delayedCall} from "../lib/lang";
+import Sender from "../lib/Sender";
+import Range from "../Range";
 
 export default class Mirror {
-    public sender/*FIXME: ace.WorkerSender*/;
+    public sender: Sender;
     public doc: EditorDocument;
     public deferredUpdate;
     public $timeout: number;
@@ -12,7 +14,7 @@ export default class Mirror {
      * Initializes the 'deferredUpdate' property to a delayed call to 'onUpdate'.
      * Binds the 'sender' "change" event to a function
      */
-    constructor(sender/*FIXME: ace.WorkerSender*/, timeout?: number) {
+    constructor(sender: Sender, timeout?: number) {
         this.sender = sender;
         this.$timeout = timeout;
 
@@ -20,10 +22,10 @@ export default class Mirror {
 
         var deferredUpdate = this.deferredUpdate = delayedCall(this.onUpdate.bind(this));
 
-        // Binding for use in the following callback.        
+        // Binding for use in the following callback.
         var _self = this;
 
-        sender.on('change', function(e: { data: { action: string; range: { start: { row: number; column: number }; end: { row: number; column: number } }; text: string; lines: string[] }[] }) {
+        sender.on('change', function(e: { data: { action: string; range: Range; text: string; lines: string[] }[] }) {
 
             doc.applyDeltas(e.data);
 
@@ -46,7 +48,7 @@ export default class Mirror {
         this.deferredUpdate.schedule(this.$timeout);
     }
 
-    getValue(callbackId) {
+    getValue(callbackId: number) {
         this.sender.callback(this.doc.getValue(), callbackId);
     }
     
