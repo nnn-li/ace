@@ -1,4 +1,4 @@
-import {Tooltip} from './tooltip';
+import Tooltip from './Tooltip';
 import {Workspace} from './workspace/workspace';
 
 /**

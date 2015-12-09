@@ -34,7 +34,7 @@ import Range from './Range';
  * This object maintains the undo stack for an [[EditSession `EditSession`]].
  * @class UndoManager
  */
-export class UndoManager {
+export default class UndoManager {
     private $editSession: EditSession;
     private dirtyCounter: number;
     private $undoStack: any[];

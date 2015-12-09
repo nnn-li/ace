@@ -35,10 +35,11 @@ import {computedStyle, hasCssClass, setCssClass} from "./lib/dom";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {isIE, isMac, isMobile, isOldIE, isWebKit} from "./lib/useragent";
 import Gutter from "./layer/Gutter";
-import TextInput from "./keyboard/TextInput";
+import HashHandler from "./keyboard/HashHandler";
 import KeyBinding from "./keyboard/KeyBinding";
+import TextInput from "./keyboard/TextInput";
 import EditSession from "./EditSession";
-import Search from "./search";
+import Search from "./Search";
 import Range from "./Range";
 import CursorRange from './CursorRange'
 import EventEmitterClass from "./lib/event_emitter";
@@ -49,10 +50,10 @@ import TokenIterator from "./TokenIterator";
 import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
 import VirtualRenderer from './VirtualRenderer';
 import {Completer} from "./autocomplete";
-import {Selection} from './selection';
+import Selection from './Selection';
 import {addListener, addMouseWheelListener, addMultiMouseDownListener, capture, getButton, preventDefault, stopEvent, stopPropagation} from "./lib/event";
 import {touchManager} from './touch/touch';
-import {Tooltip} from "./tooltip";
+import Tooltip from "./Tooltip";
 
 //var DragdropHandler = require("./mouse/dragdrop_handler").DragdropHandler;
 
@@ -356,8 +357,8 @@ export default class Editor extends EventEmitterClass {
      *
      * @returns {String}
      *
-     **/
-    getKeyboardHandler() {
+     */
+    getKeyboardHandler(): HashHandler {
         return this.keyBinding.getKeyboardHandler();
     }
 

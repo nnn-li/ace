@@ -1,4 +1,5 @@
 System.config({
+  baseURL: "/",
   defaultJSExtensions: true,
   transpiler: "babel",
   babelOptions: {
@@ -7,7 +8,6 @@ System.config({
       "optimisation.modules.system"
     ]
   },
-  baseURL: '/',
   paths: {
     "github:*": "jspm_packages/github/*",
     "npm:*": "jspm_packages/npm/*"

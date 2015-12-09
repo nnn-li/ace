@@ -1,5 +1,5 @@
-davinci-triton
-==============
+deuce README
+============
 
 Browser Code Editor targeting ES6 written in TypeScript
 

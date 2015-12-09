@@ -47,7 +47,7 @@ import Tokenizer from './Tokenizer'
  *
  * @constructor
  **/
-export class BackgroundTokenizer extends EventEmitterClass {
+export default class BackgroundTokenizer extends EventEmitterClass {
     /**
      * This is the value returned by setTimeout, so it's really a timer handle.
      * There are some conditionals looking for a falsey value, so we use zero where needed.

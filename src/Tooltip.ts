@@ -27,13 +27,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import {} from "./lib/oop";
 import { addCssClass, createElement, setInnerText } from "./lib/dom";
 
 /**
  * @class Tooltip
  */
-export class Tooltip {
+export default class Tooltip {
     /**
      * @property isOpen
      * @type {boolean}

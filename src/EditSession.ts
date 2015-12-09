@@ -32,17 +32,17 @@ import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
 import EventEmitterClass from "./lib/event_emitter";
-import FoldLine from "./fold_line";
-import Fold from "./fold";
-import {Selection} from "./selection";
+import FoldLine from "./FoldLine";
+import Fold from "./Fold";
+import Selection from "./Selection";
 import Mode from "./mode/Mode";
 import Range from "./Range";
 import EditorDocument from "./EditorDocument";
-import {BackgroundTokenizer} from "./background_tokenizer";
-import {SearchHighlight} from "./search_highlight";
+import BackgroundTokenizer from "./BackgroundTokenizer";
+import SearchHighlight from "./SearchHighlight";
 import {assert} from './lib/asserts';
-import BracketMatch from "./edit_session/bracket_match";
-import {UndoManager} from './undomanager'
+import BracketMatch from "./edit_session/BracketMatch";
+import UndoManager from './UndoManager'
 import TokenIterator from './TokenIterator';
 import FontMetrics from "./layer/FontMetrics";
 import WorkerClient from "./worker/WorkerClient";

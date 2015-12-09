@@ -1,10 +1,10 @@
 {
-  "name": "davinci-triton",
-  "version": "0.1.7",
+  "name": "deuce",
+  "version": "0.1.8",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "main": "lib/triton.js",
   "bin": {},
-  "homepage": "https://github.com/geometryzen/davinci-triton",
+  "homepage": "https://github.com/geometryzen/deuce",
   "author": "david.geo.holmes@gmail.com",
   "jspm": {
     "dependencies": {},
@@ -26,7 +26,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/geometryzen/davinci-triton.git"
+    "url": "git://github.com/geometryzen/deuce.git"
   },
   "scripts": {
     "build": "tsc",

@@ -51,8 +51,8 @@ export default class Anchor extends EventEmitterClass {
     public row: number;
     public column: number;
     private document: EditorDocument;
-    private $onChange;
-    private $insertRight;
+    private $onChange: () => void;
+    private $insertRight: boolean;
     constructor(doc: EditorDocument, row: number, column: number) {
         super();
         assert(typeof row === 'number', "row must be a number");
@@ -114,38 +114,46 @@ export default class Anchor extends EventEmitterClass {
             if (start.row === row && start.column <= column) {
                 if (start.column === column && this.$insertRight) {
                     // do nothing
-                } else if (start.row === end.row) {
+                }
+                else if (start.row === end.row) {
                     column += end.column - start.column;
-                } else {
+                }
+                else {
                     column -= start.column;
                     row += end.row - start.row;
                 }
-            } else if (start.row !== end.row && start.row < row) {
+            }
+            else if (start.row !== end.row && start.row < row) {
                 row += end.row - start.row;
             }
-        } else if (delta.action === "insertLines") {
+        }
+        else if (delta.action === "insertLines") {
             if (start.row === row && column === 0 && this.$insertRight) {
                 // do nothing
             }
             else if (start.row <= row) {
                 row += end.row - start.row;
             }
-        } else if (delta.action === "removeText") {
+        }
+        else if (delta.action === "removeText") {
             if (start.row === row && start.column < column) {
                 if (end.column >= column)
                     column = start.column;
                 else
                     column = Math.max(0, column - (end.column - start.column));
 
-            } else if (start.row !== end.row && start.row < row) {
+            }
+            else if (start.row !== end.row && start.row < row) {
                 if (end.row === row)
                     column = Math.max(0, column - end.column) + start.column;
                 row -= (end.row - start.row);
-            } else if (end.row === row) {
+            }
+            else if (end.row === row) {
                 row -= end.row - start.row;
                 column = Math.max(0, column - end.column) + start.column;
             }
-        } else if (delta.action == "removeLines") {
+        }
+        else if (delta.action == "removeLines") {
             if (start.row <= row) {
                 if (end.row <= row)
                     row -= end.row - start.row;
@@ -199,11 +207,11 @@ export default class Anchor extends EventEmitterClass {
      * When called, the `'change'` event listener is removed.
      *
      **/
-    detach() {
+    detach(): void {
         this.document.removeEventListener("change", this.$onChange);
     }
 
-    attach(doc) {
+    attach(doc: EditorDocument): void {
         this.document = doc || this.document;
         this.document.on("change", this.$onChange);
     }

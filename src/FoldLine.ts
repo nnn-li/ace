@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 import Range from "./Range";
-import Fold from "./fold";
+import Fold from "./Fold";
 
 /*
  * If an array is passed in, the folds are expected to be sorted already.

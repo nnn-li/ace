@@ -61,7 +61,7 @@ import Anchor from "./Anchor";
  * 
  * @constructor
  **/
-export class Selection extends EventEmitterClass {
+export default class Selection extends EventEmitterClass {
     private session: EditSession;
     // FIXME: Maybe Selection should only couple to the EditSession?
     private doc: EditorDocument;

@@ -35,7 +35,7 @@ import EditSession from "./EditSession";
 // needed to prevent long lines from freezing the browser
 var MAX_RANGES = 500;
 
-export class SearchHighlight {
+export default class SearchHighlight {
     private regExp: RegExp;
     private clazz;
     private type: string;
