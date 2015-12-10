@@ -12,10 +12,10 @@ Object.keys(entities).forEach(function(entityKey) {
     }
 });
 
-class EnityParserClass {
+class EntityParserClass {
     constructor() {
     }
-    consumeEntity(buffer: InputStream, tokenizer: Tokenizer, additionalAllowedCharacter: string): any {
+    consumeEntity(buffer: InputStream, tokenizer: Tokenizer, additionalAllowedCharacter?: string): any {
         var decodedCharacter = '';
         var consumedCharacters = '';
         var ch = buffer.char();
@@ -174,4 +174,4 @@ class EnityParserClass {
     }
 }
 
-export var EntityParser = new EntityParser();
+export var EntityParser = new EntityParserClass();

@@ -49,7 +49,7 @@ export default class CssMode extends TextMode {
     }
 
 
-    getNextLineIndent(state, line: string, tab: string) {
+    getNextLineIndent(state: string, line: string, tab: string) {
         var indent = this.$getIndent(line);
 
         // ignore braces in comments
@@ -66,12 +66,12 @@ export default class CssMode extends TextMode {
         return indent;
     }
 
-    checkOutdent(state, line: string, input: string) {
-        return this.$outdent.checkOutdent(line, input);
+    checkOutdent(state: string, line: string, text: string): boolean {
+        return this.$outdent.checkOutdent(line, text);
     }
 
-    autoOutdent(state, session: EditSession, row: number) {
-        this.$outdent.autoOutdent(session, row);
+    autoOutdent(state: string, session: EditSession, row: number): number {
+        return this.$outdent.autoOutdent(session, row);
     }
 
     createWorker(session: EditSession) {

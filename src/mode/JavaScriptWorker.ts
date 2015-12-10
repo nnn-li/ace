@@ -12,6 +12,7 @@ var disabledWarningsRe = startRegex([
   "Bad for in variable '(.+)'.",
   'Missing "use strict"'
 ]);
+
 var errorsRe = startRegex([
   "Unexpected",
   "Expected ",
@@ -38,10 +39,11 @@ var infoRe = startRegex([
 export default class JavaScriptWorker extends Mirror {
   options;
   constructor(sender: Sender) {
-    super(sender, 500);
+    super(sender);
     this.setOptions();
     sender.emit('initAfter');
   }
+
   setOptions(options?: {}) {
     this.options = options || {
       // undef: true,

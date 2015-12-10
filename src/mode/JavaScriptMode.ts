@@ -88,12 +88,12 @@ export default class JavaScriptMode extends Mode {
         return indent;
     }
 
-    checkOutdent(state, line: string, input: string): boolean {
-        return this.$outdent.checkOutdent(line, input);
+    checkOutdent(state: string, line: string, text: string): boolean {
+        return this.$outdent.checkOutdent(line, text);
     };
 
-    autoOutdent(state, session: EditSession, row: number) {
-        this.$outdent.autoOutdent(session, row);
+    autoOutdent(state: string, session: EditSession, row: number): number {
+        return this.$outdent.autoOutdent(session, row);
     };
 
     createWorker(session: EditSession): WorkerClient {

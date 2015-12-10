@@ -44,6 +44,10 @@ import WorkerClient from "../worker/WorkerClient";
  * @class Mode
  */
 export default class Mode {
+    /**
+     * Used when loading snippets for zero or more modes?
+     */
+    public modes: Mode[];
     protected HighlightRules: any = TextHighlightRules;
     protected $behaviour = new Behaviour();
     public tokenRe = new RegExp("^["
@@ -270,15 +274,16 @@ export default class Mode {
         session.getSelection().fromOrientedRange(initialRange);
     }
 
-    getNextLineIndent(state, line, tab) {
+    getNextLineIndent(state: string, line: string, tab: string): string {
         return this.$getIndent(line);
     }
 
-    checkOutdent(state, line, input) {
+    checkOutdent(state: string, line: string, text: string): boolean {
         return false;
     }
 
-    autoOutdent(state, doc, row) {
+    autoOutdent(state: string, session: EditSession, row: number): number {
+        return 0;
     }
 
     $getIndent(line: string): string {

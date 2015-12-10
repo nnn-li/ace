@@ -14,11 +14,10 @@ export default class Mirror {
      * Initializes the 'deferredUpdate' property to a delayed call to 'onUpdate'.
      * Binds the 'sender' "change" event to a function
      */
-    constructor(sender: Sender, timeout?: number) {
+    constructor(sender: Sender, timeout: number = 500) {
         this.sender = sender;
         this.$timeout = timeout;
-
-        var doc = this.doc = new EditorDocument("");
+        this.doc = new EditorDocument("");
 
         var deferredUpdate = this.deferredUpdate = delayedCall(this.onUpdate.bind(this));
 
@@ -27,7 +26,7 @@ export default class Mirror {
 
         sender.on('change', function(e: { data: { action: string; range: Range; text: string; lines: string[] }[] }) {
 
-            doc.applyDeltas(e.data);
+            _self.doc.applyDeltas(e.data);
 
             if (_self.$timeout) {
                 return deferredUpdate.schedule(_self.$timeout);

@@ -28,31 +28,32 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import Command = require('../commands/Command');
-import snip = require("../snippets");
-import acm = require("../autocomplete");
-import config = require("../config");
-import util = require("../autocomplete/util");
-import Editor = require("../Editor");
-import esm = require('../edit_session');
-import tcm = require('../autocomplete/text_completer');
+import Command from '../commands/Command';
+import {snippetManager} from "../snippets";
+import {Completer, getCompleter, setCompleter, CompleterAggregate, Autocomplete} from "../autocomplete";
+import {defineOptions, loadModule} from "../config";
+import {retrievePrecedingIdentifier} from "../autocomplete/util";
+import Editor from "../Editor";
+import EditSession from '../EditSession';
+import {getCompletions} from '../autocomplete/text_completer';
+import Mode from '../mode/Mode';
 
 // Exports existing completer so that user can construct his own set of completers.
 // export var textCompleter: acm.Completer = tcm;
 
-export var keyWordCompleter: acm.Completer = {
-    getCompletions: function(editor: Editor, session: esm.EditSession, pos: { row: number; column: number }, prefix: string, callback) {
+export var keyWordCompleter: Completer = {
+    getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
         var state = editor.session.getState(pos.row);
         var completions = session.$mode.getCompletions(state, session, pos, prefix);
         callback(null, completions);
     }
 };
 
-export var snippetCompleter: acm.Completer = {
-    getCompletions: function(editor: Editor, session: esm.EditSession, pos: { row: number; column: number }, prefix: string, callback) {
-        var snippetMap = snip.snippetManager.snippetMap;
+export var snippetCompleter: Completer = {
+    getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
+        var snippetMap = snippetManager.snippetMap;
         var completions = [];
-        snip.snippetManager.getActiveScopes(editor).forEach(function(scope) {
+        snippetManager.getActiveScopes(editor).forEach(function(scope) {
             var snippets = snippetMap[scope] || [];
             for (var i = snippets.length; i--;) {
                 var s = snippets[i];
@@ -70,16 +71,16 @@ export var snippetCompleter: acm.Completer = {
     }
 };
 
-var completers: acm.Completer[] = [snippetCompleter/*, textCompleter*/, keyWordCompleter];
+var completers: Completer[] = [snippetCompleter/*, textCompleter*/, keyWordCompleter];
 
-export function addCompleter(completer: acm.Completer) {
+export function addCompleter(completer: Completer) {
     completers.push(completer);
 };
 
 var expandSnippet: Command = {
     name: 'expandSnippet',
     exec: function(editor: Editor) {
-        var success = snip.snippetManager.expandWithTab(editor);
+        var success = snippetManager.expandWithTab(editor);
         if (!success) {
             editor.execCommand('indent');
         }
@@ -91,29 +92,30 @@ var onChangeMode = function(e, editor: Editor) {
     loadSnippetsForMode(editor.session.$mode);
 };
 
-var loadSnippetsForMode = function(mode: { $id: string; modes }) {
+var loadSnippetsForMode = function(mode: Mode) {
     var id = mode.$id;
-    if (!snip.snippetManager['files']) {
-        snip.snippetManager['files'] = {};
+    if (!snippetManager['files']) {
+        snippetManager['files'] = {};
     }
     loadSnippetFile(id);
-    if (mode.modes)
+    if (mode.modes) {
         mode.modes.forEach(loadSnippetsForMode);
+    }
 };
 
 var loadSnippetFile = function(id: string) {
-    if (!id || snip.snippetManager['files'][id])
+    if (!id || snippetManager['files'][id])
         return;
     var snippetFilePath = id.replace("mode", "snippets");
-    snip.snippetManager['files'][id] = {};
-    config.loadModule(snippetFilePath, function(m) {
+    snippetManager['files'][id] = {};
+    loadModule(snippetFilePath, function(m) {
         if (m) {
-            snip.snippetManager['files'][id] = m;
+            snippetManager['files'][id] = m;
             if (!m.snippets && m.snippetText)
-                m.snippets = snip.snippetManager.parseSnippetFile(m.snippetText);
-            snip.snippetManager.register(m.snippets || [], m.scope);
+                m.snippets = snippetManager.parseSnippetFile(m.snippetText);
+            snippetManager.register(m.snippets || [], m.scope);
             if (m.includeScopes) {
-                snip.snippetManager.snippetMap[m.scope].includeScopes = m.includeScopes;
+                snippetManager.snippetMap[m.scope].includeScopes = m.includeScopes;
                 m.includeScopes.forEach(function(x) {
                     loadSnippetFile("ace/mode/" + x);
                 });
@@ -125,13 +127,13 @@ var loadSnippetFile = function(id: string) {
 function getCompletionPrefix(editor: Editor) {
     var pos = editor.getCursorPosition();
     var line = editor.session.getLine(pos.row);
-    var prefix = util.retrievePrecedingIdentifier(line, pos.column);
+    var prefix = retrievePrecedingIdentifier(line, pos.column);
     // Try to find custom prefixes on the completers
     editor.completers.forEach(function(completer) {
         if (completer['identifierRegexps']) {
             completer['identifierRegexps'].forEach(function(identifierRegex) {
                 if (!prefix && identifierRegex) {
-                    prefix = util.retrievePrecedingIdentifier(line, pos.column, identifierRegex);
+                    prefix = retrievePrecedingIdentifier(line, pos.column, identifierRegex);
                 }
             });
         }
@@ -142,29 +144,29 @@ function getCompletionPrefix(editor: Editor) {
 var doLiveAutocomplete = function(e: { editor: Editor; command: { name: string }; args }) {
     var editor = e.editor;
     var text = e.args || "";
-    var hasCompleter = acm.getCompleter(editor) && acm.getCompleter(editor).activated;
+    var hasCompleter = getCompleter(editor) && getCompleter(editor).activated;
 
     // We don't want to autocomplete with no prefix
     if (e.command.name === "backspace") {
         if (hasCompleter && !getCompletionPrefix(editor))
-            acm.getCompleter(editor).detach();
+            getCompleter(editor).detach();
     }
     else if (e.command.name === "insertstring") {
         var prefix = getCompletionPrefix(editor);
         // Only autocomplete if there's a prefix that can be matched
         if (prefix && !hasCompleter) {
-            if (!acm.getCompleter(editor)) {
-                acm.setCompleter(editor, new acm.CompleterAggregate(editor));
+            if (!getCompleter(editor)) {
+                setCompleter(editor, new CompleterAggregate(editor));
             }
             // Disable autoInsert
-            acm.getCompleter(editor).autoSelect = false;
-            acm.getCompleter(editor).autoInsert = false;
-            acm.getCompleter(editor).showPopup(editor);
+            getCompleter(editor).autoSelect = false;
+            getCompleter(editor).autoInsert = false;
+            getCompleter(editor).showPopup(editor);
         }
     }
 };
 
-config.defineOptions(Editor.prototype, 'editor', {
+defineOptions(Editor.prototype, 'editor', {
     enableBasicAutocompletion: {
         set: function(val) {
             var editor: Editor = this;
@@ -172,10 +174,10 @@ config.defineOptions(Editor.prototype, 'editor', {
                 if (!editor.completers) {
                     editor.completers = Array.isArray(val) ? val : completers;
                 }
-                editor.commands.addCommand(acm.Autocomplete.startCommand);
+                editor.commands.addCommand(Autocomplete.startCommand);
             }
             else {
-                editor.commands.removeCommand(acm.Autocomplete.startCommand.name);
+                editor.commands.removeCommand(Autocomplete.startCommand.name);
             }
         },
         value: false

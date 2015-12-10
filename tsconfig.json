@@ -18,6 +18,8 @@
 
     "./src/commands/Command.ts",
 
+    "./src/ext/language_tools.ts",
+
     "./src/hammer/hammer.ts",
     "./src/hammer/utils.ts",
     "./src/hammer/recognizers/attribute.ts",
@@ -97,12 +99,16 @@
     "./src/mode/HtmlCompletions.ts",
     "./src/mode/HtmlHighlightRules.ts",
     "./src/mode/HtmlMode.ts",
+    "./src/mode/HtmlWorker.ts",
+
     "./src/mode/JavaScriptHighlightRules.ts",
     "./src/mode/JavaScriptMode.ts",
     "./src/mode/JavaScriptWorker.ts",
+
     "./src/mode/MatchingBraceOutdent.ts",
-    "./src/mode/Mode.ts",
     "./src/mode/TextHighlightRules.ts",
+    "./src/mode/Mode.ts",
+
     "./src/mode/XmlHighlightRules.ts",
 
     "./src/worker/Mirror.ts",

@@ -28,6 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 import TokenIterator from "../TokenIterator";
+import EditSession from "../EditSession";
 
 var commonAttributes = [
     "accesskey",
@@ -234,7 +235,7 @@ function is(token, type) {
     return token.type.lastIndexOf(type + ".xml") > -1;
 }
 
-function findTagName(session, pos) {
+function findTagName(session: EditSession, pos: { row: number; column: number }) {
     var iterator = new TokenIterator(session, pos.row, pos.column);
     var token = iterator.getCurrentToken();
     while (token && !is(token, "tag-name")) {
@@ -249,7 +250,7 @@ export default class HtmlCompletions {
 
     }
 
-    getCompletions(state, session, pos, prefix): any {
+    getCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string): any {
         var token = session.getTokenAt(pos.row, pos.column);
 
         if (!token)
@@ -266,7 +267,7 @@ export default class HtmlCompletions {
         return [];
     }
 
-    getTagCompletions(state, session, pos, prefix) {
+    getTagCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
         return elements.map(function(element) {
             return {
                 value: element,
@@ -276,7 +277,7 @@ export default class HtmlCompletions {
         });
     }
 
-    getAttributeCompetions(state, session, pos, prefix) {
+    getAttributeCompetions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
         var tagName = findTagName(session, pos);
         if (!tagName)
             return [];

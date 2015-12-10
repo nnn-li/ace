@@ -27,11 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-import {} from "../lib/oop";
-import {} from "../lib/lang";
 import Mirror from "../worker/Mirror";
 import SAXParser from "./html/SAXParser";
+import Sender from "../lib/Sender";
 
 var errorTypes = {
     "expected-doctype-but-got-start-tag": "info",
@@ -40,19 +38,28 @@ var errorTypes = {
 }
 
 export default class HtmlWorker extends Mirror {
-    context = null;
-    constructor(sender) {
-        super(sender, 400);
+    context;
+    constructor(sender: Sender) {
+        super(sender);
+        this.setOptions();
+        sender.emit('initAfter');
     }
 
-    setOptions(options) {
-        this.context = options.context;
+    setOptions(options?: { context }) {
+        if (options) {
+            this.context = options.context;
+        }
+        else {
+            this.context = void 0;
+        }
+        this.doc.getValue() && this.deferredUpdate.schedule(100);
     }
 
     onUpdate() {
         var value = this.doc.getValue();
-        if (!value)
+        if (!value) {
             return;
+        }
         var errors = [];
         var parser = new SAXParser();
         if (parser) {
@@ -65,7 +72,7 @@ export default class HtmlWorker extends Mirror {
                 characters: noop
             };
             parser.errorHandler = {
-                error: function(message, location, code) {
+                error: function(message: string, location: { line: number; column: number }, code: string) {
                     errors.push({
                         row: location.line,
                         column: location.column,
@@ -74,10 +81,12 @@ export default class HtmlWorker extends Mirror {
                     });
                 }
             };
-            if (this.context)
+            if (this.context) {
                 parser.parseFragment(value, this.context);
-            else
+            }
+            else {
                 parser.parse(value);
+            }
         }
         this.sender.emit("error", errors);
     }

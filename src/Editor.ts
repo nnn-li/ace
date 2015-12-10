@@ -1048,8 +1048,9 @@ export default class Editor extends EventEmitterClass {
             }
         }
 
-        if (text == "\t")
+        if (text === "\t") {
             text = this.session.getTabString();
+        }
 
         // remove selected text
         if (!this.selection.isEmpty()) {
@@ -1063,7 +1064,7 @@ export default class Editor extends EventEmitterClass {
             this.session.remove(range);
         }
 
-        if (text == "\n" || text == "\r\n") {
+        if (text === "\n" || text === "\r\n") {
             var line = session.getLine(cursor.row);
             if (cursor.column > line.search(/\S|$/)) {
                 var d = line.substr(cursor.column).search(/\S|$/);
@@ -1097,8 +1098,9 @@ export default class Editor extends EventEmitterClass {
 
             session.insert({ row: cursor.row + 1, column: 0 }, lineIndent);
         }
-        if (shouldOutdent)
+        if (shouldOutdent) {
             mode.autoOutdent(lineState, session, cursor.row);
+        }
     }
 
     onTextInput(text: string): void {

@@ -4,11 +4,10 @@ import TreeParser from './TreeParser';
 
 export default class SAXParser {
     contentHandler;
-    errorHandler;
-    _errorHandler;
-    _treeBuilder: SAXTreeBuilder;
-    _tokenizer: Tokenizer;
-    _scriptingEnabled: boolean
+    private _errorHandler;
+    private _treeBuilder: SAXTreeBuilder;
+    private _tokenizer: Tokenizer;
+    private _scriptingEnabled: boolean;
     constructor() {
         this.contentHandler = null;
         this._errorHandler = null;
@@ -25,11 +24,28 @@ export default class SAXParser {
             new TreeParser(this.contentHandler).parse(fragment);
         }
     }
+
     parse(source) {
         this._tokenizer.tokenize(source);
         var document = this._treeBuilder.document;
         if (document) {
             new TreeParser(this.contentHandler).parse(document);
         }
+    }
+
+    get scriptingEnabled(): boolean {
+        return this._scriptingEnabled;
+    }
+    set scriptingEnabled(scriptingEnabled: boolean) {
+        this._scriptingEnabled = scriptingEnabled;
+        this._treeBuilder.scriptingEnabled = scriptingEnabled;
+    }
+
+    get errorHandler() {
+        return this._errorHandler;
+    }
+    set errorHandler(errorHandler) {
+        this._errorHandler = errorHandler;
+        this._treeBuilder.errorHandler = errorHandler;
     }
 }

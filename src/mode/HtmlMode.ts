@@ -38,6 +38,7 @@ import XmlBehaviour from "./behaviour/XmlBehaviour";
 import HtmlFoldMode from "./folding/HtmlFoldMode";
 import HtmlCompletions from "./HtmlCompletions";
 import WorkerClient from "../worker/WorkerClient";
+import EditSession from "../EditSession";
 
 // http://www.w3.org/TR/html5/syntax.html#void-elements
 var voidElements = ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
@@ -48,7 +49,7 @@ export default class HtmlMode extends TextMode {
     voidElements = arrayToMap(voidElements);
     $id = "ace/mode/html";
     fragmentContext;
-    $completer;
+    $completer: HtmlCompletions;
     constructor(options) {
         super();
         this.fragmentContext = options && options.fragmentContext;
@@ -63,26 +64,29 @@ export default class HtmlMode extends TextMode {
 
         this.foldingRules = new HtmlFoldMode(this.voidElements, arrayToMap(optionalEndTags));
     }
-    getNextLineIndent(state, line, tab) {
+
+    getNextLineIndent(state: string, line: string, tab: string): string {
         return this.$getIndent(line);
     }
 
-    checkOutdent(state, line, input) {
+    checkOutdent(state: string, line: string, text: string): boolean {
         return false;
     }
 
-    getCompletions(state, session, pos, prefix) {
+    getCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
         return this.$completer.getCompletions(state, session, pos, prefix);
     }
 
-    createWorker(session) {
+    createWorker(session: EditSession): WorkerClient {
+
         var worker = new WorkerClient("lib/worker/worker-systemjs.js");
         var mode = this;
 
         worker.on("initAfter", function() {
             worker.attachToDocument(session.getDocument());
-            if (mode.fragmentContext)
+            if (mode.fragmentContext) {
                 worker.call("setOptions", [{ context: mode.fragmentContext }]);
+            }
         });
 
         worker.on("error", function(e) {

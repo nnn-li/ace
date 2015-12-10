@@ -33,7 +33,7 @@ export class PythonWorker extends m.Mirror {
         this.setOptions();
 
         // Let the sender know that this worker has completed initialization.
-        this.sender.emit('initAfter');
+        sender.emit('initAfter');
     }
 
     private setOptions(options?) {

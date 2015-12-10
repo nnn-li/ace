@@ -35,14 +35,14 @@ export default class MatchingBraceOutdent {
     constructor() {
     }
 
-    checkOutdent(line: string, input: string): boolean {
-        if (! /^\s+$/.test(line))
+    checkOutdent(line: string, text: string): boolean {
+        if (! /^\s+$/.test(line)) {
             return false;
-
-        return /^\s*\}/.test(input);
+        }
+        return /^\s*\}/.test(text);
     }
 
-    autoOutdent(session: EditSession, row: number) {
+    autoOutdent(session: EditSession, row: number): number {
         var line = session.getLine(row);
         var match = line.match(/^(\s*\})/);
 
