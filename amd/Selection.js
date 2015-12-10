@@ -81,7 +81,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         /**
          *
          * Returns `true` if the selection is empty.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Selection.prototype.isEmpty = function () {
             // What is the difference between $isEmpty and what this function returns?
@@ -90,7 +90,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         };
         /**
         * Returns `true` if the selection is a multi-line.
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         Selection.prototype.isMultiLine = function () {
             if (this.isEmpty()) {
@@ -100,7 +100,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         };
         /**
         * Returns an object containing the `row` and `column` current position of the cursor.
-        * @returns {Object}
+        * @return {Object}
         **/
         Selection.prototype.getCursor = function () {
             return this.lead.getPosition();
@@ -120,7 +120,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         /**
         * Returns an object containing the `row` and `column` of the calling selection anchor.
         *
-        * @returns {Object}
+        * @return {Object}
         * @related Anchor.getPosition
         **/
         Selection.prototype.getSelectionAnchor = function () {
@@ -132,7 +132,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         /**
         *
         * Returns an object containing the `row` and `column` of the calling selection lead.
-        * @returns {Object}
+        * @return {Object}
         **/
         Selection.prototype.getSelectionLead = function () {
             return this.lead.getPosition();
@@ -162,7 +162,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         };
         /**
         * Returns `true` if the selection is going backwards in the document.
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         Selection.prototype.isBackwards = function () {
             var anchor = this.anchor;
@@ -171,7 +171,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         };
         /**
         * [Returns the [[Range]] for the selected text.]{: #Selection.getRange}
-        * @returns {Range}
+        * @return {Range}
         **/
         Selection.prototype.getRange = function () {
             var anchor = this.anchor;
@@ -783,7 +783,7 @@ define(["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], f
         * postion. The result is the range of the starting and eventual cursor position.
         * Will reset the cursor position.
         * @param {Function} The callback that should change the cursor position
-        * @returns {Range}
+        * @return {Range}
         *
         **/
         Selection.prototype.getRangeOfMovements = function (func) {

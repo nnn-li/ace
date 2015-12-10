@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -149,7 +147,7 @@ import Mode from &#x27;../mode/Mode&#x27;;
 
 export var keyWordCompleter: Completer = {
     getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
-        var state = editor.session.getState(pos.row);
+        var state = session.getState(pos.row);
         var completions = session.$mode.getCompletions(state, session, pos, prefix);
         callback(null, completions);
     }
@@ -195,7 +193,7 @@ var expandSnippet: Command = {
 };
 
 var onChangeMode = function(e, editor: Editor) {
-    loadSnippetsForMode(editor.session.$mode);
+    loadSnippetsForMode(editor.getSession().$mode);
 };
 
 var loadSnippetsForMode = function(mode: Mode) {
@@ -232,7 +230,7 @@ var loadSnippetFile = function(id: string) {
 
 function getCompletionPrefix(editor: Editor) {
     var pos = editor.getCursorPosition();
-    var line = editor.session.getLine(pos.row);
+    var line = editor.getSession().getLine(pos.row);
     var prefix = retrievePrecedingIdentifier(line, pos.column);
     // Try to find custom prefixes on the completers
     editor.completers.forEach(function(completer) {

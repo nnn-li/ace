@@ -27,7 +27,7 @@ export default class Tooltip {
     /**
      * Provides the HTML div element.
      * @method getElement
-     * @returns {HTMLElement}
+     * @return {HTMLElement}
      */
     getElement(): HTMLElement;
     /**

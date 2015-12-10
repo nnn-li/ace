@@ -5,21 +5,21 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 define(["require", "exports", './lib/event_emitter', './lib/asserts'], function (require, exports, event_emitter_1, asserts_1) {
     /**
-     *
      * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
-     *
      * @class Anchor
-     *
-     * Creates a new `Anchor` and associates it with a document.
-     *
-     * @param {EditorDocument} doc The document to associate with the anchor
-     * @param {Number} row The starting row position
-     * @param {Number} column The starting column position
-     *
-     * @constructor
-     **/
+     * @extends EventEmitterClass
+     */
     var Anchor = (function (_super) {
         __extends(Anchor, _super);
+        /**
+         * Creates a new <code>Anchor</code> and associates it with a document.
+         *
+         * @param doc {EditorDocument} The document to associate with the anchor.
+         * @param row {number} The starting row position.
+         * @param column {number} The starting column position.
+         *
+         * @constructor
+         */
         function Anchor(doc, row, column) {
             _super.call(this);
             asserts_1.assert(typeof row === 'number', "row must be a number");
@@ -31,16 +31,16 @@ define(["require", "exports", './lib/event_emitter', './lib/asserts'], function 
         }
         /**
          * Returns an object identifying the `row` and `column` position of the current anchor.
-         * @returns {Object}
+         * @return {Object}
          **/
         Anchor.prototype.getPosition = function () {
             return this.$clipPositionToDocument(this.row, this.column);
         };
         /**
-         *
          * Returns the current document.
-         * @returns {EditorDocument}
-         **/
+         * @method getDocument
+         * @return {EditorDocument}
+         */
         Anchor.prototype.getDocument = function () {
             return this.document;
         };
@@ -127,7 +127,6 @@ define(["require", "exports", './lib/event_emitter', './lib/asserts'], function 
          * @param {Number} row The row index to move the anchor to
          * @param {Number} column The column index to move the anchor to
          * @param {Boolean} noClip Identifies if you want the position to be clipped
-         *
          **/
         Anchor.prototype.setPosition = function (row, column, noClip) {
             var pos;

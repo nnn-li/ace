@@ -62,7 +62,7 @@ export default class TokenIterator {
     /**
     * 
     * Tokenizes all the items from the current point to the row prior in the document. 
-    * @returns {[String]} If the current point is not at the top of the file, this function returns `null`. Otherwise, it returns an array of the tokenized strings.
+    * @return {[String]} If the current point is not at the top of the file, this function returns `null`. Otherwise, it returns an array of the tokenized strings.
     **/
     stepBackward() {
         this.$tokenIndex -= 1;
@@ -84,7 +84,7 @@ export default class TokenIterator {
     /**
     * 
     * Tokenizes all the items from the current point until the next row in the document. If the current point is at the end of the file, this function returns `null`. Otherwise, it returns the tokenized string.
-    * @returns {String}
+    * @return {String}
     **/
     stepForward() {
         this.$tokenIndex += 1;
@@ -108,7 +108,7 @@ export default class TokenIterator {
     /**
     * 
     * Returns the current tokenized string.
-    * @returns {String}
+    * @return {String}
     **/
     getCurrentToken() {
         return this.$rowTokens[this.$tokenIndex];
@@ -117,7 +117,7 @@ export default class TokenIterator {
     /**
     * 
     * Returns the current row.
-    * @returns {Number}
+    * @return {Number}
     **/
     getCurrentTokenRow() {
         return this.$row;
@@ -126,7 +126,7 @@ export default class TokenIterator {
     /**
     * 
     * Returns the current column.
-    * @returns {Number}
+    * @return {Number}
     **/
     getCurrentTokenColumn() {
         var rowTokens = this.$rowTokens;

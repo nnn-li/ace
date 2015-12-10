@@ -1,15 +1,27 @@
 import Range from './Range';
 /**
- * This object maintains the undo stack for an [[EditSession `EditSession`]].
+ * This object maintains the undo stack for an <code>EditSession</code>.
+ *
  * @class UndoManager
  */
 export default class UndoManager {
-    private $editSession;
-    private dirtyCounter;
+    /**
+     * @property _editSession
+     * @type EditSession
+     * @private
+     */
+    private _editSession;
+    /**
+     * @property _dirtyCounter
+     * @type number
+     * @private
+     */
+    private _dirtyCounter;
     private $undoStack;
     private $redoStack;
     /**
      * Resets the current undo state.
+     *
      * @class UndoManager
      * @constructor
      */
@@ -29,36 +41,53 @@ export default class UndoManager {
         merge: boolean;
     }): void;
     /**
-     * [Perform an undo operation on the document, reverting the last change.]{: #UndoManager.undo}
-     * @param {Boolean} dontSelect {:dontSelect}
+     * Perform an undo operation on the document, reverting the last change.
      *
-     * @returns {Range} The range of the undo.
-     **/
+     * @method undo
+     * @param [dontSelect] {boolean}
+     * @return {Range} The range of the undo.
+     */
     undo(dontSelect?: boolean): Range;
     /**
-     * [Perform a redo operation on the document, reimplementing the last change.]{: #UndoManager.redo}
-     * @param {Boolean} dontSelect {:dontSelect}
-     **/
+     * Perform a redo operation on the document, reimplementing the last change.
+     * @method redo
+     * @param [dontSelect] {boolean}
+     * @return {Range} The range of the redo.
+     */
     redo(dontSelect?: boolean): Range;
     /**
-     * Destroys the stack of undo and redo redo operations.
-     **/
+     * Destroys the stack of undo and redo redo operations and marks the manager as clean.
+     *
+     * @method reset
+     * @return {void}
+     */
     reset(): void;
     /**
-     *
      * Returns `true` if there are undo operations left to perform.
+     *
+     * @method hasUndo
+     * @return {boolean}
      */
     hasUndo(): boolean;
     /**
      * Returns `true` if there are redo operations left to perform.
+     *
+     * @method hasRedo
+     * @return {boolean}
      */
     hasRedo(): boolean;
     /**
-     * Marks the current status clean
+     * Marks the current status clean.
+     *
+     * @method markClean
+     * @return {void}
      */
     markClean(): void;
     /**
      * Determines whether the current status is clean.
+     *
+     * @method isClean
+     * @return {boolean}
      */
     isClean(): boolean;
 }

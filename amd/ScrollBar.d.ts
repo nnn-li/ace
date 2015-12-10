@@ -9,11 +9,18 @@ export default class ScrollBar extends EventEmitterClass {
     isVisible: boolean;
     skipEvent: boolean;
     /**
-     * Creates a new `ScrollBar`. `parent` is the owner of the scroll bar.
-     * @param {DOMElement} parent A DOM element
+     * Creates a new `ScrollBar`.
      *
+     * @class
      * @constructor
-     **/
+     * @param parent {HTMLlement} A paent of the scrollbar.
+     * @param classSuffix {string}
+     */
     constructor(parent: HTMLElement, classSuffix: string);
-    setVisible(isVisible: any): void;
+    /**
+     * @method setVisible
+     * @param isVisible {boolean}
+     * @return {ScrollBar}
+     */
+    setVisible(isVisible: boolean): ScrollBar;
 }

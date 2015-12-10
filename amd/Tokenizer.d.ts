@@ -31,7 +31,7 @@ export default class Tokenizer {
     private createSplitterRegexp(src, flag);
     /**
     * Returns an object containing two properties: `tokens`, which contains all the tokens; and `state`, the current state.
-    * @returns {Object}
+    * @return {Object}
     **/
     getLineTokens(line: string, startState: any): {
         tokens: any[];

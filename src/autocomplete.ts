@@ -117,7 +117,8 @@ export class CompleterAggregate implements Completer {
         }
         else {
             if (this.completions.filterText) {
-                var ranges = this.editor.selection['getAllRanges']();
+                // FIXME: getAllRanges on Selection?
+                var ranges: Range[] = this.editor.selection['getAllRanges']();
                 // TODO: Assignment in conditional expression.
                 // TODO: Assignment in conditional expression.
                 // It's cute but also may halt prematurely and so hide bugs.
@@ -125,7 +126,7 @@ export class CompleterAggregate implements Completer {
                 // Use assertion within the loop to look for falsey values.
                 for (var i = 0, range; range = ranges[i]; i++) {
                     range.start.column -= this.completions.filterText.length;
-                    this.editor.session.remove(range);
+                    this.editor.getSession().remove(range);
                 }
             }
             if (data.snippet) {
@@ -203,12 +204,12 @@ export class CompleterAggregate implements Completer {
         return true;
     }
 
-    private updateCompletions(keepPopupPosition: boolean) {
+    private updateCompletions(keepPopupPosition: boolean): void {
         var pos = this.editor.getCursorPosition();
         var prefix: string;
         if (keepPopupPosition && this.base && this.completions) {
             var range = new Range(this.base.row, this.base.column, pos.row, pos.column);
-            prefix = this.editor.session.getTextRange(range);
+            prefix = this.editor.getSession().getTextRange(range);
             if (prefix == this.completions.filterText)
                 return;
             this.completions.setFilter(prefix);

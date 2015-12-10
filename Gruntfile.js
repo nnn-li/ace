@@ -13,7 +13,8 @@ module.exports = function(grunt) {
 
     // Task configuration.
     clean: {
-      src: ['dist', 'amd', 'cjs', 'lib', 'documentation']
+      // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
+      src: ['dist', 'amd', 'cjs', 'documentation']
     },
 
     exec: {

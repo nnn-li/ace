@@ -27,28 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditSession", "./UndoManager", "./VirtualRenderer"], function (require, exports, dom_1, event_1, Editor_1, EditSession_1, UndoManager_1, VirtualRenderer_1) {
-    //import {} from './config';
-    // The following require()s are for inclusion in the built ace file
-    //require("./worker/worker_client");
-    //require("./keyboard/hash_handler");
-    //require("./placeholder");
-    //require("./multi_select");
-    //require("./mode/folding/fold_mode");
-    //require("./theme/textmate");
-    //require("./ext/error_marker");
-    // export var config = cfg;
-    /**
-     * Provides access to require in packed noconflict mode
-     * @param {String} moduleName
-     * @returns {Object}
-     **/
-    // FIXME: Trying to export this in the ACE namespace is problematic in TypeScript.
-    // export var require = require;
-    /**
-     * Embeds the Ace editor into the DOM, at the element provided by `el`.
-     * @param {String | DOMElement} el Either the id of an element, or the element itself
-     */
+//require("./lib/fixoldbrowsers");
+define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditorDocument", "./EditSession", "./UndoManager", "./VirtualRenderer", "./mode/HtmlMode"], function (require, exports, dom_1, event_1, Editor_1, EditorDocument_1, EditSession_1, UndoManager_1, VirtualRenderer_1, HtmlMode_1) {
     function edit(source) {
         var element;
         if (typeof source === 'string') {
@@ -75,9 +55,8 @@ define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditSes
             value = dom_1.getInnerText(element);
             element.innerHTML = '';
         }
-        var editSession = createEditSession(value);
+        var editSession = createEditSession(new EditorDocument_1.default(value), new HtmlMode_1.default());
         var editor = new Editor_1.default(new VirtualRenderer_1.default(element), editSession);
-        editor.setSession(editSession);
         // FIXME: The first property is incorrectly named.
         var env = {
             document: editSession,
@@ -96,16 +75,10 @@ define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditSes
     }
     exports.edit = edit;
     ;
-    /**
-     * Creates a new [[EditSession]], and returns the associated [[Document]].
-     * @param {Document | String} text {:textParam}
-     * @param {TextMode} mode {:modeParam}
-     *
-     **/
-    function createEditSession(text, mode) {
-        var doc = new EditSession_1.default(text, mode);
-        doc.setUndoManager(new UndoManager_1.default());
-        return doc;
+    function createEditSession(doc, mode, callback) {
+        var editSession = new EditSession_1.default(doc, mode, callback);
+        editSession.setUndoManager(new UndoManager_1.default());
+        return editSession;
     }
     exports.createEditSession = createEditSession;
     ;

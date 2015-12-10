@@ -99,7 +99,7 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
                 case "FILEPATH":
                     return "";
                 case "FULLNAME":
-                    return "Ace";
+                    return "DEUCE";
             }
         };
         SnippetManager.prototype.getVariableValue = function (editor, varName) {
@@ -199,8 +199,9 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
         };
         SnippetManager.prototype.insertSnippetForSelection = function (editor, snippetText) {
             var cursor = editor.getCursorPosition();
-            var line = editor.session.getLine(cursor.row);
-            var tabString = editor.session.getTabString();
+            var session = editor.getSession();
+            var line = session.getLine(cursor.row);
+            var tabString = session.getTabString();
             var indentString = line.match(/^\s*/)[0];
             if (cursor.column < indentString.length)
                 indentString = indentString.slice(0, cursor.column);
@@ -301,7 +302,7 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
                 }
             });
             var range = editor.getSelectionRange();
-            var end = editor.session.replace(range, text);
+            var end = editor.getSession().replace(range, text);
             var tsManager = editor[TABSTOP_MANAGER] ? editor[TABSTOP_MANAGER] : new TabstopManager(editor);
             var selectionId = editor.inVirtualSelectionMode && editor.selection['index'];
             tsManager.addTabstops(tabstops, range.start, end, selectionId);
@@ -318,15 +319,16 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
             }
         };
         SnippetManager.prototype.$getScope = function (editor) {
-            var scope = editor.session.$mode.$id || "";
+            var session = editor.getSession();
+            var scope = session.$mode.$id || "";
             scope = scope.split("/").pop();
             if (scope === "html" || scope === "php") {
                 // FIXME: Coupling to PHP?
                 // PHP is actually HTML
-                if (scope === "php" && !editor.session.$mode['inlinePhp'])
+                if (scope === "php" && !session.$mode['inlinePhp'])
                     scope = "html";
                 var c = editor.getCursorPosition();
-                var state = editor.session.getState(c.row);
+                var state = session.getState(c.row);
                 if (typeof state === "object") {
                     state = state[0];
                 }
@@ -361,7 +363,8 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
         };
         SnippetManager.prototype.expandSnippetForSelection = function (editor, options) {
             var cursor = editor.getCursorPosition();
-            var line = editor.session.getLine(cursor.row);
+            var session = editor.getSession();
+            var line = session.getLine(cursor.row);
             var before = line.substring(0, cursor.column);
             var after = line.substr(cursor.column);
             var snippetMap = this.snippetMap;
@@ -376,7 +379,7 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
                 return false;
             if (options && options.dryRun)
                 return true;
-            editor.session.doc.removeInLine(cursor.row, cursor.column - snippet.replaceBefore.length, cursor.column + snippet.replaceAfter.length);
+            session.doc.removeInLine(cursor.row, cursor.column - snippet.replaceBefore.length, cursor.column + snippet.replaceAfter.length);
             this.variables['M__'] = snippet.matchBefore;
             this.variables['T__'] = snippet.matchAfter;
             this.insertSnippetForSelection(editor, snippet.content);
@@ -811,7 +814,7 @@ define(["require", "exports", "./lib/dom", "./lib/event_emitter", "./lib/lang", 
             if (!ts || !ts.hasLinkedRanges)
                 return;
             this.$inChange = true;
-            var session = this.editor.session;
+            var session = this.editor.getSession();
             var text = session.getTextRange(ts.firstNonLinked);
             for (var i = ts.length; i--;) {
                 var range = ts[i];

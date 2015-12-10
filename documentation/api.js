@@ -1,23 +1,29 @@
 YUI.add("yuidoc-meta", function(Y) {
    Y.YUIDoc = { meta: {
     "classes": [
-        "Ace",
-        "Anchor\n \n Creates a new `Anchor` and associates it with a document.",
+        "Anchor",
         "BackgroundTokenizer",
+        "EditSession",
         "Editor",
+        "EditorDocument",
+        "Fold",
+        "FoldLine",
         "GutterTooltip",
         "HScrollBar",
+        "HtmlMode",
         "Mode",
+        "Position",
         "Range",
         "ScrollBar",
-        "Search\n\nA class designed to handle all sorts of text searches within a [[Document `Document`]].",
+        "Search",
         "Selection",
         "TokenIterator",
         "Tokenizer",
         "Tooltip",
         "UndoManager",
         "VScrollBar",
-        "VirtualRenderer"
+        "VirtualRenderer",
+        null
     ],
     "modules": [],
     "allModules": [],

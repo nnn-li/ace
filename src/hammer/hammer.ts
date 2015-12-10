@@ -289,7 +289,7 @@ export class Manager implements IRecognizerCallback {
     /**
      * remove a recognizer by name or instance
      * @param {Recognizer|String} recognizer
-     * @returns {Manager}
+     * @return {Manager}
      */
     remove(recognizer: IRecognizer) {
         var recognizers = this.recognizers;
@@ -304,7 +304,7 @@ export class Manager implements IRecognizerCallback {
      * bind event
      * @param {String} events
      * @param {Function} handler
-     * @returns {EventEmitter} this
+     * @return {EventEmitter} this
      */
     on(events: string, handler): Manager {
         var handlers = this.handlers;
@@ -319,7 +319,7 @@ export class Manager implements IRecognizerCallback {
      * unbind event, leave emit blank to remove all handlers
      * @param {String} events
      * @param {Function} [handler]
-     * @returns {EventEmitter} this
+     * @return {EventEmitter} this
      */
     off(events: string, handler): Manager {
         var handlers = this.handlers;
@@ -458,7 +458,7 @@ class TouchAction {
 
     /**
      * compute the value for the touchAction property based on the recognizer's settings
-     * @returns {String} value
+     * @return {String} value
      */
     compute() {
         var actions: string[] = [];
@@ -514,7 +514,7 @@ class TouchAction {
 /**
  * when the touchActions are collected they are not a valid value, so we need to clean things up. *
  * @param {String} actions
- * @returns {*}
+ * @return {*}
  */
 function cleanTouchActions(actions: string): string {
     // none
@@ -599,7 +599,7 @@ class Input {
     /**
      * create new input type manager
      * @param {Manager} manager
-     * @returns {Input}
+     * @return {Input}
      * @constructor
      */
     constructor(
@@ -907,7 +907,7 @@ class TouchInput extends Input {
  * @this {TouchInput}
  * @param {Object} ev
  * @param {Number} type flag
- * @returns {undefined|Array} [all, changed]
+ * @return {undefined|Array} [all, changed]
  */
 function getTouches(event: TouchEvent, type: number) {
     var allTouches = toArray(event.touches);
@@ -1036,7 +1036,7 @@ export class Recognizer implements IRecognizer {
     /**
      * recognize simultaneous with an other recognizer.
      * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
+     * @return {Recognizer} this
      */
     recognizeWith(otherRecognizer: IRecognizer): IRecognizer {
         var simultaneous = this.simultaneous;
@@ -1051,7 +1051,7 @@ export class Recognizer implements IRecognizer {
     /**
      * drop the simultaneous link. it doesnt remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
+     * @return {Recognizer} this
      */
     dropRecognizeWith(otherRecognizer: IRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
@@ -1075,7 +1075,7 @@ export class Recognizer implements IRecognizer {
     /**
      * drop the requireFailure link. it does not remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
+     * @return {Recognizer} this
      */
     dropRequireFailure(otherRecognizer: IRecognizer) {
         otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
@@ -1088,7 +1088,7 @@ export class Recognizer implements IRecognizer {
 
     /**
      * has require failures boolean
-     * @returns {boolean}
+     * @return {boolean}
      */
     hasRequireFailures(): boolean {
         return this.requireFail.length > 0;
@@ -1097,7 +1097,7 @@ export class Recognizer implements IRecognizer {
     /**
      * if the recognizer can recognize simultaneous with an other recognizer
      * @param {Recognizer} otherRecognizer
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     canRecognizeWith(otherRecognizer: IRecognizer): boolean {
         return !!this.simultaneous[otherRecognizer.id];
@@ -1149,7 +1149,7 @@ export class Recognizer implements IRecognizer {
 
     /**
      * can we emit?
-     * @returns {boolean}
+     * @return {boolean}
      */
     canEmit() {
         var i = 0;
@@ -1192,7 +1192,7 @@ export class Recognizer implements IRecognizer {
      * the actual recognizing happens in this method
      * @virtual
      * @param {Object} inputData
-     * @returns {Const} STATE
+     * @return {Const} STATE
      */
     process(inputData: IComputedEvent): number {
         return STATE_UNDEFINED;
@@ -1201,7 +1201,7 @@ export class Recognizer implements IRecognizer {
     /**
      * return the preferred touch-action
      * @virtual
-     * @returns {Array}
+     * @return {Array}
      */
     getTouchAction(): string[] { return []; }
 
@@ -1217,7 +1217,7 @@ export class Recognizer implements IRecognizer {
  * TODO: Are the string values part of the API, or just for debugging?
  * get a usable string, used as event postfix
  * @param {Const} state
- * @returns {String} state
+ * @return {String} state
  */
 export function stateStr(state: number): string {
     if (state & STATE_CANCELLED) {
@@ -1273,7 +1273,7 @@ export function stateDecode(state: number): string {
  * TODO: This really belongs in the input service.
  * direction cons to string
  * @param {Const} direction
- * @returns {String}
+ * @return {String}
  */
 export function directionStr(direction: number): string {
     var ds: string[] = [];
@@ -1296,7 +1296,7 @@ export function directionStr(direction: number): string {
  * get a recognizer by name if it is bound to a manager
  * @param {Recognizer|String} otherRecognizer
  * @param {Recognizer} recognizer
- * @returns {Recognizer}
+ * @return {Recognizer}
  */
 function getRecognizerByNameIfManager(recognizer: IRecognizer, manager: IRecognizerCallback): IRecognizer {
     if (manager) {

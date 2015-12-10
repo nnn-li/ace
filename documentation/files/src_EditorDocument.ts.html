@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -134,9 +132,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import EventEmitterClass from &#x27;./lib/event_emitter&#x27;;
-import Range from &#x27;./Range&#x27;;
 import Anchor from &#x27;./Anchor&#x27;;
+import EventEmitterClass from &#x27;./lib/event_emitter&#x27;;
+import Position from &#x27;./Position&#x27;;
+import Range from &#x27;./Range&#x27;;
 
 var $split: (text: string) =&gt; string[] = (function() {
     function foo(text: string): string[] {
@@ -164,10 +163,18 @@ function $clipPosition(doc: EditorDocument, position: { row: number; column: num
     return position;
 }
 
+/**
+ * @class EditorDocument
+ */
 export default class EditorDocument extends EventEmitterClass {
     private $lines: string[] = [];
     private $autoNewLine: string = &quot;&quot;;
     private $newLineMode: string = &quot;auto&quot;;
+    /**
+     * @class EditorDocument
+     * @constructor
+     * @param text {string | Array&lt;string&gt;}
+     */
     constructor(text: string | Array&lt;string&gt;) {
         super();
 
@@ -186,8 +193,9 @@ export default class EditorDocument extends EventEmitterClass {
 
     /**
      * Replaces all the lines in the current &#x60;EditorDocument&#x60; with the value of &#x60;text&#x60;.
+     *
      * @method setValue
-     * @param {string} text The text to use
+     * @param text {string} The text to use
      * @return {void}
      */
     setValue(text: string): void {
@@ -198,6 +206,7 @@ export default class EditorDocument extends EventEmitterClass {
 
     /**
      * Returns all the lines in the document as a single string, joined by the new line character.
+     *
      * @method getValue
      * @return {string}
      */
@@ -211,7 +220,6 @@ export default class EditorDocument extends EventEmitterClass {
      * @param {number} row The row number to use
      * @param {number} column The column number to use
      * @return {Anchor}
-     *
      */
     createAnchor(row: number, column: number): Anchor {
         return new Anchor(this, row, column);
@@ -222,6 +230,8 @@ export default class EditorDocument extends EventEmitterClass {
      *
      * @method $split
      * @param {string} text The text to work with
+     * @return {void}
+     * @private
      */
     private $detectNewLine(text: string): void {
         var match = text.match(/^.*?(\r\n|\r|\n)/m);
@@ -230,12 +240,13 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Returns the newline character that&#x27;s being used, depending on the value of &#x60;newLineMode&#x60;. 
-    * @method getNewLineCharacter
-    * @returns {String}
+    * Returns the newline character that&#x27;s being used, depending on the value of &#x60;newLineMode&#x60;.
     *  If &#x60;newLineMode == windows&#x60;, &#x60;\r\n&#x60; is returned.  
     *  If &#x60;newLineMode == unix&#x60;, &#x60;\n&#x60; is returned.  
     *  If &#x60;newLineMode == auto&#x60;, the value of &#x60;autoNewLine&#x60; is returned.
+    *
+    * @method getNewLineCharacter
+    * @return {string}
     *
     **/
     getNewLineCharacter(): string {
@@ -251,31 +262,34 @@ export default class EditorDocument extends EventEmitterClass {
 
     /**
      * Sets the new line mode.
+     *
      * @method setNewLineMode
-     * @param {String} newLineMode [The newline mode to use; can be either &#x60;windows&#x60;, &#x60;unix&#x60;, or &#x60;auto&#x60;]{: #EditorDocument.setNewLineMode.param}
+     * @param {string} newLineMode [The newline mode to use; can be either &#x60;windows&#x60;, &#x60;unix&#x60;, or &#x60;auto&#x60;]{: #EditorDocument.setNewLineMode.param}
      * @return {void}
      */
     setNewLineMode(newLineMode: string): void {
-        if (this.$newLineMode === newLineMode)
+        if (this.$newLineMode === newLineMode) {
             return;
-
+        }
         this.$newLineMode = newLineMode;
         this._signal(&quot;changeNewLineMode&quot;);
     }
 
     /**
-     * Returns the type of newlines being used; either &#x60;windows&#x60;, &#x60;unix&#x60;, or &#x60;auto&#x60;
+     * Returns the type of newlines being used; either &#x60;windows&#x60;, &#x60;unix&#x60;, or &#x60;auto&#x60;.
+     *
      * @method getNewLineMode
      * @return {string}
      */
-    getNewLineMode() {
+    getNewLineMode(): string {
         return this.$newLineMode;
     }
 
     /**
      * Returns &#x60;true&#x60; if &#x60;text&#x60; is a newline character (either &#x60;\r\n&#x60;, &#x60;\r&#x60;, or &#x60;\n&#x60;).
+     *
      * @method isNewLine
-     * @param {string} text The text to check
+     * @param text {string} The text to check
      * @return {boolean}
      */
     isNewLine(text: string): boolean {
@@ -283,8 +297,10 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-     * Returns a verbatim copy of the given line as it is in the document
-     * @param {Number} row The row index to retrieve
+     * Returns a verbatim copy of the given line as it is in the document.
+     *
+     * @method getLine
+     * @param row {Number} The row index to retrieve.
      * @return {string}
      */
     getLine(row: number): string {
@@ -292,36 +308,46 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Returns an array of strings of the rows between &#x60;firstRow&#x60; and &#x60;lastRow&#x60;. This function is inclusive of &#x60;lastRow&#x60;.
-    * @param {Number} firstRow The first row index to retrieve
-    * @param {Number} lastRow The final row index to retrieve
-    *
-    **/
+     * Returns an array of strings of the rows between &#x60;firstRow&#x60; and &#x60;lastRow&#x60;.
+     * This function is inclusive of &#x60;lastRow&#x60;.
+     *
+     * @param {Number} firstRow The first row index to retrieve
+     * @param {Number} lastRow The final row index to retrieve
+     * @return {string[]}
+     */
     getLines(firstRow?: number, lastRow?: number): string[] {
         return this.$lines.slice(firstRow, lastRow + 1);
     }
 
     /**
-    * Returns all lines in the document as string array.
-    **/
+     * Returns all lines in the document as string array.
+     *
+     * @method getAllLines()
+     * @return {string[]}
+     */
     getAllLines(): string[] {
         return this.getLines(0, this.getLength());
     }
 
     /**
-    * Returns the number of rows in the document.
-    **/
+     * Returns the number of rows in the document.
+     *
+     * @method getLength
+     * @return {number}
+     */
     getLength(): number {
         return this.$lines.length;
     }
 
     /**
      * Given a range within the document, returns all the text within that range as a single string.
-     * @param {Range} range The range to work with
      *
+     * @method getTextRange
+     * @param range {Range} The range to work with.
+     * @return {string}
      */
     getTextRange(range: Range): string {
-        if (range.start.row == range.end.row) {
+        if (range.start.row === range.end.row) {
             return this.getLine(range.start.row).substring(range.start.column, range.end.column);
         }
         var lines = this.getLines(range.start.row, range.end.row);
@@ -334,12 +360,13 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Inserts a block of &#x60;text&#x60; at the indicated &#x60;position&#x60;.
-    * @param {Object} position The position to start inserting at; it&#x27;s an object that looks like &#x60;{ row: row, column: column}&#x60;
-    * @param {string} text A chunk of text to insert
-    * @returns {Object} The position ({row, column}) of the last line of &#x60;text&#x60;. If the length of &#x60;text&#x60; is 0, this function simply returns &#x60;position&#x60;. 
-    *
-    **/
+     * Inserts a block of &#x60;text&#x60; at the indicated &#x60;position&#x60;.
+     *
+     * @method insert
+     * @param {Object} position The position to start inserting at; it&#x27;s an object that looks like &#x60;{ row: row, column: column}&#x60;
+     * @param text {string} A chunk of text to insert.
+     * @return {Object} The position ({row, column}) of the last line of &#x60;text&#x60;. If the length of &#x60;text&#x60; is 0, this function simply returns &#x60;position&#x60;. 
+     */
     insert(position: { row: number; column: number }, text: string) {
         if (!text || text.length === 0)
             return position;
@@ -391,7 +418,7 @@ export default class EditorDocument extends EventEmitterClass {
     * Inserts the elements in &#x60;lines&#x60; into the document, starting at the row index given by &#x60;row&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
     * @param {Number} row The index of the row to insert at
     * @param {Array} lines An array of strings
-    * @returns {Object} Contains the final row and column, like this:  
+    * @return {Object} Contains the final row and column, like this:  
     *   &#x60;&#x60;&#x60;
     *   {row: endRow, column: 0}
     *   &#x60;&#x60;&#x60;  
@@ -434,14 +461,13 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Inserts a new line into the document at the current row&#x27;s &#x60;position&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event. 
-    * @param {Object} position The position to insert at
-    * @returns {Object} Returns an object containing the final row and column, like this:&lt;br/&gt;
-    *    &#x60;&#x60;&#x60;
-    *    {row: endRow, column: 0}
-    *    &#x60;&#x60;&#x60;
-    *
-    **/
+     * Inserts a new line into the document at the current row&#x27;s &#x60;position&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event. 
+     * @param {Object} position The position to insert at
+     * @return {Object} Returns an object containing the final row and column, like this:&lt;br/&gt;
+     *    &#x60;&#x60;&#x60;
+     *    {row: endRow, column: 0}
+     *    &#x60;&#x60;&#x60;
+     */
     insertNewLine(position: { row: number; column: number }) {
         position = $clipPosition(this, position);
         var line = this.$lines[position.row] || &quot;&quot;;
@@ -465,11 +491,14 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Inserts &#x60;text&#x60; into the &#x60;position&#x60; at the current row. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
-    * @param {Object} position The position to insert at.
-    * @param {String} text A chunk of text
-    * @returns {Object} Returns an object containing the final row and column.
-    **/
+     * Inserts &#x60;text&#x60; into the &#x60;position&#x60; at the current row.
+     *
+     * @method insertInLine
+     * This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+     * @param {Object} position The position to insert at.
+     * @param {String} text A chunk of text
+     * @return {Object} Returns an object containing the final row and column.
+     */
     insertInLine(position: { row: number; column: number }, text: string): { row: number; column: number } {
         if (text.length == 0)
             return position;
@@ -490,14 +519,17 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Removes the &#x60;range&#x60; from the document.
-    * @param {Range} range A specified Range to remove
-    * @returns {Object} Returns the new &#x60;start&#x60; property of the range, which contains &#x60;startRow&#x60; and &#x60;startColumn&#x60;. If &#x60;range&#x60; is empty, this function returns the unmodified value of &#x60;range.start&#x60;.
-    *
-    **/
-    remove(range: { start; end; isEmpty; isMultiLine }) {
-        if (!(range instanceof Range))
+     * Removes the &#x60;range&#x60; from the document.
+     *
+     * @method remove
+     * @param {Range} range A specified Range to remove
+     * @return {Position} Returns the new &#x60;start&#x60; property of the range.
+     * If &#x60;range&#x60; is empty, this function returns the unmodified value of &#x60;range.start&#x60;.
+     */
+    remove(range: Range): Position {
+        if (!(range instanceof Range)) {
             range = Range.fromPoints(range.start, range.end);
+        }
         // clip to document
         range.start = $clipPosition(this, range.start);
         range.end = $clipPosition(this, range.end);
@@ -530,13 +562,16 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Removes the specified columns from the &#x60;row&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
-    * @param {Number} row The row to remove from
-    * @param {Number} startColumn The column to start removing at 
-    * @param {Number} endColumn The column to stop removing at
-    * @returns {Object} Returns an object containing &#x60;startRow&#x60; and &#x60;startColumn&#x60;, indicating the new row and column values.&lt;br/&gt;If &#x60;startColumn&#x60; is equal to &#x60;endColumn&#x60;, this function returns nothing.
-    *
-    **/
+     * Removes the specified columns from the &#x60;row&#x60;.
+     * This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+     *
+     * @method removeInLine
+     * @param {Number} row The row to remove from
+     * @param {Number} startColumn The column to start removing at 
+     * @param {Number} endColumn The column to stop removing at
+     * @return {Object} Returns an object containing &#x60;startRow&#x60; and &#x60;startColumn&#x60;, indicating the new row and column values.&lt;br/&gt;If &#x60;startColumn&#x60; is equal to &#x60;endColumn&#x60;, this function returns nothing.
+     *
+     */
     removeInLine(row: number, startColumn: number, endColumn: number) {
         if (startColumn === endColumn)
             return;
@@ -557,15 +592,21 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Removes a range of full lines. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
-    * @param {Number} firstRow The first row to be removed
-    * @param {Number} lastRow The last row to be removed
-    * @returns {[String]} Returns all the removed lines.
-    *
-    **/
+     * Removes a range of full lines.
+     * This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+     *
+     * @method removeLines
+     * @param firstRow {number} The first row to be removed.
+     * @param lastRow {number} The last row to be removed.
+     * @return {string[]} Returns all the removed lines.
+     */
     removeLines(firstRow: number, lastRow: number): string[] {
-        if (firstRow &lt; 0 || lastRow &gt;= this.getLength())
-            return this.remove(new Range(firstRow, 0, lastRow + 1, 0));
+        if (firstRow &lt; 0 || lastRow &gt;= this.getLength()) {
+            throw new Error(&quot;EditorDocument.removeLines&quot;)
+            // This returns a Position, so it is incompatible.
+            // return this.remove(new Range(firstRow, 0, lastRow + 1, 0));
+        }
+        // This returns a string[].
         return this._removeLines(firstRow, lastRow);
     }
 
@@ -609,7 +650,7 @@ export default class EditorDocument extends EventEmitterClass {
     * Replaces a range in the document with the new &#x60;text&#x60;.
     * @param {Range} range A specified Range to replace
     * @param {String} text The new text to use as a replacement
-    * @returns {Object} Returns an object containing the final row and column, like this:
+    * @return {Object} Returns an object containing the final row and column, like this:
     *     {row: endRow, column: 0}
     * If the text and range are empty, this function returns an object containing the current &#x60;range.start&#x60; value.
     * If the text is the exact same as what currently exists, this function returns an object containing the current &#x60;range.end&#x60; value.
@@ -688,7 +729,7 @@ export default class EditorDocument extends EventEmitterClass {
      *
      * @param {Number} index An index to convert
      * @param {Number} startRow=0 The row from which to start the conversion
-     * @returns {Object} A &#x60;{row, column}&#x60; object of the &#x60;index&#x60; position
+     * @return {Object} A &#x60;{row, column}&#x60; object of the &#x60;index&#x60; position
      */
     indexToPosition(index: number, startRow: number) {
         var lines = this.$lines || this.getAllLines();
@@ -715,7 +756,7 @@ export default class EditorDocument extends EventEmitterClass {
      *
      * @param {Object} pos The &#x60;{row, column}&#x60; to convert
      * @param {Number} startRow=0 The row from which to start the conversion
-     * @returns {Number} The index position in the document
+     * @return {Number} The index position in the document
      */
     positionToIndex(pos: { row: number; column: number }, startRow: number): number {
         var lines = this.$lines || this.getAllLines();

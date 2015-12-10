@@ -58,7 +58,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
          * Constructs a new `VirtualRenderer` within the `container` specified.
          * @class VirtualRenderer
          * @constructor
-         * @param container {HTMLElement} The root element of the editor
+         * @param container {HTMLElement} The root element of the editor.
          */
         function VirtualRenderer(container) {
             _super.call(this);
@@ -155,6 +155,10 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             config_1._emit("renderer", this);
         }
         Object.defineProperty(VirtualRenderer.prototype, "maxLines", {
+            /**
+             * @property maxLines
+             * @type number
+             */
             set: function (maxLines) {
                 this.$maxLines = maxLines;
             },
@@ -162,23 +166,42 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             configurable: true
         });
         Object.defineProperty(VirtualRenderer.prototype, "keepTextAreaAtCursor", {
+            /**
+             * @property keepTextAreaAtCursor
+             * @type boolean
+             */
             set: function (keepTextAreaAtCursor) {
                 this.$keepTextAreaAtCursor = keepTextAreaAtCursor;
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets the <code>style</code> property of the content to "default".
+         *
+         * @method setDefaultCursorStyle
+         * @return {void}
+         */
         VirtualRenderer.prototype.setDefaultCursorStyle = function () {
             this.content.style.cursor = "default";
         };
         /**
-         * Not sure what the correct semantics should be for this.
+         * Sets the <code>opacity</code> of the cursor layer to "0".
+         *
+         * @method setCursorLayerOff
+         * @return {VirtualRenderer}
+         * @chainable
          */
         VirtualRenderer.prototype.setCursorLayerOff = function () {
             var noop = function () { };
             this.$cursorLayer.restartTimer = noop;
             this.$cursorLayer.element.style.opacity = "0";
+            return this;
         };
+        /**
+         * @method updateCharacterSize
+         * @return {void}
+         */
         VirtualRenderer.prototype.updateCharacterSize = function () {
             // FIXME: DGH allowBoldFonts does not exist on Text
             if (this.$textLayer['allowBoldFonts'] != this.$allowBoldFonts) {
@@ -190,7 +213,11 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             this.$updatePrintMargin();
         };
         /**
-         * Associates the renderer with an EditSession.
+         * Associates the renderer with a different EditSession.
+         *
+         * @method setSession
+         * @param session {EditSession}
+         * @return {void}
          */
         VirtualRenderer.prototype.setSession = function (session) {
             if (this.session) {
@@ -200,8 +227,9 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             if (!session) {
                 return;
             }
-            if (this.scrollMargin.top && session.getScrollTop() <= 0)
+            if (this.scrollMargin.top && session.getScrollTop() <= 0) {
                 session.setScrollTop(-this.scrollMargin.top);
+            }
             this.$cursorLayer.setSession(session);
             this.$markerBack.setSession(session);
             this.$markerFront.setSession(session);
@@ -214,12 +242,13 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             this.session.doc.on("changeNewLineMode", this.onChangeNewLineMode);
         };
         /**
-        * Triggers a partial update of the text, from the range given by the two parameters.
-        * @param {Number} firstRow The first row to update
-        * @param {Number} lastRow The last row to update
-        *
-        *
-        **/
+         * Triggers a partial update of the text, from the range given by the two parameters.
+         *
+         * @param {Number} firstRow The first row to update.
+         * @param {Number} lastRow The last row to update.
+         * @param [force] {boolean}
+         * @return {void}
+         */
         VirtualRenderer.prototype.updateLines = function (firstRow, lastRow, force) {
             if (lastRow === undefined) {
                 lastRow = Infinity;
@@ -307,14 +336,12 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             }
         };
         /**
-        * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
-        * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
-        * @param {Number} gutterWidth The width of the gutter in pixels
-        * @param {Number} width The width of the editor in pixels
-        * @param {Number} height The hiehgt of the editor, in pixels
-        *
-        *
-        **/
+         * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
+         * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
+         * @param {Number} gutterWidth The width of the gutter in pixels
+         * @param {Number} width The width of the editor in pixels
+         * @param {Number} height The hiehgt of the editor, in pixels
+         */
         VirtualRenderer.prototype.onResize = function (force, gutterWidth, width, height) {
             if (this.resizing > 2)
                 return;
@@ -404,17 +431,21 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             return this.session.adjustWrapLimit(limit, this.$showPrintMargin && this.$printMarginColumn);
         };
         /**
-        * Identifies whether you want to have an animated scroll or not.
-        * @param {Boolean} shouldAnimate Set to `true` to show animated scrolls
-        *
-        **/
+         * Identifies whether you want to have an animated scroll or not.
+         *
+         * @method setAnimatedScroll
+         * @param shouldAnimate {boolean} Set to `true` to show animated scrolls.
+         * @return {void}
+         */
         VirtualRenderer.prototype.setAnimatedScroll = function (shouldAnimate) {
             this.setOption("animatedScroll", shouldAnimate);
         };
         /**
-        * Returns whether an animated scroll happens or not.
-        * @returns {Boolean}
-        **/
+         * Returns whether an animated scroll happens or not.
+         *
+         * @method getAnimatedScroll
+         * @return {Boolean}
+         */
         VirtualRenderer.prototype.getAnimatedScroll = function () {
             return this.$animatedScroll;
         };
@@ -427,7 +458,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         };
         /**
          * Returns whether invisible characters are being shown or not.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         VirtualRenderer.prototype.getShowInvisibles = function () {
             return this.getOption("showInvisibles");
@@ -448,7 +479,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         };
         /**
          * Returns whether the print margin is being shown or not.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         VirtualRenderer.prototype.getShowPrintMargin = function () {
             return this.getOption("showPrintMargin");
@@ -462,14 +493,14 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         };
         /**
          * Returns the column number of where the print margin is.
-         * @returns {Number}
+         * @return {Number}
          */
         VirtualRenderer.prototype.getPrintMarginColumn = function () {
             return this.getOption("printMarginColumn");
         };
         /**
          * Returns `true` if the gutter is being shown.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         VirtualRenderer.prototype.getShowGutter = function () {
             return this.getOption("showGutter");
@@ -526,7 +557,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the root element containing this renderer.
-        * @returns {DOMElement}
+        * @return {DOMElement}
         **/
         VirtualRenderer.prototype.getContainerElement = function () {
             return this.container;
@@ -534,7 +565,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the element that the mouse events are attached to
-        * @returns {DOMElement}
+        * @return {DOMElement}
         **/
         VirtualRenderer.prototype.getMouseEventTarget = function () {
             return this.content;
@@ -542,7 +573,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the element to which the hidden text area is added.
-        * @returns {DOMElement}
+        * @return {DOMElement}
         **/
         VirtualRenderer.prototype.getTextAreaContainer = function () {
             return this.container;
@@ -578,7 +609,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * [Returns the index of the first visible row.]{: #VirtualRenderer.getFirstVisibleRow}
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getFirstVisibleRow = function () {
             return this.layerConfig.firstRow;
@@ -586,7 +617,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the index of the first fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getFirstFullyVisibleRow = function () {
             return this.layerConfig.firstRow + (this.layerConfig.offset === 0 ? 0 : 1);
@@ -594,7 +625,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the index of the last fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getLastFullyVisibleRow = function () {
             var flint = Math.floor((this.layerConfig.height + this.layerConfig.offset) / this.layerConfig.lineHeight);
@@ -603,7 +634,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * [Returns the index of the last visible row.]{: #VirtualRenderer.getLastVisibleRow}
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getLastVisibleRow = function () {
             return this.layerConfig.lastRow;
@@ -635,7 +666,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         };
         /**
          * Returns whether the horizontal scrollbar is set to be always visible.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         VirtualRenderer.prototype.getHScrollBarAlwaysVisible = function () {
             // FIXME
@@ -650,7 +681,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         };
         /**
          * Returns whether the vertical scrollbar is set to be always visible.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         VirtualRenderer.prototype.getVScrollBarAlwaysVisible = function () {
             return this.$vScrollBarAlwaysVisible;
@@ -1014,7 +1045,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         * {:EditSession.getScrollTop}
         * @related EditSession.getScrollTop
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollTop = function () {
             return this.session.getScrollTop();
@@ -1022,7 +1053,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         * {:EditSession.getScrollLeft}
         * @related EditSession.getScrollLeft
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollLeft = function () {
             return this.session.getScrollLeft();
@@ -1030,7 +1061,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the first visible row, regardless of whether it's fully visible or not.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollTopRow = function () {
             return this.scrollTop / this.lineHeight;
@@ -1038,7 +1069,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
         *
         * Returns the last visible row, regardless of whether it's fully visible or not.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollBottomRow = function () {
             return Math.max(0, Math.floor((this.scrollTop + this.$size.scrollerHeight) / this.lineHeight) - 1);
@@ -1179,7 +1210,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         * @param {Number} deltaY The y value to scroll by
         *
         *
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         VirtualRenderer.prototype.isScrollableBy = function (deltaX, deltaY) {
             if (deltaY < 0 && this.session.getScrollTop() >= 1 - this.scrollMargin.top)
@@ -1210,7 +1241,7 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         * Returns an object containing the `pageX` and `pageY` coordinates of the document position.
         * @param {Number} row The document row position
         * @param {Number} column The document column position
-        * @returns {Object}
+        * @return {Object}
         **/
         VirtualRenderer.prototype.textToScreenCoordinates = function (row, column) {
             var canvasPos = this.scroller.getBoundingClientRect();
@@ -1276,8 +1307,11 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         /**
          * Sets a new theme for the editor.
          * `theme` should exist, and be a directory path, like `ace/theme/textmate`.
-         * @param {String} theme The path to a theme
-         * @param {Function} cb optional callback
+         *
+         * @method setTheme
+         * @param theme {String} theme The path to a theme
+         * @param theme {Function} cb optional callback
+         * @return {void}
          */
         VirtualRenderer.prototype.setTheme = function (theme, cb) {
             console.log("VirtualRenderer setTheme, theme = " + theme);
@@ -1323,7 +1357,9 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
         };
         /**
          * Returns the path of the current theme.
-         * @returns {String}
+         *
+         * @method getTheme
+         * @return {string}
          */
         VirtualRenderer.prototype.getTheme = function () {
             return this.$themeId;

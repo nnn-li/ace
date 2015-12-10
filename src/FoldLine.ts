@@ -31,8 +31,9 @@
 import Range from "./Range";
 import Fold from "./Fold";
 
-/*
+/**
  * If an array is passed in, the folds are expected to be sorted already.
+ * @class FoldLine
  */
 export default class FoldLine {
     foldData
@@ -42,16 +43,23 @@ export default class FoldLine {
     startRow: number;
     end: { row: number; column: number };
     endRow: number;
-    constructor(foldData, folds) {
+
+    /**
+     * @class FoldLine
+     * @constructor
+     * @param foldData
+     * @param folds {Fold[]}
+     */
+    constructor(foldData, folds: Fold[]) {
         this.foldData = foldData;
         if (Array.isArray(folds)) {
             this.folds = folds;
         }
         else {
-            folds = this.folds = [folds];
+            throw new Error("folds must have type Fold[]")
         }
 
-        var last = folds[folds.length - 1];
+        var last: Fold = folds[folds.length - 1];
         this.range = new Range(folds[0].start.row, folds[0].start.column, last.end.row, last.end.column);
         this.start = this.range.start;
         this.end = this.range.end;
@@ -60,10 +68,14 @@ export default class FoldLine {
             fold.setFoldLine(this);
         }, this);
     }
-    /*
+
+    /**
      * Note: This doesn't update wrapData!
+     * @method shiftRow
+     * @param shift {number}
+     * @return {void}
      */
-    shiftRow(shift) {
+    shiftRow(shift: number): void {
         this.start.row += shift;
         this.end.row += shift;
         this.folds.forEach(function(fold) {
@@ -72,7 +84,12 @@ export default class FoldLine {
         });
     }
 
-    addFold(fold: Fold) {
+    /**
+     * @method addFold
+     * @param fold {Fold}
+     * @return {void}
+     */
+    addFold(fold: Fold): void {
         if (fold.sameRow) {
             if (fold.start.row < this.startRow || fold.endRow > this.endRow) {
                 throw new Error("Can't add a fold to this FoldLine as it has no connection");
@@ -105,11 +122,23 @@ export default class FoldLine {
         fold.foldLine = this;
     }
 
+    /**
+     * @method containsRow
+     * @param row {number}
+     * @return {boolean}
+     */
     containsRow(row: number): boolean {
         return row >= this.start.row && row <= this.end.row;
     }
 
-    walk(callback: (placeholder, row, column, end, isNewRow?) => any, endRow, endColumn) {
+    /**
+     * @method walk
+     * @param callback
+     * @param endRow {number}
+     * @param endColumn {number}
+     * @return {void}
+     */
+    walk(callback: (placeholder, row, column, end, isNewRow?) => any, endRow: number, endColumn: number): void {
         var lastEnd = 0,
             folds = this.folds,
             fold,

@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -108,7 +106,7 @@
         </div>
 
         <div class="foundat">
-            Defined in: <a href="../files/src_Editor.ts.html#l3573"><code>src&#x2F;Editor.ts:3573</code></a>
+            Defined in: <a href="../files/src_Editor.ts.html#l3588"><code>src&#x2F;Editor.ts:3588</code></a>
         </div>
 
 
@@ -126,6 +124,7 @@
 
             <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
             <li class="api-class-tab properties"><a href="#properties">Properties</a></li>
+            <li class="api-class-tab events"><a href="#events">Events</a></li>
     </ul>
 
     <div>
@@ -148,12 +147,24 @@
                                 <a href="#method_getHeight">getHeight</a>
 
                             </li>
+                            <li class="index-item method">
+                                <a href="#method_getKeyboardHandler">getKeyboardHandler</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_getSession">getSession</a>
+
+                            </li>
                             <li class="index-item method inherited">
                                 <a href="#method_getWidth">getWidth</a>
 
                             </li>
                             <li class="index-item method inherited">
                                 <a href="#method_hide">hide</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_resize">resize</a>
 
                             </li>
                             <li class="index-item method inherited">
@@ -164,8 +175,16 @@
                                 <a href="#method_setHtml">setHtml</a>
 
                             </li>
+                            <li class="index-item method">
+                                <a href="#method_setKeyboardHandler">setKeyboardHandler</a>
+
+                            </li>
                             <li class="index-item method inherited">
                                 <a href="#method_setPosition">setPosition</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_setSession">setSession</a>
 
                             </li>
                             <li class="index-item method inherited">
@@ -187,10 +206,44 @@
                                 <a href="#property_isOpen">isOpen</a>
 
                             </li>
+                            <li class="index-item property">
+                                <a href="#property_selection">selection</a>
+
+                            </li>
                     </ul>
                 </div>
 
 
+                <div class="index-section events">
+                    <h3>Events</h3>
+
+                    <ul class="index-list events extends">
+                            <li class="index-item event">
+                                <a href="#event_blur">blur</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_change">change</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_changeSelectionStyle">changeSelectionStyle</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_copy">copy</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_focus">focus</a>
+
+                            </li>
+                            <li class="index-item event">
+                                <a href="#event_paste">paste</a>
+
+                            </li>
+                    </ul>
+                </div>
         </div>
 
             <div id="methods" class="api-class-tabpanel">
@@ -318,6 +371,88 @@ It creates the $element member.
 
 
 </div>
+<div id="method_getKeyboardHandler" class="method item">
+    <h3 class="name"><code>getKeyboardHandler</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type">HashHandler</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Editor.ts.html#l372"><code>src&#x2F;Editor.ts:372</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns the keyboard handler, such as &quot;vim&quot; or &quot;windows&quot;.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">HashHandler</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_getSession" class="method item">
+    <h3 class="name"><code>getSession</code></h3>
+
+        <span class="paren">()</span>
+
+        <span class="returns-inline">
+            <span class="type"><a href="../classes/EditSession.html" class="crosslink">EditSession</a></span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Editor.ts.html#l495"><code>src&#x2F;Editor.ts:495</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns the current session being used.</p>
+
+    </div>
+
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type"><a href="../classes/EditSession.html" class="crosslink">EditSession</a></span>:
+            </div>
+        </div>
+
+
+</div>
 <div id="method_getWidth" class="method item inherited">
     <h3 class="name"><code>getWidth</code></h3>
 
@@ -387,6 +522,70 @@ It creates the $element member.
         Hides the tool by setting the CSS display property to 'none'.
     </div>
 
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Void</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_resize" class="method item">
+    <h3 class="name"><code>resize</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code class="optional">[force]</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Void</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Editor.ts.html#l548"><code>src&#x2F;Editor.ts:548</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name optional">[force]</code>
+                        <span class="type">Boolean</span>
+                        <span class="flag optional" title="This parameter is optional.">optional</span>
+
+
+                    <div class="param-description">
+                        <p>force If <code>true</code>, recomputes the size, even if the height and width haven't changed.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
 
         <div class="returns">
             <h4>Returns:</h4>
@@ -522,6 +721,70 @@ It creates the $element member.
 
 
 </div>
+<div id="method_setKeyboardHandler" class="method item">
+    <h3 class="name"><code>setKeyboardHandler</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>keyboardHandler</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Void</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Editor.ts.html#l347"><code>src&#x2F;Editor.ts:347</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Sets a new key handler, such as &quot;vim&quot; or &quot;windows&quot;.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">keyboardHandler</code>
+                        <span class="type">String | HashHandler</span>
+
+
+                    <div class="param-description">
+                        <p>The new key handler.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Void</span>:
+            </div>
+        </div>
+
+
+</div>
 <div id="method_setPosition" class="method item">
     <h3 class="name"><code>setPosition</code></h3>
 
@@ -552,7 +815,7 @@ It creates the $element member.
                 Tooltip
             </a>
             but overwritten in
-        <a href="../files/src_Editor.ts.html#l3581"><code>src&#x2F;Editor.ts:3581</code></a>
+        <a href="../files/src_Editor.ts.html#l3596"><code>src&#x2F;Editor.ts:3596</code></a>
         </p>
 
 
@@ -584,6 +847,71 @@ It creates the $element member.
 
                     <div class="param-description">
                          
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Void</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_setSession" class="method item">
+    <h3 class="name"><code>setSession</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>session</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Void</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Editor.ts.html#l382"><code>src&#x2F;Editor.ts:382</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Sets a new EditSession to use.
+This method also emits the <code>'changeSession'</code> event.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">session</code>
+                        <span class="type"><a href="../classes/EditSession.html" class="crosslink">EditSession</a></span>
+
+
+                    <div class="param-description">
+                        <p>The new session to use.</p>
+
                     </div>
 
                 </li>
@@ -785,9 +1113,255 @@ FIXME: Remove left and top too.
 
 
 </div>
+<div id="property_selection" class="property item">
+    <h3 class="name"><code>selection</code></h3>
+    <span class="type"><a href="../classes/Selection.html" class="crosslink">Selection</a></span>
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Editor.ts.html#l201"><code>src&#x2F;Editor.ts:201</code></a>
+        </p>
+
+
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+
+
+</div>
             </div>
 
 
+            <div id="events" class="api-class-tabpanel">
+                <h2 class="off-left">Events</h2>
+
+                    <div id="event_blur" class="events item">
+                        <h3 class="name"><code>blur</code></h3>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_Editor.ts.html#l767"><code>src&#x2F;Editor.ts:767</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Emitted once the editor has been blurred.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_change" class="events item">
+                        <h3 class="name"><code>change</code></h3>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_Editor.ts.html#l787"><code>src&#x2F;Editor.ts:787</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Emitted whenever the document is changed.</p>
+                    
+                        </div>
+                    
+                            <div class="params">
+                                <h4>Event Payload:</h4>
+                    
+                                <ul class="params-list">
+                                    <li class="param">
+                                            <code class="param-name">e</code>
+                                            <span class="type">Object</span>
+                    
+                    
+                                        <div class="param-description">
+                                            <p>Contains a single property, <code>data</code>, which has the delta of changes</p>
+                    
+                                        </div>
+                    
+                                    </li>
+                                </ul>
+                            </div>
+                    
+                    
+                    </div>
+                    <div id="event_changeSelectionStyle" class="events item">
+                        <h3 class="name"><code>changeSelectionStyle</code></h3>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_Editor.ts.html#l1205"><code>src&#x2F;Editor.ts:1205</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Emitted when the selection style changes, via [[Editor.setSelectionStyle]].</p>
+                    
+                        </div>
+                    
+                            <div class="params">
+                                <h4>Event Payload:</h4>
+                    
+                                <ul class="params-list">
+                                    <li class="param">
+                                            <code class="param-name">data</code>
+                                            <span class="type">Object</span>
+                    
+                    
+                                        <div class="param-description">
+                                            <p>Contains one property, <code>data</code>, which indicates the new selection style</p>
+                    
+                                        </div>
+                    
+                                    </li>
+                                </ul>
+                            </div>
+                    
+                    
+                    </div>
+                    <div id="event_copy" class="events item">
+                        <h3 class="name"><code>copy</code></h3>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_Editor.ts.html#l984"><code>src&#x2F;Editor.ts:984</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Emitted when text is copied.</p>
+                    
+                        </div>
+                    
+                            <div class="params">
+                                <h4>Event Payload:</h4>
+                    
+                                <ul class="params-list">
+                                    <li class="param">
+                                            <code class="param-name">text</code>
+                                            <span class="type">String</span>
+                    
+                    
+                                        <div class="param-description">
+                                            <p>The copied text</p>
+                    
+                                        </div>
+                    
+                                    </li>
+                                </ul>
+                            </div>
+                    
+                    
+                    </div>
+                    <div id="event_focus" class="events item">
+                        <h3 class="name"><code>focus</code></h3>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_Editor.ts.html#l752"><code>src&#x2F;Editor.ts:752</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Emitted once the editor comes into focus.</p>
+                    
+                        </div>
+                    
+                    
+                    
+                    </div>
+                    <div id="event_paste" class="events item">
+                        <h3 class="name"><code>paste</code></h3>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
+                    
+                    
+                    
+                    
+                    
+                        <div class="meta">
+                                    <p>
+                                    Defined in
+                            <a href="../files/src_Editor.ts.html#l1015"><code>src&#x2F;Editor.ts:1015</code></a>
+                            </p>
+                    
+                    
+                        </div>
+                    
+                        <div class="description">
+                            <p>Emitted when text is pasted.</p>
+                    
+                        </div>
+                    
+                            <div class="params">
+                                <h4>Event Payload:</h4>
+                    
+                                <ul class="params-list">
+                                    <li class="param">
+                                            <code class="param-name">text</code>
+                                            <span class="type">String</span>
+                    
+                    
+                                        <div class="param-description">
+                                            <p>The pasted text</p>
+                    
+                                        </div>
+                    
+                                    </li>
+                                </ul>
+                            </div>
+                    
+                    
+                    </div>
+            </div>
     </div>
 </div>
                     </div>

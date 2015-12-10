@@ -1,4 +1,4 @@
-import CursorPosition from '../../CursorPosition';
+import Position from '../../Position';
 import EditorDocument from '../../EditorDocument';
 import Editor from '../../Editor';
 import Range from "../../Range";
@@ -26,12 +26,12 @@ export default class EditorPosition {
     getCurrentLeftChar(): string {
         return this.getPositionLeftChar(this.editor.getCursorPosition());
     }
-    getTextAtCursorPosition(cursor: CursorPosition): string {
+    getTextAtCursorPosition(cursor: Position): string {
         var range = new Range(cursor.row, cursor.column, cursor.row, cursor.column + 1);
         // The final function would probably have been better named 'getTextInRange'.
         return this.editor.getSession().getDocument().getTextRange(range);
     }
-    getPositionLeftChar(cursor: CursorPosition): string {
+    getPositionLeftChar(cursor: Position): string {
         var range = new Range(cursor.row, cursor.column, cursor.row, cursor.column - 1);
         return this.editor.getSession().getDocument().getTextRange(range);
     }

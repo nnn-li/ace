@@ -31,10 +31,13 @@
 import FoldLine from "./FoldLine";
 import Range from "./Range";
 import {RangeList} from "./range_list";
-import {inherits} from "./lib/oop";
-/*
+//import {inherits} from "./lib/oop";
+
+/**
  * Simple fold-data struct.
- **/
+ * @class Fold
+ * @extends RangeList
+ */
 export default class Fold extends RangeList {
     foldLine: FoldLine;
     placeholder: string;
@@ -45,6 +48,13 @@ export default class Fold extends RangeList {
     sameRow: boolean;
     subFolds: Fold[];
     collapseChildren: number;
+
+    /**
+     * @class Fold
+     * @constructor
+     * @param range {Range}
+     * @param placeholder {string}
+     */
     constructor(range: Range, placeholder: string) {
         super()
         this.foldLine = null;
@@ -57,18 +67,31 @@ export default class Fold extends RangeList {
         this.subFolds = this.ranges = [];
     }
 
-    toString() {
+    /**
+     * @method toString
+     * @return {string}
+     */
+    toString(): string {
         return '"' + this.placeholder + '" ' + this.range.toString();
     }
 
-    setFoldLine(foldLine: FoldLine) {
+    /**
+     * @method setFoldLine
+     * @param foldLine {FoldLine}
+     * @return {void}
+     */
+    setFoldLine(foldLine: FoldLine): void {
         this.foldLine = foldLine;
         this.subFolds.forEach(function(fold: Fold) {
             fold.setFoldLine(foldLine);
         });
     }
 
-    clone() {
+    /**
+     * @method clone
+     * @return {Fold}
+     */
+    clone(): Fold {
         var range = this.range.clone();
         var fold = new Fold(range, this.placeholder);
         this.subFolds.forEach(function(subFold) {
@@ -78,7 +101,12 @@ export default class Fold extends RangeList {
         return fold;
     }
 
-    addSubFold(fold: Fold) {
+    /**
+     * @method addSubFold
+     * @param fold {Fold}
+     * @return {Fold}
+     */
+    addSubFold(fold: Fold): Fold {
         if (this.range.isEqual(fold))
             return;
 
@@ -117,7 +145,12 @@ export default class Fold extends RangeList {
         return fold;
     }
 
-    restoreRange(range: Fold) {
+    /**
+     * @method restoreRange
+     * @param range {Fold}
+     * @return {void}
+     */
+    restoreRange(range: Fold): void {
         return restoreRange(range, this.start);
     }
 }

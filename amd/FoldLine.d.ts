@@ -1,5 +1,9 @@
 import Range from "./Range";
 import Fold from "./Fold";
+/**
+ * If an array is passed in, the folds are expected to be sorted already.
+ * @class FoldLine
+ */
 export default class FoldLine {
     foldData: any;
     folds: Fold[];
@@ -14,11 +18,40 @@ export default class FoldLine {
         column: number;
     };
     endRow: number;
-    constructor(foldData: any, folds: any);
-    shiftRow(shift: any): void;
+    /**
+     * @class FoldLine
+     * @constructor
+     * @param foldData
+     * @param folds {Fold[]}
+     */
+    constructor(foldData: any, folds: Fold[]);
+    /**
+     * Note: This doesn't update wrapData!
+     * @method shiftRow
+     * @param shift {number}
+     * @return {void}
+     */
+    shiftRow(shift: number): void;
+    /**
+     * @method addFold
+     * @param fold {Fold}
+     * @return {void}
+     */
     addFold(fold: Fold): void;
+    /**
+     * @method containsRow
+     * @param row {number}
+     * @return {boolean}
+     */
     containsRow(row: number): boolean;
-    walk(callback: (placeholder, row, column, end, isNewRow?) => any, endRow: any, endColumn: any): void;
+    /**
+     * @method walk
+     * @param callback
+     * @param endRow {number}
+     * @param endColumn {number}
+     * @return {void}
+     */
+    walk(callback: (placeholder, row, column, end, isNewRow?) => any, endRow: number, endColumn: number): void;
     getNextFoldTo(row: number, column: number): {
         fold: Fold;
         kind: string;

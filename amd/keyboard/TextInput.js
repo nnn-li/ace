@@ -319,10 +319,10 @@ define(["require", "exports", "../lib/event", "../lib/useragent", "../lib/dom", 
                 host.on("mousedown", onCompositionEnd);
                 if (!host.selection.isEmpty()) {
                     host.insert("");
-                    host.session.markUndoGroup();
+                    host.getSession().markUndoGroup();
                     host.selection.clearSelection();
                 }
-                host.session.markUndoGroup();
+                host.getSession().markUndoGroup();
             };
             var onCompositionUpdate = function () {
                 // console.log("onCompositionUpdate", inComposition && JSON.stringify(text.value))
@@ -338,7 +338,7 @@ define(["require", "exports", "../lib/event", "../lib/useragent", "../lib/dom", 
                 if (inComposition.lastValue) {
                     var r = host.selection.getRange();
                     host.insert(inComposition.lastValue);
-                    host.session.markUndoGroup();
+                    host.getSession().markUndoGroup();
                     inComposition.range = host.selection.getRange();
                     host.selection.setRange(r);
                     host.selection.clearSelection();

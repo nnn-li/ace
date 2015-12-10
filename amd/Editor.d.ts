@@ -8,25 +8,23 @@ import VirtualRenderer from './VirtualRenderer';
 import { Completer } from "./autocomplete";
 import Selection from './Selection';
 /**
- * The main entry point into the Ace functionality.
+ * The `Editor` acts as a controller, mediating between the editSession and renderer.
  *
- * The `Editor` manages the [[EditSession]] (which manages [[Document]]s), as well as the [[VirtualRenderer]], which draws everything to the screen.
- *
- * Event sessions dealing with the mouse and keyboard are bubbled up from `Document` to the `Editor`, which decides what to do with them.
  * @class Editor
- */
-/**
- * Creates a new `Editor` object.
- *
- * @param {VirtualRenderer} renderer Associated `VirtualRenderer` that draws everything
- * @param {EditSession} session The `EditSession` to refer to
- *
- *
- * @constructor
+ * @extends EventEmitterClass
  */
 export default class Editor extends EventEmitterClass {
+    /**
+     * @property renderer
+     * @type VirtualRenderer
+     */
     renderer: VirtualRenderer;
-    session: EditSession;
+    /**
+     * @property session
+     * @type EditSession
+     * @private
+     */
+    private session;
     private $touchHandler;
     private $mouseHandler;
     getOption: any;
@@ -83,8 +81,20 @@ export default class Editor extends EventEmitterClass {
     $onSelectionChange: (event, selection: Selection) => void;
     exitMultiSelectMode: any;
     forEachSelection: any;
+    /**
+     * Creates a new `Editor` object.
+     *
+     * @class
+     * @constructor
+     * @param renderer {VirtualRenderer} The view.
+     * @param session {EditSession} The model.
+     */
     constructor(renderer: VirtualRenderer, session: EditSession);
     cancelMouseContextMenu(): void;
+    /**
+     * @property selection
+     * @type Selection
+     */
     selection: Selection;
     $initOperationListeners(): void;
     startOperation(commadEvent: any): void;
@@ -95,54 +105,55 @@ export default class Editor extends EventEmitterClass {
     }): void;
     /**
      * Sets a new key handler, such as "vim" or "windows".
-     * @param {string|HasgHandler} keyboardHandler The new key handler
      *
-     **/
+     * @method setKeyboardHandler
+     * @param keyboardHandler {string | HashHandler} The new key handler.
+     * @return {void}
+     */
     setKeyboardHandler(keyboardHandler: string | HashHandler): void;
     /**
      * Returns the keyboard handler, such as "vim" or "windows".
      *
-     * @returns {String}
-     *
+     * @method getKeyboardHandler
+     * @return {HashHandler}
      */
     getKeyboardHandler(): HashHandler;
     /**
-     * Emitted whenever the [[EditSession]] changes.
-     * @event changeSession
-     * @param {Object} e An object with two properties, `oldSession` and `session`, that represent the old and new [[EditSession]]s.
+     * Sets a new EditSession to use.
+     * This method also emits the `'changeSession'` event.
      *
-     **/
-    /**
-     * Sets a new editsession to use. This method also emits the `'changeSession'` event.
-     * @param {EditSession} session The new session to use
-     *
-     **/
+     * @method setSession
+     * @param session {EditSession} The new session to use.
+     * @return {void}
+     */
     setSession(session: EditSession): void;
     /**
      * Returns the current session being used.
-     * @returns {EditSession}
-     **/
+     *
+     * @method getSession
+     * @return {EditSession}
+     */
     getSession(): EditSession;
     /**
      * Sets the current document to `val`.
      * @param {String} val The new value to set for the document
      * @param {Number} cursorPos Where to set the new value. `undefined` or 0 is selectAll, -1 is at the document start, and +1 is at the end
      *
-     * @returns {String} The current document value
+     * @return {String} The current document value
      * @related Document.setValue
      **/
     setValue(val: string, cursorPos?: number): string;
     /**
      * Returns the current session's content.
      *
-     * @returns {String}
+     * @return {String}
      * @related EditSession.getValue
      **/
     getValue(): string;
     /**
      *
      * Returns the currently highlighted selection.
-     * @returns {String} The highlighted selection
+     * @return {String} The highlighted selection
      **/
     getSelection(): Selection;
     /**
@@ -160,7 +171,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:VirtualRenderer.getTheme}
      *
-     * @returns {String} The set theme
+     * @return {String} The set theme
      * @related VirtualRenderer.getTheme
      **/
     getTheme(): string;
@@ -245,7 +256,7 @@ export default class Editor extends EventEmitterClass {
     onChangeFold(event: any, editSession: EditSession): void;
     /**
      * Returns the string of text currently highlighted.
-     * @returns {String}
+     * @return {String}
      **/
     getSelectedText(): string;
     /**
@@ -256,7 +267,7 @@ export default class Editor extends EventEmitterClass {
      **/
     /**
      * Returns the string of text currently highlighted.
-     * @returns {String}
+     * @return {String}
      * @deprecated Use getSelectedText instead.
      **/
     getCopyText(): string;
@@ -301,7 +312,7 @@ export default class Editor extends EventEmitterClass {
     setOverwrite(overwrite: boolean): void;
     /**
      * Returns `true` if overwrites are enabled; `false` otherwise.
-     * @returns {Boolean}
+     * @return {Boolean}
      * @related EditSession.getOverwrite
      **/
     getOverwrite(): boolean;
@@ -317,7 +328,7 @@ export default class Editor extends EventEmitterClass {
     setScrollSpeed(speed: number): void;
     /**
      * Returns the value indicating how fast the mouse scroll speed is (in milliseconds).
-     * @returns {Number}
+     * @return {Number}
      **/
     getScrollSpeed(): number;
     /**
@@ -327,7 +338,7 @@ export default class Editor extends EventEmitterClass {
     setDragDelay(dragDelay: number): void;
     /**
      * Returns the current mouse drag delay.
-     * @returns {Number}
+     * @return {Number}
      **/
     getDragDelay(): number;
     /**
@@ -343,7 +354,7 @@ export default class Editor extends EventEmitterClass {
     setSelectionStyle(val: string): void;
     /**
      * Returns the current selection style.
-     * @returns {String}
+     * @return {String}
      **/
     getSelectionStyle(): string;
     /**
@@ -366,7 +377,7 @@ export default class Editor extends EventEmitterClass {
     setHighlightSelectedWord(shouldHighlight: boolean): void;
     /**
      * Returns `true` if currently highlighted words are to be highlighted.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getHighlightSelectedWord(): boolean;
     setAnimatedScroll(shouldAnimate: boolean): void;
@@ -379,7 +390,7 @@ export default class Editor extends EventEmitterClass {
     setShowInvisibles(showInvisibles: boolean): void;
     /**
      * Returns `true` if invisible characters are being shown.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getShowInvisibles(): boolean;
     setDisplayIndentGuides(displayIndentGuides: boolean): void;
@@ -391,7 +402,7 @@ export default class Editor extends EventEmitterClass {
     setShowPrintMargin(showPrintMargin: boolean): void;
     /**
      * Returns `true` if the print margin is being shown.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     getShowPrintMargin(): boolean;
     /**
@@ -401,7 +412,7 @@ export default class Editor extends EventEmitterClass {
     setPrintMarginColumn(showPrintMargin: number): void;
     /**
      * Returns the column number of where the print margin is.
-     * @returns {Number}
+     * @return {Number}
      */
     getPrintMarginColumn(): number;
     /**
@@ -412,7 +423,7 @@ export default class Editor extends EventEmitterClass {
     setReadOnly(readOnly: boolean): void;
     /**
      * Returns `true` if the editor is set to read-only mode.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getReadOnly(): boolean;
     /**
@@ -424,7 +435,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns `true` if the behaviors are currently enabled. {:BehaviorsDef}
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getBehavioursEnabled(): boolean;
     /**
@@ -512,7 +523,7 @@ export default class Editor extends EventEmitterClass {
     toggleBlockComment(): void;
     /**
      * Works like [[EditSession.getTokenAt]], except it returns a number.
-     * @returns {Number}
+     * @return {Number}
      **/
     getNumberAt(row: number, column: number): {
         value: string;
@@ -533,13 +544,13 @@ export default class Editor extends EventEmitterClass {
     /**
      * Shifts all the selected lines down one row.
      *
-     * @returns {Number} On success, it returns -1.
+     * @return {Number} On success, it returns -1.
      * @related EditSession.moveLinesUp
      **/
     moveLinesDown(): void;
     /**
      * Shifts all the selected lines up one row.
-     * @returns {Number} On success, it returns -1.
+     * @return {Number} On success, it returns -1.
      * @related EditSession.moveLinesDown
      **/
     moveLinesUp(): void;
@@ -551,19 +562,19 @@ export default class Editor extends EventEmitterClass {
      * @param {Range} fromRange The range of text you want moved within the document
      * @param {Object} toPosition The location (row and column) where you want to move the text to
      *
-     * @returns {Range} The new range where the text was moved to.
+     * @return {Range} The new range where the text was moved to.
      * @related EditSession.moveText
      **/
     moveText(range: any, toPosition: any, copy: any): Range;
     /**
      * Copies all the selected lines up one row.
-     * @returns {Number} On success, returns 0.
+     * @return {Number} On success, returns 0.
      *
      **/
     copyLinesUp(): void;
     /**
      * Copies all the selected lines down one row.
-     * @returns {Number} On success, returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
+     * @return {Number} On success, returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
      * @related EditSession.duplicateLines
      *
      **/
@@ -578,7 +589,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns an object indicating the currently selected rows.
      *
-     * @returns {Object}
+     * @return {Object}
      **/
     private $getSelectedRows();
     onCompositionStart(text?: string): void;
@@ -587,14 +598,14 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:VirtualRenderer.getFirstVisibleRow}
      *
-     * @returns {Number}
+     * @return {Number}
      * @related VirtualRenderer.getFirstVisibleRow
      **/
     getFirstVisibleRow(): number;
     /**
      * {:VirtualRenderer.getLastVisibleRow}
      *
-     * @returns {Number}
+     * @return {Number}
      * @related VirtualRenderer.getLastVisibleRow
      **/
     getLastVisibleRow(): number;
@@ -602,7 +613,7 @@ export default class Editor extends EventEmitterClass {
      * Indicates if the row is currently visible on the screen.
      * @param {Number} row The row to check
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     isRowVisible(row: number): boolean;
     /**
@@ -610,12 +621,12 @@ export default class Editor extends EventEmitterClass {
      * @param {Number} row The row to check
      *
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     isRowFullyVisible(row: number): boolean;
     /**
      * Returns the number of currently visibile rows.
-     * @returns {Number}
+     * @return {Number}
      **/
     private $getVisibleRowCount();
     /**
@@ -670,7 +681,7 @@ export default class Editor extends EventEmitterClass {
     centerSelection(): void;
     /**
      * Gets the current position of the cursor.
-     * @returns {Object} An object that looks something like this:
+     * @return {Object} An object that looks something like this:
      *
      * ```json
      * { row: currRow, column: currCol }
@@ -691,7 +702,7 @@ export default class Editor extends EventEmitterClass {
     };
     /**
      * {:Selection.getRange}
-     * @returns {Range}
+     * @return {Range}
      * @related Selection.getRange
      **/
     getSelectionRange(): Range;
@@ -821,7 +832,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:Search.getOptions} For more information on `options`, see [[Search `Search`]].
      * @related Search.getOptions
-     * @returns {Object}
+     * @return {Object}
      **/
     getLastSearchOptions(): {};
     /**

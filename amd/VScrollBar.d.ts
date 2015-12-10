@@ -23,7 +23,7 @@ export default class VScrollBar extends ScrollBar {
     onScroll(): void;
     /**
      * Returns the width of the scroll bar.
-     * @returns {Number}
+     * @return {Number}
      **/
     width: number;
     /**

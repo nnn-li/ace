@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -122,7 +120,6 @@
     <ul class="api-class-tabs">
         <li class="api-class-tab index"><a href="#index">Index</a></li>
 
-            <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
             <li class="api-class-tab events"><a href="#events">Events</a></li>
     </ul>
 
@@ -130,44 +127,6 @@
         <div id="index" class="api-class-tabpanel index">
             <h2 class="off-left">Item Index</h2>
 
-                <div class="index-section methods">
-                    <h3>Methods</h3>
-
-                    <ul class="index-list methods">
-                            <li class="index-item method">
-                                <a href="#method_$split">$split</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_createAnchor">createAnchor</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_getNewLineCharacter">getNewLineCharacter</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_getNewLineMode">getNewLineMode</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_getValue">getValue</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_isNewLine">isNewLine</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_setNewLineMode">setNewLineMode</a>
-
-                            </li>
-                            <li class="index-item method">
-                                <a href="#method_setValue">setValue</a>
-
-                            </li>
-                    </ul>
-                </div>
 
 
 
@@ -176,10 +135,6 @@
 
                     <ul class="index-list events">
                             <li class="index-item event">
-                                <a href="#event_change">change</a>
-
-                            </li>
-                            <li class="index-item event">
                                 <a href="#event_scroll">scroll</a>
 
                             </li>
@@ -187,540 +142,15 @@
                 </div>
         </div>
 
-            <div id="methods" class="api-class-tabpanel">
-                <h2 class="off-left">Methods</h2>
-
-<div id="method_$split" class="method item">
-    <h3 class="name"><code>$split</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>text</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l114"><code>src&#x2F;EditorDocument.ts:114</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Splits a string of text on any newline (<code>\n</code>) or carriage-return ('\r') characters.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">text</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        <p>The text to work with</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-
-
-</div>
-<div id="method_createAnchor" class="method item">
-    <h3 class="name"><code>createAnchor</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>row</code>
-                </li>
-                <li class="arg">
-                        <code>column</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Anchor</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l102"><code>src&#x2F;EditorDocument.ts:102</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Creates a new <code>Anchor</code> to define a floating point in the document.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">row</code>
-                        <span class="type">Number</span>
-
-
-                    <div class="param-description">
-                        <p>The row number to use</p>
-
-                    </div>
-
-                </li>
-                <li class="param">
-                        <code class="param-name">column</code>
-                        <span class="type">Number</span>
-
-
-                    <div class="param-description">
-                        <p>The column number to use</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Anchor</span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_getNewLineCharacter" class="method item">
-    <h3 class="name"><code>getNewLineCharacter</code></h3>
-
-        <span class="paren">()</span>
-
-        <span class="returns-inline">
-            <span class="type">String</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l126"><code>src&#x2F;EditorDocument.ts:126</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Returns the newline character that's being used, depending on the value of <code>newLineMode</code>.</p>
-
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">String</span>:
-                    <p>If <code>newLineMode == windows</code>, <code>\r\n</code> is returned.<br>
-If <code>newLineMode == unix</code>, <code>\n</code> is returned.<br>
-If <code>newLineMode == auto</code>, the value of <code>autoNewLine</code> is returned.</p>
-
-            </div>
-        </div>
-
-
-</div>
-<div id="method_getNewLineMode" class="method item">
-    <h3 class="name"><code>getNewLineMode</code></h3>
-
-        <span class="paren">()</span>
-
-        <span class="returns-inline">
-            <span class="type">String</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l160"><code>src&#x2F;EditorDocument.ts:160</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Returns the type of newlines being used; either <code>windows</code>, <code>unix</code>, or <code>auto</code></p>
-
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">String</span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_getValue" class="method item">
-    <h3 class="name"><code>getValue</code></h3>
-
-        <span class="paren">()</span>
-
-        <span class="returns-inline">
-            <span class="type">String</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l93"><code>src&#x2F;EditorDocument.ts:93</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Returns all the lines in the document as a single string, joined by the new line character.</p>
-
-    </div>
-
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">String</span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_isNewLine" class="method item">
-    <h3 class="name"><code>isNewLine</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>text</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Boolean</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l169"><code>src&#x2F;EditorDocument.ts:169</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Returns <code>true</code> if <code>text</code> is a newline character (either <code>\r\n</code>, <code>\r</code>, or <code>\n</code>).</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">text</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        <p>The text to check</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Boolean</span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_setNewLineMode" class="method item">
-    <h3 class="name"><code>setNewLineMode</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>newLineMode</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Void</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l146"><code>src&#x2F;EditorDocument.ts:146</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Sets the new line mode.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">newLineMode</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        <p>[The newline mode to use; can be either <code>windows</code>, <code>unix</code>, or <code>auto</code>]{: #EditorDocument.setNewLineMode.param}</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Void</span>:
-            </div>
-        </div>
-
-
-</div>
-<div id="method_setValue" class="method item">
-    <h3 class="name"><code>setValue</code></h3>
-
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-                <li class="arg">
-                        <code>text</code>
-                </li>
-            </ul><span class="paren">)</span>
-        </div>
-
-        <span class="returns-inline">
-            <span class="type">Void</span>
-        </span>
-
-
-
-
-
-
-
-    <div class="meta">
-                <p>
-                Defined in
-        <a href="../files/src_EditorDocument.ts.html#l81"><code>src&#x2F;EditorDocument.ts:81</code></a>
-        </p>
-
-
-
-    </div>
-
-    <div class="description">
-        <p>Replaces all the lines in the current <code>EditorDocument</code> with the value of <code>text</code>.</p>
-
-    </div>
-
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-                <li class="param">
-                        <code class="param-name">text</code>
-                        <span class="type">String</span>
-
-
-                    <div class="param-description">
-                        <p>The text to use</p>
-
-                    </div>
-
-                </li>
-            </ul>
-        </div>
-
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                        <span class="type">Void</span>:
-            </div>
-        </div>
-
-
-</div>
-            </div>
 
 
 
             <div id="events" class="api-class-tabpanel">
                 <h2 class="off-left">Events</h2>
 
-                    <div id="event_change" class="events item">
-                        <h3 class="name"><code>change</code></h3>
-                        <span class="type"></span>
-                    
-                    
-                    
-                    
-                    
-                        <div class="meta">
-                                    <p>
-                                    Defined in
-                            <a href="../files/src_EditorDocument.ts.html#l261"><code>src&#x2F;EditorDocument.ts:261</code></a>
-                            </p>
-                    
-                    
-                        </div>
-                    
-                        <div class="description">
-                            <p>Fires whenever the document changes.</p>
-                    <p>Several methods trigger different <code>&quot;change&quot;</code> events. Below is a list of each action type, followed by each property that's also available:</p>
-                    <ul>
-                    <li><code>&quot;insertLines&quot;</code> (emitted by [[EditorDocument.insertLines]])
-                    <ul>
-                    <li><code>range</code>: the [[Range]] of the change within the document</li>
-                    <li><code>lines</code>: the lines in the document that are changing</li>
-                    </ul>
-                    </li>
-                    <li><code>&quot;insertText&quot;</code> (emitted by [[EditorDocument.insertNewLine]])
-                    <ul>
-                    <li><code>range</code>: the [[Range]] of the change within the document</li>
-                    <li><code>text</code>: the text that's being added</li>
-                    </ul>
-                    </li>
-                    <li><code>&quot;removeLines&quot;</code> (emitted by [[EditorDocument.insertLines]])
-                    <ul>
-                    <li><code>range</code>: the [[Range]] of the change within the document</li>
-                    <li><code>lines</code>: the lines in the document that were removed</li>
-                    <li><code>nl</code>: the new line character (as defined by [[EditorDocument.getNewLineCharacter]])</li>
-                    </ul>
-                    </li>
-                    <li><code>&quot;removeText&quot;</code> (emitted by [[EditorDocument.removeInLine]] and [[EditorDocument.removeNewLine]])
-                    <ul>
-                    <li><code>range</code>: the [[Range]] of the change within the document</li>
-                    <li><code>text</code>: the text that's being removed</li>
-                    </ul>
-                    </li>
-                    </ul>
-                    
-                        </div>
-                    
-                            <div class="params">
-                                <h4>Event Payload:</h4>
-                    
-                                <ul class="params-list">
-                                    <li class="param">
-                                            <code class="param-name">e</code>
-                                            <span class="type">Object</span>
-                    
-                    
-                                        <div class="param-description">
-                                            <p>Contains at least one property called <code>&quot;action&quot;</code>. <code>&quot;action&quot;</code> indicates the action that triggered the change. Each action also has a set of additional properties.</p>
-                    
-                                        </div>
-                    
-                                    </li>
-                                </ul>
-                            </div>
-                    
-                    
-                    </div>
                     <div id="event_scroll" class="events item">
                         <h3 class="name"><code>scroll</code></h3>
-                        <span class="type"></span>
+                        <span class="type"><a href="../classes/.html" class="crosslink"></a></span>
                     
                     
                     

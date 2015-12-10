@@ -29,29 +29,26 @@
  * ***** END LICENSE BLOCK ***** */
 define(["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (require, exports, lang_1, oop_1, Range_1) {
     /**
-     * @class Search
-     *
      * A class designed to handle all sorts of text searches within a [[Document `Document`]].
-     *
-     **/
-    /**
-     *
-     *
-     * Creates a new `Search` object. The following search options are avaliable:
-     *
-     * - `needle`: The string or regular expression you're looking for
-     * - `backwards`: Whether to search backwards from where cursor currently is. Defaults to `false`.
-     * - `wrap`: Whether to wrap the search back to the beginning when it hits the end. Defaults to `false`.
-     * - `caseSensitive`: Whether the search ought to be case-sensitive. Defaults to `false`.
-     * - `wholeWord`: Whether the search matches only on whole words. Defaults to `false`.
-     * - `range`: The [[Range]] to search within. Set this to `null` for the whole document
-     * - `regExp`: Whether the search is a regular expression or not. Defaults to `false`.
-     * - `start`: The starting [[Range]] or cursor position to begin the search
-     * - `skipCurrent`: Whether or not to include the current line in the search. Default to `false`.
-     *
-     * @constructor
-     **/
+     * @class Search
+     */
     var Search = (function () {
+        /**
+         * Creates a new `Search` object. The following search options are avaliable:
+         *
+         * - `needle`: The string or regular expression you're looking for
+         * - `backwards`: Whether to search backwards from where cursor currently is. Defaults to `false`.
+         * - `wrap`: Whether to wrap the search back to the beginning when it hits the end. Defaults to `false`.
+         * - `caseSensitive`: Whether the search ought to be case-sensitive. Defaults to `false`.
+         * - `wholeWord`: Whether the search matches only on whole words. Defaults to `false`.
+         * - `range`: The [[Range]] to search within. Set this to `null` for the whole document
+         * - `regExp`: Whether the search is a regular expression or not. Defaults to `false`.
+         * - `start`: The starting [[Range]] or cursor position to begin the search
+         * - `skipCurrent`: Whether or not to include the current line in the search. Default to `false`.
+         *
+         * @class Search
+         * @constructor
+         */
         function Search() {
             this.$options = {};
         }
@@ -60,7 +57,7 @@ define(["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (r
          * @param {Object} options An object containing all the new search properties
          *
          *
-         * @returns {Search}
+         * @return {Search}
          * @chainable
         **/
         Search.prototype.set = function (options) {
@@ -69,7 +66,7 @@ define(["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (r
         };
         /**
          * [Returns an object containing all the search options.]{: #Search.getOptions}
-         * @returns {Object}
+         * @return {Object}
         **/
         Search.prototype.getOptions = function () {
             return lang_1.copyObject(this.$options);
@@ -87,7 +84,7 @@ define(["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (r
          * @param {EditSession} session The session to search with
          *
          *
-         * @returns {Range}
+         * @return {Range}
         **/
         Search.prototype.find = function (session) {
             var iterator = this.$matchIterator(session, this.$options);
@@ -111,7 +108,7 @@ define(["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (r
          * @param {EditSession} session The session to search with
          *
          *
-         * @returns {[Range]}
+         * @return {[Range]}
         **/
         Search.prototype.findAll = function (session) {
             var options = this.$options;
@@ -178,7 +175,7 @@ define(["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (r
          * If `options.needle` was not found, this function returns `null`.
          *
          *
-         * @returns {String}
+         * @return {String}
         **/
         Search.prototype.replace = function (input, replacement) {
             var options = this.$options;

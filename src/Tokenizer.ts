@@ -223,7 +223,7 @@ export default class Tokenizer {
 
     /**
     * Returns an object containing two properties: `tokens`, which contains all the tokens; and `state`, the current state.
-    * @returns {Object}
+    * @return {Object}
     **/
     public getLineTokens(line: string, startState) {
         var stack;

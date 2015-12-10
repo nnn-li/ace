@@ -138,6 +138,7 @@
     "./src/LineWidgets.ts",
     "./src/OptionsProvider.ts",
     "./src/OrientedRange.ts",
+    "./src/Position.ts",
     "./src/Range.ts",
     "./src/RenderLoop.ts",
     "./src/ScrollBar.ts",

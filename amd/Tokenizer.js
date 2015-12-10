@@ -194,7 +194,7 @@ define(["require", "exports"], function (require, exports) {
         };
         /**
         * Returns an object containing two properties: `tokens`, which contains all the tokens; and `state`, the current state.
-        * @returns {Object}
+        * @return {Object}
         **/
         Tokenizer.prototype.getLineTokens = function (line, startState) {
             var stack;

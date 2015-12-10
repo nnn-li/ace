@@ -45,7 +45,7 @@ export function touchManager(editor: Editor) {
     manager.on('tap', function(event: ClientLocation) {
         var pos = editor.renderer.screenToTextCoordinates(event.clientX, event.clientY);
 
-        pos.row = Math.max(0, Math.min(pos.row, editor.session.getLength() - 1));
+        pos.row = Math.max(0, Math.min(pos.row, editor.getSession().getLength() - 1));
 
         editor.moveCursorToPosition(pos);
         editor.renderer.scrollCursorIntoView();

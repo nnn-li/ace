@@ -15,12 +15,11 @@ var Marker = {};
 
 /**
  *
- * @constructor
  */
 export default class TreeBuilder {
     activeFormattingElements;
     compatMode: string;
-    context;
+    context: string;
     document;
     errorHandler;
     form;
@@ -38,6 +37,10 @@ export default class TreeBuilder {
     selfClosingFlagAcknowledged: boolean;
     scriptingEnabled: boolean;
     shouldSkipLeadingNewline;
+
+    /**
+     *
+     */
     constructor() {
         this.tokenizer = null;
         this.errorHandler = null;
@@ -2894,12 +2897,12 @@ export default class TreeBuilder {
      *
      * @param {String} context A context element name for fragment parsing
      */
-    setFragmentContext(context) {
+    setFragmentContext(context: string) {
         // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
         // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
         // For efficiency, we skip step 4.2 ("Let root be a new html element with no attributes")
         // and instead use the DocumentFragment as a root node.
-        //m_tree.openElements()->pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
+        // m_tree.openElements()->pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
         this.context = context;
     }
 

@@ -28,17 +28,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 define(["require", "exports", "./Range"], function (require, exports, Range_1) {
-    /*
+    /**
      * If an array is passed in, the folds are expected to be sorted already.
+     * @class FoldLine
      */
     var FoldLine = (function () {
+        /**
+         * @class FoldLine
+         * @constructor
+         * @param foldData
+         * @param folds {Fold[]}
+         */
         function FoldLine(foldData, folds) {
             this.foldData = foldData;
             if (Array.isArray(folds)) {
                 this.folds = folds;
             }
             else {
-                folds = this.folds = [folds];
+                throw new Error("folds must have type Fold[]");
             }
             var last = folds[folds.length - 1];
             this.range = new Range_1.default(folds[0].start.row, folds[0].start.column, last.end.row, last.end.column);
@@ -48,8 +55,11 @@ define(["require", "exports", "./Range"], function (require, exports, Range_1) {
                 fold.setFoldLine(this);
             }, this);
         }
-        /*
+        /**
          * Note: This doesn't update wrapData!
+         * @method shiftRow
+         * @param shift {number}
+         * @return {void}
          */
         FoldLine.prototype.shiftRow = function (shift) {
             this.start.row += shift;
@@ -59,6 +69,11 @@ define(["require", "exports", "./Range"], function (require, exports, Range_1) {
                 fold.end.row += shift;
             });
         };
+        /**
+         * @method addFold
+         * @param fold {Fold}
+         * @return {void}
+         */
         FoldLine.prototype.addFold = function (fold) {
             if (fold.sameRow) {
                 if (fold.start.row < this.startRow || fold.endRow > this.endRow) {
@@ -92,9 +107,21 @@ define(["require", "exports", "./Range"], function (require, exports, Range_1) {
             }
             fold.foldLine = this;
         };
+        /**
+         * @method containsRow
+         * @param row {number}
+         * @return {boolean}
+         */
         FoldLine.prototype.containsRow = function (row) {
             return row >= this.start.row && row <= this.end.row;
         };
+        /**
+         * @method walk
+         * @param callback
+         * @param endRow {number}
+         * @param endColumn {number}
+         * @return {void}
+         */
         FoldLine.prototype.walk = function (callback, endRow, endColumn) {
             var lastEnd = 0, folds = this.folds, fold, cmp, stop, isNewRow = true;
             if (endRow == null) {

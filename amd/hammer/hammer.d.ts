@@ -130,21 +130,21 @@ export declare class Manager implements IRecognizerCallback {
     /**
      * remove a recognizer by name or instance
      * @param {Recognizer|String} recognizer
-     * @returns {Manager}
+     * @return {Manager}
      */
     remove(recognizer: IRecognizer): this;
     /**
      * bind event
      * @param {String} events
      * @param {Function} handler
-     * @returns {EventEmitter} this
+     * @return {EventEmitter} this
      */
     on(events: string, handler: any): Manager;
     /**
      * unbind event, leave emit blank to remove all handlers
      * @param {String} events
      * @param {Function} [handler]
-     * @returns {EventEmitter} this
+     * @return {EventEmitter} this
      */
     off(events: string, handler: any): Manager;
     /**
@@ -239,13 +239,13 @@ export declare class Recognizer implements IRecognizer {
     /**
      * recognize simultaneous with an other recognizer.
      * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
+     * @return {Recognizer} this
      */
     recognizeWith(otherRecognizer: IRecognizer): IRecognizer;
     /**
      * drop the simultaneous link. it doesnt remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
+     * @return {Recognizer} this
      */
     dropRecognizeWith(otherRecognizer: IRecognizer): this;
     /**
@@ -255,18 +255,18 @@ export declare class Recognizer implements IRecognizer {
     /**
      * drop the requireFailure link. it does not remove the link on the other recognizer.
      * @param {Recognizer} otherRecognizer
-     * @returns {Recognizer} this
+     * @return {Recognizer} this
      */
     dropRequireFailure(otherRecognizer: IRecognizer): this;
     /**
      * has require failures boolean
-     * @returns {boolean}
+     * @return {boolean}
      */
     hasRequireFailures(): boolean;
     /**
      * if the recognizer can recognize simultaneous with an other recognizer
      * @param {Recognizer} otherRecognizer
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     canRecognizeWith(otherRecognizer: IRecognizer): boolean;
     /**
@@ -284,7 +284,7 @@ export declare class Recognizer implements IRecognizer {
     tryEmit(): void;
     /**
      * can we emit?
-     * @returns {boolean}
+     * @return {boolean}
      */
     canEmit(): boolean;
     /**
@@ -297,13 +297,13 @@ export declare class Recognizer implements IRecognizer {
      * the actual recognizing happens in this method
      * @virtual
      * @param {Object} inputData
-     * @returns {Const} STATE
+     * @return {Const} STATE
      */
     process(inputData: IComputedEvent): number;
     /**
      * return the preferred touch-action
      * @virtual
-     * @returns {Array}
+     * @return {Array}
      */
     getTouchAction(): string[];
     /**
@@ -317,7 +317,7 @@ export declare class Recognizer implements IRecognizer {
  * TODO: Are the string values part of the API, or just for debugging?
  * get a usable string, used as event postfix
  * @param {Const} state
- * @returns {String} state
+ * @return {String} state
  */
 export declare function stateStr(state: number): string;
 /**
@@ -330,6 +330,6 @@ export declare function stateDecode(state: number): string;
  * TODO: This really belongs in the input service.
  * direction cons to string
  * @param {Const} direction
- * @returns {String}
+ * @return {String}
  */
 export declare function directionStr(direction: number): string;

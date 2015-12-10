@@ -43,7 +43,7 @@ import Mode from '../mode/Mode';
 
 export var keyWordCompleter: Completer = {
     getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
-        var state = editor.session.getState(pos.row);
+        var state = session.getState(pos.row);
         var completions = session.$mode.getCompletions(state, session, pos, prefix);
         callback(null, completions);
     }
@@ -89,7 +89,7 @@ var expandSnippet: Command = {
 };
 
 var onChangeMode = function(e, editor: Editor) {
-    loadSnippetsForMode(editor.session.$mode);
+    loadSnippetsForMode(editor.getSession().$mode);
 };
 
 var loadSnippetsForMode = function(mode: Mode) {
@@ -126,7 +126,7 @@ var loadSnippetFile = function(id: string) {
 
 function getCompletionPrefix(editor: Editor) {
     var pos = editor.getCursorPosition();
-    var line = editor.session.getLine(pos.row);
+    var line = editor.getSession().getLine(pos.row);
     var prefix = retrievePrecedingIdentifier(line, pos.column);
     // Try to find custom prefixes on the completers
     editor.completers.forEach(function(completer) {

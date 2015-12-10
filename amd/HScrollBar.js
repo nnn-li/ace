@@ -44,7 +44,7 @@ define(["require", "exports", "./lib/event", './ScrollBar'], function (require, 
         Object.defineProperty(HScrollBar.prototype, "height", {
             /**
              * Returns the height of the scroll bar.
-             * @returns {Number}
+             * @return {Number}
              **/
             get: function () {
                 return this.isVisible ? this._height : 0;

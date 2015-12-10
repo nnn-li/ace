@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/FoldLine.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.15</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/FoldLine.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+import Range from &quot;./Range&quot;;
+import Fold from &quot;./Fold&quot;;
+
+/**
+ * If an array is passed in, the folds are expected to be sorted already.
+ * @class FoldLine
+ */
+export default class FoldLine {
+    foldData
+    folds: Fold[];
+    range: Range;
+    start: { row: number; column: number };
+    startRow: number;
+    end: { row: number; column: number };
+    endRow: number;
+
+    /**
+     * @class FoldLine
+     * @constructor
+     * @param foldData
+     * @param folds {Fold[]}
+     */
+    constructor(foldData, folds: Fold[]) {
+        this.foldData = foldData;
+        if (Array.isArray(folds)) {
+            this.folds = folds;
+        }
+        else {
+            throw new Error(&quot;folds must have type Fold[]&quot;)
+        }
+
+        var last: Fold = folds[folds.length - 1];
+        this.range = new Range(folds[0].start.row, folds[0].start.column, last.end.row, last.end.column);
+        this.start = this.range.start;
+        this.end = this.range.end;
+
+        this.folds.forEach(function(fold) {
+            fold.setFoldLine(this);
+        }, this);
+    }
+
+    /**
+     * Note: This doesn&#x27;t update wrapData!
+     * @method shiftRow
+     * @param shift {number}
+     * @return {void}
+     */
+    shiftRow(shift: number): void {
+        this.start.row += shift;
+        this.end.row += shift;
+        this.folds.forEach(function(fold) {
+            fold.start.row += shift;
+            fold.end.row += shift;
+        });
+    }
+
+    /**
+     * @method addFold
+     * @param fold {Fold}
+     * @return {void}
+     */
+    addFold(fold: Fold): void {
+        if (fold.sameRow) {
+            if (fold.start.row &lt; this.startRow || fold.endRow &gt; this.endRow) {
+                throw new Error(&quot;Can&#x27;t add a fold to this FoldLine as it has no connection&quot;);
+            }
+            this.folds.push(fold);
+            this.folds.sort(function(a, b) {
+                return -a.range.compareEnd(b.start.row, b.start.column);
+            });
+            if (this.range.compareEnd(fold.start.row, fold.start.column) &gt; 0) {
+                this.end.row = fold.end.row;
+                this.end.column = fold.end.column;
+            } else if (this.range.compareStart(fold.end.row, fold.end.column) &lt; 0) {
+                this.start.row = fold.start.row;
+                this.start.column = fold.start.column;
+            }
+        }
+        else if (fold.start.row == this.end.row) {
+            this.folds.push(fold);
+            this.end.row = fold.end.row;
+            this.end.column = fold.end.column;
+        }
+        else if (fold.end.row == this.start.row) {
+            this.folds.unshift(fold);
+            this.start.row = fold.start.row;
+            this.start.column = fold.start.column;
+        }
+        else {
+            throw new Error(&quot;Trying to add fold to FoldRow that doesn&#x27;t have a matching row&quot;);
+        }
+        fold.foldLine = this;
+    }
+
+    /**
+     * @method containsRow
+     * @param row {number}
+     * @return {boolean}
+     */
+    containsRow(row: number): boolean {
+        return row &gt;= this.start.row &amp;&amp; row &lt;= this.end.row;
+    }
+
+    /**
+     * @method walk
+     * @param callback
+     * @param endRow {number}
+     * @param endColumn {number}
+     * @return {void}
+     */
+    walk(callback: (placeholder, row, column, end, isNewRow?) =&gt; any, endRow: number, endColumn: number): void {
+        var lastEnd = 0,
+            folds = this.folds,
+            fold,
+            cmp, stop, isNewRow = true;
+
+        if (endRow == null) {
+            endRow = this.end.row;
+            endColumn = this.end.column;
+        }
+
+        for (var i = 0; i &lt; folds.length; i++) {
+            fold = folds[i];
+
+            cmp = fold.range.compareStart(endRow, endColumn);
+            // This fold is after the endRow/Column.
+            if (cmp == -1) {
+                callback(null, endRow, endColumn, lastEnd, isNewRow);
+                return;
+            }
+
+            stop = callback(null, fold.start.row, fold.start.column, lastEnd, isNewRow);
+            stop = !stop &amp;&amp; callback(fold.placeholder, fold.start.row, fold.start.column, lastEnd);
+
+            // If the user requested to stop the walk or endRow/endColumn is
+            // inside of this fold (cmp == 0), then end here.
+            if (stop || cmp === 0) {
+                return;
+            }
+
+            // Note the new lastEnd might not be on the same line. However,
+            // it&#x27;s the callback&#x27;s job to recognize this.
+            isNewRow = !fold.sameRow;
+            lastEnd = fold.end.column;
+        }
+        callback(null, endRow, endColumn, lastEnd, isNewRow);
+    }
+
+    getNextFoldTo(row: number, column: number): { fold: Fold; kind: string } {
+        var fold: Fold;
+        var cmp: number;
+        for (var i = 0; i &lt; this.folds.length; i++) {
+            fold = this.folds[i];
+            cmp = fold.range.compareEnd(row, column);
+            if (cmp == -1) {
+                return {
+                    fold: fold,
+                    kind: &quot;after&quot;
+                };
+            } else if (cmp === 0) {
+                return {
+                    fold: fold,
+                    kind: &quot;inside&quot;
+                };
+            }
+        }
+        return null;
+    }
+
+    addRemoveChars(row: number, column: number, len: number) {
+        var ret = this.getNextFoldTo(row, column);
+        var fold: Fold;
+        var folds;
+
+        if (ret) {
+            fold = ret.fold;
+            if (ret.kind == &quot;inside&quot;
+                &amp;&amp; fold.start.column != column
+                &amp;&amp; fold.start.row != row) {
+                //throwing here breaks whole editor
+                //TODO: properly handle this
+                window.console &amp;&amp; window.console.log(row, column, fold);
+            }
+            else if (fold.start.row == row) {
+                folds = this.folds;
+                var i = folds.indexOf(fold);
+                if (i === 0) {
+                    this.start.column += len;
+                }
+                for (i; i &lt; folds.length; i++) {
+                    fold = folds[i];
+                    fold.start.column += len;
+                    if (!fold.sameRow) {
+                        return;
+                    }
+                    fold.end.column += len;
+                }
+                this.end.column += len;
+            }
+        }
+    }
+
+    split(row, column) {
+        var pos = this.getNextFoldTo(row, column);
+
+        if (!pos || pos.kind == &quot;inside&quot;)
+            return null;
+
+        var fold = pos.fold;
+        var folds = this.folds;
+        var foldData = this.foldData;
+
+        var i = folds.indexOf(fold);
+        var foldBefore = folds[i - 1];
+        this.end.row = foldBefore.end.row;
+        this.end.column = foldBefore.end.column;
+
+        // Remove the folds after row/column and create a new FoldLine
+        // containing these removed folds.
+        folds = folds.splice(i, folds.length - i);
+
+        var newFoldLine = new FoldLine(foldData, folds);
+        foldData.splice(foldData.indexOf(this) + 1, 0, newFoldLine);
+        return newFoldLine;
+    }
+
+    merge(foldLineNext) {
+        var folds = foldLineNext.folds;
+        for (var i = 0; i &lt; folds.length; i++) {
+            this.addFold(folds[i]);
+        }
+        // Remove the foldLineNext - no longer needed, as
+        // it&#x27;s merged now with foldLineNext.
+        var foldData = this.foldData;
+        foldData.splice(foldData.indexOf(foldLineNext), 1);
+    }
+
+    toString() {
+        var ret = [this.range.toString() + &quot;: [&quot;];
+
+        this.folds.forEach(function(fold) {
+            ret.push(&quot;  &quot; + fold.toString());
+        });
+        ret.push(&quot;]&quot;);
+        return ret.join(&quot;\n&quot;);
+    }
+
+    idxToPosition(idx) {
+        var lastFoldEndColumn = 0;
+
+        for (var i = 0; i &lt; this.folds.length; i++) {
+            var fold = this.folds[i];
+
+            idx -= fold.start.column - lastFoldEndColumn;
+            if (idx &lt; 0) {
+                return {
+                    row: fold.start.row,
+                    column: fold.start.column + idx
+                };
+            }
+
+            idx -= fold.placeholder.length;
+            if (idx &lt; 0) {
+                return fold.start;
+            }
+
+            lastFoldEndColumn = fold.end.column;
+        }
+
+        return {
+            row: this.end.row,
+            column: this.end.column + idx
+        };
+    }
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

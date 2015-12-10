@@ -2028,10 +2028,10 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 host.on("mousedown", onCompositionEnd);
                 if (!host.selection.isEmpty()) {
                     host.insert("");
-                    host.session.markUndoGroup();
+                    host.getSession().markUndoGroup();
                     host.selection.clearSelection();
                 }
-                host.session.markUndoGroup();
+                host.getSession().markUndoGroup();
             };
             var onCompositionUpdate = function () {
                 // console.log("onCompositionUpdate", inComposition && JSON.stringify(text.value))
@@ -2047,7 +2047,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 if (inComposition.lastValue) {
                     var r = host.selection.getRange();
                     host.insert(inComposition.lastValue);
-                    host.session.markUndoGroup();
+                    host.getSession().markUndoGroup();
                     inComposition.range = host.selection.getRange();
                     host.selection.setRange(r);
                     host.selection.clearSelection();
@@ -2182,57 +2182,26 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
     exports.default = TextInput;
 });
 
-/* ***** BEGIN LICENSE BLOCK *****
- * Distributed under the BSD license:
- *
- * Copyright (c) 2010, Ajax.org B.V.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Ajax.org B.V. nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***** END LICENSE BLOCK ***** */
-/**
- * This object is used in various places to indicate a region within the editor.
- * To better visualize how this works, imagine a rectangle.
- * Each quadrant of the rectangle is analogus to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
- * @class Range
- */
 define('Range',["require", "exports"], function (require, exports) {
     /**
-     * Creates a new `EditorRange` object with the given starting and ending row and column points.
-     * @param {Number} startRow The starting row
-     * @param {Number} startColumn The starting column
-     * @param {Number} endRow The ending row
-     * @param {Number} endColumn The ending column
+     * This object is used in various places to indicate a region within the editor.
+     * To better visualize how this works, imagine a rectangle.
+     * Each quadrant of the rectangle is analogus to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
      *
-     * @constructor
-     **/
+     * @class Range
+     */
     var Range = (function () {
         //  public cursor: Range;
         //  public isBackwards: boolean;
         /**
-         * @class Range
+         * Creates a new `EditorRange` object with the given starting and ending row and column points.
+         *
+         * @class
          * @constructor
+         * @param {Number} startRow The starting row
+         * @param {Number} startColumn The starting column
+         * @param {Number} endRow The ending row
+         * @param {Number} endColumn The ending column
          */
         function Range(startRow, startColumn, endRow, endColumn) {
             this.start = {
@@ -2246,10 +2215,11 @@ define('Range',["require", "exports"], function (require, exports) {
         }
         /**
          * Returns `true` if and only if the starting row and column, and ending row and column, are equivalent to those given by `range`.
-         * @param {EditorRange} range A range to check against
          *
-         * @return {Boolean}
-         **/
+         * @method isEqual
+         * @param range {Range} A range to check against.
+         * @return {boolean}
+         */
         Range.prototype.isEqual = function (range) {
             return this.start.row === range.start.row &&
                 this.end.row === range.end.row &&
@@ -2258,37 +2228,30 @@ define('Range',["require", "exports"], function (require, exports) {
         };
         /**
          *
-         * Returns a string containing the range's row and column information, given like this:
-         * ```
-         *    [start.row/start.column] -> [end.row/end.column]
-         * ```
-         * @return {String}
-         **/
+         * Returns a string containing the range's row and column information.
+         * @return {string}
+         */
         Range.prototype.toString = function () {
             return ("Range: [" + this.start.row + "/" + this.start.column +
                 "] -> [" + this.end.row + "/" + this.end.column + "]");
         };
         /**
+         * Returns `true` if the `row` and `column` provided are within the given range.
          *
-         * Returns `true` if the `row` and `column` provided are within the given range. This can better be expressed as returning `true` if:
-         * ```javascript
-         *    this.start.row <= row <= this.end.row &&
-         *    this.start.column <= column <= this.end.column
-         * ```
-         * @param {Number} row A row to check for
-         * @param {Number} column A column to check for
-         * @returns {Boolean}
-         * @related EditorRange.compare
-         **/
+         * @method contains
+         * @param row {number} A row to check for
+         * @param column {number} A column to check for
+         * @return {boolean}
+         */
         Range.prototype.contains = function (row, column) {
             return this.compare(row, column) === 0;
         };
         /**
          * Compares `this` range (A) with another range (B).
-         * @param {EditorRange} range A range to compare with
          *
-         * @related EditorRange.compare
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @method compareRange
+         * @param {Range} range A range to compare with
+         * @return {number} This method returns one of the following numbers:<br/>
          * <br/>
          * * `-2`: (B) is in front of (A), and doesn't intersect with (A)<br/>
          * * `-1`: (B) begins before (A) but ends inside of (A)<br/>
@@ -2333,10 +2296,9 @@ define('Range',["require", "exports"], function (require, exports) {
         /**
          * Checks the row and column points of `p` with the row and column points of the calling range.
          *
-         * @param {EditorRange} p A point to compare with
-         *
-         * @related EditorRange.compare
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @method comparePoint
+         * @param p {Position} A point to compare with
+         * @return {number} This method returns one of the following numbers:<br/>
          * * `0` if the two points are exactly equal<br/>
          * * `-1` if `p.row` is less then the calling range<br/>
          * * `1` if `p.row` is greater than the calling range<br/>
@@ -2353,12 +2315,12 @@ define('Range',["require", "exports"], function (require, exports) {
             return this.compare(p.row, p.column);
         };
         /**
-         * Checks the start and end points of `range` and compares them to the calling range. Returns `true` if the `range` is contained within the caller's range.
-         * @param {EditorRange} range A range to compare with
+         * Checks the start and end points of `range` and compares them to the calling range.
          *
-         * @returns {Boolean}
-         * @related EditorRange.comparePoint
-         **/
+         * @method containsRange
+         * @param range {Range} A range to compare with
+         * @return {boolean} Returns `true` if the `range` is contained within the caller's range.
+         */
         Range.prototype.containsRange = function (range) {
             return this.comparePoint(range.start) === 0 && this.comparePoint(range.end) === 0;
         };
@@ -2366,7 +2328,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * Returns `true` if passed in `range` intersects with the one calling this method.
          * @param {EditorRange} range A range to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Range.prototype.intersects = function (range) {
             var cmp = this.compareRange(range);
@@ -2377,7 +2339,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Range.prototype.isEnd = function (row, column) {
             return this.end.row === row && this.end.column === column;
@@ -2387,7 +2349,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Range.prototype.isStart = function (row, column) {
             return this.start.row === row && this.start.column === column;
@@ -2432,7 +2394,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditorRange.compare
          **/
         Range.prototype.inside = function (row, column) {
@@ -2451,7 +2413,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditorRange.compare
          **/
         Range.prototype.insideStart = function (row, column) {
@@ -2470,7 +2432,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditorRange.compare
          *
          **/
@@ -2491,7 +2453,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * `0` if the two points are exactly equal <br/>
          * `-1` if `p.row` is less then the calling range <br/>
          * `1` if `p.row` is greater than the calling range <br/>
@@ -2525,7 +2487,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * <br/>
          * `0` if the two points are exactly equal<br/>
          * `-1` if `p.row` is less then the calling range<br/>
@@ -2554,7 +2516,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * `0` if the two points are exactly equal<br/>
          * `-1` if `p.row` is less then the calling range<br/>
          * `1` if `p.row` is greater than the calling range, or if `isEnd` is `true.<br/>
@@ -2581,7 +2543,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * * `1` if the ending row of the calling range is equal to `row`, and the ending column of the calling range is equal to `column`<br/>
          * * `-1` if the starting row of the calling range is equal to `row`, and the starting column of the calling range is equal to `column`<br/>
          * <br/>
@@ -2603,7 +2565,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * Returns the part of the current `EditorRange` that occurs within the boundaries of `firstRow` and `lastRow` as a new `EditorRange` object.
          * @param {Number} firstRow The starting row
          * @param {Number} lastRow The ending row
-         * @returns {EditorRange}
+         * @return {EditorRange}
         **/
         Range.prototype.clipRows = function (firstRow, lastRow) {
             var start;
@@ -2622,7 +2584,7 @@ define('Range',["require", "exports"], function (require, exports) {
          * Changes the row and column points for the calling range for both the starting and ending points.
          * @param {Number} row A new row to extend to
          * @param {Number} column A new column to extend to
-         * @returns {EditorRange} The original range with the new row
+         * @return {EditorRange} The original range with the new row
         **/
         Range.prototype.extend = function (row, column) {
             var cmp = this.compare(row, column);
@@ -2642,7 +2604,7 @@ define('Range',["require", "exports"], function (require, exports) {
         };
         /**
          * Returns `true` if the range spans across multiple lines.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Range.prototype.isMultiLine = function () {
             return (this.start.row !== this.end.row);
@@ -2650,16 +2612,15 @@ define('Range',["require", "exports"], function (require, exports) {
         /**
          *
          * Returns a duplicate of the calling range.
-         * @returns {EditorRange}
+         * @return {EditorRange}
         **/
         Range.prototype.clone = function () {
             return Range.fromPoints(this.start, this.end);
         };
         /**
-         *
          * Returns a range containing the starting and ending rows of the original range, but with a column value of `0`.
-         * @returns {EditorRange}
-        **/
+         * @return {EditorRange}
+         */
         Range.prototype.collapseRows = function () {
             if (this.end.column === 0)
                 return new Range(this.start.row, 0, Math.max(this.start.row, this.end.row - 1), 0);
@@ -2675,11 +2636,10 @@ define('Range',["require", "exports"], function (require, exports) {
         };
         /**
          * Creates and returns a new `EditorRange` based on the row and column of the given parameters.
-         * @param {EditorRange} start A starting point to use
-         * @param {EditorRange} end An ending point to use
-         *
-         * @returns {EditorRange}
-        **/
+         * @param start {Position} A starting point to use
+         * @param end {Position} An ending point to use
+         * @return {Range}
+         */
         Range.fromPoints = function (start, end) {
             return new Range(start.row, start.column, end.row, end.column);
         };
@@ -2723,29 +2683,26 @@ define('Range',["require", "exports"], function (require, exports) {
  * ***** END LICENSE BLOCK ***** */
 define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], function (require, exports, lang_1, oop_1, Range_1) {
     /**
-     * @class Search
-     *
      * A class designed to handle all sorts of text searches within a [[Document `Document`]].
-     *
-     **/
-    /**
-     *
-     *
-     * Creates a new `Search` object. The following search options are avaliable:
-     *
-     * - `needle`: The string or regular expression you're looking for
-     * - `backwards`: Whether to search backwards from where cursor currently is. Defaults to `false`.
-     * - `wrap`: Whether to wrap the search back to the beginning when it hits the end. Defaults to `false`.
-     * - `caseSensitive`: Whether the search ought to be case-sensitive. Defaults to `false`.
-     * - `wholeWord`: Whether the search matches only on whole words. Defaults to `false`.
-     * - `range`: The [[Range]] to search within. Set this to `null` for the whole document
-     * - `regExp`: Whether the search is a regular expression or not. Defaults to `false`.
-     * - `start`: The starting [[Range]] or cursor position to begin the search
-     * - `skipCurrent`: Whether or not to include the current line in the search. Default to `false`.
-     *
-     * @constructor
-     **/
+     * @class Search
+     */
     var Search = (function () {
+        /**
+         * Creates a new `Search` object. The following search options are avaliable:
+         *
+         * - `needle`: The string or regular expression you're looking for
+         * - `backwards`: Whether to search backwards from where cursor currently is. Defaults to `false`.
+         * - `wrap`: Whether to wrap the search back to the beginning when it hits the end. Defaults to `false`.
+         * - `caseSensitive`: Whether the search ought to be case-sensitive. Defaults to `false`.
+         * - `wholeWord`: Whether the search matches only on whole words. Defaults to `false`.
+         * - `range`: The [[Range]] to search within. Set this to `null` for the whole document
+         * - `regExp`: Whether the search is a regular expression or not. Defaults to `false`.
+         * - `start`: The starting [[Range]] or cursor position to begin the search
+         * - `skipCurrent`: Whether or not to include the current line in the search. Default to `false`.
+         *
+         * @class Search
+         * @constructor
+         */
         function Search() {
             this.$options = {};
         }
@@ -2754,7 +2711,7 @@ define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], fu
          * @param {Object} options An object containing all the new search properties
          *
          *
-         * @returns {Search}
+         * @return {Search}
          * @chainable
         **/
         Search.prototype.set = function (options) {
@@ -2763,7 +2720,7 @@ define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], fu
         };
         /**
          * [Returns an object containing all the search options.]{: #Search.getOptions}
-         * @returns {Object}
+         * @return {Object}
         **/
         Search.prototype.getOptions = function () {
             return lang_1.copyObject(this.$options);
@@ -2781,7 +2738,7 @@ define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], fu
          * @param {EditSession} session The session to search with
          *
          *
-         * @returns {Range}
+         * @return {Range}
         **/
         Search.prototype.find = function (session) {
             var iterator = this.$matchIterator(session, this.$options);
@@ -2805,7 +2762,7 @@ define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], fu
          * @param {EditSession} session The session to search with
          *
          *
-         * @returns {[Range]}
+         * @return {[Range]}
         **/
         Search.prototype.findAll = function (session) {
             var options = this.$options;
@@ -2872,7 +2829,7 @@ define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], fu
          * If `options.needle` was not found, this function returns `null`.
          *
          *
-         * @returns {String}
+         * @return {String}
         **/
         Search.prototype.replace = function (input, replacement) {
             var options = this.$options;
@@ -4602,7 +4559,7 @@ define('TokenIterator',["require", "exports"], function (require, exports) {
         /**
         *
         * Tokenizes all the items from the current point to the row prior in the document.
-        * @returns {[String]} If the current point is not at the top of the file, this function returns `null`. Otherwise, it returns an array of the tokenized strings.
+        * @return {[String]} If the current point is not at the top of the file, this function returns `null`. Otherwise, it returns an array of the tokenized strings.
         **/
         TokenIterator.prototype.stepBackward = function () {
             this.$tokenIndex -= 1;
@@ -4620,7 +4577,7 @@ define('TokenIterator',["require", "exports"], function (require, exports) {
         /**
         *
         * Tokenizes all the items from the current point until the next row in the document. If the current point is at the end of the file, this function returns `null`. Otherwise, it returns the tokenized string.
-        * @returns {String}
+        * @return {String}
         **/
         TokenIterator.prototype.stepForward = function () {
             this.$tokenIndex += 1;
@@ -4641,7 +4598,7 @@ define('TokenIterator',["require", "exports"], function (require, exports) {
         /**
         *
         * Returns the current tokenized string.
-        * @returns {String}
+        * @return {String}
         **/
         TokenIterator.prototype.getCurrentToken = function () {
             return this.$rowTokens[this.$tokenIndex];
@@ -4649,7 +4606,7 @@ define('TokenIterator',["require", "exports"], function (require, exports) {
         /**
         *
         * Returns the current row.
-        * @returns {Number}
+        * @return {Number}
         **/
         TokenIterator.prototype.getCurrentTokenRow = function () {
             return this.$row;
@@ -4657,7 +4614,7 @@ define('TokenIterator',["require", "exports"], function (require, exports) {
         /**
         *
         * Returns the current column.
-        * @returns {Number}
+        * @return {Number}
         **/
         TokenIterator.prototype.getCurrentTokenColumn = function () {
             var rowTokens = this.$rowTokens;
@@ -4695,7 +4652,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * @param {Function} fn
      * @param {Number} timeout
      * @param {Object} context
-     * @returns {number}
+     * @return {number}
      */
     function setTimeoutContext(fn, timeout, context) {
         return setTimeout(bindFn(fn, context), timeout);
@@ -4708,7 +4665,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * @param {*|Array} arg
      * @param {String} fn
      * @param {Object} [context]
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     function invokeArrayArg(arg, fn, context) {
         if (Array.isArray(arg)) {
@@ -4752,7 +4709,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * @param {Object} dest
      * @param {Object} src
      * @param {Boolean} [merge]
-     * @returns {Object} dest
+     * @return {Object} dest
      */
     function extend(dest, src, merge) {
         var keys = Object.keys(src);
@@ -4771,7 +4728,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * means that properties that exist in dest will not be overwritten by src
      * @param {Object} dest
      * @param {Object} src
-     * @returns {Object} dest
+     * @return {Object} dest
      */
     function merge(dest, src) {
         return extend(dest, src, true);
@@ -4797,7 +4754,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * simple function bind
      * @param {Function} fn
      * @param {Object} context
-     * @returns {Function}
+     * @return {Function}
      */
     function bindFn(fn, context) {
         return function boundFn() {
@@ -4809,7 +4766,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * use the val2 when val1 is undefined
      * @param {*} val1
      * @param {*} val2
-     * @returns {*}
+     * @return {*}
      */
     function ifUndefined(val1, val2) {
         return (val1 === undefined) ? val2 : val1;
@@ -4860,7 +4817,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * small indexOf wrapper
      * @param {String} str
      * @param {String} find
-     * @returns {Boolean} found
+     * @return {Boolean} found
      */
     function inStr(str, find) {
         return str.indexOf(find) > -1;
@@ -4869,7 +4826,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
     /**
      * split string on whitespace
      * @param {String} str
-     * @returns {Array} words
+     * @return {Array} words
      */
     function splitStr(str) {
         return str.trim().split(/\s+/g);
@@ -4901,7 +4858,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
     /**
      * convert array-like objects to real arrays
      * @param {Object} obj
-     * @returns {Array}
+     * @return {Array}
      */
     function toArray(obj) {
         return Array.prototype.slice.call(obj, 0);
@@ -4912,7 +4869,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * @param {Array} src [{id:1},{id:2},{id:1}]
      * @param {String} [key]
      * @param {Boolean} [sort=False]
-     * @returns {Array} [{id:1},{id:2}]
+     * @return {Array} [{id:1},{id:2}]
      */
     function uniqueArray(src, key, sort) {
         var results = [];
@@ -4943,7 +4900,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
      * get the prefixed property
      * @param {Object} obj
      * @param {String} property
-     * @returns {String|Undefined} prefixed
+     * @return {String|Undefined} prefixed
      */
     function prefixed(obj, property) {
         var prefix, prop;
@@ -4962,7 +4919,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
     exports.prefixed = prefixed;
     /**
      * get a unique id
-     * @returns {number} uniqueId
+     * @return {number} uniqueId
      */
     var _uniqueId = 1;
     function uniqueId() {
@@ -4972,7 +4929,7 @@ define('hammer/utils',["require", "exports"], function (require, exports) {
     /**
      * get the window object of an element
      * @param {HTMLElement} element
-     * @returns {Window}
+     * @return {Window}
      */
     function getWindowForElement(element) {
         var doc = element.ownerDocument;
@@ -5205,7 +5162,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * remove a recognizer by name or instance
          * @param {Recognizer|String} recognizer
-         * @returns {Manager}
+         * @return {Manager}
          */
         Manager.prototype.remove = function (recognizer) {
             var recognizers = this.recognizers;
@@ -5218,7 +5175,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
          * bind event
          * @param {String} events
          * @param {Function} handler
-         * @returns {EventEmitter} this
+         * @return {EventEmitter} this
          */
         Manager.prototype.on = function (events, handler) {
             var handlers = this.handlers;
@@ -5232,7 +5189,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
          * unbind event, leave emit blank to remove all handlers
          * @param {String} events
          * @param {Function} [handler]
-         * @returns {EventEmitter} this
+         * @return {EventEmitter} this
          */
         Manager.prototype.off = function (events, handler) {
             var handlers = this.handlers;
@@ -5353,7 +5310,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         };
         /**
          * compute the value for the touchAction property based on the recognizer's settings
-         * @returns {String} value
+         * @return {String} value
          */
         TouchAction.prototype.compute = function () {
             var actions = [];
@@ -5405,7 +5362,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
     /**
      * when the touchActions are collected they are not a valid value, so we need to clean things up. *
      * @param {String} actions
-     * @returns {*}
+     * @return {*}
      */
     function cleanTouchActions(actions) {
         // none
@@ -5471,7 +5428,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * create new input type manager
          * @param {Manager} manager
-         * @returns {Input}
+         * @return {Input}
          * @constructor
          */
         function Input(manager, touchElementEvents, touchTargetEvents, touchWindowEvents) {
@@ -5745,7 +5702,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
      * @this {TouchInput}
      * @param {Object} ev
      * @param {Number} type flag
-     * @returns {undefined|Array} [all, changed]
+     * @return {undefined|Array} [all, changed]
      */
     function getTouches(event, type) {
         var allTouches = utils_1.toArray(event.touches);
@@ -5850,7 +5807,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * recognize simultaneous with an other recognizer.
          * @param {Recognizer} otherRecognizer
-         * @returns {Recognizer} this
+         * @return {Recognizer} this
          */
         Recognizer.prototype.recognizeWith = function (otherRecognizer) {
             var simultaneous = this.simultaneous;
@@ -5864,7 +5821,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * drop the simultaneous link. it doesnt remove the link on the other recognizer.
          * @param {Recognizer} otherRecognizer
-         * @returns {Recognizer} this
+         * @return {Recognizer} this
          */
         Recognizer.prototype.dropRecognizeWith = function (otherRecognizer) {
             otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
@@ -5886,7 +5843,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * drop the requireFailure link. it does not remove the link on the other recognizer.
          * @param {Recognizer} otherRecognizer
-         * @returns {Recognizer} this
+         * @return {Recognizer} this
          */
         Recognizer.prototype.dropRequireFailure = function (otherRecognizer) {
             otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
@@ -5898,7 +5855,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         };
         /**
          * has require failures boolean
-         * @returns {boolean}
+         * @return {boolean}
          */
         Recognizer.prototype.hasRequireFailures = function () {
             return this.requireFail.length > 0;
@@ -5906,7 +5863,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * if the recognizer can recognize simultaneous with an other recognizer
          * @param {Recognizer} otherRecognizer
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Recognizer.prototype.canRecognizeWith = function (otherRecognizer) {
             return !!this.simultaneous[otherRecognizer.id];
@@ -5951,7 +5908,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         };
         /**
          * can we emit?
-         * @returns {boolean}
+         * @return {boolean}
          */
         Recognizer.prototype.canEmit = function () {
             var i = 0;
@@ -5988,7 +5945,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
          * the actual recognizing happens in this method
          * @virtual
          * @param {Object} inputData
-         * @returns {Const} STATE
+         * @return {Const} STATE
          */
         Recognizer.prototype.process = function (inputData) {
             return exports.STATE_UNDEFINED;
@@ -5996,7 +5953,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
         /**
          * return the preferred touch-action
          * @virtual
-         * @returns {Array}
+         * @return {Array}
          */
         Recognizer.prototype.getTouchAction = function () { return []; };
         /**
@@ -6012,7 +5969,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
      * TODO: Are the string values part of the API, or just for debugging?
      * get a usable string, used as event postfix
      * @param {Const} state
-     * @returns {String} state
+     * @return {String} state
      */
     function stateStr(state) {
         if (state & exports.STATE_CANCELLED) {
@@ -6068,7 +6025,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
      * TODO: This really belongs in the input service.
      * direction cons to string
      * @param {Const} direction
-     * @returns {String}
+     * @return {String}
      */
     function directionStr(direction) {
         var ds = [];
@@ -6091,7 +6048,7 @@ define('hammer/hammer',["require", "exports", './utils'], function (require, exp
      * get a recognizer by name if it is bound to a manager
      * @param {Recognizer|String} otherRecognizer
      * @param {Recognizer} recognizer
-     * @returns {Recognizer}
+     * @return {Recognizer}
      */
     function getRecognizerByNameIfManager(recognizer, manager) {
         if (manager) {
@@ -6122,7 +6079,7 @@ define('hammer/recognizers/attribute',["require", "exports", '../hammer'], funct
          * Used to check if the recognizer receives valid input, like input.distance > 10.
          * @memberof ContinuousRecognizer
          * @param {IComputedEvent} input
-         * @returns {Boolean} recognized
+         * @return {Boolean} recognized
          */
         ContinuousRecognizer.prototype.attributeTest = function (input) {
             switch (input.eventType) {
@@ -6155,7 +6112,7 @@ define('hammer/recognizers/attribute',["require", "exports", '../hammer'], funct
          * Process the input and return the state for the recognizer
          * @memberof ContinuousRecognizer
          * @param {Object} input
-         * @returns {*} State
+         * @return {*} State
          */
         ContinuousRecognizer.prototype.process = function (input) {
             var state = this.state;
@@ -6393,7 +6350,7 @@ define('touch/touch',["require", "exports", '../hammer/hammer', '../hammer/recog
         });
         manager.on('tap', function (event) {
             var pos = editor.renderer.screenToTextCoordinates(event.clientX, event.clientY);
-            pos.row = Math.max(0, Math.min(pos.row, editor.session.getLength() - 1));
+            pos.row = Math.max(0, Math.min(pos.row, editor.getSession().getLength() - 1));
             editor.moveCursorToPosition(pos);
             editor.renderer.scrollCursorIntoView();
             editor.focus();
@@ -6435,7 +6392,7 @@ define('Tooltip',["require", "exports", "./lib/dom"], function (require, exports
         /**
          * Provides the HTML div element.
          * @method getElement
-         * @returns {HTMLElement}
+         * @return {HTMLElement}
          */
         Tooltip.prototype.getElement = function () {
             return this.$element || this.$init();
@@ -6572,24 +6529,21 @@ var __extends = (this && this.__extends) || function (d, b) {
 define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "./lib/useragent", "./keyboard/KeyBinding", "./keyboard/TextInput", "./Search", "./Range", "./lib/event_emitter", "./commands/CommandManager", "./commands/default_commands", "./config", "./TokenIterator", './editor_protocol', "./lib/event", './touch/touch', "./Tooltip"], function (require, exports, oop_1, dom_1, lang_1, useragent_1, KeyBinding_1, TextInput_1, Search_1, Range_1, event_emitter_1, CommandManager_1, default_commands_1, config_1, TokenIterator_1, editor_protocol_1, event_1, touch_1, Tooltip_1) {
     //var DragdropHandler = require("./mouse/dragdrop_handler").DragdropHandler;
     /**
-     * The main entry point into the Ace functionality.
+     * The `Editor` acts as a controller, mediating between the editSession and renderer.
      *
-     * The `Editor` manages the [[EditSession]] (which manages [[Document]]s), as well as the [[VirtualRenderer]], which draws everything to the screen.
-     *
-     * Event sessions dealing with the mouse and keyboard are bubbled up from `Document` to the `Editor`, which decides what to do with them.
      * @class Editor
-     */
-    /**
-     * Creates a new `Editor` object.
-     *
-     * @param {VirtualRenderer} renderer Associated `VirtualRenderer` that draws everything
-     * @param {EditSession} session The `EditSession` to refer to
-     *
-     *
-     * @constructor
+     * @extends EventEmitterClass
      */
     var Editor = (function (_super) {
         __extends(Editor, _super);
+        /**
+         * Creates a new `Editor` object.
+         *
+         * @class
+         * @constructor
+         * @param renderer {VirtualRenderer} The view.
+         * @param session {EditSession} The model.
+         */
         function Editor(renderer, session) {
             _super.call(this);
             this.curOp = null;
@@ -6631,6 +6585,10 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.$mouseHandler.cancelContextMenu();
         };
         Object.defineProperty(Editor.prototype, "selection", {
+            /**
+             * @property selection
+             * @type Selection
+             */
             get: function () {
                 return this.session.getSelection();
             },
@@ -6757,9 +6715,11 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Sets a new key handler, such as "vim" or "windows".
-         * @param {string|HasgHandler} keyboardHandler The new key handler
          *
-         **/
+         * @method setKeyboardHandler
+         * @param keyboardHandler {string | HashHandler} The new key handler.
+         * @return {void}
+         */
         Editor.prototype.setKeyboardHandler = function (keyboardHandler) {
             if (!keyboardHandler) {
                 this.keyBinding.setKeyboardHandler(null);
@@ -6780,26 +6740,24 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * Returns the keyboard handler, such as "vim" or "windows".
          *
-         * @returns {String}
-         *
+         * @method getKeyboardHandler
+         * @return {HashHandler}
          */
         Editor.prototype.getKeyboardHandler = function () {
             return this.keyBinding.getKeyboardHandler();
         };
         /**
-         * Emitted whenever the [[EditSession]] changes.
-         * @event changeSession
-         * @param {Object} e An object with two properties, `oldSession` and `session`, that represent the old and new [[EditSession]]s.
+         * Sets a new EditSession to use.
+         * This method also emits the `'changeSession'` event.
          *
-         **/
-        /**
-         * Sets a new editsession to use. This method also emits the `'changeSession'` event.
-         * @param {EditSession} session The new session to use
-         *
-         **/
+         * @method setSession
+         * @param session {EditSession} The new session to use.
+         * @return {void}
+         */
         Editor.prototype.setSession = function (session) {
-            if (this.session == session)
+            if (this.session === session) {
                 return;
+            }
             var oldSession = this.session;
             if (oldSession) {
                 this.session.off("change", this.$onDocumentChange);
@@ -6878,8 +6836,10 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns the current session being used.
-         * @returns {EditSession}
-         **/
+         *
+         * @method getSession
+         * @return {EditSession}
+         */
         Editor.prototype.getSession = function () {
             return this.session;
         };
@@ -6888,7 +6848,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
          * @param {String} val The new value to set for the document
          * @param {Number} cursorPos Where to set the new value. `undefined` or 0 is selectAll, -1 is at the document start, and +1 is at the end
          *
-         * @returns {String} The current document value
+         * @return {String} The current document value
          * @related Document.setValue
          **/
         Editor.prototype.setValue = function (val, cursorPos) {
@@ -6908,7 +6868,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * Returns the current session's content.
          *
-         * @returns {String}
+         * @return {String}
          * @related EditSession.getValue
          **/
         Editor.prototype.getValue = function () {
@@ -6917,7 +6877,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          *
          * Returns the currently highlighted selection.
-         * @returns {String} The highlighted selection
+         * @return {String} The highlighted selection
          **/
         Editor.prototype.getSelection = function () {
             return this.selection;
@@ -6941,7 +6901,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * {:VirtualRenderer.getTheme}
          *
-         * @returns {String} The set theme
+         * @return {String} The set theme
          * @related VirtualRenderer.getTheme
          **/
         Editor.prototype.getTheme = function () {
@@ -7282,7 +7242,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns the string of text currently highlighted.
-         * @returns {String}
+         * @return {String}
          **/
         Editor.prototype.getSelectedText = function () {
             return this.session.getTextRange(this.getSelectionRange());
@@ -7295,7 +7255,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
          **/
         /**
          * Returns the string of text currently highlighted.
-         * @returns {String}
+         * @return {String}
          * @deprecated Use getSelectedText instead.
          **/
         Editor.prototype.getCopyText = function () {
@@ -7427,7 +7387,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns `true` if overwrites are enabled; `false` otherwise.
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditSession.getOverwrite
          **/
         Editor.prototype.getOverwrite = function () {
@@ -7449,7 +7409,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns the value indicating how fast the mouse scroll speed is (in milliseconds).
-         * @returns {Number}
+         * @return {Number}
          **/
         Editor.prototype.getScrollSpeed = function () {
             return this.getOption("scrollSpeed");
@@ -7463,7 +7423,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns the current mouse drag delay.
-         * @returns {Number}
+         * @return {Number}
          **/
         Editor.prototype.getDragDelay = function () {
             return this.getOption("dragDelay");
@@ -7483,7 +7443,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns the current selection style.
-         * @returns {String}
+         * @return {String}
          **/
         Editor.prototype.getSelectionStyle = function () {
             return this.getOption("selectionStyle");
@@ -7518,7 +7478,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns `true` if currently highlighted words are to be highlighted.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Editor.prototype.getHighlightSelectedWord = function () {
             return this.$highlightSelectedWord;
@@ -7539,7 +7499,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns `true` if invisible characters are being shown.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Editor.prototype.getShowInvisibles = function () {
             return this.renderer.getShowInvisibles();
@@ -7559,7 +7519,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns `true` if the print margin is being shown.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Editor.prototype.getShowPrintMargin = function () {
             return this.renderer.getShowPrintMargin();
@@ -7573,7 +7533,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns the column number of where the print margin is.
-         * @returns {Number}
+         * @return {Number}
          */
         Editor.prototype.getPrintMarginColumn = function () {
             return this.renderer.getPrintMarginColumn();
@@ -7588,7 +7548,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Returns `true` if the editor is set to read-only mode.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Editor.prototype.getReadOnly = function () {
             return this.getOption("readOnly");
@@ -7604,7 +7564,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * Returns `true` if the behaviors are currently enabled. {:BehaviorsDef}
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Editor.prototype.getBehavioursEnabled = function () {
             return this.getOption("behavioursEnabled");
@@ -7873,7 +7833,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Works like [[EditSession.getTokenAt]], except it returns a number.
-         * @returns {Number}
+         * @return {Number}
          **/
         Editor.prototype.getNumberAt = function (row, column) {
             var _numberRx = /[\-]?[0-9]+(?:\.[0-9]+)?/g;
@@ -7963,7 +7923,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * Shifts all the selected lines down one row.
          *
-         * @returns {Number} On success, it returns -1.
+         * @return {Number} On success, it returns -1.
          * @related EditSession.moveLinesUp
          **/
         Editor.prototype.moveLinesDown = function () {
@@ -7973,7 +7933,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Shifts all the selected lines up one row.
-         * @returns {Number} On success, it returns -1.
+         * @return {Number} On success, it returns -1.
          * @related EditSession.moveLinesDown
          **/
         Editor.prototype.moveLinesUp = function () {
@@ -7989,7 +7949,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
          * @param {Range} fromRange The range of text you want moved within the document
          * @param {Object} toPosition The location (row and column) where you want to move the text to
          *
-         * @returns {Range} The new range where the text was moved to.
+         * @return {Range} The new range where the text was moved to.
          * @related EditSession.moveText
          **/
         Editor.prototype.moveText = function (range, toPosition, copy) {
@@ -7997,7 +7957,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Copies all the selected lines up one row.
-         * @returns {Number} On success, returns 0.
+         * @return {Number} On success, returns 0.
          *
          **/
         Editor.prototype.copyLinesUp = function () {
@@ -8008,7 +7968,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Copies all the selected lines down one row.
-         * @returns {Number} On success, returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
+         * @return {Number} On success, returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
          * @related EditSession.duplicateLines
          *
          **/
@@ -8061,7 +8021,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * Returns an object indicating the currently selected rows.
          *
-         * @returns {Object}
+         * @return {Object}
          **/
         Editor.prototype.$getSelectedRows = function () {
             var range = this.getSelectionRange().collapseRows();
@@ -8082,7 +8042,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * {:VirtualRenderer.getFirstVisibleRow}
          *
-         * @returns {Number}
+         * @return {Number}
          * @related VirtualRenderer.getFirstVisibleRow
          **/
         Editor.prototype.getFirstVisibleRow = function () {
@@ -8091,7 +8051,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * {:VirtualRenderer.getLastVisibleRow}
          *
-         * @returns {Number}
+         * @return {Number}
          * @related VirtualRenderer.getLastVisibleRow
          **/
         Editor.prototype.getLastVisibleRow = function () {
@@ -8101,7 +8061,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
          * Indicates if the row is currently visible on the screen.
          * @param {Number} row The row to check
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Editor.prototype.isRowVisible = function (row) {
             return (row >= this.getFirstVisibleRow() && row <= this.getLastVisibleRow());
@@ -8111,14 +8071,14 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
          * @param {Number} row The row to check
          *
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Editor.prototype.isRowFullyVisible = function (row) {
             return (row >= this.renderer.getFirstFullyVisibleRow() && row <= this.renderer.getLastFullyVisibleRow());
         };
         /**
          * Returns the number of currently visibile rows.
-         * @returns {Number}
+         * @return {Number}
          **/
         Editor.prototype.$getVisibleRowCount = function () {
             return this.renderer.getScrollBottomRow() - this.renderer.getScrollTopRow() + 1;
@@ -8221,7 +8181,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * Gets the current position of the cursor.
-         * @returns {Object} An object that looks something like this:
+         * @return {Object} An object that looks something like this:
          *
          * ```json
          * { row: currRow, column: currCol }
@@ -8241,7 +8201,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         /**
          * {:Selection.getRange}
-         * @returns {Range}
+         * @return {Range}
          * @related Selection.getRange
          **/
         Editor.prototype.getSelectionRange = function () {
@@ -8632,7 +8592,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         /**
          * {:Search.getOptions} For more information on `options`, see [[Search `Search`]].
          * @related Search.getOptions
-         * @returns {Object}
+         * @return {Object}
          **/
         Editor.prototype.getLastSearchOptions = function () {
             return this.$search.getOptions();
@@ -8903,7 +8863,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             // to determine whether to remove or expand a fold.
             editor.on("click", function (e) {
                 var position = e.getDocumentPosition();
-                var session = editor.session;
+                var session = editor.getSession();
                 // If the user clicked on a fold, then expand it.
                 var fold = session.getFoldAt(position.row, position.column, 1);
                 if (fold) {
@@ -8923,9 +8883,9 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 var gutterRegion = editor.renderer.$gutterLayer.getRegion(e);
                 if (gutterRegion === 'foldWidgets') {
                     var row = e.getDocumentPosition().row;
-                    var session = editor.session;
+                    var session = editor.getSession();
                     if (session['foldWidgets'] && session['foldWidgets'][row]) {
-                        editor.session['onFoldWidgetClick'](row, e);
+                        session['onFoldWidgetClick'](row, e);
                     }
                     if (!editor.isFocused()) {
                         editor.focus();
@@ -8937,7 +8897,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 var gutterRegion = editor.renderer.$gutterLayer.getRegion(e);
                 if (gutterRegion == 'foldWidgets') {
                     var row = e.getDocumentPosition().row;
-                    var session = editor.session;
+                    var session = editor.getSession();
                     var data = session['getParentFoldRangeData'](row, true);
                     var range = data.range || data.firstRange;
                     if (range) {
@@ -9017,7 +8977,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 }
                 // FIXME: Probably s/b clientXY
                 var char = editor.renderer.screenToTextCoordinates(e.x, e.y);
-                var range = editor.session.getSelection().getRange();
+                var range = editor.getSession().getSelection().getRange();
                 var renderer = editor.renderer;
                 if (!range.isEmpty() && range.insideStart(char.row, char.column)) {
                     renderer.setCursorStyle('default');
@@ -9328,7 +9288,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
     function makeDoubleClickHandler(editor, mouseHandler) {
         return function (editorMouseEvent) {
             var pos = editorMouseEvent.getDocumentPosition();
-            var session = editor.session;
+            var session = editor.getSession();
             var range = session.getBracketRange(pos);
             if (range) {
                 if (range.isEmpty()) {
@@ -9434,7 +9394,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                     return;
                 }
                 var row = e.getDocumentPosition().row;
-                var selection = editor.session.getSelection();
+                var selection = editor.getSession().getSelection();
                 if (e.getShiftKey()) {
                     selection.selectTo(row, 0);
                 }
@@ -9458,11 +9418,12 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 if (!annotation) {
                     return hideTooltip(void 0, editor);
                 }
-                var maxRow = editor.session.getLength();
+                var session = editor.getSession();
+                var maxRow = session.getLength();
                 if (row == maxRow) {
                     var screenRow = editor.renderer.pixelToScreenCoordinates(0, mouseEvent.clientY).row;
                     var pos = mouseEvent.getDocumentPosition();
-                    if (screenRow > editor.session.documentToScreenRow(pos.row, pos.column)) {
+                    if (screenRow > session.documentToScreenRow(pos.row, pos.column)) {
                         return hideTooltip(void 0, editor);
                     }
                 }
@@ -9477,7 +9438,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                     moveTooltip(mouseEvent);
                 }
                 else {
-                    var gutterElement = gutter.$cells[editor.session.documentToScreenRow(row, 0)].element;
+                    var gutterElement = gutter.$cells[editor.getSession().documentToScreenRow(row, 0)].element;
                     var rect = gutterElement.getBoundingClientRect();
                     var style = tooltip.getElement().style;
                     style.left = rect.right + "px";
@@ -9566,6 +9527,844 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
     })(Tooltip_1.default);
 });
 
+define('lib/asserts',["require", "exports"], function (require, exports) {
+    exports.ENABLE_ASSERTS = true;
+    var AssertionError = (function () {
+        function AssertionError(message, args) {
+            this.name = 'AssertionError';
+            this.message = message;
+        }
+        return AssertionError;
+    })();
+    exports.AssertionError = AssertionError;
+    function doAssertFailure(defaultMessage, defaultArgs, givenMessage, givenArgs) {
+        var message = 'Assertion failed';
+        if (givenMessage) {
+            message += ': ' + givenMessage;
+            var args = givenArgs;
+        }
+        else if (defaultMessage) {
+            message += ': ' + defaultMessage;
+            args = defaultArgs;
+        }
+        // The '' + works around an Opera 10 bug in the unit tests. Without it,
+        // a stack trace is added to var message above. With this, a stack trace is
+        // not added until this line (it causes the extra garbage to be added after
+        // the assertion message instead of in the middle of it).
+        throw new AssertionError('' + message, args || []);
+    }
+    function assert(condition, message, args) {
+        if (exports.ENABLE_ASSERTS && !condition) {
+            doAssertFailure('', null, message, Array.prototype.slice.call(arguments, 2));
+        }
+        return condition;
+    }
+    exports.assert = assert;
+    ;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('Anchor',["require", "exports", './lib/event_emitter', './lib/asserts'], function (require, exports, event_emitter_1, asserts_1) {
+    /**
+     * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
+     * @class Anchor
+     * @extends EventEmitterClass
+     */
+    var Anchor = (function (_super) {
+        __extends(Anchor, _super);
+        /**
+         * Creates a new <code>Anchor</code> and associates it with a document.
+         *
+         * @param doc {EditorDocument} The document to associate with the anchor.
+         * @param row {number} The starting row position.
+         * @param column {number} The starting column position.
+         *
+         * @constructor
+         */
+        function Anchor(doc, row, column) {
+            _super.call(this);
+            asserts_1.assert(typeof row === 'number', "row must be a number");
+            asserts_1.assert(typeof column === 'number', "column must be a number");
+            this.$onChange = this.onChange.bind(this);
+            this.attach(doc);
+            this.setPosition(row, column);
+            this.$insertRight = false;
+        }
+        /**
+         * Returns an object identifying the `row` and `column` position of the current anchor.
+         * @return {Object}
+         **/
+        Anchor.prototype.getPosition = function () {
+            return this.$clipPositionToDocument(this.row, this.column);
+        };
+        /**
+         * Returns the current document.
+         * @method getDocument
+         * @return {EditorDocument}
+         */
+        Anchor.prototype.getDocument = function () {
+            return this.document;
+        };
+        /**
+         * Fires whenever the anchor position changes.
+         *
+         * Both of these objects have a `row` and `column` property corresponding to the position.
+         *
+         * Events that can trigger this function include [[Anchor.setPosition `setPosition()`]].
+         *
+         * @event change
+         * @param {Object} e  An object containing information about the anchor position. It has two properties:
+         *  - `old`: An object describing the old Anchor position
+         *  - `value`: An object describing the new Anchor position
+         *
+         **/
+        Anchor.prototype.onChange = function (e, doc) {
+            var delta = e.data;
+            var range = delta.range;
+            if (range.start.row == range.end.row && range.start.row != this.row)
+                return;
+            if (range.start.row > this.row)
+                return;
+            if (range.start.row == this.row && range.start.column > this.column)
+                return;
+            var row = this.row;
+            var column = this.column;
+            var start = range.start;
+            var end = range.end;
+            if (delta.action === "insertText") {
+                if (start.row === row && start.column <= column) {
+                    if (start.column === column && this.$insertRight) {
+                    }
+                    else if (start.row === end.row) {
+                        column += end.column - start.column;
+                    }
+                    else {
+                        column -= start.column;
+                        row += end.row - start.row;
+                    }
+                }
+                else if (start.row !== end.row && start.row < row) {
+                    row += end.row - start.row;
+                }
+            }
+            else if (delta.action === "insertLines") {
+                if (start.row === row && column === 0 && this.$insertRight) {
+                }
+                else if (start.row <= row) {
+                    row += end.row - start.row;
+                }
+            }
+            else if (delta.action === "removeText") {
+                if (start.row === row && start.column < column) {
+                    if (end.column >= column)
+                        column = start.column;
+                    else
+                        column = Math.max(0, column - (end.column - start.column));
+                }
+                else if (start.row !== end.row && start.row < row) {
+                    if (end.row === row)
+                        column = Math.max(0, column - end.column) + start.column;
+                    row -= (end.row - start.row);
+                }
+                else if (end.row === row) {
+                    row -= end.row - start.row;
+                    column = Math.max(0, column - end.column) + start.column;
+                }
+            }
+            else if (delta.action == "removeLines") {
+                if (start.row <= row) {
+                    if (end.row <= row)
+                        row -= end.row - start.row;
+                    else {
+                        row = start.row;
+                        column = 0;
+                    }
+                }
+            }
+            this.setPosition(row, column, true);
+        };
+        /**
+         * Sets the anchor position to the specified row and column. If `noClip` is `true`, the position is not clipped.
+         * @param {Number} row The row index to move the anchor to
+         * @param {Number} column The column index to move the anchor to
+         * @param {Boolean} noClip Identifies if you want the position to be clipped
+         **/
+        Anchor.prototype.setPosition = function (row, column, noClip) {
+            var pos;
+            if (noClip) {
+                pos = {
+                    row: row,
+                    column: column
+                };
+            }
+            else {
+                pos = this.$clipPositionToDocument(row, column);
+            }
+            if (this.row === pos.row && this.column === pos.column) {
+                return;
+            }
+            var old = {
+                row: this.row,
+                column: this.column
+            };
+            this.row = pos.row;
+            this.column = pos.column;
+            this._signal("change", {
+                old: old,
+                value: pos
+            });
+        };
+        /**
+         * When called, the `'change'` event listener is removed.
+         *
+         **/
+        Anchor.prototype.detach = function () {
+            this.document.off("change", this.$onChange);
+        };
+        Anchor.prototype.attach = function (doc) {
+            this.document = doc || this.document;
+            this.document.on("change", this.$onChange);
+        };
+        /**
+         * Clips the anchor position to the specified row and column.
+         * @param {Number} row The row index to clip the anchor to
+         * @param {Number} column The column index to clip the anchor to
+         *
+         **/
+        Anchor.prototype.$clipPositionToDocument = function (row, column) {
+            var pos = { row: 0, column: 0 };
+            if (row >= this.document.getLength()) {
+                pos.row = Math.max(0, this.document.getLength() - 1);
+                pos.column = this.document.getLine(pos.row).length;
+            }
+            else if (row < 0) {
+                pos.row = 0;
+                pos.column = 0;
+            }
+            else {
+                pos.row = row;
+                pos.column = Math.min(this.document.getLine(pos.row).length, Math.max(0, column));
+            }
+            if (column < 0)
+                pos.column = 0;
+            return pos;
+        };
+        return Anchor;
+    })(event_emitter_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Anchor;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('EditorDocument',["require", "exports", './Anchor', './lib/event_emitter', './Range'], function (require, exports, Anchor_1, event_emitter_1, Range_1) {
+    var $split = (function () {
+        function foo(text) {
+            return text.replace(/\r\n|\r/g, "\n").split("\n");
+        }
+        function bar(text) {
+            return text.split(/\r\n|\r|\n/);
+        }
+        if ("aaa".split(/a/).length === 0) {
+            return foo;
+        }
+        else {
+            return bar;
+        }
+    })();
+    function $clipPosition(doc, position) {
+        var length = doc.getLength();
+        if (position.row >= length) {
+            position.row = Math.max(0, length - 1);
+            position.column = doc.getLine(length - 1).length;
+        }
+        else if (position.row < 0) {
+            position.row = 0;
+        }
+        return position;
+    }
+    /**
+     * @class EditorDocument
+     */
+    var EditorDocument = (function (_super) {
+        __extends(EditorDocument, _super);
+        /**
+         * @class EditorDocument
+         * @constructor
+         * @param text {string | Array<string>}
+         */
+        function EditorDocument(text) {
+            _super.call(this);
+            this.$lines = [];
+            this.$autoNewLine = "";
+            this.$newLineMode = "auto";
+            // There has to be one line at least in the document. If you pass an empty
+            // string to the insert function, nothing will happen. Workaround.
+            if (text.length === 0) {
+                this.$lines = [""];
+            }
+            else if (Array.isArray(text)) {
+                this._insertLines(0, text);
+            }
+            else {
+                this.insert({ row: 0, column: 0 }, text);
+            }
+        }
+        /**
+         * Replaces all the lines in the current `EditorDocument` with the value of `text`.
+         *
+         * @method setValue
+         * @param text {string} The text to use
+         * @return {void}
+         */
+        EditorDocument.prototype.setValue = function (text) {
+            var len = this.getLength();
+            this.remove(new Range_1.default(0, 0, len, this.getLine(len - 1).length));
+            this.insert({ row: 0, column: 0 }, text);
+        };
+        /**
+         * Returns all the lines in the document as a single string, joined by the new line character.
+         *
+         * @method getValue
+         * @return {string}
+         */
+        EditorDocument.prototype.getValue = function () {
+            return this.getAllLines().join(this.getNewLineCharacter());
+        };
+        /**
+         * Creates a new `Anchor` to define a floating point in the document.
+         * @method createAnchor
+         * @param {number} row The row number to use
+         * @param {number} column The column number to use
+         * @return {Anchor}
+         */
+        EditorDocument.prototype.createAnchor = function (row, column) {
+            return new Anchor_1.default(this, row, column);
+        };
+        /**
+         * Splits a string of text on any newline (`\n`) or carriage-return ('\r') characters.
+         *
+         * @method $split
+         * @param {string} text The text to work with
+         * @return {void}
+         * @private
+         */
+        EditorDocument.prototype.$detectNewLine = function (text) {
+            var match = text.match(/^.*?(\r\n|\r|\n)/m);
+            this.$autoNewLine = match ? match[1] : "\n";
+            this._signal("changeNewLineMode");
+        };
+        /**
+        * Returns the newline character that's being used, depending on the value of `newLineMode`.
+        *  If `newLineMode == windows`, `\r\n` is returned.
+        *  If `newLineMode == unix`, `\n` is returned.
+        *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
+        *
+        * @method getNewLineCharacter
+        * @return {string}
+        *
+        **/
+        EditorDocument.prototype.getNewLineCharacter = function () {
+            switch (this.$newLineMode) {
+                case "windows":
+                    return "\r\n";
+                case "unix":
+                    return "\n";
+                default:
+                    return this.$autoNewLine || "\n";
+            }
+        };
+        /**
+         * Sets the new line mode.
+         *
+         * @method setNewLineMode
+         * @param {string} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #EditorDocument.setNewLineMode.param}
+         * @return {void}
+         */
+        EditorDocument.prototype.setNewLineMode = function (newLineMode) {
+            if (this.$newLineMode === newLineMode) {
+                return;
+            }
+            this.$newLineMode = newLineMode;
+            this._signal("changeNewLineMode");
+        };
+        /**
+         * Returns the type of newlines being used; either `windows`, `unix`, or `auto`.
+         *
+         * @method getNewLineMode
+         * @return {string}
+         */
+        EditorDocument.prototype.getNewLineMode = function () {
+            return this.$newLineMode;
+        };
+        /**
+         * Returns `true` if `text` is a newline character (either `\r\n`, `\r`, or `\n`).
+         *
+         * @method isNewLine
+         * @param text {string} The text to check
+         * @return {boolean}
+         */
+        EditorDocument.prototype.isNewLine = function (text) {
+            return (text == "\r\n" || text == "\r" || text == "\n");
+        };
+        /**
+         * Returns a verbatim copy of the given line as it is in the document.
+         *
+         * @method getLine
+         * @param row {Number} The row index to retrieve.
+         * @return {string}
+         */
+        EditorDocument.prototype.getLine = function (row) {
+            return this.$lines[row] || "";
+        };
+        /**
+         * Returns an array of strings of the rows between `firstRow` and `lastRow`.
+         * This function is inclusive of `lastRow`.
+         *
+         * @param {Number} firstRow The first row index to retrieve
+         * @param {Number} lastRow The final row index to retrieve
+         * @return {string[]}
+         */
+        EditorDocument.prototype.getLines = function (firstRow, lastRow) {
+            return this.$lines.slice(firstRow, lastRow + 1);
+        };
+        /**
+         * Returns all lines in the document as string array.
+         *
+         * @method getAllLines()
+         * @return {string[]}
+         */
+        EditorDocument.prototype.getAllLines = function () {
+            return this.getLines(0, this.getLength());
+        };
+        /**
+         * Returns the number of rows in the document.
+         *
+         * @method getLength
+         * @return {number}
+         */
+        EditorDocument.prototype.getLength = function () {
+            return this.$lines.length;
+        };
+        /**
+         * Given a range within the document, returns all the text within that range as a single string.
+         *
+         * @method getTextRange
+         * @param range {Range} The range to work with.
+         * @return {string}
+         */
+        EditorDocument.prototype.getTextRange = function (range) {
+            if (range.start.row === range.end.row) {
+                return this.getLine(range.start.row).substring(range.start.column, range.end.column);
+            }
+            var lines = this.getLines(range.start.row, range.end.row);
+            lines[0] = (lines[0] || "").substring(range.start.column);
+            var l = lines.length - 1;
+            if (range.end.row - range.start.row == l) {
+                lines[l] = lines[l].substring(0, range.end.column);
+            }
+            return lines.join(this.getNewLineCharacter());
+        };
+        /**
+         * Inserts a block of `text` at the indicated `position`.
+         *
+         * @method insert
+         * @param {Object} position The position to start inserting at; it's an object that looks like `{ row: row, column: column}`
+         * @param text {string} A chunk of text to insert.
+         * @return {Object} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+         */
+        EditorDocument.prototype.insert = function (position, text) {
+            if (!text || text.length === 0)
+                return position;
+            position = $clipPosition(this, position);
+            // only detect new lines if the document has no line break yet
+            if (this.getLength() <= 1) {
+                this.$detectNewLine(text);
+            }
+            var lines = $split(text);
+            var firstLine = lines.splice(0, 1)[0];
+            var lastLine = lines.length == 0 ? null : lines.splice(lines.length - 1, 1)[0];
+            position = this.insertInLine(position, firstLine);
+            if (lastLine !== null) {
+                position = this.insertNewLine(position); // terminate first line
+                position = this._insertLines(position.row, lines);
+                position = this.insertInLine(position, lastLine || "");
+            }
+            return position;
+        };
+        /**
+         * Fires whenever the document changes.
+         *
+         * Several methods trigger different `"change"` events. Below is a list of each action type, followed by each property that's also available:
+         *
+         *  * `"insertLines"` (emitted by [[EditorDocument.insertLines]])
+         *    * `range`: the [[Range]] of the change within the document
+         *    * `lines`: the lines in the document that are changing
+         *  * `"insertText"` (emitted by [[EditorDocument.insertNewLine]])
+         *    * `range`: the [[Range]] of the change within the document
+         *    * `text`: the text that's being added
+         *  * `"removeLines"` (emitted by [[EditorDocument.insertLines]])
+         *    * `range`: the [[Range]] of the change within the document
+         *    * `lines`: the lines in the document that were removed
+         *    * `nl`: the new line character (as defined by [[EditorDocument.getNewLineCharacter]])
+         *  * `"removeText"` (emitted by [[EditorDocument.removeInLine]] and [[EditorDocument.removeNewLine]])
+         *    * `range`: the [[Range]] of the change within the document
+         *    * `text`: the text that's being removed
+         *
+         * @event change
+         * @param {Object} e Contains at least one property called `"action"`. `"action"` indicates the action that triggered the change. Each action also has a set of additional properties.
+         *
+         **/
+        /**
+        * Inserts the elements in `lines` into the document, starting at the row index given by `row`. This method also triggers the `'change'` event.
+        * @param {Number} row The index of the row to insert at
+        * @param {Array} lines An array of strings
+        * @return {Object} Contains the final row and column, like this:
+        *   ```
+        *   {row: endRow, column: 0}
+        *   ```
+        *   If `lines` is empty, this function returns an object containing the current row, and column, like this:
+        *   ```
+        *   {row: row, column: 0}
+        *   ```
+        *
+        **/
+        EditorDocument.prototype.insertLines = function (row, lines) {
+            if (row >= this.getLength())
+                return this.insert({ row: row, column: 0 }, "\n" + lines.join("\n"));
+            return this._insertLines(Math.max(row, 0), lines);
+        };
+        EditorDocument.prototype._insertLines = function (row, lines) {
+            if (lines.length == 0)
+                return { row: row, column: 0 };
+            // apply doesn't work for big arrays (smallest threshold is on safari 0xFFFF)
+            // to circumvent that we have to break huge inserts into smaller chunks here
+            while (lines.length > 0xF000) {
+                var end = this._insertLines(row, lines.slice(0, 0xF000));
+                lines = lines.slice(0xF000);
+                row = end.row;
+            }
+            var args = [row, 0];
+            args.push.apply(args, lines);
+            this.$lines.splice.apply(this.$lines, args);
+            var range = new Range_1.default(row, 0, row + lines.length, 0);
+            var delta = {
+                action: "insertLines",
+                range: range,
+                lines: lines
+            };
+            this._signal("change", { data: delta });
+            return range.end;
+        };
+        /**
+         * Inserts a new line into the document at the current row's `position`. This method also triggers the `'change'` event.
+         * @param {Object} position The position to insert at
+         * @return {Object} Returns an object containing the final row and column, like this:<br/>
+         *    ```
+         *    {row: endRow, column: 0}
+         *    ```
+         */
+        EditorDocument.prototype.insertNewLine = function (position) {
+            position = $clipPosition(this, position);
+            var line = this.$lines[position.row] || "";
+            this.$lines[position.row] = line.substring(0, position.column);
+            this.$lines.splice(position.row + 1, 0, line.substring(position.column, line.length));
+            var end = {
+                row: position.row + 1,
+                column: 0
+            };
+            var delta = {
+                action: "insertText",
+                range: Range_1.default.fromPoints(position, end),
+                text: this.getNewLineCharacter()
+            };
+            this._signal("change", { data: delta });
+            return end;
+        };
+        /**
+         * Inserts `text` into the `position` at the current row.
+         *
+         * @method insertInLine
+         * This method also triggers the `'change'` event.
+         * @param {Object} position The position to insert at.
+         * @param {String} text A chunk of text
+         * @return {Object} Returns an object containing the final row and column.
+         */
+        EditorDocument.prototype.insertInLine = function (position, text) {
+            if (text.length == 0)
+                return position;
+            var line = this.$lines[position.row] || "";
+            this.$lines[position.row] = line.substring(0, position.column) + text + line.substring(position.column);
+            var end = {
+                row: position.row,
+                column: position.column + text.length
+            };
+            var delta = { action: "insertText", range: Range_1.default.fromPoints(position, end), text: text };
+            this._signal("change", { data: delta });
+            return end;
+        };
+        /**
+         * Removes the `range` from the document.
+         *
+         * @method remove
+         * @param {Range} range A specified Range to remove
+         * @return {Position} Returns the new `start` property of the range.
+         * If `range` is empty, this function returns the unmodified value of `range.start`.
+         */
+        EditorDocument.prototype.remove = function (range) {
+            if (!(range instanceof Range_1.default)) {
+                range = Range_1.default.fromPoints(range.start, range.end);
+            }
+            // clip to document
+            range.start = $clipPosition(this, range.start);
+            range.end = $clipPosition(this, range.end);
+            if (range.isEmpty())
+                return range.start;
+            var firstRow = range.start.row;
+            var lastRow = range.end.row;
+            if (range.isMultiLine()) {
+                var firstFullRow = range.start.column == 0 ? firstRow : firstRow + 1;
+                var lastFullRow = lastRow - 1;
+                if (range.end.column > 0)
+                    this.removeInLine(lastRow, 0, range.end.column);
+                if (lastFullRow >= firstFullRow)
+                    this._removeLines(firstFullRow, lastFullRow);
+                if (firstFullRow != firstRow) {
+                    this.removeInLine(firstRow, range.start.column, this.getLine(firstRow).length);
+                    this.removeNewLine(range.start.row);
+                }
+            }
+            else {
+                this.removeInLine(firstRow, range.start.column, range.end.column);
+            }
+            return range.start;
+        };
+        /**
+         * Removes the specified columns from the `row`.
+         * This method also triggers the `'change'` event.
+         *
+         * @method removeInLine
+         * @param {Number} row The row to remove from
+         * @param {Number} startColumn The column to start removing at
+         * @param {Number} endColumn The column to stop removing at
+         * @return {Object} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
+         *
+         */
+        EditorDocument.prototype.removeInLine = function (row, startColumn, endColumn) {
+            if (startColumn === endColumn)
+                return;
+            var range = new Range_1.default(row, startColumn, row, endColumn);
+            var line = this.getLine(row);
+            var removed = line.substring(startColumn, endColumn);
+            var newLine = line.substring(0, startColumn) + line.substring(endColumn, line.length);
+            this.$lines.splice(row, 1, newLine);
+            var delta = {
+                action: "removeText",
+                range: range,
+                text: removed
+            };
+            this._signal("change", { data: delta });
+            return range.start;
+        };
+        /**
+         * Removes a range of full lines.
+         * This method also triggers the `'change'` event.
+         *
+         * @method removeLines
+         * @param firstRow {number} The first row to be removed.
+         * @param lastRow {number} The last row to be removed.
+         * @return {string[]} Returns all the removed lines.
+         */
+        EditorDocument.prototype.removeLines = function (firstRow, lastRow) {
+            if (firstRow < 0 || lastRow >= this.getLength()) {
+                throw new Error("EditorDocument.removeLines");
+            }
+            // This returns a string[].
+            return this._removeLines(firstRow, lastRow);
+        };
+        EditorDocument.prototype._removeLines = function (firstRow, lastRow) {
+            var range = new Range_1.default(firstRow, 0, lastRow + 1, 0);
+            var removed = this.$lines.splice(firstRow, lastRow - firstRow + 1);
+            var delta = {
+                action: "removeLines",
+                range: range,
+                nl: this.getNewLineCharacter(),
+                lines: removed
+            };
+            this._signal("change", { data: delta });
+            return removed;
+        };
+        /**
+        * Removes the new line between `row` and the row immediately following it. This method also triggers the `'change'` event.
+        * @param {Number} row The row to check
+        *
+        **/
+        EditorDocument.prototype.removeNewLine = function (row) {
+            var firstLine = this.getLine(row);
+            var secondLine = this.getLine(row + 1);
+            var range = new Range_1.default(row, firstLine.length, row + 1, 0);
+            var line = firstLine + secondLine;
+            this.$lines.splice(row, 2, line);
+            var delta = {
+                action: "removeText",
+                range: range,
+                text: this.getNewLineCharacter()
+            };
+            this._signal("change", { data: delta });
+        };
+        /**
+        * Replaces a range in the document with the new `text`.
+        * @param {Range} range A specified Range to replace
+        * @param {String} text The new text to use as a replacement
+        * @return {Object} Returns an object containing the final row and column, like this:
+        *     {row: endRow, column: 0}
+        * If the text and range are empty, this function returns an object containing the current `range.start` value.
+        * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
+        *
+        **/
+        EditorDocument.prototype.replace = function (range, text) {
+            if (text.length == 0 && range.isEmpty())
+                return range.start;
+            // Shortcut: If the text we want to insert is the same as it is already
+            // in the document, we don't have to replace anything.
+            if (text == this.getTextRange(range))
+                return range.end;
+            this.remove(range);
+            if (text) {
+                var end = this.insert(range.start, text);
+            }
+            else {
+                end = range.start;
+            }
+            return end;
+        };
+        /**
+        * Applies all the changes previously accumulated. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
+        **/
+        EditorDocument.prototype.applyDeltas = function (deltas) {
+            for (var i = 0; i < deltas.length; i++) {
+                var delta = deltas[i];
+                var range = Range_1.default.fromPoints(delta.range.start, delta.range.end);
+                if (delta.action == "insertLines")
+                    this.insertLines(range.start.row, delta.lines);
+                else if (delta.action == "insertText")
+                    this.insert(range.start, delta.text);
+                else if (delta.action == "removeLines")
+                    this._removeLines(range.start.row, range.end.row - 1);
+                else if (delta.action == "removeText")
+                    this.remove(range);
+            }
+        };
+        /**
+        * Reverts any changes previously applied. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
+        **/
+        EditorDocument.prototype.revertDeltas = function (deltas) {
+            for (var i = deltas.length - 1; i >= 0; i--) {
+                var delta = deltas[i];
+                var range = Range_1.default.fromPoints(delta.range.start, delta.range.end);
+                if (delta.action == "insertLines")
+                    this._removeLines(range.start.row, range.end.row - 1);
+                else if (delta.action == "insertText")
+                    this.remove(range);
+                else if (delta.action == "removeLines")
+                    this._insertLines(range.start.row, delta.lines);
+                else if (delta.action == "removeText")
+                    this.insert(range.start, delta.text);
+            }
+        };
+        /**
+         * Converts an index position in a document to a `{row, column}` object.
+         *
+         * Index refers to the "absolute position" of a character in the document. For example:
+         *
+         * ```javascript
+         * var x = 0; // 10 characters, plus one for newline
+         * var y = -1;
+         * ```
+         *
+         * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
+         *
+         * @param {Number} index An index to convert
+         * @param {Number} startRow=0 The row from which to start the conversion
+         * @return {Object} A `{row, column}` object of the `index` position
+         */
+        EditorDocument.prototype.indexToPosition = function (index, startRow) {
+            var lines = this.$lines || this.getAllLines();
+            var newlineLength = this.getNewLineCharacter().length;
+            for (var i = startRow || 0, l = lines.length; i < l; i++) {
+                index -= lines[i].length + newlineLength;
+                if (index < 0)
+                    return { row: i, column: index + lines[i].length + newlineLength };
+            }
+            return { row: l - 1, column: lines[l - 1].length };
+        };
+        /**
+         * Converts the `{row, column}` position in a document to the character's index.
+         *
+         * Index refers to the "absolute position" of a character in the document. For example:
+         *
+         * ```javascript
+         * var x = 0; // 10 characters, plus one for newline
+         * var y = -1;
+         * ```
+         *
+         * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
+         *
+         * @param {Object} pos The `{row, column}` to convert
+         * @param {Number} startRow=0 The row from which to start the conversion
+         * @return {Number} The index position in the document
+         */
+        EditorDocument.prototype.positionToIndex = function (pos, startRow) {
+            var lines = this.$lines || this.getAllLines();
+            var newlineLength = this.getNewLineCharacter().length;
+            var index = 0;
+            var row = Math.min(pos.row, lines.length);
+            for (var i = startRow || 0; i < row; ++i)
+                index += lines[i].length + newlineLength;
+            return index + pos.column;
+        };
+        return EditorDocument;
+    })(event_emitter_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = EditorDocument;
+});
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:
  *
@@ -9596,17 +10395,24 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
  *
  * ***** END LICENSE BLOCK ***** */
 define('FoldLine',["require", "exports", "./Range"], function (require, exports, Range_1) {
-    /*
+    /**
      * If an array is passed in, the folds are expected to be sorted already.
+     * @class FoldLine
      */
     var FoldLine = (function () {
+        /**
+         * @class FoldLine
+         * @constructor
+         * @param foldData
+         * @param folds {Fold[]}
+         */
         function FoldLine(foldData, folds) {
             this.foldData = foldData;
             if (Array.isArray(folds)) {
                 this.folds = folds;
             }
             else {
-                folds = this.folds = [folds];
+                throw new Error("folds must have type Fold[]");
             }
             var last = folds[folds.length - 1];
             this.range = new Range_1.default(folds[0].start.row, folds[0].start.column, last.end.row, last.end.column);
@@ -9616,8 +10422,11 @@ define('FoldLine',["require", "exports", "./Range"], function (require, exports,
                 fold.setFoldLine(this);
             }, this);
         }
-        /*
+        /**
          * Note: This doesn't update wrapData!
+         * @method shiftRow
+         * @param shift {number}
+         * @return {void}
          */
         FoldLine.prototype.shiftRow = function (shift) {
             this.start.row += shift;
@@ -9627,6 +10436,11 @@ define('FoldLine',["require", "exports", "./Range"], function (require, exports,
                 fold.end.row += shift;
             });
         };
+        /**
+         * @method addFold
+         * @param fold {Fold}
+         * @return {void}
+         */
         FoldLine.prototype.addFold = function (fold) {
             if (fold.sameRow) {
                 if (fold.start.row < this.startRow || fold.endRow > this.endRow) {
@@ -9660,9 +10474,21 @@ define('FoldLine',["require", "exports", "./Range"], function (require, exports,
             }
             fold.foldLine = this;
         };
+        /**
+         * @method containsRow
+         * @param row {number}
+         * @return {boolean}
+         */
         FoldLine.prototype.containsRow = function (row) {
             return row >= this.start.row && row <= this.end.row;
         };
+        /**
+         * @method walk
+         * @param callback
+         * @param endRow {number}
+         * @param endColumn {number}
+         * @return {void}
+         */
         FoldLine.prototype.walk = function (callback, endRow, endColumn) {
             var lastEnd = 0, folds = this.folds, fold, cmp, stop, isNewRow = true;
             if (endRow == null) {
@@ -10070,11 +10896,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 define('Fold',["require", "exports", "./range_list"], function (require, exports, range_list_1) {
-    /*
+    //import {inherits} from "./lib/oop";
+    /**
      * Simple fold-data struct.
-     **/
+     * @class Fold
+     * @extends RangeList
+     */
     var Fold = (function (_super) {
         __extends(Fold, _super);
+        /**
+         * @class Fold
+         * @constructor
+         * @param range {Range}
+         * @param placeholder {string}
+         */
         function Fold(range, placeholder) {
             _super.call(this);
             this.foldLine = null;
@@ -10085,15 +10920,28 @@ define('Fold',["require", "exports", "./range_list"], function (require, exports
             this.sameRow = range.start.row === range.end.row;
             this.subFolds = this.ranges = [];
         }
+        /**
+         * @method toString
+         * @return {string}
+         */
         Fold.prototype.toString = function () {
             return '"' + this.placeholder + '" ' + this.range.toString();
         };
+        /**
+         * @method setFoldLine
+         * @param foldLine {FoldLine}
+         * @return {void}
+         */
         Fold.prototype.setFoldLine = function (foldLine) {
             this.foldLine = foldLine;
             this.subFolds.forEach(function (fold) {
                 fold.setFoldLine(foldLine);
             });
         };
+        /**
+         * @method clone
+         * @return {Fold}
+         */
         Fold.prototype.clone = function () {
             var range = this.range.clone();
             var fold = new Fold(range, this.placeholder);
@@ -10103,6 +10951,11 @@ define('Fold',["require", "exports", "./range_list"], function (require, exports
             fold.collapseChildren = this.collapseChildren;
             return fold;
         };
+        /**
+         * @method addSubFold
+         * @param fold {Fold}
+         * @return {Fold}
+         */
         Fold.prototype.addSubFold = function (fold) {
             if (this.range.isEqual(fold))
                 return;
@@ -10133,6 +10986,11 @@ define('Fold',["require", "exports", "./range_list"], function (require, exports
             fold.setFoldLine(this.foldLine);
             return fold;
         };
+        /**
+         * @method restoreRange
+         * @param range {Fold}
+         * @return {void}
+         */
         Fold.prototype.restoreRange = function (range) {
             return restoreRange(range, this.start);
         };
@@ -10243,7 +11101,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         /**
          *
          * Returns `true` if the selection is empty.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Selection.prototype.isEmpty = function () {
             // What is the difference between $isEmpty and what this function returns?
@@ -10252,7 +11110,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         };
         /**
         * Returns `true` if the selection is a multi-line.
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         Selection.prototype.isMultiLine = function () {
             if (this.isEmpty()) {
@@ -10262,7 +11120,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         };
         /**
         * Returns an object containing the `row` and `column` current position of the cursor.
-        * @returns {Object}
+        * @return {Object}
         **/
         Selection.prototype.getCursor = function () {
             return this.lead.getPosition();
@@ -10282,7 +11140,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         /**
         * Returns an object containing the `row` and `column` of the calling selection anchor.
         *
-        * @returns {Object}
+        * @return {Object}
         * @related Anchor.getPosition
         **/
         Selection.prototype.getSelectionAnchor = function () {
@@ -10294,7 +11152,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         /**
         *
         * Returns an object containing the `row` and `column` of the calling selection lead.
-        * @returns {Object}
+        * @return {Object}
         **/
         Selection.prototype.getSelectionLead = function () {
             return this.lead.getPosition();
@@ -10324,7 +11182,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         };
         /**
         * Returns `true` if the selection is going backwards in the document.
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         Selection.prototype.isBackwards = function () {
             var anchor = this.anchor;
@@ -10333,7 +11191,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         };
         /**
         * [Returns the [[Range]] for the selected text.]{: #Selection.getRange}
-        * @returns {Range}
+        * @return {Range}
         **/
         Selection.prototype.getRange = function () {
             var anchor = this.anchor;
@@ -10945,7 +11803,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
         * postion. The result is the range of the starting and eventual cursor position.
         * Will reset the cursor position.
         * @param {Function} The callback that should change the cursor position
-        * @returns {Range}
+        * @return {Range}
         *
         **/
         Selection.prototype.getRangeOfMovements = function (func) {
@@ -11214,7 +12072,7 @@ define('Tokenizer',["require", "exports"], function (require, exports) {
         };
         /**
         * Returns an object containing two properties: `tokens`, which contains all the tokens; and `state`, the current state.
-        * @returns {Object}
+        * @return {Object}
         **/
         Tokenizer.prototype.getLineTokens = function (line, startState) {
             var stack;
@@ -12086,804 +12944,6 @@ define('mode/Mode',["require", "exports", "../Tokenizer", "./TextHighlightRules"
     exports.default = Mode;
 });
 
-define('lib/asserts',["require", "exports"], function (require, exports) {
-    exports.ENABLE_ASSERTS = true;
-    var AssertionError = (function () {
-        function AssertionError(message, args) {
-            this.name = 'AssertionError';
-            this.message = message;
-        }
-        return AssertionError;
-    })();
-    exports.AssertionError = AssertionError;
-    function doAssertFailure(defaultMessage, defaultArgs, givenMessage, givenArgs) {
-        var message = 'Assertion failed';
-        if (givenMessage) {
-            message += ': ' + givenMessage;
-            var args = givenArgs;
-        }
-        else if (defaultMessage) {
-            message += ': ' + defaultMessage;
-            args = defaultArgs;
-        }
-        // The '' + works around an Opera 10 bug in the unit tests. Without it,
-        // a stack trace is added to var message above. With this, a stack trace is
-        // not added until this line (it causes the extra garbage to be added after
-        // the assertion message instead of in the middle of it).
-        throw new AssertionError('' + message, args || []);
-    }
-    function assert(condition, message, args) {
-        if (exports.ENABLE_ASSERTS && !condition) {
-            doAssertFailure('', null, message, Array.prototype.slice.call(arguments, 2));
-        }
-        return condition;
-    }
-    exports.assert = assert;
-    ;
-});
-
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define('Anchor',["require", "exports", './lib/event_emitter', './lib/asserts'], function (require, exports, event_emitter_1, asserts_1) {
-    /**
-     *
-     * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
-     *
-     * @class Anchor
-     *
-     * Creates a new `Anchor` and associates it with a document.
-     *
-     * @param {EditorDocument} doc The document to associate with the anchor
-     * @param {Number} row The starting row position
-     * @param {Number} column The starting column position
-     *
-     * @constructor
-     **/
-    var Anchor = (function (_super) {
-        __extends(Anchor, _super);
-        function Anchor(doc, row, column) {
-            _super.call(this);
-            asserts_1.assert(typeof row === 'number', "row must be a number");
-            asserts_1.assert(typeof column === 'number', "column must be a number");
-            this.$onChange = this.onChange.bind(this);
-            this.attach(doc);
-            this.setPosition(row, column);
-            this.$insertRight = false;
-        }
-        /**
-         * Returns an object identifying the `row` and `column` position of the current anchor.
-         * @returns {Object}
-         **/
-        Anchor.prototype.getPosition = function () {
-            return this.$clipPositionToDocument(this.row, this.column);
-        };
-        /**
-         *
-         * Returns the current document.
-         * @returns {EditorDocument}
-         **/
-        Anchor.prototype.getDocument = function () {
-            return this.document;
-        };
-        /**
-         * Fires whenever the anchor position changes.
-         *
-         * Both of these objects have a `row` and `column` property corresponding to the position.
-         *
-         * Events that can trigger this function include [[Anchor.setPosition `setPosition()`]].
-         *
-         * @event change
-         * @param {Object} e  An object containing information about the anchor position. It has two properties:
-         *  - `old`: An object describing the old Anchor position
-         *  - `value`: An object describing the new Anchor position
-         *
-         **/
-        Anchor.prototype.onChange = function (e, doc) {
-            var delta = e.data;
-            var range = delta.range;
-            if (range.start.row == range.end.row && range.start.row != this.row)
-                return;
-            if (range.start.row > this.row)
-                return;
-            if (range.start.row == this.row && range.start.column > this.column)
-                return;
-            var row = this.row;
-            var column = this.column;
-            var start = range.start;
-            var end = range.end;
-            if (delta.action === "insertText") {
-                if (start.row === row && start.column <= column) {
-                    if (start.column === column && this.$insertRight) {
-                    }
-                    else if (start.row === end.row) {
-                        column += end.column - start.column;
-                    }
-                    else {
-                        column -= start.column;
-                        row += end.row - start.row;
-                    }
-                }
-                else if (start.row !== end.row && start.row < row) {
-                    row += end.row - start.row;
-                }
-            }
-            else if (delta.action === "insertLines") {
-                if (start.row === row && column === 0 && this.$insertRight) {
-                }
-                else if (start.row <= row) {
-                    row += end.row - start.row;
-                }
-            }
-            else if (delta.action === "removeText") {
-                if (start.row === row && start.column < column) {
-                    if (end.column >= column)
-                        column = start.column;
-                    else
-                        column = Math.max(0, column - (end.column - start.column));
-                }
-                else if (start.row !== end.row && start.row < row) {
-                    if (end.row === row)
-                        column = Math.max(0, column - end.column) + start.column;
-                    row -= (end.row - start.row);
-                }
-                else if (end.row === row) {
-                    row -= end.row - start.row;
-                    column = Math.max(0, column - end.column) + start.column;
-                }
-            }
-            else if (delta.action == "removeLines") {
-                if (start.row <= row) {
-                    if (end.row <= row)
-                        row -= end.row - start.row;
-                    else {
-                        row = start.row;
-                        column = 0;
-                    }
-                }
-            }
-            this.setPosition(row, column, true);
-        };
-        /**
-         * Sets the anchor position to the specified row and column. If `noClip` is `true`, the position is not clipped.
-         * @param {Number} row The row index to move the anchor to
-         * @param {Number} column The column index to move the anchor to
-         * @param {Boolean} noClip Identifies if you want the position to be clipped
-         *
-         **/
-        Anchor.prototype.setPosition = function (row, column, noClip) {
-            var pos;
-            if (noClip) {
-                pos = {
-                    row: row,
-                    column: column
-                };
-            }
-            else {
-                pos = this.$clipPositionToDocument(row, column);
-            }
-            if (this.row === pos.row && this.column === pos.column) {
-                return;
-            }
-            var old = {
-                row: this.row,
-                column: this.column
-            };
-            this.row = pos.row;
-            this.column = pos.column;
-            this._signal("change", {
-                old: old,
-                value: pos
-            });
-        };
-        /**
-         * When called, the `'change'` event listener is removed.
-         *
-         **/
-        Anchor.prototype.detach = function () {
-            this.document.off("change", this.$onChange);
-        };
-        Anchor.prototype.attach = function (doc) {
-            this.document = doc || this.document;
-            this.document.on("change", this.$onChange);
-        };
-        /**
-         * Clips the anchor position to the specified row and column.
-         * @param {Number} row The row index to clip the anchor to
-         * @param {Number} column The column index to clip the anchor to
-         *
-         **/
-        Anchor.prototype.$clipPositionToDocument = function (row, column) {
-            var pos = { row: 0, column: 0 };
-            if (row >= this.document.getLength()) {
-                pos.row = Math.max(0, this.document.getLength() - 1);
-                pos.column = this.document.getLine(pos.row).length;
-            }
-            else if (row < 0) {
-                pos.row = 0;
-                pos.column = 0;
-            }
-            else {
-                pos.row = row;
-                pos.column = Math.min(this.document.getLine(pos.row).length, Math.max(0, column));
-            }
-            if (column < 0)
-                pos.column = 0;
-            return pos;
-        };
-        return Anchor;
-    })(event_emitter_1.default);
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = Anchor;
-});
-
-/* ***** BEGIN LICENSE BLOCK *****
- * Distributed under the BSD license:
- *
- * Copyright (c) 2010, Ajax.org B.V.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Ajax.org B.V. nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***** END LICENSE BLOCK ***** */
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define('EditorDocument',["require", "exports", './lib/event_emitter', './Range', './Anchor'], function (require, exports, event_emitter_1, Range_1, Anchor_1) {
-    var $split = (function () {
-        function foo(text) {
-            return text.replace(/\r\n|\r/g, "\n").split("\n");
-        }
-        function bar(text) {
-            return text.split(/\r\n|\r|\n/);
-        }
-        if ("aaa".split(/a/).length === 0) {
-            return foo;
-        }
-        else {
-            return bar;
-        }
-    })();
-    function $clipPosition(doc, position) {
-        var length = doc.getLength();
-        if (position.row >= length) {
-            position.row = Math.max(0, length - 1);
-            position.column = doc.getLine(length - 1).length;
-        }
-        else if (position.row < 0) {
-            position.row = 0;
-        }
-        return position;
-    }
-    var EditorDocument = (function (_super) {
-        __extends(EditorDocument, _super);
-        function EditorDocument(text) {
-            _super.call(this);
-            this.$lines = [];
-            this.$autoNewLine = "";
-            this.$newLineMode = "auto";
-            // There has to be one line at least in the document. If you pass an empty
-            // string to the insert function, nothing will happen. Workaround.
-            if (text.length === 0) {
-                this.$lines = [""];
-            }
-            else if (Array.isArray(text)) {
-                this._insertLines(0, text);
-            }
-            else {
-                this.insert({ row: 0, column: 0 }, text);
-            }
-        }
-        /**
-         * Replaces all the lines in the current `EditorDocument` with the value of `text`.
-         * @method setValue
-         * @param {string} text The text to use
-         * @return {void}
-         */
-        EditorDocument.prototype.setValue = function (text) {
-            var len = this.getLength();
-            this.remove(new Range_1.default(0, 0, len, this.getLine(len - 1).length));
-            this.insert({ row: 0, column: 0 }, text);
-        };
-        /**
-         * Returns all the lines in the document as a single string, joined by the new line character.
-         * @method getValue
-         * @return {string}
-         */
-        EditorDocument.prototype.getValue = function () {
-            return this.getAllLines().join(this.getNewLineCharacter());
-        };
-        /**
-         * Creates a new `Anchor` to define a floating point in the document.
-         * @method createAnchor
-         * @param {number} row The row number to use
-         * @param {number} column The column number to use
-         * @return {Anchor}
-         *
-         */
-        EditorDocument.prototype.createAnchor = function (row, column) {
-            return new Anchor_1.default(this, row, column);
-        };
-        /**
-         * Splits a string of text on any newline (`\n`) or carriage-return ('\r') characters.
-         *
-         * @method $split
-         * @param {string} text The text to work with
-         */
-        EditorDocument.prototype.$detectNewLine = function (text) {
-            var match = text.match(/^.*?(\r\n|\r|\n)/m);
-            this.$autoNewLine = match ? match[1] : "\n";
-            this._signal("changeNewLineMode");
-        };
-        /**
-        * Returns the newline character that's being used, depending on the value of `newLineMode`.
-        * @method getNewLineCharacter
-        * @returns {String}
-        *  If `newLineMode == windows`, `\r\n` is returned.
-        *  If `newLineMode == unix`, `\n` is returned.
-        *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
-        *
-        **/
-        EditorDocument.prototype.getNewLineCharacter = function () {
-            switch (this.$newLineMode) {
-                case "windows":
-                    return "\r\n";
-                case "unix":
-                    return "\n";
-                default:
-                    return this.$autoNewLine || "\n";
-            }
-        };
-        /**
-         * Sets the new line mode.
-         * @method setNewLineMode
-         * @param {String} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #EditorDocument.setNewLineMode.param}
-         * @return {void}
-         */
-        EditorDocument.prototype.setNewLineMode = function (newLineMode) {
-            if (this.$newLineMode === newLineMode)
-                return;
-            this.$newLineMode = newLineMode;
-            this._signal("changeNewLineMode");
-        };
-        /**
-         * Returns the type of newlines being used; either `windows`, `unix`, or `auto`
-         * @method getNewLineMode
-         * @return {string}
-         */
-        EditorDocument.prototype.getNewLineMode = function () {
-            return this.$newLineMode;
-        };
-        /**
-         * Returns `true` if `text` is a newline character (either `\r\n`, `\r`, or `\n`).
-         * @method isNewLine
-         * @param {string} text The text to check
-         * @return {boolean}
-         */
-        EditorDocument.prototype.isNewLine = function (text) {
-            return (text == "\r\n" || text == "\r" || text == "\n");
-        };
-        /**
-         * Returns a verbatim copy of the given line as it is in the document
-         * @param {Number} row The row index to retrieve
-         * @return {string}
-         */
-        EditorDocument.prototype.getLine = function (row) {
-            return this.$lines[row] || "";
-        };
-        /**
-        * Returns an array of strings of the rows between `firstRow` and `lastRow`. This function is inclusive of `lastRow`.
-        * @param {Number} firstRow The first row index to retrieve
-        * @param {Number} lastRow The final row index to retrieve
-        *
-        **/
-        EditorDocument.prototype.getLines = function (firstRow, lastRow) {
-            return this.$lines.slice(firstRow, lastRow + 1);
-        };
-        /**
-        * Returns all lines in the document as string array.
-        **/
-        EditorDocument.prototype.getAllLines = function () {
-            return this.getLines(0, this.getLength());
-        };
-        /**
-        * Returns the number of rows in the document.
-        **/
-        EditorDocument.prototype.getLength = function () {
-            return this.$lines.length;
-        };
-        /**
-         * Given a range within the document, returns all the text within that range as a single string.
-         * @param {Range} range The range to work with
-         *
-         */
-        EditorDocument.prototype.getTextRange = function (range) {
-            if (range.start.row == range.end.row) {
-                return this.getLine(range.start.row).substring(range.start.column, range.end.column);
-            }
-            var lines = this.getLines(range.start.row, range.end.row);
-            lines[0] = (lines[0] || "").substring(range.start.column);
-            var l = lines.length - 1;
-            if (range.end.row - range.start.row == l) {
-                lines[l] = lines[l].substring(0, range.end.column);
-            }
-            return lines.join(this.getNewLineCharacter());
-        };
-        /**
-        * Inserts a block of `text` at the indicated `position`.
-        * @param {Object} position The position to start inserting at; it's an object that looks like `{ row: row, column: column}`
-        * @param {string} text A chunk of text to insert
-        * @returns {Object} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
-        *
-        **/
-        EditorDocument.prototype.insert = function (position, text) {
-            if (!text || text.length === 0)
-                return position;
-            position = $clipPosition(this, position);
-            // only detect new lines if the document has no line break yet
-            if (this.getLength() <= 1) {
-                this.$detectNewLine(text);
-            }
-            var lines = $split(text);
-            var firstLine = lines.splice(0, 1)[0];
-            var lastLine = lines.length == 0 ? null : lines.splice(lines.length - 1, 1)[0];
-            position = this.insertInLine(position, firstLine);
-            if (lastLine !== null) {
-                position = this.insertNewLine(position); // terminate first line
-                position = this._insertLines(position.row, lines);
-                position = this.insertInLine(position, lastLine || "");
-            }
-            return position;
-        };
-        /**
-         * Fires whenever the document changes.
-         *
-         * Several methods trigger different `"change"` events. Below is a list of each action type, followed by each property that's also available:
-         *
-         *  * `"insertLines"` (emitted by [[EditorDocument.insertLines]])
-         *    * `range`: the [[Range]] of the change within the document
-         *    * `lines`: the lines in the document that are changing
-         *  * `"insertText"` (emitted by [[EditorDocument.insertNewLine]])
-         *    * `range`: the [[Range]] of the change within the document
-         *    * `text`: the text that's being added
-         *  * `"removeLines"` (emitted by [[EditorDocument.insertLines]])
-         *    * `range`: the [[Range]] of the change within the document
-         *    * `lines`: the lines in the document that were removed
-         *    * `nl`: the new line character (as defined by [[EditorDocument.getNewLineCharacter]])
-         *  * `"removeText"` (emitted by [[EditorDocument.removeInLine]] and [[EditorDocument.removeNewLine]])
-         *    * `range`: the [[Range]] of the change within the document
-         *    * `text`: the text that's being removed
-         *
-         * @event change
-         * @param {Object} e Contains at least one property called `"action"`. `"action"` indicates the action that triggered the change. Each action also has a set of additional properties.
-         *
-         **/
-        /**
-        * Inserts the elements in `lines` into the document, starting at the row index given by `row`. This method also triggers the `'change'` event.
-        * @param {Number} row The index of the row to insert at
-        * @param {Array} lines An array of strings
-        * @returns {Object} Contains the final row and column, like this:
-        *   ```
-        *   {row: endRow, column: 0}
-        *   ```
-        *   If `lines` is empty, this function returns an object containing the current row, and column, like this:
-        *   ```
-        *   {row: row, column: 0}
-        *   ```
-        *
-        **/
-        EditorDocument.prototype.insertLines = function (row, lines) {
-            if (row >= this.getLength())
-                return this.insert({ row: row, column: 0 }, "\n" + lines.join("\n"));
-            return this._insertLines(Math.max(row, 0), lines);
-        };
-        EditorDocument.prototype._insertLines = function (row, lines) {
-            if (lines.length == 0)
-                return { row: row, column: 0 };
-            // apply doesn't work for big arrays (smallest threshold is on safari 0xFFFF)
-            // to circumvent that we have to break huge inserts into smaller chunks here
-            while (lines.length > 0xF000) {
-                var end = this._insertLines(row, lines.slice(0, 0xF000));
-                lines = lines.slice(0xF000);
-                row = end.row;
-            }
-            var args = [row, 0];
-            args.push.apply(args, lines);
-            this.$lines.splice.apply(this.$lines, args);
-            var range = new Range_1.default(row, 0, row + lines.length, 0);
-            var delta = {
-                action: "insertLines",
-                range: range,
-                lines: lines
-            };
-            this._signal("change", { data: delta });
-            return range.end;
-        };
-        /**
-        * Inserts a new line into the document at the current row's `position`. This method also triggers the `'change'` event.
-        * @param {Object} position The position to insert at
-        * @returns {Object} Returns an object containing the final row and column, like this:<br/>
-        *    ```
-        *    {row: endRow, column: 0}
-        *    ```
-        *
-        **/
-        EditorDocument.prototype.insertNewLine = function (position) {
-            position = $clipPosition(this, position);
-            var line = this.$lines[position.row] || "";
-            this.$lines[position.row] = line.substring(0, position.column);
-            this.$lines.splice(position.row + 1, 0, line.substring(position.column, line.length));
-            var end = {
-                row: position.row + 1,
-                column: 0
-            };
-            var delta = {
-                action: "insertText",
-                range: Range_1.default.fromPoints(position, end),
-                text: this.getNewLineCharacter()
-            };
-            this._signal("change", { data: delta });
-            return end;
-        };
-        /**
-        * Inserts `text` into the `position` at the current row. This method also triggers the `'change'` event.
-        * @param {Object} position The position to insert at.
-        * @param {String} text A chunk of text
-        * @returns {Object} Returns an object containing the final row and column.
-        **/
-        EditorDocument.prototype.insertInLine = function (position, text) {
-            if (text.length == 0)
-                return position;
-            var line = this.$lines[position.row] || "";
-            this.$lines[position.row] = line.substring(0, position.column) + text + line.substring(position.column);
-            var end = {
-                row: position.row,
-                column: position.column + text.length
-            };
-            var delta = { action: "insertText", range: Range_1.default.fromPoints(position, end), text: text };
-            this._signal("change", { data: delta });
-            return end;
-        };
-        /**
-        * Removes the `range` from the document.
-        * @param {Range} range A specified Range to remove
-        * @returns {Object} Returns the new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
-        *
-        **/
-        EditorDocument.prototype.remove = function (range) {
-            if (!(range instanceof Range_1.default))
-                range = Range_1.default.fromPoints(range.start, range.end);
-            // clip to document
-            range.start = $clipPosition(this, range.start);
-            range.end = $clipPosition(this, range.end);
-            if (range.isEmpty())
-                return range.start;
-            var firstRow = range.start.row;
-            var lastRow = range.end.row;
-            if (range.isMultiLine()) {
-                var firstFullRow = range.start.column == 0 ? firstRow : firstRow + 1;
-                var lastFullRow = lastRow - 1;
-                if (range.end.column > 0)
-                    this.removeInLine(lastRow, 0, range.end.column);
-                if (lastFullRow >= firstFullRow)
-                    this._removeLines(firstFullRow, lastFullRow);
-                if (firstFullRow != firstRow) {
-                    this.removeInLine(firstRow, range.start.column, this.getLine(firstRow).length);
-                    this.removeNewLine(range.start.row);
-                }
-            }
-            else {
-                this.removeInLine(firstRow, range.start.column, range.end.column);
-            }
-            return range.start;
-        };
-        /**
-        * Removes the specified columns from the `row`. This method also triggers the `'change'` event.
-        * @param {Number} row The row to remove from
-        * @param {Number} startColumn The column to start removing at
-        * @param {Number} endColumn The column to stop removing at
-        * @returns {Object} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
-        *
-        **/
-        EditorDocument.prototype.removeInLine = function (row, startColumn, endColumn) {
-            if (startColumn === endColumn)
-                return;
-            var range = new Range_1.default(row, startColumn, row, endColumn);
-            var line = this.getLine(row);
-            var removed = line.substring(startColumn, endColumn);
-            var newLine = line.substring(0, startColumn) + line.substring(endColumn, line.length);
-            this.$lines.splice(row, 1, newLine);
-            var delta = {
-                action: "removeText",
-                range: range,
-                text: removed
-            };
-            this._signal("change", { data: delta });
-            return range.start;
-        };
-        /**
-        * Removes a range of full lines. This method also triggers the `'change'` event.
-        * @param {Number} firstRow The first row to be removed
-        * @param {Number} lastRow The last row to be removed
-        * @returns {[String]} Returns all the removed lines.
-        *
-        **/
-        EditorDocument.prototype.removeLines = function (firstRow, lastRow) {
-            if (firstRow < 0 || lastRow >= this.getLength())
-                return this.remove(new Range_1.default(firstRow, 0, lastRow + 1, 0));
-            return this._removeLines(firstRow, lastRow);
-        };
-        EditorDocument.prototype._removeLines = function (firstRow, lastRow) {
-            var range = new Range_1.default(firstRow, 0, lastRow + 1, 0);
-            var removed = this.$lines.splice(firstRow, lastRow - firstRow + 1);
-            var delta = {
-                action: "removeLines",
-                range: range,
-                nl: this.getNewLineCharacter(),
-                lines: removed
-            };
-            this._signal("change", { data: delta });
-            return removed;
-        };
-        /**
-        * Removes the new line between `row` and the row immediately following it. This method also triggers the `'change'` event.
-        * @param {Number} row The row to check
-        *
-        **/
-        EditorDocument.prototype.removeNewLine = function (row) {
-            var firstLine = this.getLine(row);
-            var secondLine = this.getLine(row + 1);
-            var range = new Range_1.default(row, firstLine.length, row + 1, 0);
-            var line = firstLine + secondLine;
-            this.$lines.splice(row, 2, line);
-            var delta = {
-                action: "removeText",
-                range: range,
-                text: this.getNewLineCharacter()
-            };
-            this._signal("change", { data: delta });
-        };
-        /**
-        * Replaces a range in the document with the new `text`.
-        * @param {Range} range A specified Range to replace
-        * @param {String} text The new text to use as a replacement
-        * @returns {Object} Returns an object containing the final row and column, like this:
-        *     {row: endRow, column: 0}
-        * If the text and range are empty, this function returns an object containing the current `range.start` value.
-        * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
-        *
-        **/
-        EditorDocument.prototype.replace = function (range, text) {
-            if (text.length == 0 && range.isEmpty())
-                return range.start;
-            // Shortcut: If the text we want to insert is the same as it is already
-            // in the document, we don't have to replace anything.
-            if (text == this.getTextRange(range))
-                return range.end;
-            this.remove(range);
-            if (text) {
-                var end = this.insert(range.start, text);
-            }
-            else {
-                end = range.start;
-            }
-            return end;
-        };
-        /**
-        * Applies all the changes previously accumulated. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-        **/
-        EditorDocument.prototype.applyDeltas = function (deltas) {
-            for (var i = 0; i < deltas.length; i++) {
-                var delta = deltas[i];
-                var range = Range_1.default.fromPoints(delta.range.start, delta.range.end);
-                if (delta.action == "insertLines")
-                    this.insertLines(range.start.row, delta.lines);
-                else if (delta.action == "insertText")
-                    this.insert(range.start, delta.text);
-                else if (delta.action == "removeLines")
-                    this._removeLines(range.start.row, range.end.row - 1);
-                else if (delta.action == "removeText")
-                    this.remove(range);
-            }
-        };
-        /**
-        * Reverts any changes previously applied. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-        **/
-        EditorDocument.prototype.revertDeltas = function (deltas) {
-            for (var i = deltas.length - 1; i >= 0; i--) {
-                var delta = deltas[i];
-                var range = Range_1.default.fromPoints(delta.range.start, delta.range.end);
-                if (delta.action == "insertLines")
-                    this._removeLines(range.start.row, range.end.row - 1);
-                else if (delta.action == "insertText")
-                    this.remove(range);
-                else if (delta.action == "removeLines")
-                    this._insertLines(range.start.row, delta.lines);
-                else if (delta.action == "removeText")
-                    this.insert(range.start, delta.text);
-            }
-        };
-        /**
-         * Converts an index position in a document to a `{row, column}` object.
-         *
-         * Index refers to the "absolute position" of a character in the document. For example:
-         *
-         * ```javascript
-         * var x = 0; // 10 characters, plus one for newline
-         * var y = -1;
-         * ```
-         *
-         * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
-         *
-         * @param {Number} index An index to convert
-         * @param {Number} startRow=0 The row from which to start the conversion
-         * @returns {Object} A `{row, column}` object of the `index` position
-         */
-        EditorDocument.prototype.indexToPosition = function (index, startRow) {
-            var lines = this.$lines || this.getAllLines();
-            var newlineLength = this.getNewLineCharacter().length;
-            for (var i = startRow || 0, l = lines.length; i < l; i++) {
-                index -= lines[i].length + newlineLength;
-                if (index < 0)
-                    return { row: i, column: index + lines[i].length + newlineLength };
-            }
-            return { row: l - 1, column: lines[l - 1].length };
-        };
-        /**
-         * Converts the `{row, column}` position in a document to the character's index.
-         *
-         * Index refers to the "absolute position" of a character in the document. For example:
-         *
-         * ```javascript
-         * var x = 0; // 10 characters, plus one for newline
-         * var y = -1;
-         * ```
-         *
-         * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
-         *
-         * @param {Object} pos The `{row, column}` to convert
-         * @param {Number} startRow=0 The row from which to start the conversion
-         * @returns {Number} The index position in the document
-         */
-        EditorDocument.prototype.positionToIndex = function (pos, startRow) {
-            var lines = this.$lines || this.getAllLines();
-            var newlineLength = this.getNewLineCharacter().length;
-            var index = 0;
-            var row = Math.min(pos.row, lines.length);
-            for (var i = startRow || 0; i < row; ++i)
-                index += lines[i].length + newlineLength;
-            return index + pos.column;
-        };
-        return EditorDocument;
-    })(event_emitter_1.default);
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = EditorDocument;
-});
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13423,8 +13483,19 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             c >= 0xFF01 && c <= 0xFF60 ||
             c >= 0xFFE0 && c <= 0xFFE6;
     }
+    /**
+     * @class EditSession
+     * @extends EventEmitterClass
+     */
     var EditSession = (function (_super) {
         __extends(EditSession, _super);
+        /**
+         * @class EditSession
+         * @constructor
+         * @param doc {EditorDocument}
+         * @param [mode]
+         * @param [cb]
+         */
         function EditSession(doc, mode, cb) {
             _super.call(this);
             this.$breakpoints = [];
@@ -13461,7 +13532,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             this.$bracketMatcher = new BracketMatch_1.default(this);
             /**
             * Returns the annotations for the `EditSession`.
-            * @returns {Array}
+            * @return {Array}
             **/
             this.getAnnotations = function () {
                 return this.$annotations || [];
@@ -13485,7 +13556,9 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             config_1._signal("session", this);
         }
         /**
-         * Sets the `EditSession` to point to a new `EditorDocument`. If a `BackgroundTokenizer` exists, it also points to `doc`.
+         * Sets the `EditSession` to point to a new `EditorDocument`.
+         * If a `BackgroundTokenizer` exists, it also points to `doc`.
+         *
          * @method setDocument
          * @param doc {EditorDocument} The new `EditorDocument` to use.
          * @return {void}
@@ -13506,6 +13579,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
          * Returns the `EditorDocument` associated with this session.
+         *
          * @method getDocument
          * @return {EditorDocument}
          */
@@ -13514,7 +13588,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
          * @method $resetRowCache
-         * @param {number} row The row to work with
+         * @param docRow {number} The row to work with.
          * @return {void}
          * @private
          */
@@ -13598,38 +13672,49 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             this.getUndoManager().reset();
         };
         /**
-        * Returns the current [[EditorDocument `EditorDocument`]] as a string.
-        * @method toString
-        * @returns {string}
-        * @alias EditSession.getValue
-        **/
+         * Returns the current EditorDocument as a string.
+         *
+         * @method toString
+         * @return {string}
+         * @alias EditSession.getValue
+         */
         EditSession.prototype.toString = function () {
             return this.getValue();
         };
         /**
-        * Returns the current [[EditorDocument `EditorDocument`]] as a string.
-        * @method getValue
-        * @returns {string}
-        * @alias EditSession.toString
-        **/
+         * Returns the current EditorDocument as a string.
+         *
+         * @method getValue
+         * @return {string}
+         * @alias EditSession.toString
+         */
         EditSession.prototype.getValue = function () {
             return this.doc.getValue();
         };
         /**
-         * Returns the string of the current selection.
+         * Returns the current selection.
+         *
+         * @method getSelection
+         * @return {Selection}
          */
         EditSession.prototype.getSelection = function () {
             return this.selection;
         };
+        /**
+         * Sets the current selection.
+         *
+         * @method setSelection
+         * @param selection {Selection}
+         * @return {void}
+         */
         EditSession.prototype.setSelection = function (selection) {
             this.selection = selection;
         };
         /**
-         * {:BackgroundTokenizer.getState}
-         * @param {Number} row The row to start at
-         *
-         * @related BackgroundTokenizer.getState
-         **/
+         * @method getState
+         * @param row {number} The row to start at.
+         * @return {string}
+         */
         EditSession.prototype.getState = function (row) {
             return this.bgTokenizer.getState(row);
         };
@@ -13637,17 +13722,18 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * Starts tokenizing at the row indicated. Returns a list of objects of the tokenized rows.
          * @method getTokens
          * @param row {number} The row to start at.
-         **/
+         */
         EditSession.prototype.getTokens = function (row) {
             return this.bgTokenizer.getTokens(row);
         };
         /**
-        * Returns an object indicating the token at the current row. The object has two properties: `index` and `start`.
-        * @param {Number} row The row number to retrieve from
-        * @param {Number} column The column number to retrieve from
-        *
-        *
-        **/
+         * Returns an object indicating the token at the current row.
+         * The object has two properties: `index` and `start`.
+         *
+         * @method getTokenAt
+         * @param {Number} row The row number to retrieve from
+         * @param {Number} column The column number to retrieve from.
+         */
         EditSession.prototype.getTokenAt = function (row, column) {
             var tokens = this.bgTokenizer.getTokens(row);
             var token;
@@ -13671,9 +13757,12 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             return token;
         };
         /**
-        * Sets the undo manager.
-        * @param {UndoManager} undoManager The new undo manager
-        **/
+         * Sets the undo manager.
+         *
+         * @method setUndoManager
+         * @param undoManager {UndoManager} The new undo manager.
+         * @return {void}
+         */
         EditSession.prototype.setUndoManager = function (undoManager) {
             this.$undoManager = undoManager;
             this.$deltas = [];
@@ -13713,7 +13802,10 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             }
         };
         /**
-         * starts a new group in undo history
+         * Starts a new group in undo history.
+         *
+         * @method markUndoGroup
+         * @return {void}
          */
         EditSession.prototype.markUndoGroup = function () {
             if (this.$syncInformUndoManager) {
@@ -13721,14 +13813,22 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             }
         };
         /**
-        * Returns the current undo manager.
-        **/
+         * Returns the current undo manager.
+         *
+         * @method getUndoManager
+         * @return {UndoManager}
+         */
         EditSession.prototype.getUndoManager = function () {
+            // FIXME: Want simple API, don't want to cast.
             return this.$undoManager || this.$defaultUndoManager;
         };
         /**
-        * Returns the current value for tabs. If the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\t'`.
-        **/
+         * Returns the current value for tabs.
+         * If the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\t'`.
+         *
+         * @method getTabString
+         * @return {string}
+         */
         EditSession.prototype.getTabString = function () {
             if (this.getUseSoftTabs()) {
                 return lang_1.stringRepeat(" ", this.getTabSize());
@@ -13738,17 +13838,24 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             }
         };
         /**
-        /**
-        * Pass `true` to enable the use of soft tabs. Soft tabs means you're using spaces instead of the tab character (`'\t'`).
-        * @param {Boolean} useSoftTabs Value indicating whether or not to use soft tabs
-        **/
+         * Pass `true` to enable the use of soft tabs.
+         * Soft tabs means you're using spaces instead of the tab character (`'\t'`).
+         *
+         * @method setUseSoftTabs
+         * @param useSoftTabs {boolean} Value indicating whether or not to use soft tabs.
+         * @return {EditSession}
+         * @chainable
+         */
         EditSession.prototype.setUseSoftTabs = function (useSoftTabs) {
             this.setOption("useSoftTabs", useSoftTabs);
+            return this;
         };
         /**
-        * Returns `true` if soft tabs are being used, `false` otherwise.
-        * @returns {Boolean}
-        **/
+         * Returns `true` if soft tabs are being used, `false` otherwise.
+         *
+         * @method getUseSoftTabs
+         * @return {boolean}
+         */
         EditSession.prototype.getUseSoftTabs = function () {
             // todo might need more general way for changing settings from mode, but this is ok for now
             return this.$useSoftTabs && !this.$mode.$indentWithTabs;
@@ -13824,7 +13931,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * Returns an array of numbers, indicating which rows have breakpoints.
-        * @returns {[Number]}
+        * @return {[Number]}
         **/
         EditSession.prototype.getBreakpoints = function () {
             return this.$breakpoints;
@@ -13952,7 +14059,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Returns an array containing the IDs of all the markers, either front or back.
         * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers
         *
-        * @returns {Array}
+        * @return {Array}
         **/
         EditSession.prototype.getMarkers = function (inFront) {
             return inFront ? this.$frontMarkers : this.$backMarkers;
@@ -14015,7 +14122,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * @param {Number} row The row to start at
         * @param {Number} column The column to start at
         *
-        * @returns {Range}
+        * @return {Range}
         **/
         EditSession.prototype.getWordRange = function (row, column) {
             var line = this.getLine(row);
@@ -14071,7 +14178,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         /**
         *
         * Returns the current new line mode.
-        * @returns {String}
+        * @return {String}
         * @related EditorDocument.getNewLineMode
         **/
         EditSession.prototype.getNewLineMode = function () {
@@ -14198,7 +14305,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * Returns the current text mode.
-        * @returns {TextMode} The current text mode
+        * @return {TextMode} The current text mode
         **/
         EditSession.prototype.getMode = function () {
             return this.$mode;
@@ -14218,7 +14325,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * [Returns the value of the distance between the top of the editor and the topmost part of the visible content.]{: #EditSession.getScrollTop}
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScrollTop = function () {
             return this.$scrollTop;
@@ -14235,14 +14342,14 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * [Returns the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.getScrollLeft}
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScrollLeft = function () {
             return this.$scrollLeft;
         };
         /**
         * Returns the width of the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScreenWidth = function () {
             this.$computeWidth();
@@ -14294,7 +14401,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * @param {Number} row The row to retrieve from
          *
         *
-         * @returns {String}
+         * @return {String}
         *
         **/
         EditSession.prototype.getLine = function (row) {
@@ -14305,7 +14412,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * @param {Number} firstRow The first row index to retrieve
          * @param {Number} lastRow The final row index to retrieve
          *
-         * @returns {[String]}
+         * @return {[String]}
          *
          **/
         EditSession.prototype.getLines = function (firstRow, lastRow) {
@@ -14313,7 +14420,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
          * Returns the number of rows in the document.
-         * @returns {Number}
+         * @return {Number}
          **/
         EditSession.prototype.getLength = function () {
             return this.doc.getLength();
@@ -14322,7 +14429,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * {:EditorDocument.getTextRange.desc}
          * @param {Range} range The range to work with
          *
-         * @returns {string}
+         * @return {string}
          **/
         EditSession.prototype.getTextRange = function (range) {
             return this.doc.getTextRange(range || this.selection.getRange());
@@ -14331,7 +14438,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * Inserts a block of `text` and the indicated `position`.
          * @param {Object} position The position {row, column} to start inserting at
          * @param {String} text A chunk of text to insert
-         * @returns {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+         * @return {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
          *
          *
          **/
@@ -14341,7 +14448,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         /**
          * Removes the `range` from the document.
          * @param {Range} range A specified Range to remove
-         * @returns {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
+         * @return {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
          *
          * @related EditorDocument.remove
          *
@@ -14355,7 +14462,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * @param {Boolean} dontSelect [If `true`, doesn't select the range of where the change occured]{: #dontSelect}
          *
          *
-         * @returns {Range}
+         * @return {Range}
         **/
         EditSession.prototype.undoChanges = function (deltas, dontSelect) {
             if (!deltas.length)
@@ -14388,7 +14495,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          * @param {Boolean} dontSelect {:dontSelect}
          *
         *
-         * @returns {Range}
+         * @return {Range}
         **/
         EditSession.prototype.redoChanges = function (deltas, dontSelect) {
             if (!deltas.length)
@@ -14474,23 +14581,15 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             return range;
         };
         /**
-        * Replaces a range in the document with the new `text`.
-        *
-        * @param {Range} range A specified Range to replace
-        * @param {String} text The new text to use as a replacement
-        * @returns {Object} An object containing the final row and column, like this:
-        * ```
-        * {row: endRow, column: 0}
-        * ```
-        * If the text and range are empty, this function returns an object containing the current `range.start` value.
-        * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
-        *
-        *
-        *
-        * @related EditorDocument.replace
-        *
-        *
-        **/
+         * Replaces a range in the document with the new `text`.
+         *
+         * @method replace
+         * @param range {Range} A specified Range to replace.
+         * @param text {string} The new text to use as a replacement.
+         * @return {Position}
+         * If the text and range are empty, this function returns an object containing the current `range.start` value.
+         * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
+         */
         EditSession.prototype.replace = function (range, text) {
             return this.doc.replace(range, text);
         };
@@ -14501,7 +14600,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
          *  ```
          * @param {Range} fromRange The range of text you want moved within the document
          * @param {Object} toPosition The location (row and column) where you want to move the text to
-         * @returns {Range} The new range where the text was moved to.
+         * @return {Range} The new range where the text was moved to.
         *
         *
         *
@@ -14620,9 +14719,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 x.end.row += diff;
                 return x;
             });
-            var lines = dir == 0
-                ? this.doc.getLines(firstRow, lastRow)
-                : this.doc.removeLines(firstRow, lastRow);
+            var lines = (dir === 0) ? this.doc.getLines(firstRow, lastRow) : this.doc.removeLines(firstRow, lastRow);
             this.doc.insertLines(firstRow + diff, lines);
             folds.length && this.addFolds(folds);
             return diff;
@@ -14631,7 +14728,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Shifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.
         * @param {Number} firstRow The starting row to move up
         * @param {Number} lastRow The final row to move up
-        * @returns {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+        * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
         *
         * @related EditorDocument.insertLines
         *
@@ -14643,7 +14740,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Shifts all the lines in the document down one, starting from `firstRow` and ending at `lastRow`.
         * @param {Number} firstRow The starting row to move down
         * @param {Number} lastRow The final row to move down
-        * @returns {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+        * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
         *
         * @related EditorDocument.insertLines
         **/
@@ -14654,7 +14751,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Duplicates all the text between `firstRow` and `lastRow`.
         * @param {Number} firstRow The starting row to duplicate
         * @param {Number} lastRow The final row to duplicate
-        * @returns {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
+        * @return {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
         *
         *
         **/
@@ -14730,7 +14827,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * Returns `true` if wrap mode is being used; `false` otherwise.
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         EditSession.prototype.getUseWrapMode = function () {
             return this.$useWrapMode;
@@ -14760,7 +14857,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         /**
         * This should generally only be called by the renderer when a resize is detected.
         * @param {Number} desiredLimit The new wrap limit
-        * @returns {Boolean}
+        * @return {Boolean}
         *
         * @private
         **/
@@ -14790,7 +14887,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * Returns the value of wrap limit.
-        * @returns {Number} The wrap limit.
+        * @return {Number} The wrap limit.
         **/
         EditSession.prototype.getWrapLimit = function () {
             return this.$wrapLimit;
@@ -14809,7 +14906,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         *
         *     { min: wrapLimitRange_min, max: wrapLimitRange_max }
         *
-        * @returns {Object}
+        * @return {Object}
         **/
         EditSession.prototype.getWrapLimitRange = function () {
             // Avoid unexpected mutation by returning a copy
@@ -15121,7 +15218,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * @param {String} str The string to calculate the screen width of
         * @param {Number} maxScreenColumn
         * @param {Number} screenColumn
-        * @returns {[Number]} Returns an `int[]` array with two elements:<br/>
+        * @return {[Number]} Returns an `int[]` array with two elements:<br/>
         * The first position indicates the number of columns for `str` on screen.<br/>
         * The second value contains the position of the document column that this function read until.
         *
@@ -15156,7 +15253,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Returns number of screenrows in a wrapped line.
         * @param {Number} row The row number to check
         *
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getRowLength = function (row) {
             if (this.lineWidgets)
@@ -15192,7 +15289,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         /**
          * Returns the position (on screen) for the last character in the provided screen row.
          * @param {Number} screenRow The screen row to check
-         * @returns {Number}
+         * @return {Number}
          *
          * @related EditSession.documentToScreenColumn
         **/
@@ -15223,7 +15320,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * For the given row, this returns the split data.
-        * @returns {String}
+        * @return {String}
         **/
         EditSession.prototype.getRowSplitData = function (row) {
             if (!this.$useWrapMode) {
@@ -15252,7 +15349,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Converts characters coordinates on the screen to characters coordinates within the document. [This takes into account code folding, word wrap, tab size, and any other visual modifications.]{: #conversionConsiderations}
         * @param {number} screenRow The screen row to check
         * @param {number} screenColumn The screen column to check
-        * @returns {Object} The object returned has two properties: `row` and `column`.
+        * @return {Object} The object returned has two properties: `row` and `column`.
         **/
         EditSession.prototype.screenToDocumentPosition = function (screenRow, screenColumn) {
             if (screenRow < 0) {
@@ -15336,7 +15433,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * Converts document coordinates to screen coordinates. {:conversionConsiderations}
         * @param {Number} docRow The document row to check
         * @param {Number} docColumn The document column to check
-        * @returns {Object} The object returned by this method has two properties: `row` and `column`.
+        * @return {Object} The object returned by this method has two properties: `row` and `column`.
         *
         * @related EditSession.screenToDocumentPosition
         **/
@@ -15428,7 +15525,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         * For the given document row and column, returns the screen column.
         * @param {Number} docRow
         * @param {Number} docColumn
-        * @returns {Number}
+        * @return {Number}
         *
         **/
         EditSession.prototype.documentToScreenColumn = function (docRow, docColumn) {
@@ -15449,7 +15546,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         /**
         * Returns the length of the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScreenLength = function () {
             var screenRows = 0;
@@ -15709,7 +15806,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         /**
          * Adds a new fold.
          *
-         * @returns
+         * @return
          *      The new created Fold object or an existing fold object in case the
          *      passed in range fits an existing fold exactly.
          */
@@ -15781,7 +15878,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 }
             }
             if (!added)
-                foldLine = this.$addFoldLine(new FoldLine_1.default(this.$foldData, fold));
+                foldLine = this.$addFoldLine(new FoldLine_1.default(this.$foldData, [fold]));
             if (this.$useWrapMode)
                 this.$updateWrapData(foldLine.start.row, foldLine.start.row);
             else
@@ -16341,12 +16438,14 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
 
 define('UndoManager',["require", "exports"], function (require, exports) {
     /**
-     * This object maintains the undo stack for an [[EditSession `EditSession`]].
+     * This object maintains the undo stack for an <code>EditSession</code>.
+     *
      * @class UndoManager
      */
     var UndoManager = (function () {
         /**
          * Resets the current undo state.
+         *
          * @class UndoManager
          * @constructor
          */
@@ -16364,82 +16463,99 @@ define('UndoManager',["require", "exports"], function (require, exports) {
          **/
         UndoManager.prototype.execute = function (options) {
             var deltas = options.args[0];
-            this.$editSession = options.args[1];
+            this._editSession = options.args[1];
             if (options.merge && this.hasUndo()) {
-                this.dirtyCounter--;
+                this._dirtyCounter--;
                 deltas = this.$undoStack.pop().concat(deltas);
             }
             this.$undoStack.push(deltas);
             this.$redoStack = [];
-            if (this.dirtyCounter < 0) {
+            if (this._dirtyCounter < 0) {
                 // The user has made a change after undoing past the last clean state.
                 // We can never get back to a clean state now until markClean() is called.
-                this.dirtyCounter = NaN;
+                this._dirtyCounter = NaN;
             }
-            this.dirtyCounter++;
+            this._dirtyCounter++;
         };
         /**
-         * [Perform an undo operation on the document, reverting the last change.]{: #UndoManager.undo}
-         * @param {Boolean} dontSelect {:dontSelect}
+         * Perform an undo operation on the document, reverting the last change.
          *
-         * @returns {Range} The range of the undo.
-         **/
+         * @method undo
+         * @param [dontSelect] {boolean}
+         * @return {Range} The range of the undo.
+         */
         UndoManager.prototype.undo = function (dontSelect) {
             var deltas = this.$undoStack.pop();
             var undoSelectionRange = null;
             if (deltas) {
-                undoSelectionRange = this.$editSession.undoChanges(deltas, dontSelect);
+                undoSelectionRange = this._editSession.undoChanges(deltas, dontSelect);
                 this.$redoStack.push(deltas);
-                this.dirtyCounter--;
+                this._dirtyCounter--;
             }
             return undoSelectionRange;
         };
         /**
-         * [Perform a redo operation on the document, reimplementing the last change.]{: #UndoManager.redo}
-         * @param {Boolean} dontSelect {:dontSelect}
-         **/
+         * Perform a redo operation on the document, reimplementing the last change.
+         * @method redo
+         * @param [dontSelect] {boolean}
+         * @return {Range} The range of the redo.
+         */
         UndoManager.prototype.redo = function (dontSelect) {
             var deltas = this.$redoStack.pop();
             var redoSelectionRange = null;
             if (deltas) {
-                redoSelectionRange = this.$editSession.redoChanges(deltas, dontSelect);
+                redoSelectionRange = this._editSession.redoChanges(deltas, dontSelect);
                 this.$undoStack.push(deltas);
-                this.dirtyCounter++;
+                this._dirtyCounter++;
             }
             return redoSelectionRange;
         };
         /**
-         * Destroys the stack of undo and redo redo operations.
-         **/
+         * Destroys the stack of undo and redo redo operations and marks the manager as clean.
+         *
+         * @method reset
+         * @return {void}
+         */
         UndoManager.prototype.reset = function () {
             this.$undoStack = [];
             this.$redoStack = [];
-            this.dirtyCounter = 0;
+            this.markClean();
         };
         /**
-         *
          * Returns `true` if there are undo operations left to perform.
+         *
+         * @method hasUndo
+         * @return {boolean}
          */
         UndoManager.prototype.hasUndo = function () {
             return this.$undoStack.length > 0;
         };
         /**
          * Returns `true` if there are redo operations left to perform.
+         *
+         * @method hasRedo
+         * @return {boolean}
          */
         UndoManager.prototype.hasRedo = function () {
             return this.$redoStack.length > 0;
         };
         /**
-         * Marks the current status clean
+         * Marks the current status clean.
+         *
+         * @method markClean
+         * @return {void}
          */
         UndoManager.prototype.markClean = function () {
-            this.dirtyCounter = 0;
+            this._dirtyCounter = 0;
         };
         /**
          * Determines whether the current status is clean.
+         *
+         * @method isClean
+         * @return {boolean}
          */
         UndoManager.prototype.isClean = function () {
-            return this.dirtyCounter === 0;
+            return this._dirtyCounter === 0;
         };
         return UndoManager;
     })();
@@ -17569,11 +17685,13 @@ define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/eve
     var ScrollBar = (function (_super) {
         __extends(ScrollBar, _super);
         /**
-         * Creates a new `ScrollBar`. `parent` is the owner of the scroll bar.
-         * @param {DOMElement} parent A DOM element
+         * Creates a new `ScrollBar`.
          *
+         * @class
          * @constructor
-         **/
+         * @param parent {HTMLlement} A paent of the scrollbar.
+         * @param classSuffix {string}
+         */
         function ScrollBar(parent, classSuffix) {
             _super.call(this);
             this.element = dom_1.createElement("div");
@@ -17586,9 +17704,15 @@ define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/eve
             this.skipEvent = false;
             event_1.addListener(this.element, "mousedown", event.preventDefault);
         }
+        /**
+         * @method setVisible
+         * @param isVisible {boolean}
+         * @return {ScrollBar}
+         */
         ScrollBar.prototype.setVisible = function (isVisible) {
             this.element.style.display = isVisible ? "" : "none";
             this.isVisible = isVisible;
+            return this;
         };
         return ScrollBar;
     })(event_emitter_1.default);
@@ -17642,7 +17766,7 @@ define('VScrollBar',["require", "exports", "./lib/event", './ScrollBar', "./lib/
         Object.defineProperty(VScrollBar.prototype, "width", {
             /**
              * Returns the width of the scroll bar.
-             * @returns {Number}
+             * @return {Number}
              **/
             get: function () {
                 return this.isVisible ? this._width : 0;
@@ -17743,7 +17867,7 @@ define('HScrollBar',["require", "exports", "./lib/event", './ScrollBar'], functi
         Object.defineProperty(HScrollBar.prototype, "height", {
             /**
              * Returns the height of the scroll bar.
-             * @returns {Number}
+             * @return {Number}
              **/
             get: function () {
                 return this.isVisible ? this._height : 0;
@@ -18075,7 +18199,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
          * Constructs a new `VirtualRenderer` within the `container` specified.
          * @class VirtualRenderer
          * @constructor
-         * @param container {HTMLElement} The root element of the editor
+         * @param container {HTMLElement} The root element of the editor.
          */
         function VirtualRenderer(container) {
             _super.call(this);
@@ -18172,6 +18296,10 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             config_1._emit("renderer", this);
         }
         Object.defineProperty(VirtualRenderer.prototype, "maxLines", {
+            /**
+             * @property maxLines
+             * @type number
+             */
             set: function (maxLines) {
                 this.$maxLines = maxLines;
             },
@@ -18179,23 +18307,42 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             configurable: true
         });
         Object.defineProperty(VirtualRenderer.prototype, "keepTextAreaAtCursor", {
+            /**
+             * @property keepTextAreaAtCursor
+             * @type boolean
+             */
             set: function (keepTextAreaAtCursor) {
                 this.$keepTextAreaAtCursor = keepTextAreaAtCursor;
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * Sets the <code>style</code> property of the content to "default".
+         *
+         * @method setDefaultCursorStyle
+         * @return {void}
+         */
         VirtualRenderer.prototype.setDefaultCursorStyle = function () {
             this.content.style.cursor = "default";
         };
         /**
-         * Not sure what the correct semantics should be for this.
+         * Sets the <code>opacity</code> of the cursor layer to "0".
+         *
+         * @method setCursorLayerOff
+         * @return {VirtualRenderer}
+         * @chainable
          */
         VirtualRenderer.prototype.setCursorLayerOff = function () {
             var noop = function () { };
             this.$cursorLayer.restartTimer = noop;
             this.$cursorLayer.element.style.opacity = "0";
+            return this;
         };
+        /**
+         * @method updateCharacterSize
+         * @return {void}
+         */
         VirtualRenderer.prototype.updateCharacterSize = function () {
             // FIXME: DGH allowBoldFonts does not exist on Text
             if (this.$textLayer['allowBoldFonts'] != this.$allowBoldFonts) {
@@ -18207,7 +18354,11 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             this.$updatePrintMargin();
         };
         /**
-         * Associates the renderer with an EditSession.
+         * Associates the renderer with a different EditSession.
+         *
+         * @method setSession
+         * @param session {EditSession}
+         * @return {void}
          */
         VirtualRenderer.prototype.setSession = function (session) {
             if (this.session) {
@@ -18217,8 +18368,9 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             if (!session) {
                 return;
             }
-            if (this.scrollMargin.top && session.getScrollTop() <= 0)
+            if (this.scrollMargin.top && session.getScrollTop() <= 0) {
                 session.setScrollTop(-this.scrollMargin.top);
+            }
             this.$cursorLayer.setSession(session);
             this.$markerBack.setSession(session);
             this.$markerFront.setSession(session);
@@ -18231,12 +18383,13 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             this.session.doc.on("changeNewLineMode", this.onChangeNewLineMode);
         };
         /**
-        * Triggers a partial update of the text, from the range given by the two parameters.
-        * @param {Number} firstRow The first row to update
-        * @param {Number} lastRow The last row to update
-        *
-        *
-        **/
+         * Triggers a partial update of the text, from the range given by the two parameters.
+         *
+         * @param {Number} firstRow The first row to update.
+         * @param {Number} lastRow The last row to update.
+         * @param [force] {boolean}
+         * @return {void}
+         */
         VirtualRenderer.prototype.updateLines = function (firstRow, lastRow, force) {
             if (lastRow === undefined) {
                 lastRow = Infinity;
@@ -18324,14 +18477,12 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             }
         };
         /**
-        * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
-        * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
-        * @param {Number} gutterWidth The width of the gutter in pixels
-        * @param {Number} width The width of the editor in pixels
-        * @param {Number} height The hiehgt of the editor, in pixels
-        *
-        *
-        **/
+         * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
+         * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
+         * @param {Number} gutterWidth The width of the gutter in pixels
+         * @param {Number} width The width of the editor in pixels
+         * @param {Number} height The hiehgt of the editor, in pixels
+         */
         VirtualRenderer.prototype.onResize = function (force, gutterWidth, width, height) {
             if (this.resizing > 2)
                 return;
@@ -18421,17 +18572,21 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             return this.session.adjustWrapLimit(limit, this.$showPrintMargin && this.$printMarginColumn);
         };
         /**
-        * Identifies whether you want to have an animated scroll or not.
-        * @param {Boolean} shouldAnimate Set to `true` to show animated scrolls
-        *
-        **/
+         * Identifies whether you want to have an animated scroll or not.
+         *
+         * @method setAnimatedScroll
+         * @param shouldAnimate {boolean} Set to `true` to show animated scrolls.
+         * @return {void}
+         */
         VirtualRenderer.prototype.setAnimatedScroll = function (shouldAnimate) {
             this.setOption("animatedScroll", shouldAnimate);
         };
         /**
-        * Returns whether an animated scroll happens or not.
-        * @returns {Boolean}
-        **/
+         * Returns whether an animated scroll happens or not.
+         *
+         * @method getAnimatedScroll
+         * @return {Boolean}
+         */
         VirtualRenderer.prototype.getAnimatedScroll = function () {
             return this.$animatedScroll;
         };
@@ -18444,7 +18599,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         /**
          * Returns whether invisible characters are being shown or not.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         VirtualRenderer.prototype.getShowInvisibles = function () {
             return this.getOption("showInvisibles");
@@ -18465,7 +18620,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         /**
          * Returns whether the print margin is being shown or not.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         VirtualRenderer.prototype.getShowPrintMargin = function () {
             return this.getOption("showPrintMargin");
@@ -18479,14 +18634,14 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         /**
          * Returns the column number of where the print margin is.
-         * @returns {Number}
+         * @return {Number}
          */
         VirtualRenderer.prototype.getPrintMarginColumn = function () {
             return this.getOption("printMarginColumn");
         };
         /**
          * Returns `true` if the gutter is being shown.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         VirtualRenderer.prototype.getShowGutter = function () {
             return this.getOption("showGutter");
@@ -18543,7 +18698,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the root element containing this renderer.
-        * @returns {DOMElement}
+        * @return {DOMElement}
         **/
         VirtualRenderer.prototype.getContainerElement = function () {
             return this.container;
@@ -18551,7 +18706,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the element that the mouse events are attached to
-        * @returns {DOMElement}
+        * @return {DOMElement}
         **/
         VirtualRenderer.prototype.getMouseEventTarget = function () {
             return this.content;
@@ -18559,7 +18714,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the element to which the hidden text area is added.
-        * @returns {DOMElement}
+        * @return {DOMElement}
         **/
         VirtualRenderer.prototype.getTextAreaContainer = function () {
             return this.container;
@@ -18595,7 +18750,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * [Returns the index of the first visible row.]{: #VirtualRenderer.getFirstVisibleRow}
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getFirstVisibleRow = function () {
             return this.layerConfig.firstRow;
@@ -18603,7 +18758,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the index of the first fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getFirstFullyVisibleRow = function () {
             return this.layerConfig.firstRow + (this.layerConfig.offset === 0 ? 0 : 1);
@@ -18611,7 +18766,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the index of the last fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getLastFullyVisibleRow = function () {
             var flint = Math.floor((this.layerConfig.height + this.layerConfig.offset) / this.layerConfig.lineHeight);
@@ -18620,7 +18775,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * [Returns the index of the last visible row.]{: #VirtualRenderer.getLastVisibleRow}
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getLastVisibleRow = function () {
             return this.layerConfig.lastRow;
@@ -18652,7 +18807,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         /**
          * Returns whether the horizontal scrollbar is set to be always visible.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         VirtualRenderer.prototype.getHScrollBarAlwaysVisible = function () {
             // FIXME
@@ -18667,7 +18822,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         /**
          * Returns whether the vertical scrollbar is set to be always visible.
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         VirtualRenderer.prototype.getVScrollBarAlwaysVisible = function () {
             return this.$vScrollBarAlwaysVisible;
@@ -19031,7 +19186,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         * {:EditSession.getScrollTop}
         * @related EditSession.getScrollTop
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollTop = function () {
             return this.session.getScrollTop();
@@ -19039,7 +19194,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         * {:EditSession.getScrollLeft}
         * @related EditSession.getScrollLeft
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollLeft = function () {
             return this.session.getScrollLeft();
@@ -19047,7 +19202,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the first visible row, regardless of whether it's fully visible or not.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollTopRow = function () {
             return this.scrollTop / this.lineHeight;
@@ -19055,7 +19210,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
         *
         * Returns the last visible row, regardless of whether it's fully visible or not.
-        * @returns {Number}
+        * @return {Number}
         **/
         VirtualRenderer.prototype.getScrollBottomRow = function () {
             return Math.max(0, Math.floor((this.scrollTop + this.$size.scrollerHeight) / this.lineHeight) - 1);
@@ -19196,7 +19351,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         * @param {Number} deltaY The y value to scroll by
         *
         *
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         VirtualRenderer.prototype.isScrollableBy = function (deltaX, deltaY) {
             if (deltaY < 0 && this.session.getScrollTop() >= 1 - this.scrollMargin.top)
@@ -19227,7 +19382,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         * Returns an object containing the `pageX` and `pageY` coordinates of the document position.
         * @param {Number} row The document row position
         * @param {Number} column The document column position
-        * @returns {Object}
+        * @return {Object}
         **/
         VirtualRenderer.prototype.textToScreenCoordinates = function (row, column) {
             var canvasPos = this.scroller.getBoundingClientRect();
@@ -19293,8 +19448,11 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         /**
          * Sets a new theme for the editor.
          * `theme` should exist, and be a directory path, like `ace/theme/textmate`.
-         * @param {String} theme The path to a theme
-         * @param {Function} cb optional callback
+         *
+         * @method setTheme
+         * @param theme {String} theme The path to a theme
+         * @param theme {Function} cb optional callback
+         * @return {void}
          */
         VirtualRenderer.prototype.setTheme = function (theme, cb) {
             console.log("VirtualRenderer setTheme, theme = " + theme);
@@ -19340,7 +19498,9 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         /**
          * Returns the path of the current theme.
-         * @returns {String}
+         *
+         * @method getTheme
+         * @return {string}
          */
         VirtualRenderer.prototype.getTheme = function () {
             return this.$themeId;
@@ -19555,28 +19715,2919 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-define('deuce',["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditSession", "./UndoManager", "./VirtualRenderer"], function (require, exports, dom_1, event_1, Editor_1, EditSession_1, UndoManager_1, VirtualRenderer_1) {
-    //import {} from './config';
-    // The following require()s are for inclusion in the built ace file
-    //require("./worker/worker_client");
-    //require("./keyboard/hash_handler");
-    //require("./placeholder");
-    //require("./multi_select");
-    //require("./mode/folding/fold_mode");
-    //require("./theme/textmate");
-    //require("./ext/error_marker");
-    // export var config = cfg;
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/DocCommentHighlightRules',["require", "exports", "./TextHighlightRules"], function (require, exports, TextHighlightRules_1) {
+    var DocCommentHighlightRules = (function (_super) {
+        __extends(DocCommentHighlightRules, _super);
+        function DocCommentHighlightRules() {
+            _super.call(this);
+            this.$rules = {
+                "start": [{
+                        token: "comment.doc.tag",
+                        regex: "@[\\w\\d_]+" // TODO: fix email addresses
+                    }, {
+                        token: "comment.doc.tag",
+                        regex: "\\bTODO\\b"
+                    }, {
+                        defaultToken: "comment.doc"
+                    }]
+            };
+        }
+        DocCommentHighlightRules.getStartRule = function (start) {
+            return {
+                token: "comment.doc",
+                regex: "\\/\\*(?=\\*)",
+                next: start
+            };
+        };
+        DocCommentHighlightRules.getEndRule = function (start) {
+            return {
+                token: "comment.doc",
+                regex: "\\*\\/",
+                next: start
+            };
+        };
+        return DocCommentHighlightRules;
+    })(TextHighlightRules_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = DocCommentHighlightRules;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/JavaScriptHighlightRules',["require", "exports", "./DocCommentHighlightRules", "./TextHighlightRules"], function (require, exports, DocCommentHighlightRules_1, TextHighlightRules_1) {
+    var JavaScriptHighlightRules = (function (_super) {
+        __extends(JavaScriptHighlightRules, _super);
+        function JavaScriptHighlightRules(options) {
+            _super.call(this);
+            // see: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects
+            var keywordMapper = this.createKeywordMapper({
+                "variable.language": "Array|Boolean|Date|Function|Iterator|Number|Object|RegExp|String|Proxy|" +
+                    "Namespace|QName|XML|XMLList|" +
+                    "ArrayBuffer|Float32Array|Float64Array|Int16Array|Int32Array|Int8Array|" +
+                    "Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|" +
+                    "Error|EvalError|InternalError|RangeError|ReferenceError|StopIteration|" +
+                    "SyntaxError|TypeError|URIError|" +
+                    "decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|eval|isFinite|" +
+                    "isNaN|parseFloat|parseInt|" +
+                    "JSON|Math|" +
+                    "this|arguments|prototype|window|document",
+                "keyword": "const|yield|import|get|set|" +
+                    "break|case|catch|continue|default|delete|do|else|finally|for|function|" +
+                    "if|in|instanceof|new|return|switch|throw|try|typeof|let|var|while|with|debugger|" +
+                    // invalid or reserved
+                    "__parent__|__count__|escape|unescape|with|__proto__|" +
+                    "class|enum|extends|super|export|implements|private|public|interface|package|protected|static",
+                "storage.type": "const|let|var|function",
+                "constant.language": "null|Infinity|NaN|undefined",
+                "support.function": "alert",
+                "constant.language.boolean": "true|false"
+            }, "identifier");
+            // keywords which can be followed by regular expressions
+            var kwBeforeRe = "case|do|else|finally|in|instanceof|return|throw|try|typeof|yield|void";
+            // TODO: Unicode escape sequences
+            var identifierRe = "[a-zA-Z\\$_\u00a1-\uffff][a-zA-Z\\d\\$_\u00a1-\uffff]*\\b";
+            var escapedRe = "\\\\(?:x[0-9a-fA-F]{2}|" +
+                "u[0-9a-fA-F]{4}|" +
+                "[0-2][0-7]{0,2}|" +
+                "3[0-6][0-7]?|" +
+                "37[0-7]?|" +
+                "[4-7][0-7]?|" +
+                ".)";
+            // regexp must not have capturing parentheses. Use (?:) instead.
+            // regexps are ordered -> the first match is used
+            this.$rules = {
+                "no_regex": [
+                    {
+                        token: "comment",
+                        regex: "\\/\\/",
+                        next: "line_comment"
+                    },
+                    DocCommentHighlightRules_1.default.getStartRule("doc-start"),
+                    {
+                        token: "comment",
+                        regex: /\/\*/,
+                        next: "comment"
+                    }, {
+                        token: "string",
+                        regex: "'(?=.)",
+                        next: "qstring"
+                    }, {
+                        token: "string",
+                        regex: '"(?=.)',
+                        next: "qqstring"
+                    }, {
+                        token: "constant.numeric",
+                        regex: /0[xX][0-9a-fA-F]+\b/
+                    }, {
+                        token: "constant.numeric",
+                        regex: /[+-]?\d+(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/
+                    }, {
+                        // Sound.prototype.play =
+                        token: [
+                            "storage.type", "punctuation.operator", "support.function",
+                            "punctuation.operator", "entity.name.function", "text", "keyword.operator"
+                        ],
+                        regex: "(" + identifierRe + ")(\\.)(prototype)(\\.)(" + identifierRe + ")(\\s*)(=)",
+                        next: "function_arguments"
+                    }, {
+                        // Sound.play = function() {  }
+                        token: [
+                            "storage.type", "punctuation.operator", "entity.name.function", "text",
+                            "keyword.operator", "text", "storage.type", "text", "paren.lparen"
+                        ],
+                        regex: "(" + identifierRe + ")(\\.)(" + identifierRe + ")(\\s*)(=)(\\s*)(function)(\\s*)(\\()",
+                        next: "function_arguments"
+                    }, {
+                        // play = function() {  }
+                        token: [
+                            "entity.name.function", "text", "keyword.operator", "text", "storage.type",
+                            "text", "paren.lparen"
+                        ],
+                        regex: "(" + identifierRe + ")(\\s*)(=)(\\s*)(function)(\\s*)(\\()",
+                        next: "function_arguments"
+                    }, {
+                        // Sound.play = function play() {  }
+                        token: [
+                            "storage.type", "punctuation.operator", "entity.name.function", "text",
+                            "keyword.operator", "text",
+                            "storage.type", "text", "entity.name.function", "text", "paren.lparen"
+                        ],
+                        regex: "(" + identifierRe + ")(\\.)(" + identifierRe + ")(\\s*)(=)(\\s*)(function)(\\s+)(\\w+)(\\s*)(\\()",
+                        next: "function_arguments"
+                    }, {
+                        // function myFunc(arg) { }
+                        token: [
+                            "storage.type", "text", "entity.name.function", "text", "paren.lparen"
+                        ],
+                        regex: "(function)(\\s+)(" + identifierRe + ")(\\s*)(\\()",
+                        next: "function_arguments"
+                    }, {
+                        // foobar: function() { }
+                        token: [
+                            "entity.name.function", "text", "punctuation.operator",
+                            "text", "storage.type", "text", "paren.lparen"
+                        ],
+                        regex: "(" + identifierRe + ")(\\s*)(:)(\\s*)(function)(\\s*)(\\()",
+                        next: "function_arguments"
+                    }, {
+                        // : function() { } (this is for issues with 'foo': function() { })
+                        token: [
+                            "text", "text", "storage.type", "text", "paren.lparen"
+                        ],
+                        regex: "(:)(\\s*)(function)(\\s*)(\\()",
+                        next: "function_arguments"
+                    }, {
+                        token: "keyword",
+                        regex: "(?:" + kwBeforeRe + ")\\b",
+                        next: "start"
+                    }, {
+                        token: ["punctuation.operator", "support.function"],
+                        regex: /(\.)(s(?:h(?:ift|ow(?:Mod(?:elessDialog|alDialog)|Help))|croll(?:X|By(?:Pages|Lines)?|Y|To)?|t(?:op|rike)|i(?:n|zeToContent|debar|gnText)|ort|u(?:p|b(?:str(?:ing)?)?)|pli(?:ce|t)|e(?:nd|t(?:Re(?:sizable|questHeader)|M(?:i(?:nutes|lliseconds)|onth)|Seconds|Ho(?:tKeys|urs)|Year|Cursor|Time(?:out)?|Interval|ZOptions|Date|UTC(?:M(?:i(?:nutes|lliseconds)|onth)|Seconds|Hours|Date|FullYear)|FullYear|Active)|arch)|qrt|lice|avePreferences|mall)|h(?:ome|andleEvent)|navigate|c(?:har(?:CodeAt|At)|o(?:s|n(?:cat|textual|firm)|mpile)|eil|lear(?:Timeout|Interval)?|a(?:ptureEvents|ll)|reate(?:StyleSheet|Popup|EventObject))|t(?:o(?:GMTString|S(?:tring|ource)|U(?:TCString|pperCase)|Lo(?:caleString|werCase))|est|a(?:n|int(?:Enabled)?))|i(?:s(?:NaN|Finite)|ndexOf|talics)|d(?:isableExternalCapture|ump|etachEvent)|u(?:n(?:shift|taint|escape|watch)|pdateCommands)|j(?:oin|avaEnabled)|p(?:o(?:p|w)|ush|lugins.refresh|a(?:ddings|rse(?:Int|Float)?)|r(?:int|ompt|eference))|e(?:scape|nableExternalCapture|val|lementFromPoint|x(?:p|ec(?:Script|Command)?))|valueOf|UTC|queryCommand(?:State|Indeterm|Enabled|Value)|f(?:i(?:nd|le(?:ModifiedDate|Size|CreatedDate|UpdatedDate)|xed)|o(?:nt(?:size|color)|rward)|loor|romCharCode)|watch|l(?:ink|o(?:ad|g)|astIndexOf)|a(?:sin|nchor|cos|t(?:tachEvent|ob|an(?:2)?)|pply|lert|b(?:s|ort))|r(?:ou(?:nd|teEvents)|e(?:size(?:By|To)|calc|turnValue|place|verse|l(?:oad|ease(?:Capture|Events)))|andom)|g(?:o|et(?:ResponseHeader|M(?:i(?:nutes|lliseconds)|onth)|Se(?:conds|lection)|Hours|Year|Time(?:zoneOffset)?|Da(?:y|te)|UTC(?:M(?:i(?:nutes|lliseconds)|onth)|Seconds|Hours|Da(?:y|te)|FullYear)|FullYear|A(?:ttention|llResponseHeaders)))|m(?:in|ove(?:B(?:y|elow)|To(?:Absolute)?|Above)|ergeAttributes|a(?:tch|rgins|x))|b(?:toa|ig|o(?:ld|rderWidths)|link|ack))\b(?=\()/
+                    }, {
+                        token: ["punctuation.operator", "support.function.dom"],
+                        regex: /(\.)(s(?:ub(?:stringData|mit)|plitText|e(?:t(?:NamedItem|Attribute(?:Node)?)|lect))|has(?:ChildNodes|Feature)|namedItem|c(?:l(?:ick|o(?:se|neNode))|reate(?:C(?:omment|DATASection|aption)|T(?:Head|extNode|Foot)|DocumentFragment|ProcessingInstruction|E(?:ntityReference|lement)|Attribute))|tabIndex|i(?:nsert(?:Row|Before|Cell|Data)|tem)|open|delete(?:Row|C(?:ell|aption)|T(?:Head|Foot)|Data)|focus|write(?:ln)?|a(?:dd|ppend(?:Child|Data))|re(?:set|place(?:Child|Data)|move(?:NamedItem|Child|Attribute(?:Node)?)?)|get(?:NamedItem|Element(?:sBy(?:Name|TagName)|ById)|Attribute(?:Node)?)|blur)\b(?=\()/
+                    }, {
+                        token: ["punctuation.operator", "support.constant"],
+                        regex: /(\.)(s(?:ystemLanguage|cr(?:ipts|ollbars|een(?:X|Y|Top|Left))|t(?:yle(?:Sheets)?|atus(?:Text|bar)?)|ibling(?:Below|Above)|ource|uffixes|e(?:curity(?:Policy)?|l(?:ection|f)))|h(?:istory|ost(?:name)?|as(?:h|Focus))|y|X(?:MLDocument|SLDocument)|n(?:ext|ame(?:space(?:s|URI)|Prop))|M(?:IN_VALUE|AX_VALUE)|c(?:haracterSet|o(?:n(?:structor|trollers)|okieEnabled|lorDepth|mp(?:onents|lete))|urrent|puClass|l(?:i(?:p(?:boardData)?|entInformation)|osed|asses)|alle(?:e|r)|rypto)|t(?:o(?:olbar|p)|ext(?:Transform|Indent|Decoration|Align)|ags)|SQRT(?:1_2|2)|i(?:n(?:ner(?:Height|Width)|put)|ds|gnoreCase)|zIndex|o(?:scpu|n(?:readystatechange|Line)|uter(?:Height|Width)|p(?:sProfile|ener)|ffscreenBuffering)|NEGATIVE_INFINITY|d(?:i(?:splay|alog(?:Height|Top|Width|Left|Arguments)|rectories)|e(?:scription|fault(?:Status|Ch(?:ecked|arset)|View)))|u(?:ser(?:Profile|Language|Agent)|n(?:iqueID|defined)|pdateInterval)|_content|p(?:ixelDepth|ort|ersonalbar|kcs11|l(?:ugins|atform)|a(?:thname|dding(?:Right|Bottom|Top|Left)|rent(?:Window|Layer)?|ge(?:X(?:Offset)?|Y(?:Offset)?))|r(?:o(?:to(?:col|type)|duct(?:Sub)?|mpter)|e(?:vious|fix)))|e(?:n(?:coding|abledPlugin)|x(?:ternal|pando)|mbeds)|v(?:isibility|endor(?:Sub)?|Linkcolor)|URLUnencoded|P(?:I|OSITIVE_INFINITY)|f(?:ilename|o(?:nt(?:Size|Family|Weight)|rmName)|rame(?:s|Element)|gColor)|E|whiteSpace|l(?:i(?:stStyleType|n(?:eHeight|kColor))|o(?:ca(?:tion(?:bar)?|lName)|wsrc)|e(?:ngth|ft(?:Context)?)|a(?:st(?:M(?:odified|atch)|Index|Paren)|yer(?:s|X)|nguage))|a(?:pp(?:MinorVersion|Name|Co(?:deName|re)|Version)|vail(?:Height|Top|Width|Left)|ll|r(?:ity|guments)|Linkcolor|bove)|r(?:ight(?:Context)?|e(?:sponse(?:XML|Text)|adyState))|global|x|m(?:imeTypes|ultiline|enubar|argin(?:Right|Bottom|Top|Left))|L(?:N(?:10|2)|OG(?:10E|2E))|b(?:o(?:ttom|rder(?:Width|RightWidth|BottomWidth|Style|Color|TopWidth|LeftWidth))|ufferDepth|elow|ackground(?:Color|Image)))\b/
+                    }, {
+                        token: ["support.constant"],
+                        regex: /that\b/
+                    }, {
+                        token: ["storage.type", "punctuation.operator", "support.function.firebug"],
+                        regex: /(console)(\.)(warn|info|log|error|time|trace|timeEnd|assert)\b/
+                    }, {
+                        token: keywordMapper,
+                        regex: identifierRe
+                    }, {
+                        token: "keyword.operator",
+                        regex: /--|\+\+|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\|\||\?\:|[!$%&*+\-~\/^]=?/,
+                        next: "start"
+                    }, {
+                        token: "punctuation.operator",
+                        regex: /[?:,;.]/,
+                        next: "start"
+                    }, {
+                        token: "paren.lparen",
+                        regex: /[\[({]/,
+                        next: "start"
+                    }, {
+                        token: "paren.rparen",
+                        regex: /[\])}]/
+                    }, {
+                        token: "comment",
+                        regex: /^#!.*$/
+                    }
+                ],
+                // regular expressions are only allowed after certain tokens. This
+                // makes sure we don't mix up regexps with the divison operator
+                "start": [
+                    DocCommentHighlightRules_1.default.getStartRule("doc-start"),
+                    {
+                        token: "comment",
+                        regex: "\\/\\*",
+                        next: "comment_regex_allowed"
+                    }, {
+                        token: "comment",
+                        regex: "\\/\\/",
+                        next: "line_comment_regex_allowed"
+                    }, {
+                        token: "string.regexp",
+                        regex: "\\/",
+                        next: "regex"
+                    }, {
+                        token: "text",
+                        regex: "\\s+|^$",
+                        next: "start"
+                    }, {
+                        // immediately return to the start mode without matching
+                        // anything
+                        token: "empty",
+                        regex: "",
+                        next: "no_regex"
+                    }
+                ],
+                "regex": [
+                    {
+                        // escapes
+                        token: "regexp.keyword.operator",
+                        regex: "\\\\(?:u[\\da-fA-F]{4}|x[\\da-fA-F]{2}|.)"
+                    }, {
+                        // flag
+                        token: "string.regexp",
+                        regex: "/[sxngimy]*",
+                        next: "no_regex"
+                    }, {
+                        // invalid operators
+                        token: "invalid",
+                        regex: /\{\d+\b,?\d*\}[+*]|[+*$^?][+*]|[$^][?]|\?{3,}/
+                    }, {
+                        // operators
+                        token: "constant.language.escape",
+                        regex: /\(\?[:=!]|\)|\{\d+\b,?\d*\}|[+*]\?|[()$^+*?.]/
+                    }, {
+                        token: "constant.language.delimiter",
+                        regex: /\|/
+                    }, {
+                        token: "constant.language.escape",
+                        regex: /\[\^?/,
+                        next: "regex_character_class"
+                    }, {
+                        token: "empty",
+                        regex: "$",
+                        next: "no_regex"
+                    }, {
+                        defaultToken: "string.regexp"
+                    }
+                ],
+                "regex_character_class": [
+                    {
+                        token: "regexp.charclass.keyword.operator",
+                        regex: "\\\\(?:u[\\da-fA-F]{4}|x[\\da-fA-F]{2}|.)"
+                    }, {
+                        token: "constant.language.escape",
+                        regex: "]",
+                        next: "regex"
+                    }, {
+                        token: "constant.language.escape",
+                        regex: "-"
+                    }, {
+                        token: "empty",
+                        regex: "$",
+                        next: "no_regex"
+                    }, {
+                        defaultToken: "string.regexp.charachterclass"
+                    }
+                ],
+                "function_arguments": [
+                    {
+                        token: "variable.parameter",
+                        regex: identifierRe
+                    }, {
+                        token: "punctuation.operator",
+                        regex: "[, ]+"
+                    }, {
+                        token: "punctuation.operator",
+                        regex: "$"
+                    }, {
+                        token: "empty",
+                        regex: "",
+                        next: "no_regex"
+                    }
+                ],
+                "comment_regex_allowed": [
+                    { token: "comment", regex: "\\*\\/", next: "start" },
+                    { defaultToken: "comment" }
+                ],
+                "comment": [
+                    { token: "comment", regex: "\\*\\/", next: "no_regex" },
+                    { defaultToken: "comment" }
+                ],
+                "line_comment_regex_allowed": [
+                    { token: "comment", regex: "$|^", next: "start" },
+                    { defaultToken: "comment" }
+                ],
+                "line_comment": [
+                    { token: "comment", regex: "$|^", next: "no_regex" },
+                    { defaultToken: "comment" }
+                ],
+                "qqstring": [
+                    {
+                        token: "constant.language.escape",
+                        regex: escapedRe
+                    }, {
+                        token: "string",
+                        regex: "\\\\$",
+                        next: "qqstring"
+                    }, {
+                        token: "string",
+                        regex: '"|$',
+                        next: "no_regex"
+                    }, {
+                        defaultToken: "string"
+                    }
+                ],
+                "qstring": [
+                    {
+                        token: "constant.language.escape",
+                        regex: escapedRe
+                    }, {
+                        token: "string",
+                        regex: "\\\\$",
+                        next: "qstring"
+                    }, {
+                        token: "string",
+                        regex: "'|$",
+                        next: "no_regex"
+                    }, {
+                        defaultToken: "string"
+                    }
+                ]
+            };
+            if (!options || !options.noES6) {
+                this.$rules.no_regex.unshift({
+                    regex: "[{}]", onMatch: function (val, state, stack) {
+                        this.next = val == "{" ? this.nextState : "";
+                        if (val == "{" && stack.length) {
+                            stack.unshift("start", state);
+                            return "paren";
+                        }
+                        if (val == "}" && stack.length) {
+                            stack.shift();
+                            this.next = stack.shift();
+                            if (this.next.indexOf("string") != -1)
+                                return "paren.quasi.end";
+                        }
+                        return val == "{" ? "paren.lparen" : "paren.rparen";
+                    },
+                    nextState: "start"
+                }, {
+                    token: "string.quasi.start",
+                    regex: /`/,
+                    push: [{
+                            token: "constant.language.escape",
+                            regex: escapedRe
+                        }, {
+                            token: "paren.quasi.start",
+                            regex: /\${/,
+                            push: "start"
+                        }, {
+                            token: "string.quasi.end",
+                            regex: /`/,
+                            next: "pop"
+                        }, {
+                            defaultToken: "string.quasi"
+                        }]
+                });
+            }
+            this.embedRules(DocCommentHighlightRules_1.default, "doc-", [DocCommentHighlightRules_1.default.getEndRule("no_regex")]);
+            this.normalizeRules();
+        }
+        return JavaScriptHighlightRules;
+    })(TextHighlightRules_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = JavaScriptHighlightRules;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+define('mode/MatchingBraceOutdent',["require", "exports", "../Range"], function (require, exports, Range_1) {
+    var MatchingBraceOutdent = (function () {
+        function MatchingBraceOutdent() {
+        }
+        MatchingBraceOutdent.prototype.checkOutdent = function (line, text) {
+            if (!/^\s+$/.test(line)) {
+                return false;
+            }
+            return /^\s*\}/.test(text);
+        };
+        MatchingBraceOutdent.prototype.autoOutdent = function (session, row) {
+            var line = session.getLine(row);
+            var match = line.match(/^(\s*\})/);
+            if (!match)
+                return 0;
+            var column = match[1].length;
+            var openBracePos = session.findMatchingBracket({ row: row, column: column });
+            if (!openBracePos || openBracePos.row == row)
+                return 0;
+            var indent = this.$getIndent(session.getLine(openBracePos.row));
+            session.replace(new Range_1.default(row, 0, row, column - 1), indent);
+        };
+        MatchingBraceOutdent.prototype.$getIndent = function (line) {
+            return line.match(/^\s*/)[0];
+        };
+        return MatchingBraceOutdent;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = MatchingBraceOutdent;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_emitter'], function (require, exports, net_1, event_emitter_1) {
     /**
-     * Provides access to require in packed noconflict mode
-     * @param {String} moduleName
-     * @returns {Object}
-     **/
-    // FIXME: Trying to export this in the ACE namespace is problematic in TypeScript.
-    // export var require = require;
-    /**
-     * Embeds the Ace editor into the DOM, at the element provided by `el`.
-     * @param {String | DOMElement} el Either the id of an element, or the element itself
+     * WorkerClient manages the communication with a Web Worker.
      */
+    var WorkerClient = (function (_super) {
+        __extends(WorkerClient, _super);
+        function WorkerClient(workerUrl) {
+            _super.call(this);
+            this.callbacks = {};
+            this.callbackId = 1;
+            this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
+            this.changeListener = this.changeListener.bind(this);
+            this.onMessage = this.onMessage.bind(this);
+            var workerUrl = net_1.qualifyURL(workerUrl);
+            try {
+                this.$worker = new Worker(workerUrl);
+            }
+            catch (e) {
+                if (e instanceof window['DOMException']) {
+                    // Likely same origin problem. Use importScripts from a shim Worker.
+                    var blob = this.$workerBlob(workerUrl);
+                    var URL = window['URL'] || window['webkitURL'];
+                    var blobURL = URL.createObjectURL(blob);
+                    this.$worker = new Worker(blobURL);
+                    URL.revokeObjectURL(blobURL);
+                }
+                else {
+                    throw e;
+                }
+            }
+            // Add an EventListener for data the worker returns.
+            this.$worker.onmessage = this.onMessage;
+        }
+        WorkerClient.prototype.init = function (moduleName, className) {
+            var tlns = {};
+            // Sending a postMessage starts the worker.
+            this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName, classname: className });
+        };
+        WorkerClient.prototype.onMessage = function (event) {
+            var origin = event.origin;
+            var source = event.source;
+            var msg = event.data;
+            switch (msg.type) {
+                case "log":
+                    window.console && console.log && console.log.apply(console, msg.data);
+                    break;
+                case "event":
+                    this._signal(msg.name, { data: msg.data });
+                    break;
+                case "call":
+                    var callback = this.callbacks[msg.id];
+                    if (callback) {
+                        callback(msg.data);
+                        delete this.callbacks[msg.id];
+                    }
+                    break;
+            }
+        };
+        WorkerClient.prototype.$normalizePath = function (path) {
+            return net_1.qualifyURL(path);
+        };
+        WorkerClient.prototype.terminate = function () {
+            this._signal("terminate", {});
+            this.deltaQueue = null;
+            this.$worker.terminate();
+            this.$worker = null;
+            this.detachFromDocument();
+        };
+        WorkerClient.prototype.send = function (cmd, args) {
+            this.$worker.postMessage({ command: cmd, args: args });
+        };
+        WorkerClient.prototype.call = function (cmd, args, callback) {
+            if (callback) {
+                var id = this.callbackId++;
+                this.callbacks[id] = callback;
+                args.push(id);
+            }
+            this.send(cmd, args);
+        };
+        WorkerClient.prototype.emit = function (event, data) {
+            try {
+                // firefox refuses to clone objects which have function properties
+                // TODO: cleanup event
+                this.$worker.postMessage({ event: event, data: { data: data.data } });
+            }
+            catch (e) {
+                console.error(e.stack);
+            }
+        };
+        WorkerClient.prototype.attachToDocument = function (doc) {
+            if (this.$doc) {
+                this.terminate();
+            }
+            this.$doc = doc;
+            this.call("setValue", [doc.getValue()]);
+            doc.on('change', this.changeListener);
+        };
+        WorkerClient.prototype.detachFromDocument = function () {
+            this.$doc.off('change', this.changeListener);
+            this.$doc = null;
+        };
+        /**
+         * This function is used as the basis for a function where this is bound safely.
+         * It handles changes to the document by placing the messages in a queue
+         */
+        WorkerClient.prototype.changeListener = function (e, doc) {
+            if (!this.deltaQueue) {
+                this.deltaQueue = [e.data];
+                setTimeout(this.$sendDeltaQueue, 0);
+            }
+            else {
+                this.deltaQueue.push(e.data);
+            }
+        };
+        WorkerClient.prototype.$sendDeltaQueue = function () {
+            var doc = this.$doc;
+            var q = this.deltaQueue;
+            if (!q)
+                return;
+            this.deltaQueue = null;
+            if (q.length > 20 && q.length > doc.getLength() >> 1) {
+                this.call("setValue", [doc.getValue()]);
+            }
+            else
+                this.emit("change", { data: q });
+        };
+        WorkerClient.prototype.$workerBlob = function (workerUrl) {
+            // workerUrl can be protocol relative
+            // importScripts only takes fully qualified urls
+            var script = "importScripts('" + net_1.qualifyURL(workerUrl) + "');";
+            try {
+                return new Blob([script], { "type": "application/javascript" });
+            }
+            catch (e) {
+                var BlobBuilder = window['BlobBuilder'] || window['WebKitBlobBuilder'] || window['MozBlobBuilder'];
+                var blobBuilder = new BlobBuilder();
+                blobBuilder.append(script);
+                return blobBuilder.getBlob("application/javascript");
+            }
+        };
+        return WorkerClient;
+    })(event_emitter_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = WorkerClient;
+});
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+;
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/behaviour/CstyleBehaviour',["require", "exports", "../Behaviour", "../../TokenIterator", "../../lib/lang"], function (require, exports, Behaviour_1, TokenIterator_1, lang_1) {
+    var SAFE_INSERT_IN_TOKENS = ["text", "paren.rparen", "punctuation.operator"];
+    var SAFE_INSERT_BEFORE_TOKENS = ["text", "paren.rparen", "punctuation.operator", "comment"];
+    var context;
+    var contextCache = {};
+    var initContext = function (editor) {
+        var id = -1;
+        if (editor.multiSelect) {
+            id = editor.selection.id;
+            if (contextCache.rangeCount != editor.multiSelect.rangeCount)
+                contextCache = { rangeCount: editor.multiSelect.rangeCount };
+        }
+        if (contextCache[id])
+            return context = contextCache[id];
+        context = contextCache[id] = {
+            autoInsertedBrackets: 0,
+            autoInsertedRow: -1,
+            autoInsertedLineEnd: "",
+            maybeInsertedBrackets: 0,
+            maybeInsertedRow: -1,
+            maybeInsertedLineStart: "",
+            maybeInsertedLineEnd: ""
+        };
+    };
+    var CstyleBehaviour = (function (_super) {
+        __extends(CstyleBehaviour, _super);
+        function CstyleBehaviour() {
+            _super.call(this);
+            this.add("braces", "insertion", function (state, action, editor, session, text) {
+                var cursor = editor.getCursorPosition();
+                var line = session.doc.getLine(cursor.row);
+                if (text == '{') {
+                    initContext(editor);
+                    var selection = editor.getSelectionRange();
+                    var selected = session.doc.getTextRange(selection);
+                    if (selected !== "" && selected !== "{" && editor.getWrapBehavioursEnabled()) {
+                        return {
+                            text: '{' + selected + '}',
+                            selection: false
+                        };
+                    }
+                    else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
+                        if (/[\]\}\)]/.test(line[cursor.column]) || editor.inMultiSelectMode) {
+                            CstyleBehaviour.recordAutoInsert(editor, session, "}");
+                            return {
+                                text: '{}',
+                                selection: [1, 1]
+                            };
+                        }
+                        else {
+                            CstyleBehaviour.recordMaybeInsert(editor, session, "{");
+                            return {
+                                text: '{',
+                                selection: [1, 1]
+                            };
+                        }
+                    }
+                }
+                else if (text == '}') {
+                    initContext(editor);
+                    var rightChar = line.substring(cursor.column, cursor.column + 1);
+                    if (rightChar == '}') {
+                        var matching = session.$findOpeningBracket('}', { column: cursor.column + 1, row: cursor.row });
+                        if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
+                            CstyleBehaviour.popAutoInsertedClosing();
+                            return {
+                                text: '',
+                                selection: [1, 1]
+                            };
+                        }
+                    }
+                }
+                else if (text == "\n" || text == "\r\n") {
+                    initContext(editor);
+                    var closing = "";
+                    if (CstyleBehaviour.isMaybeInsertedClosing(cursor, line)) {
+                        closing = lang_1.stringRepeat("}", context.maybeInsertedBrackets);
+                        CstyleBehaviour.clearMaybeInsertedClosing();
+                    }
+                    var rightChar = line.substring(cursor.column, cursor.column + 1);
+                    if (rightChar === '}') {
+                        var openBracePos = session.findMatchingBracket({ row: cursor.row, column: cursor.column + 1 }, '}');
+                        if (!openBracePos)
+                            return null;
+                        var next_indent = this.$getIndent(session.getLine(openBracePos.row));
+                    }
+                    else if (closing) {
+                        var next_indent = this.$getIndent(line);
+                    }
+                    else {
+                        CstyleBehaviour.clearMaybeInsertedClosing();
+                        return;
+                    }
+                    var indent = next_indent + session.getTabString();
+                    return {
+                        text: '\n' + indent + '\n' + next_indent + closing,
+                        selection: [1, indent.length, 1, indent.length]
+                    };
+                }
+                else {
+                    CstyleBehaviour.clearMaybeInsertedClosing();
+                }
+            });
+            this.add("braces", "deletion", function (state, action, editor, session, range) {
+                var selected = session.doc.getTextRange(range);
+                if (!range.isMultiLine() && selected == '{') {
+                    initContext(editor);
+                    var line = session.doc.getLine(range.start.row);
+                    var rightChar = line.substring(range.end.column, range.end.column + 1);
+                    if (rightChar == '}') {
+                        range.end.column++;
+                        return range;
+                    }
+                    else {
+                        context.maybeInsertedBrackets--;
+                    }
+                }
+            });
+            this.add("parens", "insertion", function (state, action, editor, session, text) {
+                if (text == '(') {
+                    initContext(editor);
+                    var selection = editor.getSelectionRange();
+                    var selected = session.doc.getTextRange(selection);
+                    if (selected !== "" && editor.getWrapBehavioursEnabled()) {
+                        return {
+                            text: '(' + selected + ')',
+                            selection: false
+                        };
+                    }
+                    else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
+                        CstyleBehaviour.recordAutoInsert(editor, session, ")");
+                        return {
+                            text: '()',
+                            selection: [1, 1]
+                        };
+                    }
+                }
+                else if (text == ')') {
+                    initContext(editor);
+                    var cursor = editor.getCursorPosition();
+                    var line = session.doc.getLine(cursor.row);
+                    var rightChar = line.substring(cursor.column, cursor.column + 1);
+                    if (rightChar == ')') {
+                        var matching = session.$findOpeningBracket(')', { column: cursor.column + 1, row: cursor.row });
+                        if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
+                            CstyleBehaviour.popAutoInsertedClosing();
+                            return {
+                                text: '',
+                                selection: [1, 1]
+                            };
+                        }
+                    }
+                }
+            });
+            this.add("parens", "deletion", function (state, action, editor, session, range) {
+                var selected = session.doc.getTextRange(range);
+                if (!range.isMultiLine() && selected == '(') {
+                    initContext(editor);
+                    var line = session.doc.getLine(range.start.row);
+                    var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+                    if (rightChar == ')') {
+                        range.end.column++;
+                        return range;
+                    }
+                }
+            });
+            this.add("brackets", "insertion", function (state, action, editor, session, text) {
+                if (text == '[') {
+                    initContext(editor);
+                    var selection = editor.getSelectionRange();
+                    var selected = session.doc.getTextRange(selection);
+                    if (selected !== "" && editor.getWrapBehavioursEnabled()) {
+                        return {
+                            text: '[' + selected + ']',
+                            selection: false
+                        };
+                    }
+                    else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
+                        CstyleBehaviour.recordAutoInsert(editor, session, "]");
+                        return {
+                            text: '[]',
+                            selection: [1, 1]
+                        };
+                    }
+                }
+                else if (text == ']') {
+                    initContext(editor);
+                    var cursor = editor.getCursorPosition();
+                    var line = session.doc.getLine(cursor.row);
+                    var rightChar = line.substring(cursor.column, cursor.column + 1);
+                    if (rightChar == ']') {
+                        var matching = session.$findOpeningBracket(']', { column: cursor.column + 1, row: cursor.row });
+                        if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
+                            CstyleBehaviour.popAutoInsertedClosing();
+                            return {
+                                text: '',
+                                selection: [1, 1]
+                            };
+                        }
+                    }
+                }
+            });
+            this.add("brackets", "deletion", function (state, action, editor, session, range) {
+                var selected = session.doc.getTextRange(range);
+                if (!range.isMultiLine() && selected == '[') {
+                    initContext(editor);
+                    var line = session.doc.getLine(range.start.row);
+                    var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+                    if (rightChar == ']') {
+                        range.end.column++;
+                        return range;
+                    }
+                }
+            });
+            this.add("string_dquotes", "insertion", function (state, action, editor, session, text) {
+                if (text == '"' || text == "'") {
+                    initContext(editor);
+                    var quote = text;
+                    var selection = editor.getSelectionRange();
+                    var selected = session.doc.getTextRange(selection);
+                    if (selected !== "" && selected !== "'" && selected != '"' && editor.getWrapBehavioursEnabled()) {
+                        return {
+                            text: quote + selected + quote,
+                            selection: false
+                        };
+                    }
+                    else {
+                        var cursor = editor.getCursorPosition();
+                        var line = session.doc.getLine(cursor.row);
+                        var leftChar = line.substring(cursor.column - 1, cursor.column);
+                        // We're escaped.
+                        if (leftChar == '\\') {
+                            return null;
+                        }
+                        // Find what token we're inside.
+                        var tokens = session.getTokens(selection.start.row);
+                        var col = 0, token;
+                        var quotepos = -1; // Track whether we're inside an open quote.
+                        for (var x = 0; x < tokens.length; x++) {
+                            token = tokens[x];
+                            if (token.type == "string") {
+                                quotepos = -1;
+                            }
+                            else if (quotepos < 0) {
+                                quotepos = token.value.indexOf(quote);
+                            }
+                            if ((token.value.length + col) > selection.start.column) {
+                                break;
+                            }
+                            col += tokens[x].value.length;
+                        }
+                        // Try and be smart about when we auto insert.
+                        if (!token || (quotepos < 0 && token.type !== "comment" && (token.type !== "string" || ((selection.start.column !== token.value.length + col - 1) && token.value.lastIndexOf(quote) === token.value.length - 1)))) {
+                            if (!CstyleBehaviour.isSaneInsertion(editor, session))
+                                return;
+                            return {
+                                text: quote + quote,
+                                selection: [1, 1]
+                            };
+                        }
+                        else if (token && token.type === "string") {
+                            // Ignore input and move right one if we're typing over the closing quote.
+                            var rightChar = line.substring(cursor.column, cursor.column + 1);
+                            if (rightChar == quote) {
+                                return {
+                                    text: '',
+                                    selection: [1, 1]
+                                };
+                            }
+                        }
+                    }
+                }
+            });
+            this.add("string_dquotes", "deletion", function (state, action, editor, session, range) {
+                var selected = session.doc.getTextRange(range);
+                if (!range.isMultiLine() && (selected == '"' || selected == "'")) {
+                    initContext(editor);
+                    var line = session.doc.getLine(range.start.row);
+                    var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+                    if (rightChar == selected) {
+                        range.end.column++;
+                        return range;
+                    }
+                }
+            });
+        }
+        CstyleBehaviour.isSaneInsertion = function (editor, session) {
+            var cursor = editor.getCursorPosition();
+            var iterator = new TokenIterator_1.default(session, cursor.row, cursor.column);
+            // Don't insert in the middle of a keyword/identifier/lexical
+            if (!this.$matchTokenType(iterator.getCurrentToken() || "text", SAFE_INSERT_IN_TOKENS)) {
+                // Look ahead in case we're at the end of a token
+                var iterator2 = new TokenIterator_1.default(session, cursor.row, cursor.column + 1);
+                if (!this.$matchTokenType(iterator2.getCurrentToken() || "text", SAFE_INSERT_IN_TOKENS))
+                    return false;
+            }
+            // Only insert in front of whitespace/comments
+            iterator.stepForward();
+            return iterator.getCurrentTokenRow() !== cursor.row ||
+                this.$matchTokenType(iterator.getCurrentToken() || "text", SAFE_INSERT_BEFORE_TOKENS);
+        };
+        CstyleBehaviour.$matchTokenType = function (token, types) {
+            return types.indexOf(token.type || token) > -1;
+        };
+        CstyleBehaviour.recordAutoInsert = function (editor, session, bracket) {
+            var cursor = editor.getCursorPosition();
+            var line = session.doc.getLine(cursor.row);
+            // Reset previous state if text or context changed too much
+            if (!this.isAutoInsertedClosing(cursor, line, context.autoInsertedLineEnd[0]))
+                context.autoInsertedBrackets = 0;
+            context.autoInsertedRow = cursor.row;
+            context.autoInsertedLineEnd = bracket + line.substr(cursor.column);
+            context.autoInsertedBrackets++;
+        };
+        CstyleBehaviour.recordMaybeInsert = function (editor, session, bracket) {
+            var cursor = editor.getCursorPosition();
+            var line = session.doc.getLine(cursor.row);
+            if (!this.isMaybeInsertedClosing(cursor, line))
+                context.maybeInsertedBrackets = 0;
+            context.maybeInsertedRow = cursor.row;
+            context.maybeInsertedLineStart = line.substr(0, cursor.column) + bracket;
+            context.maybeInsertedLineEnd = line.substr(cursor.column);
+            context.maybeInsertedBrackets++;
+        };
+        CstyleBehaviour.isAutoInsertedClosing = function (cursor, line, bracket) {
+            return context.autoInsertedBrackets > 0 &&
+                cursor.row === context.autoInsertedRow &&
+                bracket === context.autoInsertedLineEnd[0] &&
+                line.substr(cursor.column) === context.autoInsertedLineEnd;
+        };
+        CstyleBehaviour.isMaybeInsertedClosing = function (cursor, line) {
+            return context.maybeInsertedBrackets > 0 &&
+                cursor.row === context.maybeInsertedRow &&
+                line.substr(cursor.column) === context.maybeInsertedLineEnd &&
+                line.substr(0, cursor.column) == context.maybeInsertedLineStart;
+        };
+        CstyleBehaviour.popAutoInsertedClosing = function () {
+            context.autoInsertedLineEnd = context.autoInsertedLineEnd.substr(1);
+            context.autoInsertedBrackets--;
+        };
+        CstyleBehaviour.clearMaybeInsertedClosing = function () {
+            if (context) {
+                context.maybeInsertedBrackets = 0;
+                context.maybeInsertedRow = -1;
+            }
+        };
+        return CstyleBehaviour;
+    })(Behaviour_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = CstyleBehaviour;
+});
+
+define('mode/folding/FoldMode',["require", "exports", "../../Range"], function (require, exports, Range_1) {
+    var FoldMode = (function () {
+        function FoldMode() {
+            this.foldingStartMarker = null;
+            this.foldingStopMarker = null;
+        }
+        // must return "" if there's no fold, to enable caching
+        FoldMode.prototype.getFoldWidget = function (session, foldStyle, row) {
+            var line = session.getLine(row);
+            if (this.foldingStartMarker.test(line))
+                return "start";
+            if (foldStyle == "markbeginend"
+                && this.foldingStopMarker
+                && this.foldingStopMarker.test(line))
+                return "end";
+            return "";
+        };
+        FoldMode.prototype.getFoldWidgetRange = function (session, foldStyle, row) {
+            return null;
+        };
+        FoldMode.prototype.indentationBlock = function (session, row, column) {
+            var re = /\S/;
+            var line = session.getLine(row);
+            var startLevel = line.search(re);
+            if (startLevel == -1)
+                return;
+            var startColumn = column || line.length;
+            var maxRow = session.getLength();
+            var startRow = row;
+            var endRow = row;
+            while (++row < maxRow) {
+                var level = session.getLine(row).search(re);
+                if (level == -1)
+                    continue;
+                if (level <= startLevel)
+                    break;
+                endRow = row;
+            }
+            if (endRow > startRow) {
+                var endColumn = session.getLine(endRow).length;
+                return new Range_1.default(startRow, startColumn, endRow, endColumn);
+            }
+        };
+        FoldMode.prototype.openingBracketBlock = function (session, bracket, row, column, typeRe) {
+            var start = { row: row, column: column + 1 };
+            var end = session.$findClosingBracket(bracket, start, typeRe);
+            if (!end)
+                return;
+            var fw = session.foldWidgets[end.row];
+            if (fw == null)
+                fw = session.getFoldWidget(end.row);
+            if (fw == "start" && end.row > start.row) {
+                end.row--;
+                end.column = session.getLine(end.row).length;
+            }
+            return Range_1.default.fromPoints(start, end);
+        };
+        FoldMode.prototype.closingBracketBlock = function (session, bracket, row, column, typeRe) {
+            var end = { row: row, column: column };
+            var start = session.$findOpeningBracket(bracket, end);
+            if (!start)
+                return;
+            start.column++;
+            end.column--;
+            return Range_1.default.fromPoints(start, end);
+        };
+        return FoldMode;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = FoldMode;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/folding/CstyleFoldMode',["require", "exports", "../../Range", "./FoldMode"], function (require, exports, Range_1, FoldMode_1) {
+    var CstyleFoldMode = (function (_super) {
+        __extends(CstyleFoldMode, _super);
+        function CstyleFoldMode(commentRegex) {
+            _super.call(this);
+            this.foldingStartMarker = /(\{|\[)[^\}\]]*$|^\s*(\/\*)/;
+            this.foldingStopMarker = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
+            if (commentRegex) {
+                this.foldingStartMarker = new RegExp(this.foldingStartMarker.source.replace(/\|[^|]*?$/, "|" + commentRegex.start));
+                this.foldingStopMarker = new RegExp(this.foldingStopMarker.source.replace(/\|[^|]*?$/, "|" + commentRegex.end));
+            }
+        }
+        CstyleFoldMode.prototype.getFoldWidgetRange = function (session, foldStyle, row, forceMultiline) {
+            var line = session.getLine(row);
+            var match = line.match(this.foldingStartMarker);
+            if (match) {
+                var i = match.index;
+                if (match[1])
+                    return this.openingBracketBlock(session, match[1], row, i);
+                var range = session.getCommentFoldRange(row, i + match[0].length, 1);
+                if (range && !range.isMultiLine()) {
+                    if (forceMultiline) {
+                        range = this.getSectionRange(session, row);
+                    }
+                    else if (foldStyle != "all")
+                        range = null;
+                }
+                return range;
+            }
+            if (foldStyle === "markbegin")
+                return;
+            var match = line.match(this.foldingStopMarker);
+            if (match) {
+                var i = match.index + match[0].length;
+                if (match[1])
+                    return this.closingBracketBlock(session, match[1], row, i);
+                return session.getCommentFoldRange(row, i, -1);
+            }
+        };
+        CstyleFoldMode.prototype.getSectionRange = function (session, row) {
+            var line = session.getLine(row);
+            var startIndent = line.search(/\S/);
+            var startRow = row;
+            var startColumn = line.length;
+            row = row + 1;
+            var endRow = row;
+            var maxRow = session.getLength();
+            while (++row < maxRow) {
+                line = session.getLine(row);
+                var indent = line.search(/\S/);
+                if (indent === -1)
+                    continue;
+                if (startIndent > indent)
+                    break;
+                var subRange = this.getFoldWidgetRange(session, "all", row);
+                if (subRange) {
+                    if (subRange.start.row <= startRow) {
+                        break;
+                    }
+                    else if (subRange.isMultiLine()) {
+                        row = subRange.end.row;
+                    }
+                    else if (startIndent == indent) {
+                        break;
+                    }
+                }
+                endRow = row;
+            }
+            return new Range_1.default(startRow, startColumn, endRow, session.getLine(endRow).length);
+        };
+        return CstyleFoldMode;
+    })(FoldMode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = CstyleFoldMode;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/JavaScriptMode',["require", "exports", "./Mode", "./JavaScriptHighlightRules", "./MatchingBraceOutdent", "../worker/WorkerClient", "./behaviour/CstyleBehaviour", "./folding/CstyleFoldMode"], function (require, exports, Mode_1, JavaScriptHighlightRules_1, MatchingBraceOutdent_1, WorkerClient_1, CstyleBehaviour_1, CstyleFoldMode_1) {
+    var JavaScriptMode = (function (_super) {
+        __extends(JavaScriptMode, _super);
+        function JavaScriptMode() {
+            _super.call(this);
+            // The Tokenizer will be built using these rules.
+            this.HighlightRules = JavaScriptHighlightRules_1.default;
+            this.$outdent = new MatchingBraceOutdent_1.default();
+            this.$behaviour = new CstyleBehaviour_1.default();
+            this.foldingRules = new CstyleFoldMode_1.default();
+            this.lineCommentStart = "//";
+            this.blockComment = { start: "/*", end: "*/" };
+            this.$id = "ace/mode/javascript";
+        }
+        JavaScriptMode.prototype.getNextLineIndent = function (state, line, tab) {
+            var indent = this.$getIndent(line);
+            var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
+            var tokens = tokenizedLine.tokens;
+            var endState = tokenizedLine.state;
+            if (tokens.length && tokens[tokens.length - 1].type == "comment") {
+                return indent;
+            }
+            if (state === "start" || state === "no_regex") {
+                var match = line.match(/^.*(?:\bcase\b.*\:|[\{\(\[])\s*$/);
+                if (match) {
+                    indent += tab;
+                }
+            }
+            else if (state === "doc-start") {
+                if (endState == "start" || endState == "no_regex") {
+                    return "";
+                }
+                var match = line.match(/^\s*(\/?)\*/);
+                if (match) {
+                    if (match[1]) {
+                        indent += " ";
+                    }
+                    indent += "* ";
+                }
+            }
+            return indent;
+        };
+        JavaScriptMode.prototype.checkOutdent = function (state, line, text) {
+            return this.$outdent.checkOutdent(line, text);
+        };
+        ;
+        JavaScriptMode.prototype.autoOutdent = function (state, session, row) {
+            return this.$outdent.autoOutdent(session, row);
+        };
+        ;
+        JavaScriptMode.prototype.createWorker = function (session) {
+            var worker = new WorkerClient_1.default("lib/worker/worker-systemjs.js");
+            worker.on("initAfter", function () {
+                worker.attachToDocument(session.getDocument());
+            });
+            worker.on("jslint", function (results) {
+                session.setAnnotations(results.data);
+            });
+            worker.on("terminate", function () {
+                session.clearAnnotations();
+            });
+            worker.init("lib/mode/JavaScriptWorker", "default");
+            return worker;
+        };
+        return JavaScriptMode;
+    })(Mode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = JavaScriptMode;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/CssHighlightRules',["require", "exports", "./TextHighlightRules"], function (require, exports, TextHighlightRules_1) {
+    /* All exports are for Stylus highlighter */
+    exports.supportType = "animation-fill-mode|alignment-adjust|alignment-baseline|animation-delay|animation-direction|animation-duration|animation-iteration-count|animation-name|animation-play-state|animation-timing-function|animation|appearance|azimuth|backface-visibility|background-attachment|background-break|background-clip|background-color|background-image|background-origin|background-position|background-repeat|background-size|background|baseline-shift|binding|bleed|bookmark-label|bookmark-level|bookmark-state|bookmark-target|border-bottom|border-bottom-color|border-bottom-left-radius|border-bottom-right-radius|border-bottom-style|border-bottom-width|border-collapse|border-color|border-image|border-image-outset|border-image-repeat|border-image-slice|border-image-source|border-image-width|border-left|border-left-color|border-left-style|border-left-width|border-radius|border-right|border-right-color|border-right-style|border-right-width|border-spacing|border-style|border-top|border-top-color|border-top-left-radius|border-top-right-radius|border-top-style|border-top-width|border-width|border|bottom|box-align|box-decoration-break|box-direction|box-flex-group|box-flex|box-lines|box-ordinal-group|box-orient|box-pack|box-shadow|box-sizing|break-after|break-before|break-inside|caption-side|clear|clip|color-profile|color|column-count|column-fill|column-gap|column-rule|column-rule-color|column-rule-style|column-rule-width|column-span|column-width|columns|content|counter-increment|counter-reset|crop|cue-after|cue-before|cue|cursor|direction|display|dominant-baseline|drop-initial-after-adjust|drop-initial-after-align|drop-initial-before-adjust|drop-initial-before-align|drop-initial-size|drop-initial-value|elevation|empty-cells|fit|fit-position|float-offset|float|font-family|font-size|font-size-adjust|font-stretch|font-style|font-variant|font-weight|font|grid-columns|grid-rows|hanging-punctuation|height|hyphenate-after|hyphenate-before|hyphenate-character|hyphenate-lines|hyphenate-resource|hyphens|icon|image-orientation|image-rendering|image-resolution|inline-box-align|left|letter-spacing|line-height|line-stacking-ruby|line-stacking-shift|line-stacking-strategy|line-stacking|list-style-image|list-style-position|list-style-type|list-style|margin-bottom|margin-left|margin-right|margin-top|margin|mark-after|mark-before|mark|marks|marquee-direction|marquee-play-count|marquee-speed|marquee-style|max-height|max-width|min-height|min-width|move-to|nav-down|nav-index|nav-left|nav-right|nav-up|opacity|orphans|outline-color|outline-offset|outline-style|outline-width|outline|overflow-style|overflow-x|overflow-y|overflow|padding-bottom|padding-left|padding-right|padding-top|padding|page-break-after|page-break-before|page-break-inside|page-policy|page|pause-after|pause-before|pause|perspective-origin|perspective|phonemes|pitch-range|pitch|play-during|pointer-events|position|presentation-level|punctuation-trim|quotes|rendering-intent|resize|rest-after|rest-before|rest|richness|right|rotation-point|rotation|ruby-align|ruby-overhang|ruby-position|ruby-span|size|speak-header|speak-numeral|speak-punctuation|speak|speech-rate|stress|string-set|table-layout|target-name|target-new|target-position|target|text-align-last|text-align|text-decoration|text-emphasis|text-height|text-indent|text-justify|text-outline|text-shadow|text-transform|text-wrap|top|transform-origin|transform-style|transform|transition-delay|transition-duration|transition-property|transition-timing-function|transition|unicode-bidi|vertical-align|visibility|voice-balance|voice-duration|voice-family|voice-pitch-range|voice-pitch|voice-rate|voice-stress|voice-volume|volume|white-space-collapse|white-space|widows|width|word-break|word-spacing|word-wrap|z-index";
+    exports.supportFunction = "rgb|rgba|url|attr|counter|counters";
+    exports.supportConstant = "absolute|after-edge|after|all-scroll|all|alphabetic|always|antialiased|armenian|auto|avoid-column|avoid-page|avoid|balance|baseline|before-edge|before|below|bidi-override|block-line-height|block|bold|bolder|border-box|both|bottom|box|break-all|break-word|capitalize|caps-height|caption|center|central|char|circle|cjk-ideographic|clone|close-quote|col-resize|collapse|column|consider-shifts|contain|content-box|cover|crosshair|cubic-bezier|dashed|decimal-leading-zero|decimal|default|disabled|disc|disregard-shifts|distribute-all-lines|distribute-letter|distribute-space|distribute|dotted|double|e-resize|ease-in|ease-in-out|ease-out|ease|ellipsis|end|exclude-ruby|fill|fixed|georgian|glyphs|grid-height|groove|hand|hanging|hebrew|help|hidden|hiragana-iroha|hiragana|horizontal|icon|ideograph-alpha|ideograph-numeric|ideograph-parenthesis|ideograph-space|ideographic|inactive|include-ruby|inherit|initial|inline-block|inline-box|inline-line-height|inline-table|inline|inset|inside|inter-ideograph|inter-word|invert|italic|justify|katakana-iroha|katakana|keep-all|last|left|lighter|line-edge|line-through|line|linear|list-item|local|loose|lower-alpha|lower-greek|lower-latin|lower-roman|lowercase|lr-tb|ltr|mathematical|max-height|max-size|medium|menu|message-box|middle|move|n-resize|ne-resize|newspaper|no-change|no-close-quote|no-drop|no-open-quote|no-repeat|none|normal|not-allowed|nowrap|nw-resize|oblique|open-quote|outset|outside|overline|padding-box|page|pointer|pre-line|pre-wrap|pre|preserve-3d|progress|relative|repeat-x|repeat-y|repeat|replaced|reset-size|ridge|right|round|row-resize|rtl|s-resize|scroll|se-resize|separate|slice|small-caps|small-caption|solid|space|square|start|static|status-bar|step-end|step-start|steps|stretch|strict|sub|super|sw-resize|table-caption|table-cell|table-column-group|table-column|table-footer-group|table-header-group|table-row-group|table-row|table|tb-rl|text-after-edge|text-before-edge|text-bottom|text-size|text-top|text|thick|thin|transparent|underline|upper-alpha|upper-latin|upper-roman|uppercase|use-script|vertical-ideographic|vertical-text|visible|w-resize|wait|whitespace|z-index|zero";
+    exports.supportConstantColor = "aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|orange|purple|red|silver|teal|white|yellow";
+    exports.supportConstantFonts = "arial|century|comic|courier|garamond|georgia|helvetica|impact|lucida|symbol|system|tahoma|times|trebuchet|utopia|verdana|webdings|sans-serif|serif|monospace";
+    exports.numRe = "\\-?(?:(?:[0-9]+)|(?:[0-9]*\\.[0-9]+))";
+    exports.pseudoElements = "(\\:+)\\b(after|before|first-letter|first-line|moz-selection|selection)\\b";
+    exports.pseudoClasses = "(:)\\b(active|checked|disabled|empty|enabled|first-child|first-of-type|focus|hover|indeterminate|invalid|last-child|last-of-type|link|not|nth-child|nth-last-child|nth-last-of-type|nth-of-type|only-child|only-of-type|required|root|target|valid|visited)\\b";
+    var CssHighlightRules = (function (_super) {
+        __extends(CssHighlightRules, _super);
+        function CssHighlightRules() {
+            _super.call(this);
+            var keywordMapper = this.createKeywordMapper({
+                "support.function": exports.supportFunction,
+                "support.constant": exports.supportConstant,
+                "support.type": exports.supportType,
+                "support.constant.color": exports.supportConstantColor,
+                "support.constant.fonts": exports.supportConstantFonts
+            }, "text", true);
+            // regexp must not have capturing parentheses. Use (?:) instead.
+            // regexps are ordered -> the first match is used
+            this.$rules = {
+                "start": [{
+                        token: "comment",
+                        regex: "\\/\\*",
+                        push: "comment"
+                    }, {
+                        token: "paren.lparen",
+                        regex: "\\{",
+                        push: "ruleset"
+                    }, {
+                        token: "string",
+                        regex: "@.*?{",
+                        push: "media"
+                    }, {
+                        token: "keyword",
+                        regex: "#[a-z0-9-_]+"
+                    }, {
+                        token: "variable",
+                        regex: "\\.[a-z0-9-_]+"
+                    }, {
+                        token: "string",
+                        regex: ":[a-z0-9-_]+"
+                    }, {
+                        token: "constant",
+                        regex: "[a-z0-9-_]+"
+                    }, {
+                        caseInsensitive: true
+                    }],
+                "media": [{
+                        token: "comment",
+                        regex: "\\/\\*",
+                        push: "comment"
+                    }, {
+                        token: "paren.lparen",
+                        regex: "\\{",
+                        push: "ruleset"
+                    }, {
+                        token: "string",
+                        regex: "\\}",
+                        next: "pop"
+                    }, {
+                        token: "keyword",
+                        regex: "#[a-z0-9-_]+"
+                    }, {
+                        token: "variable",
+                        regex: "\\.[a-z0-9-_]+"
+                    }, {
+                        token: "string",
+                        regex: ":[a-z0-9-_]+"
+                    }, {
+                        token: "constant",
+                        regex: "[a-z0-9-_]+"
+                    }, {
+                        caseInsensitive: true
+                    }],
+                "comment": [{
+                        token: "comment",
+                        regex: "\\*\\/",
+                        next: "pop"
+                    }, {
+                        defaultToken: "comment"
+                    }],
+                "ruleset": [
+                    {
+                        token: "paren.rparen",
+                        regex: "\\}",
+                        next: "pop"
+                    }, {
+                        token: "comment",
+                        regex: "\\/\\*",
+                        push: "comment"
+                    }, {
+                        token: "string",
+                        regex: '["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]'
+                    }, {
+                        token: "string",
+                        regex: "['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']"
+                    }, {
+                        token: ["constant.numeric", "keyword"],
+                        regex: "(" + exports.numRe + ")(ch|cm|deg|em|ex|fr|gd|grad|Hz|in|kHz|mm|ms|pc|pt|px|rad|rem|s|turn|vh|vm|vw|%)"
+                    }, {
+                        token: "constant.numeric",
+                        regex: exports.numRe
+                    }, {
+                        token: "constant.numeric",
+                        regex: "#[a-f0-9]{6}"
+                    }, {
+                        token: "constant.numeric",
+                        regex: "#[a-f0-9]{3}"
+                    }, {
+                        token: ["punctuation", "entity.other.attribute-name.pseudo-element.css"],
+                        regex: exports.pseudoElements
+                    }, {
+                        token: ["punctuation", "entity.other.attribute-name.pseudo-class.css"],
+                        regex: exports.pseudoClasses
+                    }, {
+                        token: ["support.function", "string", "support.function"],
+                        regex: "(url\\()(.*)(\\))"
+                    }, {
+                        token: keywordMapper,
+                        regex: "\\-?[a-zA-Z_][a-zA-Z0-9_\\-]*"
+                    }, {
+                        caseInsensitive: true
+                    }]
+            };
+            this.normalizeRules();
+        }
+        return CssHighlightRules;
+    })(TextHighlightRules_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = CssHighlightRules;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/behaviour/CssBehaviour',["require", "exports", "./CstyleBehaviour", "../../TokenIterator"], function (require, exports, CstyleBehaviour_1, TokenIterator_1) {
+    var CssBehavior = (function (_super) {
+        __extends(CssBehavior, _super);
+        function CssBehavior() {
+            _super.call(this);
+            this.inherit(CstyleBehaviour_1.default);
+            this.add("colon", "insertion", function (state, action, editor, session, text) {
+                if (text === ':') {
+                    var cursor = editor.getCursorPosition();
+                    var iterator = new TokenIterator_1.default(session, cursor.row, cursor.column);
+                    var token = iterator.getCurrentToken();
+                    if (token && token.value.match(/\s+/)) {
+                        token = iterator.stepBackward();
+                    }
+                    if (token && token.type === 'support.type') {
+                        var line = session.doc.getLine(cursor.row);
+                        var rightChar = line.substring(cursor.column, cursor.column + 1);
+                        if (rightChar === ':') {
+                            return {
+                                text: '',
+                                selection: [1, 1]
+                            };
+                        }
+                        if (!line.substring(cursor.column).match(/^\s*;/)) {
+                            return {
+                                text: ':;',
+                                selection: [1, 1]
+                            };
+                        }
+                    }
+                }
+            });
+            this.add("colon", "deletion", function (state, action, editor, session, range) {
+                var selected = session.doc.getTextRange(range);
+                if (!range.isMultiLine() && selected === ':') {
+                    var cursor = editor.getCursorPosition();
+                    var iterator = new TokenIterator_1.default(session, cursor.row, cursor.column);
+                    var token = iterator.getCurrentToken();
+                    if (token && token.value.match(/\s+/)) {
+                        token = iterator.stepBackward();
+                    }
+                    if (token && token.type === 'support.type') {
+                        var line = session.doc.getLine(range.start.row);
+                        var rightChar = line.substring(range.end.column, range.end.column + 1);
+                        if (rightChar === ';') {
+                            range.end.column++;
+                            return range;
+                        }
+                    }
+                }
+            });
+            this.add("semicolon", "insertion", function (state, action, editor, session, text) {
+                if (text === ';') {
+                    var cursor = editor.getCursorPosition();
+                    var line = session.doc.getLine(cursor.row);
+                    var rightChar = line.substring(cursor.column, cursor.column + 1);
+                    if (rightChar === ';') {
+                        return {
+                            text: '',
+                            selection: [1, 1]
+                        };
+                    }
+                }
+            });
+        }
+        return CssBehavior;
+    })(CstyleBehaviour_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = CssBehavior;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/CssMode',["require", "exports", "./Mode", "./CssHighlightRules", "./MatchingBraceOutdent", "../worker/WorkerClient", "./behaviour/CssBehaviour", "./folding/CstyleFoldMode"], function (require, exports, Mode_1, CssHighlightRules_1, MatchingBraceOutdent_1, WorkerClient_1, CssBehaviour_1, CstyleFoldMode_1) {
+    var CssMode = (function (_super) {
+        __extends(CssMode, _super);
+        function CssMode() {
+            _super.call(this);
+            this.$id = "ace/mode/css";
+            this.blockComment = { start: "/*", end: "*/" };
+            this.HighlightRules = CssHighlightRules_1.default;
+            this.$outdent = new MatchingBraceOutdent_1.default();
+            this.$behaviour = new CssBehaviour_1.default();
+            this.foldingRules = new CstyleFoldMode_1.default();
+        }
+        CssMode.prototype.getNextLineIndent = function (state, line, tab) {
+            var indent = this.$getIndent(line);
+            // ignore braces in comments
+            var tokens = this.getTokenizer().getLineTokens(line, state).tokens;
+            if (tokens.length && tokens[tokens.length - 1].type == "comment") {
+                return indent;
+            }
+            var match = line.match(/^.*\{\s*$/);
+            if (match) {
+                indent += tab;
+            }
+            return indent;
+        };
+        CssMode.prototype.checkOutdent = function (state, line, text) {
+            return this.$outdent.checkOutdent(line, text);
+        };
+        CssMode.prototype.autoOutdent = function (state, session, row) {
+            return this.$outdent.autoOutdent(session, row);
+        };
+        CssMode.prototype.createWorker = function (session) {
+            var worker = new WorkerClient_1.default("lib/worker/worker-systemjs.js");
+            worker.on("initAfter", function () {
+                worker.attachToDocument(session.getDocument());
+            });
+            worker.on("csslint", function (e) {
+                session.setAnnotations(e.data);
+            });
+            worker.on("terminate", function () {
+                session.clearAnnotations();
+            });
+            worker.init("ace/mode/css_worker", "Worker");
+            return worker;
+        };
+        return CssMode;
+    })(Mode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = CssMode;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/XmlHighlightRules',["require", "exports", "./TextHighlightRules"], function (require, exports, TextHighlightRules_1) {
+    var XmlHighlightRules = (function (_super) {
+        __extends(XmlHighlightRules, _super);
+        function XmlHighlightRules(normalize) {
+            _super.call(this);
+            this.$rules = {
+                start: [
+                    { token: "string.cdata.xml", regex: "<\\!\\[CDATA\\[", next: "cdata" },
+                    {
+                        token: ["punctuation.xml-decl.xml", "keyword.xml-decl.xml"],
+                        regex: "(<\\?)(xml)(?=[\\s])", next: "xml_decl", caseInsensitive: true
+                    },
+                    {
+                        token: ["punctuation.instruction.xml", "keyword.instruction.xml"],
+                        regex: "(<\\?)([-_a-zA-Z0-9]+)", next: "processing_instruction",
+                    },
+                    { token: "comment.xml", regex: "<\\!--", next: "comment" },
+                    {
+                        token: ["xml-pe.doctype.xml", "xml-pe.doctype.xml"],
+                        regex: "(<\\!)(DOCTYPE)(?=[\\s])", next: "doctype", caseInsensitive: true
+                    },
+                    { include: "tag" },
+                    { token: "text.end-tag-open.xml", regex: "</" },
+                    { token: "text.tag-open.xml", regex: "<" },
+                    { include: "reference" },
+                    { defaultToken: "text.xml" }
+                ],
+                xml_decl: [{
+                        token: "entity.other.attribute-name.decl-attribute-name.xml",
+                        regex: "(?:[-_a-zA-Z0-9]+:)?[-_a-zA-Z0-9]+"
+                    }, {
+                        token: "keyword.operator.decl-attribute-equals.xml",
+                        regex: "="
+                    }, {
+                        include: "whitespace"
+                    }, {
+                        include: "string"
+                    }, {
+                        token: "punctuation.xml-decl.xml",
+                        regex: "\\?>",
+                        next: "start"
+                    }],
+                processing_instruction: [
+                    { token: "punctuation.instruction.xml", regex: "\\?>", next: "start" },
+                    { defaultToken: "instruction.xml" }
+                ],
+                doctype: [
+                    { include: "whitespace" },
+                    { include: "string" },
+                    { token: "xml-pe.doctype.xml", regex: ">", next: "start" },
+                    { token: "xml-pe.xml", regex: "[-_a-zA-Z0-9:]+" },
+                    { token: "punctuation.int-subset", regex: "\\[", push: "int_subset" }
+                ],
+                int_subset: [{
+                        token: "text.xml",
+                        regex: "\\s+"
+                    }, {
+                        token: "punctuation.int-subset.xml",
+                        regex: "]",
+                        next: "pop"
+                    }, {
+                        token: ["punctuation.markup-decl.xml", "keyword.markup-decl.xml"],
+                        regex: "(<\\!)([-_a-zA-Z0-9]+)",
+                        push: [{
+                                token: "text",
+                                regex: "\\s+"
+                            },
+                            {
+                                token: "punctuation.markup-decl.xml",
+                                regex: ">",
+                                next: "pop"
+                            },
+                            { include: "string" }]
+                    }],
+                cdata: [
+                    { token: "string.cdata.xml", regex: "\\]\\]>", next: "start" },
+                    { token: "text.xml", regex: "\\s+" },
+                    { token: "text.xml", regex: "(?:[^\\]]|\\](?!\\]>))+" }
+                ],
+                comment: [
+                    { token: "comment.xml", regex: "-->", next: "start" },
+                    { defaultToken: "comment.xml" }
+                ],
+                reference: [{
+                        token: "constant.language.escape.reference.xml",
+                        regex: "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
+                    }],
+                attr_reference: [{
+                        token: "constant.language.escape.reference.attribute-value.xml",
+                        regex: "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
+                    }],
+                tag: [{
+                        token: ["meta.tag.punctuation.tag-open.xml", "meta.tag.punctuation.end-tag-open.xml", "meta.tag.tag-name.xml"],
+                        regex: "(?:(<)|(</))((?:[-_a-zA-Z0-9]+:)?[-_a-zA-Z0-9]+)",
+                        next: [
+                            { include: "attributes" },
+                            { token: "meta.tag.punctuation.tag-close.xml", regex: "/?>", next: "start" }
+                        ]
+                    }],
+                tag_whitespace: [
+                    { token: "text.tag-whitespace.xml", regex: "\\s+" }
+                ],
+                // for doctype and processing instructions
+                whitespace: [
+                    { token: "text.whitespace.xml", regex: "\\s+" }
+                ],
+                // for doctype and processing instructions
+                string: [{
+                        token: "string.xml",
+                        regex: "'",
+                        push: [
+                            { token: "string.xml", regex: "'", next: "pop" },
+                            { defaultToken: "string.xml" }
+                        ]
+                    }, {
+                        token: "string.xml",
+                        regex: '"',
+                        push: [
+                            { token: "string.xml", regex: '"', next: "pop" },
+                            { defaultToken: "string.xml" }
+                        ]
+                    }],
+                attributes: [{
+                        token: "entity.other.attribute-name.xml",
+                        regex: "(?:[-_a-zA-Z0-9]+:)?[-_a-zA-Z0-9]+"
+                    }, {
+                        token: "keyword.operator.attribute-equals.xml",
+                        regex: "="
+                    }, {
+                        include: "tag_whitespace"
+                    }, {
+                        include: "attribute_value"
+                    }],
+                attribute_value: [{
+                        token: "string.attribute-value.xml",
+                        regex: "'",
+                        push: [
+                            { token: "string.attribute-value.xml", regex: "'", next: "pop" },
+                            { include: "attr_reference" },
+                            { defaultToken: "string.attribute-value.xml" }
+                        ]
+                    }, {
+                        token: "string.attribute-value.xml",
+                        regex: '"',
+                        push: [
+                            { token: "string.attribute-value.xml", regex: '"', next: "pop" },
+                            { include: "attr_reference" },
+                            { defaultToken: "string.attribute-value.xml" }
+                        ]
+                    }]
+            };
+            if (this.constructor === XmlHighlightRules)
+                this.normalizeRules();
+        }
+        XmlHighlightRules.prototype.embedTagRules = function (HighlightRules, prefix, tag) {
+            this.$rules.tag.unshift({
+                token: ["meta.tag.punctuation.tag-open.xml", "meta.tag." + tag + ".tag-name.xml"],
+                regex: "(<)(" + tag + "(?=\\s|>|$))",
+                next: [
+                    { include: "attributes" },
+                    { token: "meta.tag.punctuation.tag-close.xml", regex: "/?>", next: prefix + "start" }
+                ]
+            });
+            this.$rules[tag + "-end"] = [
+                { include: "attributes" },
+                {
+                    token: "meta.tag.punctuation.tag-close.xml", regex: "/?>", next: "start",
+                    onMatch: function (value, currentState, stack) {
+                        stack.splice(0);
+                        return this.token;
+                    }
+                }
+            ];
+            this.embedRules(HighlightRules, prefix, [{
+                    token: ["meta.tag.punctuation.end-tag-open.xml", "meta.tag." + tag + ".tag-name.xml"],
+                    regex: "(</)(" + tag + "(?=\\s|>|$))",
+                    next: tag + "-end"
+                }, {
+                    token: "string.cdata.xml",
+                    regex: "<\\!\\[CDATA\\["
+                }, {
+                    token: "string.cdata.xml",
+                    regex: "\\]\\]>"
+                }]);
+        };
+        return XmlHighlightRules;
+    })(TextHighlightRules_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = XmlHighlightRules;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/HtmlHighlightRules',["require", "exports", "../lib/lang", "./CssHighlightRules", "./JavaScriptHighlightRules", "./XmlHighlightRules"], function (require, exports, lang_1, CssHighlightRules_1, JavaScriptHighlightRules_1, XmlHighlightRules_1) {
+    var tagMap = lang_1.createMap({
+        a: 'anchor',
+        button: 'form',
+        form: 'form',
+        img: 'image',
+        input: 'form',
+        label: 'form',
+        option: 'form',
+        script: 'script',
+        select: 'form',
+        textarea: 'form',
+        style: 'style',
+        table: 'table',
+        tbody: 'table',
+        td: 'table',
+        tfoot: 'table',
+        th: 'table',
+        tr: 'table'
+    });
+    var HtmlHighlightRules = (function (_super) {
+        __extends(HtmlHighlightRules, _super);
+        function HtmlHighlightRules() {
+            _super.call(this);
+            this.addRules({
+                attributes: [{
+                        include: "tag_whitespace"
+                    }, {
+                        token: "entity.other.attribute-name.xml",
+                        regex: "[-_a-zA-Z0-9:]+"
+                    }, {
+                        token: "keyword.operator.attribute-equals.xml",
+                        regex: "=",
+                        push: [{
+                                include: "tag_whitespace"
+                            }, {
+                                token: "string.unquoted.attribute-value.html",
+                                regex: "[^<>='\"`\\s]+",
+                                next: "pop"
+                            }, {
+                                token: "empty",
+                                regex: "",
+                                next: "pop"
+                            }]
+                    }, {
+                        include: "attribute_value"
+                    }],
+                tag: [{
+                        token: function (start, tag) {
+                            var group = tagMap[tag];
+                            return ["meta.tag.punctuation." + (start == "<" ? "" : "end-") + "tag-open.xml",
+                                "meta.tag" + (group ? "." + group : "") + ".tag-name.xml"];
+                        },
+                        regex: "(</?)([-_a-zA-Z0-9:]+)",
+                        next: "tag_stuff"
+                    }],
+                tag_stuff: [
+                    { include: "attributes" },
+                    { token: "meta.tag.punctuation.tag-close.xml", regex: "/?>", next: "start" }
+                ],
+            });
+            this.embedTagRules(CssHighlightRules_1.default, "css-", "style");
+            this.embedTagRules(JavaScriptHighlightRules_1.default, "js-", "script");
+            if (this.constructor === HtmlHighlightRules)
+                this.normalizeRules();
+        }
+        return HtmlHighlightRules;
+    })(XmlHighlightRules_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HtmlHighlightRules;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/behaviour/XmlBehaviour',["require", "exports", "../Behaviour", "../../TokenIterator"], function (require, exports, Behaviour_1, TokenIterator_1) {
+    function is(token, type) {
+        return token.type.lastIndexOf(type + ".xml") > -1;
+    }
+    var XmlBehaviour = (function (_super) {
+        __extends(XmlBehaviour, _super);
+        function XmlBehaviour() {
+            _super.call(this);
+            this.add("string_dquotes", "insertion", function (state, action, editor, session, text) {
+                if (text == '"' || text == "'") {
+                    var quote = text;
+                    var selected = session.doc.getTextRange(editor.getSelectionRange());
+                    if (selected !== "" && selected !== "'" && selected != '"' && editor.getWrapBehavioursEnabled()) {
+                        return {
+                            text: quote + selected + quote,
+                            selection: false
+                        };
+                    }
+                    var cursor = editor.getCursorPosition();
+                    var line = session.doc.getLine(cursor.row);
+                    var rightChar = line.substring(cursor.column, cursor.column + 1);
+                    var iterator = new TokenIterator_1.default(session, cursor.row, cursor.column);
+                    var token = iterator.getCurrentToken();
+                    if (rightChar == quote && (is(token, "attribute-value") || is(token, "string"))) {
+                        // Ignore input and move right one if we're typing over the closing quote.
+                        return {
+                            text: "",
+                            selection: [1, 1]
+                        };
+                    }
+                    if (!token)
+                        token = iterator.stepBackward();
+                    if (!token)
+                        return;
+                    while (is(token, "tag-whitespace") || is(token, "whitespace")) {
+                        token = iterator.stepBackward();
+                    }
+                    var rightSpace = !rightChar || rightChar.match(/\s/);
+                    if (is(token, "attribute-equals") && (rightSpace || rightChar == '>') || (is(token, "decl-attribute-equals") && (rightSpace || rightChar == '?'))) {
+                        return {
+                            text: quote + quote,
+                            selection: [1, 1]
+                        };
+                    }
+                }
+            });
+            this.add("string_dquotes", "deletion", function (state, action, editor, session, range) {
+                var selected = session.doc.getTextRange(range);
+                if (!range.isMultiLine() && (selected == '"' || selected == "'")) {
+                    var line = session.doc.getLine(range.start.row);
+                    var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+                    if (rightChar == selected) {
+                        range.end.column++;
+                        return range;
+                    }
+                }
+            });
+            this.add("autoclosing", "insertion", function (state, action, editor, session, text) {
+                if (text == '>') {
+                    var position = editor.getCursorPosition();
+                    var iterator = new TokenIterator_1.default(session, position.row, position.column);
+                    var token = iterator.getCurrentToken() || iterator.stepBackward();
+                    // exit if we're not in a tag
+                    if (!token || !(is(token, "tag-name") || is(token, "tag-whitespace") || is(token, "attribute-name") || is(token, "attribute-equals") || is(token, "attribute-value")))
+                        return;
+                    // exit if we're inside of a quoted attribute value
+                    if (is(token, "reference.attribute-value"))
+                        return;
+                    if (is(token, "attribute-value")) {
+                        var firstChar = token.value.charAt(0);
+                        if (firstChar == '"' || firstChar == "'") {
+                            var lastChar = token.value.charAt(token.value.length - 1);
+                            var tokenEnd = iterator.getCurrentTokenColumn() + token.value.length;
+                            if (tokenEnd > position.column || tokenEnd == position.column && firstChar != lastChar)
+                                return;
+                        }
+                    }
+                    // find tag name
+                    while (!is(token, "tag-name")) {
+                        token = iterator.stepBackward();
+                    }
+                    var tokenRow = iterator.getCurrentTokenRow();
+                    var tokenColumn = iterator.getCurrentTokenColumn();
+                    // exit if the tag is ending
+                    if (is(iterator.stepBackward(), "end-tag-open"))
+                        return;
+                    var element = token.value;
+                    if (tokenRow == position.row)
+                        element = element.substring(0, position.column - tokenColumn);
+                    if (this.voidElements.hasOwnProperty(element.toLowerCase()))
+                        return;
+                    return {
+                        text: '>' + '</' + element + '>',
+                        selection: [1, 1]
+                    };
+                }
+            });
+            this.add('autoindent', 'insertion', function (state, action, editor, session, text) {
+                if (text == "\n") {
+                    var cursor = editor.getCursorPosition();
+                    var line = session.getLine(cursor.row);
+                    var rightChars = line.substring(cursor.column, cursor.column + 2);
+                    if (rightChars == '</') {
+                        var next_indent = this.$getIndent(line);
+                        var indent = next_indent + session.getTabString();
+                        return {
+                            text: '\n' + indent + '\n' + next_indent,
+                            selection: [1, indent.length, 1, indent.length]
+                        };
+                    }
+                }
+            });
+        }
+        return XmlBehaviour;
+    })(Behaviour_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = XmlBehaviour;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/folding/MixedFoldMode',["require", "exports", "./FoldMode"], function (require, exports, FoldMode_1) {
+    var MixedFoldMode = (function (_super) {
+        __extends(MixedFoldMode, _super);
+        function MixedFoldMode(defaultMode, subModes) {
+            _super.call(this);
+            this.defaultMode = defaultMode;
+            this.subModes = subModes;
+        }
+        MixedFoldMode.prototype.$getMode = function (state) {
+            if (typeof state != "string")
+                state = state[0];
+            for (var key in this.subModes) {
+                if (state.indexOf(key) === 0)
+                    return this.subModes[key];
+            }
+            return null;
+        };
+        MixedFoldMode.prototype.$tryMode = function (state, session, foldStyle, row) {
+            var mode = this.$getMode(state);
+            return (mode ? mode.getFoldWidget(session, foldStyle, row) : "");
+        };
+        MixedFoldMode.prototype.getFoldWidget = function (session, foldStyle, row) {
+            return (this.$tryMode(session.getState(row - 1), session, foldStyle, row) ||
+                this.$tryMode(session.getState(row), session, foldStyle, row) ||
+                this.defaultMode.getFoldWidget(session, foldStyle, row));
+        };
+        MixedFoldMode.prototype.getFoldWidgetRange = function (session, foldStyle, row) {
+            var mode = this.$getMode(session.getState(row - 1));
+            if (!mode || !mode.getFoldWidget(session, foldStyle, row))
+                mode = this.$getMode(session.getState(row));
+            if (!mode || !mode.getFoldWidget(session, foldStyle, row))
+                mode = this.defaultMode;
+            return mode.getFoldWidgetRange(session, foldStyle, row);
+        };
+        return MixedFoldMode;
+    })(FoldMode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = MixedFoldMode;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/folding/XmlFoldMode',["require", "exports", "../../lib/oop", "../../Range", "./FoldMode", "../../TokenIterator"], function (require, exports, oop_1, Range_1, FoldMode_1, TokenIterator_1) {
+    var XmlFoldMode = (function (_super) {
+        __extends(XmlFoldMode, _super);
+        function XmlFoldMode(voidElements, optionalEndTags) {
+            _super.call(this);
+            this.voidElements = voidElements || {};
+            this.optionalEndTags = oop_1.mixin({}, this.voidElements);
+            if (optionalEndTags)
+                oop_1.mixin(this.optionalEndTags, optionalEndTags);
+        }
+        XmlFoldMode.prototype.getFoldWidget = function (session, foldStyle, row) {
+            var tag = this._getFirstTagInLine(session, row);
+            if (!tag)
+                return "";
+            if (tag.closing || (!tag.tagName && tag.selfClosing))
+                return foldStyle == "markbeginend" ? "end" : "";
+            if (!tag.tagName || tag.selfClosing || this.voidElements.hasOwnProperty(tag.tagName.toLowerCase()))
+                return "";
+            if (this._findEndTagInLine(session, row, tag.tagName, tag.end.column))
+                return "";
+            return "start";
+        };
+        /*
+         * returns a first tag (or a fragment) in a line
+         */
+        XmlFoldMode.prototype._getFirstTagInLine = function (session, row) {
+            var tokens = session.getTokens(row);
+            var tag = new Tag();
+            for (var i = 0; i < tokens.length; i++) {
+                var token = tokens[i];
+                if (is(token, "tag-open")) {
+                    tag.end.column = tag.start.column + token.value.length;
+                    tag.closing = is(token, "end-tag-open");
+                    token = tokens[++i];
+                    if (!token)
+                        return null;
+                    tag.tagName = token.value;
+                    tag.end.column += token.value.length;
+                    for (i++; i < tokens.length; i++) {
+                        token = tokens[i];
+                        tag.end.column += token.value.length;
+                        if (is(token, "tag-close")) {
+                            tag.selfClosing = token.value == '/>';
+                            break;
+                        }
+                    }
+                    return tag;
+                }
+                else if (is(token, "tag-close")) {
+                    tag.selfClosing = token.value == '/>';
+                    return tag;
+                }
+                tag.start.column += token.value.length;
+            }
+            return null;
+        };
+        XmlFoldMode.prototype._findEndTagInLine = function (session, row, tagName, startColumn) {
+            var tokens = session.getTokens(row);
+            var column = 0;
+            for (var i = 0; i < tokens.length; i++) {
+                var token = tokens[i];
+                column += token.value.length;
+                if (column < startColumn)
+                    continue;
+                if (is(token, "end-tag-open")) {
+                    token = tokens[i + 1];
+                    if (token && token.value == tagName)
+                        return true;
+                }
+            }
+            return false;
+        };
+        /*
+         * reads a full tag and places the iterator after the tag
+         */
+        XmlFoldMode.prototype._readTagForward = function (iterator) {
+            var token = iterator.getCurrentToken();
+            if (!token)
+                return null;
+            var tag = new Tag();
+            do {
+                if (is(token, "tag-open")) {
+                    tag.closing = is(token, "end-tag-open");
+                    tag.start.row = iterator.getCurrentTokenRow();
+                    tag.start.column = iterator.getCurrentTokenColumn();
+                }
+                else if (is(token, "tag-name")) {
+                    tag.tagName = token.value;
+                }
+                else if (is(token, "tag-close")) {
+                    tag.selfClosing = token.value == "/>";
+                    tag.end.row = iterator.getCurrentTokenRow();
+                    tag.end.column = iterator.getCurrentTokenColumn() + token.value.length;
+                    iterator.stepForward();
+                    return tag;
+                }
+            } while (token = iterator.stepForward());
+            return null;
+        };
+        XmlFoldMode.prototype._readTagBackward = function (iterator) {
+            var token = iterator.getCurrentToken();
+            if (!token)
+                return null;
+            var tag = new Tag();
+            do {
+                if (is(token, "tag-open")) {
+                    tag.closing = is(token, "end-tag-open");
+                    tag.start.row = iterator.getCurrentTokenRow();
+                    tag.start.column = iterator.getCurrentTokenColumn();
+                    iterator.stepBackward();
+                    return tag;
+                }
+                else if (is(token, "tag-name")) {
+                    tag.tagName = token.value;
+                }
+                else if (is(token, "tag-close")) {
+                    tag.selfClosing = token.value == "/>";
+                    tag.end.row = iterator.getCurrentTokenRow();
+                    tag.end.column = iterator.getCurrentTokenColumn() + token.value.length;
+                }
+            } while (token = iterator.stepBackward());
+            return null;
+        };
+        XmlFoldMode.prototype._pop = function (stack, tag) {
+            while (stack.length) {
+                var top = stack[stack.length - 1];
+                if (!tag || top.tagName == tag.tagName) {
+                    return stack.pop();
+                }
+                else if (this.optionalEndTags.hasOwnProperty(tag.tagName)) {
+                    return;
+                }
+                else if (this.optionalEndTags.hasOwnProperty(top.tagName)) {
+                    stack.pop();
+                    continue;
+                }
+                else {
+                    return null;
+                }
+            }
+        };
+        XmlFoldMode.prototype.getFoldWidgetRange = function (session, foldStyle, row) {
+            var firstTag = this._getFirstTagInLine(session, row);
+            if (!firstTag)
+                return null;
+            var isBackward = firstTag.closing || firstTag.selfClosing;
+            var stack = [];
+            var tag;
+            if (!isBackward) {
+                var iterator = new TokenIterator_1.default(session, row, firstTag.start.column);
+                var start = {
+                    row: row,
+                    column: firstTag.start.column + firstTag.tagName.length + 2
+                };
+                while (tag = this._readTagForward(iterator)) {
+                    if (tag.selfClosing) {
+                        if (!stack.length) {
+                            tag.start.column += tag.tagName.length + 2;
+                            tag.end.column -= 2;
+                            return Range_1.default.fromPoints(tag.start, tag.end);
+                        }
+                        else
+                            continue;
+                    }
+                    if (tag.closing) {
+                        this._pop(stack, tag);
+                        if (stack.length == 0)
+                            return Range_1.default.fromPoints(start, tag.start);
+                    }
+                    else {
+                        stack.push(tag);
+                    }
+                }
+            }
+            else {
+                var iterator = new TokenIterator_1.default(session, row, firstTag.end.column);
+                var end = {
+                    row: row,
+                    column: firstTag.start.column
+                };
+                while (tag = this._readTagBackward(iterator)) {
+                    if (tag.selfClosing) {
+                        if (!stack.length) {
+                            tag.start.column += tag.tagName.length + 2;
+                            tag.end.column -= 2;
+                            return Range_1.default.fromPoints(tag.start, tag.end);
+                        }
+                        else
+                            continue;
+                    }
+                    if (!tag.closing) {
+                        this._pop(stack, tag);
+                        if (stack.length == 0) {
+                            tag.start.column += tag.tagName.length + 2;
+                            return Range_1.default.fromPoints(tag.start, end);
+                        }
+                    }
+                    else {
+                        stack.push(tag);
+                    }
+                }
+            }
+        };
+        return XmlFoldMode;
+    })(FoldMode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = XmlFoldMode;
+    var Tag = function () {
+        this.tagName = "";
+        this.closing = false;
+        this.selfClosing = false;
+        this.start = { row: 0, column: 0 };
+        this.end = { row: 0, column: 0 };
+    };
+    function is(token, type) {
+        return token.type.lastIndexOf(type + ".xml") > -1;
+    }
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/folding/HtmlFoldMode',["require", "exports", "./MixedFoldMode", "./XmlFoldMode", "./CstyleFoldMode"], function (require, exports, MixedFoldMode_1, XmlFoldMode_1, CstyleFoldMode_1) {
+    var HtmlFoldMode = (function (_super) {
+        __extends(HtmlFoldMode, _super);
+        function HtmlFoldMode(voidElements, optionalTags) {
+            _super.call(this, new XmlFoldMode_1.default(voidElements, optionalTags), { "js-": new CstyleFoldMode_1.default(), "css-": new CstyleFoldMode_1.default() });
+        }
+        return HtmlFoldMode;
+    })(MixedFoldMode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HtmlFoldMode;
+});
+
+define('mode/HtmlCompletions',["require", "exports", "../TokenIterator"], function (require, exports, TokenIterator_1) {
+    var commonAttributes = [
+        "accesskey",
+        "class",
+        "contenteditable",
+        "contextmenu",
+        "dir",
+        "draggable",
+        "dropzone",
+        "hidden",
+        "id",
+        "inert",
+        "itemid",
+        "itemprop",
+        "itemref",
+        "itemscope",
+        "itemtype",
+        "lang",
+        "spellcheck",
+        "style",
+        "tabindex",
+        "title",
+        "translate"
+    ];
+    var eventAttributes = [
+        "onabort",
+        "onblur",
+        "oncancel",
+        "oncanplay",
+        "oncanplaythrough",
+        "onchange",
+        "onclick",
+        "onclose",
+        "oncontextmenu",
+        "oncuechange",
+        "ondblclick",
+        "ondrag",
+        "ondragend",
+        "ondragenter",
+        "ondragleave",
+        "ondragover",
+        "ondragstart",
+        "ondrop",
+        "ondurationchange",
+        "onemptied",
+        "onended",
+        "onerror",
+        "onfocus",
+        "oninput",
+        "oninvalid",
+        "onkeydown",
+        "onkeypress",
+        "onkeyup",
+        "onload",
+        "onloadeddata",
+        "onloadedmetadata",
+        "onloadstart",
+        "onmousedown",
+        "onmousemove",
+        "onmouseout",
+        "onmouseover",
+        "onmouseup",
+        "onmousewheel",
+        "onpause",
+        "onplay",
+        "onplaying",
+        "onprogress",
+        "onratechange",
+        "onreset",
+        "onscroll",
+        "onseeked",
+        "onseeking",
+        "onselect",
+        "onshow",
+        "onstalled",
+        "onsubmit",
+        "onsuspend",
+        "ontimeupdate",
+        "onvolumechange",
+        "onwaiting"
+    ];
+    var globalAttributes = commonAttributes.concat(eventAttributes);
+    var attributeMap = {
+        "html": ["manifest"],
+        "head": [],
+        "title": [],
+        "base": ["href", "target"],
+        "link": ["href", "hreflang", "rel", "media", "type", "sizes"],
+        "meta": ["http-equiv", "name", "content", "charset"],
+        "style": ["type", "media", "scoped"],
+        "script": ["charset", "type", "src", "defer", "async"],
+        "noscript": ["href"],
+        "body": ["onafterprint", "onbeforeprint", "onbeforeunload", "onhashchange", "onmessage", "onoffline", "onpopstate", "onredo", "onresize", "onstorage", "onundo", "onunload"],
+        "section": [],
+        "nav": [],
+        "article": ["pubdate"],
+        "aside": [],
+        "h1": [],
+        "h2": [],
+        "h3": [],
+        "h4": [],
+        "h5": [],
+        "h6": [],
+        "header": [],
+        "footer": [],
+        "address": [],
+        "main": [],
+        "p": [],
+        "hr": [],
+        "pre": [],
+        "blockquote": ["cite"],
+        "ol": ["start", "reversed"],
+        "ul": [],
+        "li": ["value"],
+        "dl": [],
+        "dt": [],
+        "dd": [],
+        "figure": [],
+        "figcaption": [],
+        "div": [],
+        "a": ["href", "target", "ping", "rel", "media", "hreflang", "type"],
+        "em": [],
+        "strong": [],
+        "small": [],
+        "s": [],
+        "cite": [],
+        "q": ["cite"],
+        "dfn": [],
+        "abbr": [],
+        "data": [],
+        "time": ["datetime"],
+        "code": [],
+        "var": [],
+        "samp": [],
+        "kbd": [],
+        "sub": [],
+        "sup": [],
+        "i": [],
+        "b": [],
+        "u": [],
+        "mark": [],
+        "ruby": [],
+        "rt": [],
+        "rp": [],
+        "bdi": [],
+        "bdo": [],
+        "span": [],
+        "br": [],
+        "wbr": [],
+        "ins": ["cite", "datetime"],
+        "del": ["cite", "datetime"],
+        "img": ["alt", "src", "height", "width", "usemap", "ismap"],
+        "iframe": ["name", "src", "height", "width", "sandbox", "seamless"],
+        "embed": ["src", "height", "width", "type"],
+        "object": ["param", "data", "type", "height", "width", "usemap", "name", "form", "classid"],
+        "param": ["name", "value"],
+        "video": ["src", "autobuffer", "autoplay", "loop", "controls", "width", "height", "poster"],
+        "audio": ["src", "autobuffer", "autoplay", "loop", "controls"],
+        "source": ["src", "type", "media"],
+        "track": ["kind", "src", "srclang", "label", "default"],
+        "canvas": ["width", "height"],
+        "map": ["name"],
+        "area": ["shape", "coords", "href", "hreflang", "alt", "target", "media", "rel", "ping", "type"],
+        "svg": [],
+        "math": [],
+        "table": ["summary"],
+        "caption": [],
+        "colgroup": ["span"],
+        "col": ["span"],
+        "tbody": [],
+        "thead": [],
+        "tfoot": [],
+        "tr": [],
+        "td": ["headers", "rowspan", "colspan"],
+        "th": ["headers", "rowspan", "colspan", "scope"],
+        "form": ["accept-charset", "action", "autocomplete", "enctype", "method", "name", "novalidate", "target"],
+        "fieldset": ["disabled", "form", "name"],
+        "legend": [],
+        "label": ["form", "for"],
+        "input": ["type", "accept", "alt", "autocomplete", "checked", "disabled", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "height", "list", "max", "maxlength", "min", "multiple", "pattern", "placeholder", "readonly", "required", "size", "src", "step", "width", "files", "value"],
+        "button": ["autofocus", "disabled", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget", "name", "value", "type"],
+        "select": ["autofocus", "disabled", "form", "multiple", "name", "size"],
+        "datalist": [],
+        "optgroup": ["disabled", "label"],
+        "option": ["disabled", "selected", "label", "value"],
+        "textarea": ["autofocus", "disabled", "form", "maxlength", "name", "placeholder", "readonly", "required", "rows", "cols", "wrap"],
+        "keygen": ["autofocus", "challenge", "disabled", "form", "keytype", "name"],
+        "output": ["for", "form", "name"],
+        "progress": ["value", "max"],
+        "meter": ["value", "min", "max", "low", "high", "optimum"],
+        "details": ["open"],
+        "summary": [],
+        "command": ["type", "label", "icon", "disabled", "checked", "radiogroup", "command"],
+        "menu": ["type", "label"],
+        "dialog": ["open"]
+    };
+    var elements = Object.keys(attributeMap);
+    function is(token, type) {
+        return token.type.lastIndexOf(type + ".xml") > -1;
+    }
+    function findTagName(session, pos) {
+        var iterator = new TokenIterator_1.default(session, pos.row, pos.column);
+        var token = iterator.getCurrentToken();
+        while (token && !is(token, "tag-name")) {
+            token = iterator.stepBackward();
+        }
+        if (token)
+            return token.value;
+    }
+    var HtmlCompletions = (function () {
+        function HtmlCompletions() {
+        }
+        HtmlCompletions.prototype.getCompletions = function (state, session, pos, prefix) {
+            var token = session.getTokenAt(pos.row, pos.column);
+            if (!token)
+                return [];
+            // tag name
+            if (is(token, "tag-name") || is(token, "tag-open") || is(token, "end-tag-open"))
+                return this.getTagCompletions(state, session, pos, prefix);
+            // tag attribute
+            if (is(token, "tag-whitespace") || is(token, "attribute-name"))
+                return this.getAttributeCompetions(state, session, pos, prefix);
+            return [];
+        };
+        HtmlCompletions.prototype.getTagCompletions = function (state, session, pos, prefix) {
+            return elements.map(function (element) {
+                return {
+                    value: element,
+                    meta: "tag",
+                    score: Number.MAX_VALUE
+                };
+            });
+        };
+        HtmlCompletions.prototype.getAttributeCompetions = function (state, session, pos, prefix) {
+            var tagName = findTagName(session, pos);
+            if (!tagName)
+                return [];
+            var attributes = globalAttributes;
+            if (tagName in attributeMap) {
+                attributes = attributes.concat(attributeMap[tagName]);
+            }
+            return attributes.map(function (attribute) {
+                return {
+                    caption: attribute,
+                    snippet: attribute + '="$0"',
+                    meta: "attribute",
+                    score: Number.MAX_VALUE
+                };
+            });
+        };
+        return HtmlCompletions;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HtmlCompletions;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/HtmlMode',["require", "exports", "../lib/lang", "./Mode", "./JavaScriptMode", "./CssMode", "./HtmlHighlightRules", "./behaviour/XmlBehaviour", "./folding/HtmlFoldMode", "./HtmlCompletions", "../worker/WorkerClient"], function (require, exports, lang_1, Mode_1, JavaScriptMode_1, CssMode_1, HtmlHighlightRules_1, XmlBehaviour_1, HtmlFoldMode_1, HtmlCompletions_1, WorkerClient_1) {
+    // http://www.w3.org/TR/html5/syntax.html#void-elements
+    var voidElements = ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
+    var optionalEndTags = ["li", "dt", "dd", "p", "rt", "rp", "optgroup", "option", "colgroup", "td", "th"];
+    /**
+     * @class HtmlMode
+     */
+    var HtmlMode = (function (_super) {
+        __extends(HtmlMode, _super);
+        /**
+         * @class HtmlMode
+         * @constructor
+         */
+        function HtmlMode(options) {
+            _super.call(this);
+            this.blockComment = { start: "<!--", end: "-->" };
+            this.voidElements = lang_1.arrayToMap(voidElements);
+            this.$id = "ace/mode/html";
+            this.fragmentContext = options && options.fragmentContext;
+            this.HighlightRules = HtmlHighlightRules_1.default;
+            this.$behaviour = new XmlBehaviour_1.default();
+            this.$completer = new HtmlCompletions_1.default();
+            this.createModeDelegates({
+                "js-": JavaScriptMode_1.default,
+                "css-": CssMode_1.default
+            });
+            this.foldingRules = new HtmlFoldMode_1.default(this.voidElements, lang_1.arrayToMap(optionalEndTags));
+        }
+        HtmlMode.prototype.getNextLineIndent = function (state, line, tab) {
+            return this.$getIndent(line);
+        };
+        HtmlMode.prototype.checkOutdent = function (state, line, text) {
+            return false;
+        };
+        HtmlMode.prototype.getCompletions = function (state, session, pos, prefix) {
+            return this.$completer.getCompletions(state, session, pos, prefix);
+        };
+        HtmlMode.prototype.createWorker = function (session) {
+            var worker = new WorkerClient_1.default("lib/worker/worker-systemjs.js");
+            var mode = this;
+            worker.on("initAfter", function () {
+                worker.attachToDocument(session.getDocument());
+                if (mode.fragmentContext) {
+                    worker.call("setOptions", [{ context: mode.fragmentContext }]);
+                }
+            });
+            worker.on("error", function (e) {
+                session.setAnnotations(e.data);
+            });
+            worker.on("terminate", function () {
+                session.clearAnnotations();
+            });
+            worker.init("lib/mode/HtmlWorker", "default");
+            return worker;
+        };
+        ;
+        return HtmlMode;
+    })(Mode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HtmlMode;
+});
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+//require("./lib/fixoldbrowsers");
+define('deuce',["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditorDocument", "./EditSession", "./UndoManager", "./VirtualRenderer", "./mode/HtmlMode"], function (require, exports, dom_1, event_1, Editor_1, EditorDocument_1, EditSession_1, UndoManager_1, VirtualRenderer_1, HtmlMode_1) {
     function edit(source) {
         var element;
         if (typeof source === 'string') {
@@ -19603,9 +22654,8 @@ define('deuce',["require", "exports", "./lib/dom", "./lib/event", "./Editor", ".
             value = dom_1.getInnerText(element);
             element.innerHTML = '';
         }
-        var editSession = createEditSession(value);
+        var editSession = createEditSession(new EditorDocument_1.default(value), new HtmlMode_1.default());
         var editor = new Editor_1.default(new VirtualRenderer_1.default(element), editSession);
-        editor.setSession(editSession);
         // FIXME: The first property is incorrectly named.
         var env = {
             document: editSession,
@@ -19624,22 +22674,8480 @@ define('deuce',["require", "exports", "./lib/dom", "./lib/event", "./Editor", ".
     }
     exports.edit = edit;
     ;
-    /**
-     * Creates a new [[EditSession]], and returns the associated [[Document]].
-     * @param {Document | String} text {:textParam}
-     * @param {TextMode} mode {:modeParam}
-     *
-     **/
-    function createEditSession(text, mode) {
-        var doc = new EditSession_1.default(text, mode);
-        doc.setUndoManager(new UndoManager_1.default());
-        return doc;
+    function createEditSession(doc, mode, callback) {
+        var editSession = new EditSession_1.default(doc, mode, callback);
+        editSession.setUndoManager(new UndoManager_1.default());
+        return editSession;
     }
     exports.createEditSession = createEditSession;
     ;
 });
 
-  var library = require('davinci-eight');
+define('worker/Mirror',["require", "exports", "../EditorDocument", "../lib/lang"], function (require, exports, EditorDocument_1, lang_1) {
+    var Mirror = (function () {
+        /**
+         * Initializes the 'sender' property to the specified argument.
+         * Initializes the 'doc' property to a new EditDocument.
+         * Initializes the 'deferredUpdate' property to a delayed call to 'onUpdate'.
+         * Binds the 'sender' "change" event to a function
+         */
+        function Mirror(sender, timeout) {
+            if (timeout === void 0) { timeout = 500; }
+            this.sender = sender;
+            this.$timeout = timeout;
+            this.doc = new EditorDocument_1.default("");
+            var deferredUpdate = this.deferredUpdate = lang_1.delayedCall(this.onUpdate.bind(this));
+            // Binding for use in the following callback.
+            var _self = this;
+            sender.on('change', function (e) {
+                _self.doc.applyDeltas(e.data);
+                if (_self.$timeout) {
+                    return deferredUpdate.schedule(_self.$timeout);
+                }
+                else {
+                    // I'm not sure that we need to special-case this code.
+                    _self.onUpdate();
+                }
+            });
+        }
+        Mirror.prototype.setTimeout = function (timeout) {
+            this.$timeout = timeout;
+        };
+        Mirror.prototype.setValue = function (value) {
+            this.doc.setValue(value);
+            this.deferredUpdate.schedule(this.$timeout);
+        };
+        Mirror.prototype.getValue = function (callbackId) {
+            this.sender.callback(this.doc.getValue(), callbackId);
+        };
+        /**
+         * Called after the timeout period. Derived classes will normally perform
+         * a computationally expensive analysis then report annotations to the
+         * sender.
+         */
+        Mirror.prototype.onUpdate = function () {
+            // abstract method
+        };
+        Mirror.prototype.isPending = function () {
+            return this.deferredUpdate.isPending();
+        };
+        return Mirror;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Mirror;
+});
+
+define('mode/html/constants',["require", "exports"], function (require, exports) {
+    exports.SVGTagMap = {
+        "altglyph": "altGlyph",
+        "altglyphdef": "altGlyphDef",
+        "altglyphitem": "altGlyphItem",
+        "animatecolor": "animateColor",
+        "animatemotion": "animateMotion",
+        "animatetransform": "animateTransform",
+        "clippath": "clipPath",
+        "feblend": "feBlend",
+        "fecolormatrix": "feColorMatrix",
+        "fecomponenttransfer": "feComponentTransfer",
+        "fecomposite": "feComposite",
+        "feconvolvematrix": "feConvolveMatrix",
+        "fediffuselighting": "feDiffuseLighting",
+        "fedisplacementmap": "feDisplacementMap",
+        "fedistantlight": "feDistantLight",
+        "feflood": "feFlood",
+        "fefunca": "feFuncA",
+        "fefuncb": "feFuncB",
+        "fefuncg": "feFuncG",
+        "fefuncr": "feFuncR",
+        "fegaussianblur": "feGaussianBlur",
+        "feimage": "feImage",
+        "femerge": "feMerge",
+        "femergenode": "feMergeNode",
+        "femorphology": "feMorphology",
+        "feoffset": "feOffset",
+        "fepointlight": "fePointLight",
+        "fespecularlighting": "feSpecularLighting",
+        "fespotlight": "feSpotLight",
+        "fetile": "feTile",
+        "feturbulence": "feTurbulence",
+        "foreignobject": "foreignObject",
+        "glyphref": "glyphRef",
+        "lineargradient": "linearGradient",
+        "radialgradient": "radialGradient",
+        "textpath": "textPath"
+    };
+    exports.MATHMLAttributeMap = {
+        definitionurl: 'definitionURL'
+    };
+    exports.SVGAttributeMap = {
+        attributename: 'attributeName',
+        attributetype: 'attributeType',
+        basefrequency: 'baseFrequency',
+        baseprofile: 'baseProfile',
+        calcmode: 'calcMode',
+        clippathunits: 'clipPathUnits',
+        contentscripttype: 'contentScriptType',
+        contentstyletype: 'contentStyleType',
+        diffuseconstant: 'diffuseConstant',
+        edgemode: 'edgeMode',
+        externalresourcesrequired: 'externalResourcesRequired',
+        filterres: 'filterRes',
+        filterunits: 'filterUnits',
+        glyphref: 'glyphRef',
+        gradienttransform: 'gradientTransform',
+        gradientunits: 'gradientUnits',
+        kernelmatrix: 'kernelMatrix',
+        kernelunitlength: 'kernelUnitLength',
+        keypoints: 'keyPoints',
+        keysplines: 'keySplines',
+        keytimes: 'keyTimes',
+        lengthadjust: 'lengthAdjust',
+        limitingconeangle: 'limitingConeAngle',
+        markerheight: 'markerHeight',
+        markerunits: 'markerUnits',
+        markerwidth: 'markerWidth',
+        maskcontentunits: 'maskContentUnits',
+        maskunits: 'maskUnits',
+        numoctaves: 'numOctaves',
+        pathlength: 'pathLength',
+        patterncontentunits: 'patternContentUnits',
+        patterntransform: 'patternTransform',
+        patternunits: 'patternUnits',
+        pointsatx: 'pointsAtX',
+        pointsaty: 'pointsAtY',
+        pointsatz: 'pointsAtZ',
+        preservealpha: 'preserveAlpha',
+        preserveaspectratio: 'preserveAspectRatio',
+        primitiveunits: 'primitiveUnits',
+        refx: 'refX',
+        refy: 'refY',
+        repeatcount: 'repeatCount',
+        repeatdur: 'repeatDur',
+        requiredextensions: 'requiredExtensions',
+        requiredfeatures: 'requiredFeatures',
+        specularconstant: 'specularConstant',
+        specularexponent: 'specularExponent',
+        spreadmethod: 'spreadMethod',
+        startoffset: 'startOffset',
+        stddeviation: 'stdDeviation',
+        stitchtiles: 'stitchTiles',
+        surfacescale: 'surfaceScale',
+        systemlanguage: 'systemLanguage',
+        tablevalues: 'tableValues',
+        targetx: 'targetX',
+        targety: 'targetY',
+        textlength: 'textLength',
+        viewbox: 'viewBox',
+        viewtarget: 'viewTarget',
+        xchannelselector: 'xChannelSelector',
+        ychannelselector: 'yChannelSelector',
+        zoomandpan: 'zoomAndPan'
+    };
+    exports.ForeignAttributeMap = {
+        "xlink:actuate": { prefix: "xlink", localName: "actuate", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xlink:arcrole": { prefix: "xlink", localName: "arcrole", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xlink:href": { prefix: "xlink", localName: "href", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xlink:role": { prefix: "xlink", localName: "role", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xlink:show": { prefix: "xlink", localName: "show", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xlink:title": { prefix: "xlink", localName: "title", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xlink:type": { prefix: "xlink", localName: "title", namespaceURI: "http://www.w3.org/1999/xlink" },
+        "xml:base": { prefix: "xml", localName: "base", namespaceURI: "http://www.w3.org/XML/1998/namespace" },
+        "xml:lang": { prefix: "xml", localName: "lang", namespaceURI: "http://www.w3.org/XML/1998/namespace" },
+        "xml:space": { prefix: "xml", localName: "space", namespaceURI: "http://www.w3.org/XML/1998/namespace" },
+        "xmlns": { prefix: null, localName: "xmlns", namespaceURI: "http://www.w3.org/2000/xmlns/" },
+        "xmlns:xlink": { prefix: "xmlns", localName: "xlink", namespaceURI: "http://www.w3.org/2000/xmlns/" },
+    };
+});
+
+define('mode/html/isWhitespace',["require", "exports"], function (require, exports) {
+    function isWhitespace(ch) {
+        return ch === " " || ch === "\n" || ch === "\t" || ch === "\r" || ch === "\f";
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isWhitespace;
+});
+
+define('mode/html/CharacterBuffer',["require", "exports", './isWhitespace'], function (require, exports, isWhitespace_1) {
+    function CharacterBuffer(characters) {
+        this.characters = characters;
+        this.current = 0;
+        this.end = this.characters.length;
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = CharacterBuffer;
+    CharacterBuffer.prototype.skipAtMostOneLeadingNewline = function () {
+        if (this.characters[this.current] === '\n')
+            this.current++;
+    };
+    CharacterBuffer.prototype.skipLeadingWhitespace = function () {
+        while (isWhitespace_1.default(this.characters[this.current])) {
+            if (++this.current == this.end)
+                return;
+        }
+    };
+    CharacterBuffer.prototype.skipLeadingNonWhitespace = function () {
+        while (!isWhitespace_1.default(this.characters[this.current])) {
+            if (++this.current == this.end)
+                return;
+        }
+    };
+    CharacterBuffer.prototype.takeRemaining = function () {
+        return this.characters.substring(this.current);
+    };
+    CharacterBuffer.prototype.takeLeadingWhitespace = function () {
+        var start = this.current;
+        this.skipLeadingWhitespace();
+        if (start === this.current)
+            return "";
+        return this.characters.substring(start, this.current - start);
+    };
+    Object.defineProperty(CharacterBuffer.prototype, 'length', {
+        get: function () {
+            return this.end - this.current;
+        }
+    });
+});
+
+define('mode/html/ElementStack',["require", "exports"], function (require, exports) {
+    function isScopeMarker(node) {
+        if (node.namespaceURI === "http://www.w3.org/1999/xhtml") {
+            return node.localName === "applet"
+                || node.localName === "caption"
+                || node.localName === "marquee"
+                || node.localName === "object"
+                || node.localName === "table"
+                || node.localName === "td"
+                || node.localName === "th";
+        }
+        if (node.namespaceURI === "http://www.w3.org/1998/Math/MathML") {
+            return node.localName === "mi"
+                || node.localName === "mo"
+                || node.localName === "mn"
+                || node.localName === "ms"
+                || node.localName === "mtext"
+                || node.localName === "annotation-xml";
+        }
+        if (node.namespaceURI === "http://www.w3.org/2000/svg") {
+            return node.localName === "foreignObject"
+                || node.localName === "desc"
+                || node.localName === "title";
+        }
+    }
+    function isListItemScopeMarker(node) {
+        return isScopeMarker(node)
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'ol')
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'ul');
+    }
+    function isTableScopeMarker(node) {
+        return (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'table')
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'html');
+    }
+    function isTableBodyScopeMarker(node) {
+        return (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'tbody')
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'tfoot')
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'thead')
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'html');
+    }
+    function isTableRowScopeMarker(node) {
+        return (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'tr')
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'html');
+    }
+    function isButtonScopeMarker(node) {
+        return isScopeMarker(node)
+            || (node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'button');
+    }
+    function isSelectScopeMarker(node) {
+        return !(node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'optgroup')
+            && !(node.namespaceURI === "http://www.w3.org/1999/xhtml" && node.localName === 'option');
+    }
+    /**
+     * Represents a stack of open elements
+     * @constructor
+     */
+    function ElementStack() {
+        this.elements = [];
+        this.rootNode = null;
+        this.headElement = null;
+        this.bodyElement = null;
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = ElementStack;
+    /**
+     *
+     * @param {String} localName
+     * @param {Function} isMarker
+     * @return {Boolean}
+     * @private
+     */
+    ElementStack.prototype._inScope = function (localName, isMarker) {
+        for (var i = this.elements.length - 1; i >= 0; i--) {
+            var node = this.elements[i];
+            if (node.localName === localName)
+                return true;
+            if (isMarker(node))
+                return false;
+        }
+    };
+    /**
+     * Pushes the item on the stack top
+     * @param {StackItem} item
+     */
+    ElementStack.prototype.push = function (item) {
+        this.elements.push(item);
+    };
+    /**
+     * Pushes the item on the stack top
+     * @param {StackItem} item HTML element stack item
+     */
+    ElementStack.prototype.pushHtmlElement = function (item) {
+        this.rootNode = item.node;
+        this.push(item);
+    };
+    /**
+     * Pushes the item on the stack top
+     * @param {StackItem} item HEAD element stack item
+     */
+    ElementStack.prototype.pushHeadElement = function (item) {
+        this.headElement = item.node;
+        this.push(item);
+    };
+    /**
+     * Pushes the item on the stack top
+     * @param {StackItem} item BODY element stack item
+     */
+    ElementStack.prototype.pushBodyElement = function (item) {
+        this.bodyElement = item.node;
+        this.push(item);
+    };
+    /**
+     * Pops the topmost item
+     * @return {StackItem}
+     */
+    ElementStack.prototype.pop = function () {
+        return this.elements.pop();
+    };
+    /**
+     * Removes the item from the element stack
+     * @param {StackItem} item The item to remove
+     */
+    ElementStack.prototype.remove = function (item) {
+        this.elements.splice(this.elements.indexOf(item), 1);
+    };
+    /**
+     * Pops until an element with a given localName is popped
+     * @param {String} localName
+     */
+    ElementStack.prototype.popUntilPopped = function (localName) {
+        var element;
+        do {
+            element = this.pop();
+        } while (element.localName != localName);
+    };
+    ElementStack.prototype.popUntilTableScopeMarker = function () {
+        while (!isTableScopeMarker(this.top))
+            this.pop();
+    };
+    ElementStack.prototype.popUntilTableBodyScopeMarker = function () {
+        while (!isTableBodyScopeMarker(this.top))
+            this.pop();
+    };
+    ElementStack.prototype.popUntilTableRowScopeMarker = function () {
+        while (!isTableRowScopeMarker(this.top))
+            this.pop();
+    };
+    /**
+     *
+     * @param {Number} index
+     * @return {StackItem}
+     */
+    ElementStack.prototype.item = function (index) {
+        return this.elements[index];
+    };
+    /**
+     *
+     * @param {StackItem} element
+     * @return {Boolean}
+     */
+    ElementStack.prototype.contains = function (element) {
+        return this.elements.indexOf(element) !== -1;
+    };
+    /**
+     *
+     * @param {String} localName
+     * @return {Boolean}
+     */
+    ElementStack.prototype.inScope = function (localName) {
+        return this._inScope(localName, isScopeMarker);
+    };
+    /**
+     *
+     * @param {String} localName
+     * @return {Boolean}
+     */
+    ElementStack.prototype.inListItemScope = function (localName) {
+        return this._inScope(localName, isListItemScopeMarker);
+    };
+    /**
+     *
+     * @param {String} localName
+     * @return {Boolean}
+     */
+    ElementStack.prototype.inTableScope = function (localName) {
+        return this._inScope(localName, isTableScopeMarker);
+    };
+    /**
+     *
+     * @param {String} localName
+     * @return {Boolean}
+     */
+    ElementStack.prototype.inButtonScope = function (localName) {
+        return this._inScope(localName, isButtonScopeMarker);
+    };
+    /**
+     *
+     * @param {String} localName
+     * @return {Boolean}
+     */
+    ElementStack.prototype.inSelectScope = function (localName) {
+        return this._inScope(localName, isSelectScopeMarker);
+    };
+    /**
+     *
+     * @return {Boolean}
+     */
+    ElementStack.prototype.hasNumberedHeaderElementInScope = function () {
+        for (var i = this.elements.length - 1; i >= 0; i--) {
+            var node = this.elements[i];
+            if (node.isNumberedHeader())
+                return true;
+            if (isScopeMarker(node))
+                return false;
+        }
+    };
+    /**
+     *
+     * @param {Object} element
+     * @return {StackItem}
+     */
+    ElementStack.prototype.furthestBlockForFormattingElement = function (element) {
+        var furthestBlock = null;
+        for (var i = this.elements.length - 1; i >= 0; i--) {
+            var node = this.elements[i];
+            if (node.node === element)
+                break;
+            if (node.isSpecial())
+                furthestBlock = node;
+        }
+        return furthestBlock;
+    };
+    /**
+     *
+     * @param {String} localName
+     * @return {Number}
+     */
+    ElementStack.prototype.findIndex = function (localName) {
+        for (var i = this.elements.length - 1; i >= 0; i--) {
+            if (this.elements[i].localName == localName)
+                return i;
+        }
+        return -1;
+    };
+    ElementStack.prototype.remove_openElements_until = function (callback) {
+        var finished = false;
+        var element;
+        while (!finished) {
+            element = this.elements.pop();
+            finished = callback(element);
+        }
+        return element;
+    };
+    Object.defineProperty(ElementStack.prototype, 'top', {
+        get: function () {
+            return this.elements[this.elements.length - 1];
+        }
+    });
+    Object.defineProperty(ElementStack.prototype, 'length', {
+        get: function () {
+            return this.elements.length;
+        }
+    });
+});
+
+define('mode/html/formatMessage',["require", "exports"], function (require, exports) {
+    function formatMessage(format, args) {
+        return format.replace(new RegExp('{[0-9a-z-]+}', 'gi'), function (match) {
+            return args[match.slice(1, -1)] || match;
+        });
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = formatMessage;
+});
+
+define('mode/html/getAttribute',["require", "exports"], function (require, exports) {
+    function getAttribute(node, name) {
+        for (var i = 0; i < node.attributes.length; i++) {
+            var attribute = node.attributes[i];
+            if (attribute.nodeName === name) {
+                return attribute;
+            }
+        }
+        return null;
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = getAttribute;
+});
+
+define('mode/html/isAllWhitespace',["require", "exports", './isWhitespace'], function (require, exports, isWhitespace_1) {
+    function isAllWhitespace(characters) {
+        for (var i = 0; i < characters.length; i++) {
+            var ch = characters[i];
+            if (!isWhitespace_1.default(ch))
+                return false;
+        }
+        return true;
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isAllWhitespace;
+});
+
+define('mode/html/isWhitespaceOrReplacementCharacter',["require", "exports", './isWhitespace'], function (require, exports, isWhitespace_1) {
+    function isWhitespaceOrReplacementCharacter(ch) {
+        return isWhitespace_1.default(ch) || ch === '\uFFFD';
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isWhitespaceOrReplacementCharacter;
+});
+
+define('mode/html/isAllWhitespaceOrReplacementCharacters',["require", "exports", './isWhitespaceOrReplacementCharacter'], function (require, exports, isWhitespaceOrReplacementCharacter_1) {
+    function isAllWhitespaceOrReplacementCharacters(characters) {
+        for (var i = 0; i < characters.length; i++) {
+            var ch = characters[i];
+            if (!isWhitespaceOrReplacementCharacter_1.default(ch))
+                return false;
+        }
+        return true;
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isAllWhitespaceOrReplacementCharacters;
+});
+
+define('mode/html/messages',["require", "exports"], function (require, exports) {
+    var messages = {
+        "null-character": "Null character in input stream, replaced with U+FFFD.",
+        "invalid-codepoint": "Invalid codepoint in stream",
+        "incorrectly-placed-solidus": "Solidus (/) incorrectly placed in tag.",
+        "incorrect-cr-newline-entity": "Incorrect CR newline entity, replaced with LF.",
+        "illegal-windows-1252-entity": "Entity used with illegal number (windows-1252 reference).",
+        "cant-convert-numeric-entity": "Numeric entity couldn't be converted to character (codepoint U+{charAsInt}).",
+        "invalid-numeric-entity-replaced": "Numeric entity represents an illegal codepoint. Expanded to the C1 controls range.",
+        "numeric-entity-without-semicolon": "Numeric entity didn't end with ';'.",
+        "expected-numeric-entity-but-got-eof": "Numeric entity expected. Got end of file instead.",
+        "expected-numeric-entity": "Numeric entity expected but none found.",
+        "named-entity-without-semicolon": "Named entity didn't end with ';'.",
+        "expected-named-entity": "Named entity expected. Got none.",
+        "attributes-in-end-tag": "End tag contains unexpected attributes.",
+        "self-closing-flag-on-end-tag": "End tag contains unexpected self-closing flag.",
+        "bare-less-than-sign-at-eof": "End of file after <.",
+        "expected-tag-name-but-got-right-bracket": "Expected tag name. Got '>' instead.",
+        "expected-tag-name-but-got-question-mark": "Expected tag name. Got '?' instead. (HTML doesn't support processing instructions.)",
+        "expected-tag-name": "Expected tag name. Got something else instead.",
+        "expected-closing-tag-but-got-right-bracket": "Expected closing tag. Got '>' instead. Ignoring '</>'.",
+        "expected-closing-tag-but-got-eof": "Expected closing tag. Unexpected end of file.",
+        "expected-closing-tag-but-got-char": "Expected closing tag. Unexpected character '{data}' found.",
+        "eof-in-tag-name": "Unexpected end of file in the tag name.",
+        "expected-attribute-name-but-got-eof": "Unexpected end of file. Expected attribute name instead.",
+        "eof-in-attribute-name": "Unexpected end of file in attribute name.",
+        "invalid-character-in-attribute-name": "Invalid character in attribute name.",
+        "duplicate-attribute": "Dropped duplicate attribute '{name}' on tag.",
+        "expected-end-of-tag-but-got-eof": "Unexpected end of file. Expected = or end of tag.",
+        "expected-attribute-value-but-got-eof": "Unexpected end of file. Expected attribute value.",
+        "expected-attribute-value-but-got-right-bracket": "Expected attribute value. Got '>' instead.",
+        "unexpected-character-in-unquoted-attribute-value": "Unexpected character in unquoted attribute",
+        "invalid-character-after-attribute-name": "Unexpected character after attribute name.",
+        "unexpected-character-after-attribute-value": "Unexpected character after attribute value.",
+        "eof-in-attribute-value-double-quote": "Unexpected end of file in attribute value (\").",
+        "eof-in-attribute-value-single-quote": "Unexpected end of file in attribute value (').",
+        "eof-in-attribute-value-no-quotes": "Unexpected end of file in attribute value.",
+        "eof-after-attribute-value": "Unexpected end of file after attribute value.",
+        "unexpected-eof-after-solidus-in-tag": "Unexpected end of file in tag. Expected >.",
+        "unexpected-character-after-solidus-in-tag": "Unexpected character after / in tag. Expected >.",
+        "expected-dashes-or-doctype": "Expected '--' or 'DOCTYPE'. Not found.",
+        "unexpected-bang-after-double-dash-in-comment": "Unexpected ! after -- in comment.",
+        "incorrect-comment": "Incorrect comment.",
+        "eof-in-comment": "Unexpected end of file in comment.",
+        "eof-in-comment-end-dash": "Unexpected end of file in comment (-).",
+        "unexpected-dash-after-double-dash-in-comment": "Unexpected '-' after '--' found in comment.",
+        "eof-in-comment-double-dash": "Unexpected end of file in comment (--).",
+        "eof-in-comment-end-bang-state": "Unexpected end of file in comment.",
+        "unexpected-char-in-comment": "Unexpected character in comment found.",
+        "need-space-after-doctype": "No space after literal string 'DOCTYPE'.",
+        "expected-doctype-name-but-got-right-bracket": "Unexpected > character. Expected DOCTYPE name.",
+        "expected-doctype-name-but-got-eof": "Unexpected end of file. Expected DOCTYPE name.",
+        "eof-in-doctype-name": "Unexpected end of file in DOCTYPE name.",
+        "eof-in-doctype": "Unexpected end of file in DOCTYPE.",
+        "expected-space-or-right-bracket-in-doctype": "Expected space or '>'. Got '{data}'.",
+        "unexpected-end-of-doctype": "Unexpected end of DOCTYPE.",
+        "unexpected-char-in-doctype": "Unexpected character in DOCTYPE.",
+        "eof-in-bogus-doctype": "Unexpected end of file in bogus doctype.",
+        "eof-in-innerhtml": "Unexpected EOF in inner html mode.",
+        "unexpected-doctype": "Unexpected DOCTYPE. Ignored.",
+        "non-html-root": "html needs to be the first start tag.",
+        "expected-doctype-but-got-eof": "Unexpected End of file. Expected DOCTYPE.",
+        "unknown-doctype": "Erroneous DOCTYPE. Expected <!DOCTYPE html>.",
+        "quirky-doctype": "Quirky doctype. Expected <!DOCTYPE html>.",
+        "almost-standards-doctype": "Almost standards mode doctype. Expected <!DOCTYPE html>.",
+        "obsolete-doctype": "Obsolete doctype. Expected <!DOCTYPE html>.",
+        "expected-doctype-but-got-chars": "Non-space characters found without seeing a doctype first. Expected e.g. <!DOCTYPE html>.",
+        "expected-doctype-but-got-start-tag": "Start tag seen without seeing a doctype first. Expected e.g. <!DOCTYPE html>.",
+        "expected-doctype-but-got-end-tag": "End tag seen without seeing a doctype first. Expected e.g. <!DOCTYPE html>.",
+        "end-tag-after-implied-root": "Unexpected end tag ({name}) after the (implied) root element.",
+        "expected-named-closing-tag-but-got-eof": "Unexpected end of file. Expected end tag ({name}).",
+        "two-heads-are-not-better-than-one": "Unexpected start tag head in existing head. Ignored.",
+        "unexpected-end-tag": "Unexpected end tag ({name}). Ignored.",
+        "unexpected-implied-end-tag": "End tag {name} implied, but there were open elements.",
+        "unexpected-start-tag-out-of-my-head": "Unexpected start tag ({name}) that can be in head. Moved.",
+        "unexpected-start-tag": "Unexpected start tag ({name}).",
+        "missing-end-tag": "Missing end tag ({name}).",
+        "missing-end-tags": "Missing end tags ({name}).",
+        "unexpected-start-tag-implies-end-tag": "Unexpected start tag ({startName}) implies end tag ({endName}).",
+        "unexpected-start-tag-treated-as": "Unexpected start tag ({originalName}). Treated as {newName}.",
+        "deprecated-tag": "Unexpected start tag {name}. Don't use it!",
+        "unexpected-start-tag-ignored": "Unexpected start tag {name}. Ignored.",
+        "expected-one-end-tag-but-got-another": "Unexpected end tag ({gotName}). Missing end tag ({expectedName}).",
+        "end-tag-too-early": "End tag ({name}) seen too early. Expected other end tag.",
+        "end-tag-too-early-named": "Unexpected end tag ({gotName}). Expected end tag ({expectedName}.",
+        "end-tag-too-early-ignored": "End tag ({name}) seen too early. Ignored.",
+        "adoption-agency-1.1": "End tag ({name}) violates step 1, paragraph 1 of the adoption agency algorithm.",
+        "adoption-agency-1.2": "End tag ({name}) violates step 1, paragraph 2 of the adoption agency algorithm.",
+        "adoption-agency-1.3": "End tag ({name}) violates step 1, paragraph 3 of the adoption agency algorithm.",
+        "adoption-agency-4.4": "End tag ({name}) violates step 4, paragraph 4 of the adoption agency algorithm.",
+        "unexpected-end-tag-treated-as": "Unexpected end tag ({originalName}). Treated as {newName}.",
+        "no-end-tag": "This element ({name}) has no end tag.",
+        "unexpected-implied-end-tag-in-table": "Unexpected implied end tag ({name}) in the table phase.",
+        "unexpected-implied-end-tag-in-table-body": "Unexpected implied end tag ({name}) in the table body phase.",
+        "unexpected-char-implies-table-voodoo": "Unexpected non-space characters in table context caused voodoo mode.",
+        "unexpected-hidden-input-in-table": "Unexpected input with type hidden in table context.",
+        "unexpected-form-in-table": "Unexpected form in table context.",
+        "unexpected-start-tag-implies-table-voodoo": "Unexpected start tag ({name}) in table context caused voodoo mode.",
+        "unexpected-end-tag-implies-table-voodoo": "Unexpected end tag ({name}) in table context caused voodoo mode.",
+        "unexpected-cell-in-table-body": "Unexpected table cell start tag ({name}) in the table body phase.",
+        "unexpected-cell-end-tag": "Got table cell end tag ({name}) while required end tags are missing.",
+        "unexpected-end-tag-in-table-body": "Unexpected end tag ({name}) in the table body phase. Ignored.",
+        "unexpected-implied-end-tag-in-table-row": "Unexpected implied end tag ({name}) in the table row phase.",
+        "unexpected-end-tag-in-table-row": "Unexpected end tag ({name}) in the table row phase. Ignored.",
+        "unexpected-select-in-select": "Unexpected select start tag in the select phase treated as select end tag.",
+        "unexpected-input-in-select": "Unexpected input start tag in the select phase.",
+        "unexpected-start-tag-in-select": "Unexpected start tag token ({name}) in the select phase. Ignored.",
+        "unexpected-end-tag-in-select": "Unexpected end tag ({name}) in the select phase. Ignored.",
+        "unexpected-table-element-start-tag-in-select-in-table": "Unexpected table element start tag ({name}) in the select in table phase.",
+        "unexpected-table-element-end-tag-in-select-in-table": "Unexpected table element end tag ({name}) in the select in table phase.",
+        "unexpected-char-after-body": "Unexpected non-space characters in the after body phase.",
+        "unexpected-start-tag-after-body": "Unexpected start tag token ({name}) in the after body phase.",
+        "unexpected-end-tag-after-body": "Unexpected end tag token ({name}) in the after body phase.",
+        "unexpected-char-in-frameset": "Unepxected characters in the frameset phase. Characters ignored.",
+        "unexpected-start-tag-in-frameset": "Unexpected start tag token ({name}) in the frameset phase. Ignored.",
+        "unexpected-frameset-in-frameset-innerhtml": "Unexpected end tag token (frameset in the frameset phase (innerHTML).",
+        "unexpected-end-tag-in-frameset": "Unexpected end tag token ({name}) in the frameset phase. Ignored.",
+        "unexpected-char-after-frameset": "Unexpected non-space characters in the after frameset phase. Ignored.",
+        "unexpected-start-tag-after-frameset": "Unexpected start tag ({name}) in the after frameset phase. Ignored.",
+        "unexpected-end-tag-after-frameset": "Unexpected end tag ({name}) in the after frameset phase. Ignored.",
+        "expected-eof-but-got-char": "Unexpected non-space characters. Expected end of file.",
+        "expected-eof-but-got-start-tag": "Unexpected start tag ({name}). Expected end of file.",
+        "expected-eof-but-got-end-tag": "Unexpected end tag ({name}). Expected end of file.",
+        "unexpected-end-table-in-caption": "Unexpected end table tag in caption. Generates implied end caption.",
+        "end-html-in-innerhtml": "Unexpected html end tag in inner html mode.",
+        "eof-in-table": "Unexpected end of file. Expected table content.",
+        "eof-in-script": "Unexpected end of file. Expected script content.",
+        "non-void-element-with-trailing-solidus": "Trailing solidus not allowed on element {name}.",
+        "unexpected-html-element-in-foreign-content": "HTML start tag \"{name}\" in a foreign namespace context.",
+        "unexpected-start-tag-in-table": "Unexpected {name}. Expected table content."
+    };
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = messages;
+});
+
+define('mode/html/StackItem',["require", "exports"], function (require, exports) {
+    var SpecialElements = {
+        "http://www.w3.org/1999/xhtml": [
+            'address',
+            'applet',
+            'area',
+            'article',
+            'aside',
+            'base',
+            'basefont',
+            'bgsound',
+            'blockquote',
+            'body',
+            'br',
+            'button',
+            'caption',
+            'center',
+            'col',
+            'colgroup',
+            'dd',
+            'details',
+            'dir',
+            'div',
+            'dl',
+            'dt',
+            'embed',
+            'fieldset',
+            'figcaption',
+            'figure',
+            'footer',
+            'form',
+            'frame',
+            'frameset',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'head',
+            'header',
+            'hgroup',
+            'hr',
+            'html',
+            'iframe',
+            'img',
+            'input',
+            'isindex',
+            'li',
+            'link',
+            'listing',
+            'main',
+            'marquee',
+            'menu',
+            'menuitem',
+            'meta',
+            'nav',
+            'noembed',
+            'noframes',
+            'noscript',
+            'object',
+            'ol',
+            'p',
+            'param',
+            'plaintext',
+            'pre',
+            'script',
+            'section',
+            'select',
+            'source',
+            'style',
+            'summary',
+            'table',
+            'tbody',
+            'td',
+            'textarea',
+            'tfoot',
+            'th',
+            'thead',
+            'title',
+            'tr',
+            'track',
+            'ul',
+            'wbr',
+            'xmp'
+        ],
+        "http://www.w3.org/1998/Math/MathML": [
+            'mi',
+            'mo',
+            'mn',
+            'ms',
+            'mtext',
+            'annotation-xml'
+        ],
+        "http://www.w3.org/2000/svg": [
+            'foreignObject',
+            'desc',
+            'title'
+        ]
+    };
+    function StackItem(namespaceURI, localName, attributes, node) {
+        this.localName = localName;
+        this.namespaceURI = namespaceURI;
+        this.attributes = attributes;
+        this.node = node;
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = StackItem;
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#special
+    StackItem.prototype.isSpecial = function () {
+        return this.namespaceURI in SpecialElements &&
+            SpecialElements[this.namespaceURI].indexOf(this.localName) > -1;
+    };
+    StackItem.prototype.isFosterParenting = function () {
+        if (this.namespaceURI === "http://www.w3.org/1999/xhtml") {
+            return this.localName === 'table' ||
+                this.localName === 'tbody' ||
+                this.localName === 'tfoot' ||
+                this.localName === 'thead' ||
+                this.localName === 'tr';
+        }
+        return false;
+    };
+    StackItem.prototype.isNumberedHeader = function () {
+        if (this.namespaceURI === "http://www.w3.org/1999/xhtml") {
+            return this.localName === 'h1' ||
+                this.localName === 'h2' ||
+                this.localName === 'h3' ||
+                this.localName === 'h4' ||
+                this.localName === 'h5' ||
+                this.localName === 'h6';
+        }
+        return false;
+    };
+    StackItem.prototype.isForeign = function () {
+        return this.namespaceURI != "http://www.w3.org/1999/xhtml";
+    };
+    function getAttribute(item, name) {
+        for (var i = 0; i < item.attributes.length; i++) {
+            if (item.attributes[i].nodeName == name)
+                return item.attributes[i].nodeValue;
+        }
+        return null;
+    }
+    StackItem.prototype.isHtmlIntegrationPoint = function () {
+        if (this.namespaceURI === "http://www.w3.org/1998/Math/MathML") {
+            if (this.localName !== "annotation-xml")
+                return false;
+            var encoding = getAttribute(this, 'encoding');
+            if (!encoding)
+                return false;
+            encoding = encoding.toLowerCase();
+            return encoding === "text/html" || encoding === "application/xhtml+xml";
+        }
+        if (this.namespaceURI === "http://www.w3.org/2000/svg") {
+            return this.localName === "foreignObject"
+                || this.localName === "desc"
+                || this.localName === "title";
+        }
+        return false;
+    };
+    StackItem.prototype.isMathMLTextIntegrationPoint = function () {
+        if (this.namespaceURI === "http://www.w3.org/1998/Math/MathML") {
+            return this.localName === "mi"
+                || this.localName === "mo"
+                || this.localName === "mn"
+                || this.localName === "ms"
+                || this.localName === "mtext";
+        }
+        return false;
+    };
+});
+
+define('mode/html/entities',["require", "exports"], function (require, exports) {
+    var entities = {
+        "Aacute;": "\u00C1",
+        "Aacute": "\u00C1",
+        "aacute;": "\u00E1",
+        "aacute": "\u00E1",
+        "Abreve;": "\u0102",
+        "abreve;": "\u0103",
+        "ac;": "\u223E",
+        "acd;": "\u223F",
+        "acE;": "\u223E\u0333",
+        "Acirc;": "\u00C2",
+        "Acirc": "\u00C2",
+        "acirc;": "\u00E2",
+        "acirc": "\u00E2",
+        "acute;": "\u00B4",
+        "acute": "\u00B4",
+        "Acy;": "\u0410",
+        "acy;": "\u0430",
+        "AElig;": "\u00C6",
+        "AElig": "\u00C6",
+        "aelig;": "\u00E6",
+        "aelig": "\u00E6",
+        "af;": "\u2061",
+        "Afr;": "\uD835\uDD04",
+        "afr;": "\uD835\uDD1E",
+        "Agrave;": "\u00C0",
+        "Agrave": "\u00C0",
+        "agrave;": "\u00E0",
+        "agrave": "\u00E0",
+        "alefsym;": "\u2135",
+        "aleph;": "\u2135",
+        "Alpha;": "\u0391",
+        "alpha;": "\u03B1",
+        "Amacr;": "\u0100",
+        "amacr;": "\u0101",
+        "amalg;": "\u2A3F",
+        "amp;": "\u0026",
+        "amp": "\u0026",
+        "AMP;": "\u0026",
+        "AMP": "\u0026",
+        "andand;": "\u2A55",
+        "And;": "\u2A53",
+        "and;": "\u2227",
+        "andd;": "\u2A5C",
+        "andslope;": "\u2A58",
+        "andv;": "\u2A5A",
+        "ang;": "\u2220",
+        "ange;": "\u29A4",
+        "angle;": "\u2220",
+        "angmsdaa;": "\u29A8",
+        "angmsdab;": "\u29A9",
+        "angmsdac;": "\u29AA",
+        "angmsdad;": "\u29AB",
+        "angmsdae;": "\u29AC",
+        "angmsdaf;": "\u29AD",
+        "angmsdag;": "\u29AE",
+        "angmsdah;": "\u29AF",
+        "angmsd;": "\u2221",
+        "angrt;": "\u221F",
+        "angrtvb;": "\u22BE",
+        "angrtvbd;": "\u299D",
+        "angsph;": "\u2222",
+        "angst;": "\u00C5",
+        "angzarr;": "\u237C",
+        "Aogon;": "\u0104",
+        "aogon;": "\u0105",
+        "Aopf;": "\uD835\uDD38",
+        "aopf;": "\uD835\uDD52",
+        "apacir;": "\u2A6F",
+        "ap;": "\u2248",
+        "apE;": "\u2A70",
+        "ape;": "\u224A",
+        "apid;": "\u224B",
+        "apos;": "\u0027",
+        "ApplyFunction;": "\u2061",
+        "approx;": "\u2248",
+        "approxeq;": "\u224A",
+        "Aring;": "\u00C5",
+        "Aring": "\u00C5",
+        "aring;": "\u00E5",
+        "aring": "\u00E5",
+        "Ascr;": "\uD835\uDC9C",
+        "ascr;": "\uD835\uDCB6",
+        "Assign;": "\u2254",
+        "ast;": "\u002A",
+        "asymp;": "\u2248",
+        "asympeq;": "\u224D",
+        "Atilde;": "\u00C3",
+        "Atilde": "\u00C3",
+        "atilde;": "\u00E3",
+        "atilde": "\u00E3",
+        "Auml;": "\u00C4",
+        "Auml": "\u00C4",
+        "auml;": "\u00E4",
+        "auml": "\u00E4",
+        "awconint;": "\u2233",
+        "awint;": "\u2A11",
+        "backcong;": "\u224C",
+        "backepsilon;": "\u03F6",
+        "backprime;": "\u2035",
+        "backsim;": "\u223D",
+        "backsimeq;": "\u22CD",
+        "Backslash;": "\u2216",
+        "Barv;": "\u2AE7",
+        "barvee;": "\u22BD",
+        "barwed;": "\u2305",
+        "Barwed;": "\u2306",
+        "barwedge;": "\u2305",
+        "bbrk;": "\u23B5",
+        "bbrktbrk;": "\u23B6",
+        "bcong;": "\u224C",
+        "Bcy;": "\u0411",
+        "bcy;": "\u0431",
+        "bdquo;": "\u201E",
+        "becaus;": "\u2235",
+        "because;": "\u2235",
+        "Because;": "\u2235",
+        "bemptyv;": "\u29B0",
+        "bepsi;": "\u03F6",
+        "bernou;": "\u212C",
+        "Bernoullis;": "\u212C",
+        "Beta;": "\u0392",
+        "beta;": "\u03B2",
+        "beth;": "\u2136",
+        "between;": "\u226C",
+        "Bfr;": "\uD835\uDD05",
+        "bfr;": "\uD835\uDD1F",
+        "bigcap;": "\u22C2",
+        "bigcirc;": "\u25EF",
+        "bigcup;": "\u22C3",
+        "bigodot;": "\u2A00",
+        "bigoplus;": "\u2A01",
+        "bigotimes;": "\u2A02",
+        "bigsqcup;": "\u2A06",
+        "bigstar;": "\u2605",
+        "bigtriangledown;": "\u25BD",
+        "bigtriangleup;": "\u25B3",
+        "biguplus;": "\u2A04",
+        "bigvee;": "\u22C1",
+        "bigwedge;": "\u22C0",
+        "bkarow;": "\u290D",
+        "blacklozenge;": "\u29EB",
+        "blacksquare;": "\u25AA",
+        "blacktriangle;": "\u25B4",
+        "blacktriangledown;": "\u25BE",
+        "blacktriangleleft;": "\u25C2",
+        "blacktriangleright;": "\u25B8",
+        "blank;": "\u2423",
+        "blk12;": "\u2592",
+        "blk14;": "\u2591",
+        "blk34;": "\u2593",
+        "block;": "\u2588",
+        "bne;": "\u003D\u20E5",
+        "bnequiv;": "\u2261\u20E5",
+        "bNot;": "\u2AED",
+        "bnot;": "\u2310",
+        "Bopf;": "\uD835\uDD39",
+        "bopf;": "\uD835\uDD53",
+        "bot;": "\u22A5",
+        "bottom;": "\u22A5",
+        "bowtie;": "\u22C8",
+        "boxbox;": "\u29C9",
+        "boxdl;": "\u2510",
+        "boxdL;": "\u2555",
+        "boxDl;": "\u2556",
+        "boxDL;": "\u2557",
+        "boxdr;": "\u250C",
+        "boxdR;": "\u2552",
+        "boxDr;": "\u2553",
+        "boxDR;": "\u2554",
+        "boxh;": "\u2500",
+        "boxH;": "\u2550",
+        "boxhd;": "\u252C",
+        "boxHd;": "\u2564",
+        "boxhD;": "\u2565",
+        "boxHD;": "\u2566",
+        "boxhu;": "\u2534",
+        "boxHu;": "\u2567",
+        "boxhU;": "\u2568",
+        "boxHU;": "\u2569",
+        "boxminus;": "\u229F",
+        "boxplus;": "\u229E",
+        "boxtimes;": "\u22A0",
+        "boxul;": "\u2518",
+        "boxuL;": "\u255B",
+        "boxUl;": "\u255C",
+        "boxUL;": "\u255D",
+        "boxur;": "\u2514",
+        "boxuR;": "\u2558",
+        "boxUr;": "\u2559",
+        "boxUR;": "\u255A",
+        "boxv;": "\u2502",
+        "boxV;": "\u2551",
+        "boxvh;": "\u253C",
+        "boxvH;": "\u256A",
+        "boxVh;": "\u256B",
+        "boxVH;": "\u256C",
+        "boxvl;": "\u2524",
+        "boxvL;": "\u2561",
+        "boxVl;": "\u2562",
+        "boxVL;": "\u2563",
+        "boxvr;": "\u251C",
+        "boxvR;": "\u255E",
+        "boxVr;": "\u255F",
+        "boxVR;": "\u2560",
+        "bprime;": "\u2035",
+        "breve;": "\u02D8",
+        "Breve;": "\u02D8",
+        "brvbar;": "\u00A6",
+        "brvbar": "\u00A6",
+        "bscr;": "\uD835\uDCB7",
+        "Bscr;": "\u212C",
+        "bsemi;": "\u204F",
+        "bsim;": "\u223D",
+        "bsime;": "\u22CD",
+        "bsolb;": "\u29C5",
+        "bsol;": "\u005C",
+        "bsolhsub;": "\u27C8",
+        "bull;": "\u2022",
+        "bullet;": "\u2022",
+        "bump;": "\u224E",
+        "bumpE;": "\u2AAE",
+        "bumpe;": "\u224F",
+        "Bumpeq;": "\u224E",
+        "bumpeq;": "\u224F",
+        "Cacute;": "\u0106",
+        "cacute;": "\u0107",
+        "capand;": "\u2A44",
+        "capbrcup;": "\u2A49",
+        "capcap;": "\u2A4B",
+        "cap;": "\u2229",
+        "Cap;": "\u22D2",
+        "capcup;": "\u2A47",
+        "capdot;": "\u2A40",
+        "CapitalDifferentialD;": "\u2145",
+        "caps;": "\u2229\uFE00",
+        "caret;": "\u2041",
+        "caron;": "\u02C7",
+        "Cayleys;": "\u212D",
+        "ccaps;": "\u2A4D",
+        "Ccaron;": "\u010C",
+        "ccaron;": "\u010D",
+        "Ccedil;": "\u00C7",
+        "Ccedil": "\u00C7",
+        "ccedil;": "\u00E7",
+        "ccedil": "\u00E7",
+        "Ccirc;": "\u0108",
+        "ccirc;": "\u0109",
+        "Cconint;": "\u2230",
+        "ccups;": "\u2A4C",
+        "ccupssm;": "\u2A50",
+        "Cdot;": "\u010A",
+        "cdot;": "\u010B",
+        "cedil;": "\u00B8",
+        "cedil": "\u00B8",
+        "Cedilla;": "\u00B8",
+        "cemptyv;": "\u29B2",
+        "cent;": "\u00A2",
+        "cent": "\u00A2",
+        "centerdot;": "\u00B7",
+        "CenterDot;": "\u00B7",
+        "cfr;": "\uD835\uDD20",
+        "Cfr;": "\u212D",
+        "CHcy;": "\u0427",
+        "chcy;": "\u0447",
+        "check;": "\u2713",
+        "checkmark;": "\u2713",
+        "Chi;": "\u03A7",
+        "chi;": "\u03C7",
+        "circ;": "\u02C6",
+        "circeq;": "\u2257",
+        "circlearrowleft;": "\u21BA",
+        "circlearrowright;": "\u21BB",
+        "circledast;": "\u229B",
+        "circledcirc;": "\u229A",
+        "circleddash;": "\u229D",
+        "CircleDot;": "\u2299",
+        "circledR;": "\u00AE",
+        "circledS;": "\u24C8",
+        "CircleMinus;": "\u2296",
+        "CirclePlus;": "\u2295",
+        "CircleTimes;": "\u2297",
+        "cir;": "\u25CB",
+        "cirE;": "\u29C3",
+        "cire;": "\u2257",
+        "cirfnint;": "\u2A10",
+        "cirmid;": "\u2AEF",
+        "cirscir;": "\u29C2",
+        "ClockwiseContourIntegral;": "\u2232",
+        "CloseCurlyDoubleQuote;": "\u201D",
+        "CloseCurlyQuote;": "\u2019",
+        "clubs;": "\u2663",
+        "clubsuit;": "\u2663",
+        "colon;": "\u003A",
+        "Colon;": "\u2237",
+        "Colone;": "\u2A74",
+        "colone;": "\u2254",
+        "coloneq;": "\u2254",
+        "comma;": "\u002C",
+        "commat;": "\u0040",
+        "comp;": "\u2201",
+        "compfn;": "\u2218",
+        "complement;": "\u2201",
+        "complexes;": "\u2102",
+        "cong;": "\u2245",
+        "congdot;": "\u2A6D",
+        "Congruent;": "\u2261",
+        "conint;": "\u222E",
+        "Conint;": "\u222F",
+        "ContourIntegral;": "\u222E",
+        "copf;": "\uD835\uDD54",
+        "Copf;": "\u2102",
+        "coprod;": "\u2210",
+        "Coproduct;": "\u2210",
+        "copy;": "\u00A9",
+        "copy": "\u00A9",
+        "COPY;": "\u00A9",
+        "COPY": "\u00A9",
+        "copysr;": "\u2117",
+        "CounterClockwiseContourIntegral;": "\u2233",
+        "crarr;": "\u21B5",
+        "cross;": "\u2717",
+        "Cross;": "\u2A2F",
+        "Cscr;": "\uD835\uDC9E",
+        "cscr;": "\uD835\uDCB8",
+        "csub;": "\u2ACF",
+        "csube;": "\u2AD1",
+        "csup;": "\u2AD0",
+        "csupe;": "\u2AD2",
+        "ctdot;": "\u22EF",
+        "cudarrl;": "\u2938",
+        "cudarrr;": "\u2935",
+        "cuepr;": "\u22DE",
+        "cuesc;": "\u22DF",
+        "cularr;": "\u21B6",
+        "cularrp;": "\u293D",
+        "cupbrcap;": "\u2A48",
+        "cupcap;": "\u2A46",
+        "CupCap;": "\u224D",
+        "cup;": "\u222A",
+        "Cup;": "\u22D3",
+        "cupcup;": "\u2A4A",
+        "cupdot;": "\u228D",
+        "cupor;": "\u2A45",
+        "cups;": "\u222A\uFE00",
+        "curarr;": "\u21B7",
+        "curarrm;": "\u293C",
+        "curlyeqprec;": "\u22DE",
+        "curlyeqsucc;": "\u22DF",
+        "curlyvee;": "\u22CE",
+        "curlywedge;": "\u22CF",
+        "curren;": "\u00A4",
+        "curren": "\u00A4",
+        "curvearrowleft;": "\u21B6",
+        "curvearrowright;": "\u21B7",
+        "cuvee;": "\u22CE",
+        "cuwed;": "\u22CF",
+        "cwconint;": "\u2232",
+        "cwint;": "\u2231",
+        "cylcty;": "\u232D",
+        "dagger;": "\u2020",
+        "Dagger;": "\u2021",
+        "daleth;": "\u2138",
+        "darr;": "\u2193",
+        "Darr;": "\u21A1",
+        "dArr;": "\u21D3",
+        "dash;": "\u2010",
+        "Dashv;": "\u2AE4",
+        "dashv;": "\u22A3",
+        "dbkarow;": "\u290F",
+        "dblac;": "\u02DD",
+        "Dcaron;": "\u010E",
+        "dcaron;": "\u010F",
+        "Dcy;": "\u0414",
+        "dcy;": "\u0434",
+        "ddagger;": "\u2021",
+        "ddarr;": "\u21CA",
+        "DD;": "\u2145",
+        "dd;": "\u2146",
+        "DDotrahd;": "\u2911",
+        "ddotseq;": "\u2A77",
+        "deg;": "\u00B0",
+        "deg": "\u00B0",
+        "Del;": "\u2207",
+        "Delta;": "\u0394",
+        "delta;": "\u03B4",
+        "demptyv;": "\u29B1",
+        "dfisht;": "\u297F",
+        "Dfr;": "\uD835\uDD07",
+        "dfr;": "\uD835\uDD21",
+        "dHar;": "\u2965",
+        "dharl;": "\u21C3",
+        "dharr;": "\u21C2",
+        "DiacriticalAcute;": "\u00B4",
+        "DiacriticalDot;": "\u02D9",
+        "DiacriticalDoubleAcute;": "\u02DD",
+        "DiacriticalGrave;": "\u0060",
+        "DiacriticalTilde;": "\u02DC",
+        "diam;": "\u22C4",
+        "diamond;": "\u22C4",
+        "Diamond;": "\u22C4",
+        "diamondsuit;": "\u2666",
+        "diams;": "\u2666",
+        "die;": "\u00A8",
+        "DifferentialD;": "\u2146",
+        "digamma;": "\u03DD",
+        "disin;": "\u22F2",
+        "div;": "\u00F7",
+        "divide;": "\u00F7",
+        "divide": "\u00F7",
+        "divideontimes;": "\u22C7",
+        "divonx;": "\u22C7",
+        "DJcy;": "\u0402",
+        "djcy;": "\u0452",
+        "dlcorn;": "\u231E",
+        "dlcrop;": "\u230D",
+        "dollar;": "\u0024",
+        "Dopf;": "\uD835\uDD3B",
+        "dopf;": "\uD835\uDD55",
+        "Dot;": "\u00A8",
+        "dot;": "\u02D9",
+        "DotDot;": "\u20DC",
+        "doteq;": "\u2250",
+        "doteqdot;": "\u2251",
+        "DotEqual;": "\u2250",
+        "dotminus;": "\u2238",
+        "dotplus;": "\u2214",
+        "dotsquare;": "\u22A1",
+        "doublebarwedge;": "\u2306",
+        "DoubleContourIntegral;": "\u222F",
+        "DoubleDot;": "\u00A8",
+        "DoubleDownArrow;": "\u21D3",
+        "DoubleLeftArrow;": "\u21D0",
+        "DoubleLeftRightArrow;": "\u21D4",
+        "DoubleLeftTee;": "\u2AE4",
+        "DoubleLongLeftArrow;": "\u27F8",
+        "DoubleLongLeftRightArrow;": "\u27FA",
+        "DoubleLongRightArrow;": "\u27F9",
+        "DoubleRightArrow;": "\u21D2",
+        "DoubleRightTee;": "\u22A8",
+        "DoubleUpArrow;": "\u21D1",
+        "DoubleUpDownArrow;": "\u21D5",
+        "DoubleVerticalBar;": "\u2225",
+        "DownArrowBar;": "\u2913",
+        "downarrow;": "\u2193",
+        "DownArrow;": "\u2193",
+        "Downarrow;": "\u21D3",
+        "DownArrowUpArrow;": "\u21F5",
+        "DownBreve;": "\u0311",
+        "downdownarrows;": "\u21CA",
+        "downharpoonleft;": "\u21C3",
+        "downharpoonright;": "\u21C2",
+        "DownLeftRightVector;": "\u2950",
+        "DownLeftTeeVector;": "\u295E",
+        "DownLeftVectorBar;": "\u2956",
+        "DownLeftVector;": "\u21BD",
+        "DownRightTeeVector;": "\u295F",
+        "DownRightVectorBar;": "\u2957",
+        "DownRightVector;": "\u21C1",
+        "DownTeeArrow;": "\u21A7",
+        "DownTee;": "\u22A4",
+        "drbkarow;": "\u2910",
+        "drcorn;": "\u231F",
+        "drcrop;": "\u230C",
+        "Dscr;": "\uD835\uDC9F",
+        "dscr;": "\uD835\uDCB9",
+        "DScy;": "\u0405",
+        "dscy;": "\u0455",
+        "dsol;": "\u29F6",
+        "Dstrok;": "\u0110",
+        "dstrok;": "\u0111",
+        "dtdot;": "\u22F1",
+        "dtri;": "\u25BF",
+        "dtrif;": "\u25BE",
+        "duarr;": "\u21F5",
+        "duhar;": "\u296F",
+        "dwangle;": "\u29A6",
+        "DZcy;": "\u040F",
+        "dzcy;": "\u045F",
+        "dzigrarr;": "\u27FF",
+        "Eacute;": "\u00C9",
+        "Eacute": "\u00C9",
+        "eacute;": "\u00E9",
+        "eacute": "\u00E9",
+        "easter;": "\u2A6E",
+        "Ecaron;": "\u011A",
+        "ecaron;": "\u011B",
+        "Ecirc;": "\u00CA",
+        "Ecirc": "\u00CA",
+        "ecirc;": "\u00EA",
+        "ecirc": "\u00EA",
+        "ecir;": "\u2256",
+        "ecolon;": "\u2255",
+        "Ecy;": "\u042D",
+        "ecy;": "\u044D",
+        "eDDot;": "\u2A77",
+        "Edot;": "\u0116",
+        "edot;": "\u0117",
+        "eDot;": "\u2251",
+        "ee;": "\u2147",
+        "efDot;": "\u2252",
+        "Efr;": "\uD835\uDD08",
+        "efr;": "\uD835\uDD22",
+        "eg;": "\u2A9A",
+        "Egrave;": "\u00C8",
+        "Egrave": "\u00C8",
+        "egrave;": "\u00E8",
+        "egrave": "\u00E8",
+        "egs;": "\u2A96",
+        "egsdot;": "\u2A98",
+        "el;": "\u2A99",
+        "Element;": "\u2208",
+        "elinters;": "\u23E7",
+        "ell;": "\u2113",
+        "els;": "\u2A95",
+        "elsdot;": "\u2A97",
+        "Emacr;": "\u0112",
+        "emacr;": "\u0113",
+        "empty;": "\u2205",
+        "emptyset;": "\u2205",
+        "EmptySmallSquare;": "\u25FB",
+        "emptyv;": "\u2205",
+        "EmptyVerySmallSquare;": "\u25AB",
+        "emsp13;": "\u2004",
+        "emsp14;": "\u2005",
+        "emsp;": "\u2003",
+        "ENG;": "\u014A",
+        "eng;": "\u014B",
+        "ensp;": "\u2002",
+        "Eogon;": "\u0118",
+        "eogon;": "\u0119",
+        "Eopf;": "\uD835\uDD3C",
+        "eopf;": "\uD835\uDD56",
+        "epar;": "\u22D5",
+        "eparsl;": "\u29E3",
+        "eplus;": "\u2A71",
+        "epsi;": "\u03B5",
+        "Epsilon;": "\u0395",
+        "epsilon;": "\u03B5",
+        "epsiv;": "\u03F5",
+        "eqcirc;": "\u2256",
+        "eqcolon;": "\u2255",
+        "eqsim;": "\u2242",
+        "eqslantgtr;": "\u2A96",
+        "eqslantless;": "\u2A95",
+        "Equal;": "\u2A75",
+        "equals;": "\u003D",
+        "EqualTilde;": "\u2242",
+        "equest;": "\u225F",
+        "Equilibrium;": "\u21CC",
+        "equiv;": "\u2261",
+        "equivDD;": "\u2A78",
+        "eqvparsl;": "\u29E5",
+        "erarr;": "\u2971",
+        "erDot;": "\u2253",
+        "escr;": "\u212F",
+        "Escr;": "\u2130",
+        "esdot;": "\u2250",
+        "Esim;": "\u2A73",
+        "esim;": "\u2242",
+        "Eta;": "\u0397",
+        "eta;": "\u03B7",
+        "ETH;": "\u00D0",
+        "ETH": "\u00D0",
+        "eth;": "\u00F0",
+        "eth": "\u00F0",
+        "Euml;": "\u00CB",
+        "Euml": "\u00CB",
+        "euml;": "\u00EB",
+        "euml": "\u00EB",
+        "euro;": "\u20AC",
+        "excl;": "\u0021",
+        "exist;": "\u2203",
+        "Exists;": "\u2203",
+        "expectation;": "\u2130",
+        "exponentiale;": "\u2147",
+        "ExponentialE;": "\u2147",
+        "fallingdotseq;": "\u2252",
+        "Fcy;": "\u0424",
+        "fcy;": "\u0444",
+        "female;": "\u2640",
+        "ffilig;": "\uFB03",
+        "fflig;": "\uFB00",
+        "ffllig;": "\uFB04",
+        "Ffr;": "\uD835\uDD09",
+        "ffr;": "\uD835\uDD23",
+        "filig;": "\uFB01",
+        "FilledSmallSquare;": "\u25FC",
+        "FilledVerySmallSquare;": "\u25AA",
+        "fjlig;": "\u0066\u006A",
+        "flat;": "\u266D",
+        "fllig;": "\uFB02",
+        "fltns;": "\u25B1",
+        "fnof;": "\u0192",
+        "Fopf;": "\uD835\uDD3D",
+        "fopf;": "\uD835\uDD57",
+        "forall;": "\u2200",
+        "ForAll;": "\u2200",
+        "fork;": "\u22D4",
+        "forkv;": "\u2AD9",
+        "Fouriertrf;": "\u2131",
+        "fpartint;": "\u2A0D",
+        "frac12;": "\u00BD",
+        "frac12": "\u00BD",
+        "frac13;": "\u2153",
+        "frac14;": "\u00BC",
+        "frac14": "\u00BC",
+        "frac15;": "\u2155",
+        "frac16;": "\u2159",
+        "frac18;": "\u215B",
+        "frac23;": "\u2154",
+        "frac25;": "\u2156",
+        "frac34;": "\u00BE",
+        "frac34": "\u00BE",
+        "frac35;": "\u2157",
+        "frac38;": "\u215C",
+        "frac45;": "\u2158",
+        "frac56;": "\u215A",
+        "frac58;": "\u215D",
+        "frac78;": "\u215E",
+        "frasl;": "\u2044",
+        "frown;": "\u2322",
+        "fscr;": "\uD835\uDCBB",
+        "Fscr;": "\u2131",
+        "gacute;": "\u01F5",
+        "Gamma;": "\u0393",
+        "gamma;": "\u03B3",
+        "Gammad;": "\u03DC",
+        "gammad;": "\u03DD",
+        "gap;": "\u2A86",
+        "Gbreve;": "\u011E",
+        "gbreve;": "\u011F",
+        "Gcedil;": "\u0122",
+        "Gcirc;": "\u011C",
+        "gcirc;": "\u011D",
+        "Gcy;": "\u0413",
+        "gcy;": "\u0433",
+        "Gdot;": "\u0120",
+        "gdot;": "\u0121",
+        "ge;": "\u2265",
+        "gE;": "\u2267",
+        "gEl;": "\u2A8C",
+        "gel;": "\u22DB",
+        "geq;": "\u2265",
+        "geqq;": "\u2267",
+        "geqslant;": "\u2A7E",
+        "gescc;": "\u2AA9",
+        "ges;": "\u2A7E",
+        "gesdot;": "\u2A80",
+        "gesdoto;": "\u2A82",
+        "gesdotol;": "\u2A84",
+        "gesl;": "\u22DB\uFE00",
+        "gesles;": "\u2A94",
+        "Gfr;": "\uD835\uDD0A",
+        "gfr;": "\uD835\uDD24",
+        "gg;": "\u226B",
+        "Gg;": "\u22D9",
+        "ggg;": "\u22D9",
+        "gimel;": "\u2137",
+        "GJcy;": "\u0403",
+        "gjcy;": "\u0453",
+        "gla;": "\u2AA5",
+        "gl;": "\u2277",
+        "glE;": "\u2A92",
+        "glj;": "\u2AA4",
+        "gnap;": "\u2A8A",
+        "gnapprox;": "\u2A8A",
+        "gne;": "\u2A88",
+        "gnE;": "\u2269",
+        "gneq;": "\u2A88",
+        "gneqq;": "\u2269",
+        "gnsim;": "\u22E7",
+        "Gopf;": "\uD835\uDD3E",
+        "gopf;": "\uD835\uDD58",
+        "grave;": "\u0060",
+        "GreaterEqual;": "\u2265",
+        "GreaterEqualLess;": "\u22DB",
+        "GreaterFullEqual;": "\u2267",
+        "GreaterGreater;": "\u2AA2",
+        "GreaterLess;": "\u2277",
+        "GreaterSlantEqual;": "\u2A7E",
+        "GreaterTilde;": "\u2273",
+        "Gscr;": "\uD835\uDCA2",
+        "gscr;": "\u210A",
+        "gsim;": "\u2273",
+        "gsime;": "\u2A8E",
+        "gsiml;": "\u2A90",
+        "gtcc;": "\u2AA7",
+        "gtcir;": "\u2A7A",
+        "gt;": "\u003E",
+        "gt": "\u003E",
+        "GT;": "\u003E",
+        "GT": "\u003E",
+        "Gt;": "\u226B",
+        "gtdot;": "\u22D7",
+        "gtlPar;": "\u2995",
+        "gtquest;": "\u2A7C",
+        "gtrapprox;": "\u2A86",
+        "gtrarr;": "\u2978",
+        "gtrdot;": "\u22D7",
+        "gtreqless;": "\u22DB",
+        "gtreqqless;": "\u2A8C",
+        "gtrless;": "\u2277",
+        "gtrsim;": "\u2273",
+        "gvertneqq;": "\u2269\uFE00",
+        "gvnE;": "\u2269\uFE00",
+        "Hacek;": "\u02C7",
+        "hairsp;": "\u200A",
+        "half;": "\u00BD",
+        "hamilt;": "\u210B",
+        "HARDcy;": "\u042A",
+        "hardcy;": "\u044A",
+        "harrcir;": "\u2948",
+        "harr;": "\u2194",
+        "hArr;": "\u21D4",
+        "harrw;": "\u21AD",
+        "Hat;": "\u005E",
+        "hbar;": "\u210F",
+        "Hcirc;": "\u0124",
+        "hcirc;": "\u0125",
+        "hearts;": "\u2665",
+        "heartsuit;": "\u2665",
+        "hellip;": "\u2026",
+        "hercon;": "\u22B9",
+        "hfr;": "\uD835\uDD25",
+        "Hfr;": "\u210C",
+        "HilbertSpace;": "\u210B",
+        "hksearow;": "\u2925",
+        "hkswarow;": "\u2926",
+        "hoarr;": "\u21FF",
+        "homtht;": "\u223B",
+        "hookleftarrow;": "\u21A9",
+        "hookrightarrow;": "\u21AA",
+        "hopf;": "\uD835\uDD59",
+        "Hopf;": "\u210D",
+        "horbar;": "\u2015",
+        "HorizontalLine;": "\u2500",
+        "hscr;": "\uD835\uDCBD",
+        "Hscr;": "\u210B",
+        "hslash;": "\u210F",
+        "Hstrok;": "\u0126",
+        "hstrok;": "\u0127",
+        "HumpDownHump;": "\u224E",
+        "HumpEqual;": "\u224F",
+        "hybull;": "\u2043",
+        "hyphen;": "\u2010",
+        "Iacute;": "\u00CD",
+        "Iacute": "\u00CD",
+        "iacute;": "\u00ED",
+        "iacute": "\u00ED",
+        "ic;": "\u2063",
+        "Icirc;": "\u00CE",
+        "Icirc": "\u00CE",
+        "icirc;": "\u00EE",
+        "icirc": "\u00EE",
+        "Icy;": "\u0418",
+        "icy;": "\u0438",
+        "Idot;": "\u0130",
+        "IEcy;": "\u0415",
+        "iecy;": "\u0435",
+        "iexcl;": "\u00A1",
+        "iexcl": "\u00A1",
+        "iff;": "\u21D4",
+        "ifr;": "\uD835\uDD26",
+        "Ifr;": "\u2111",
+        "Igrave;": "\u00CC",
+        "Igrave": "\u00CC",
+        "igrave;": "\u00EC",
+        "igrave": "\u00EC",
+        "ii;": "\u2148",
+        "iiiint;": "\u2A0C",
+        "iiint;": "\u222D",
+        "iinfin;": "\u29DC",
+        "iiota;": "\u2129",
+        "IJlig;": "\u0132",
+        "ijlig;": "\u0133",
+        "Imacr;": "\u012A",
+        "imacr;": "\u012B",
+        "image;": "\u2111",
+        "ImaginaryI;": "\u2148",
+        "imagline;": "\u2110",
+        "imagpart;": "\u2111",
+        "imath;": "\u0131",
+        "Im;": "\u2111",
+        "imof;": "\u22B7",
+        "imped;": "\u01B5",
+        "Implies;": "\u21D2",
+        "incare;": "\u2105",
+        "in;": "\u2208",
+        "infin;": "\u221E",
+        "infintie;": "\u29DD",
+        "inodot;": "\u0131",
+        "intcal;": "\u22BA",
+        "int;": "\u222B",
+        "Int;": "\u222C",
+        "integers;": "\u2124",
+        "Integral;": "\u222B",
+        "intercal;": "\u22BA",
+        "Intersection;": "\u22C2",
+        "intlarhk;": "\u2A17",
+        "intprod;": "\u2A3C",
+        "InvisibleComma;": "\u2063",
+        "InvisibleTimes;": "\u2062",
+        "IOcy;": "\u0401",
+        "iocy;": "\u0451",
+        "Iogon;": "\u012E",
+        "iogon;": "\u012F",
+        "Iopf;": "\uD835\uDD40",
+        "iopf;": "\uD835\uDD5A",
+        "Iota;": "\u0399",
+        "iota;": "\u03B9",
+        "iprod;": "\u2A3C",
+        "iquest;": "\u00BF",
+        "iquest": "\u00BF",
+        "iscr;": "\uD835\uDCBE",
+        "Iscr;": "\u2110",
+        "isin;": "\u2208",
+        "isindot;": "\u22F5",
+        "isinE;": "\u22F9",
+        "isins;": "\u22F4",
+        "isinsv;": "\u22F3",
+        "isinv;": "\u2208",
+        "it;": "\u2062",
+        "Itilde;": "\u0128",
+        "itilde;": "\u0129",
+        "Iukcy;": "\u0406",
+        "iukcy;": "\u0456",
+        "Iuml;": "\u00CF",
+        "Iuml": "\u00CF",
+        "iuml;": "\u00EF",
+        "iuml": "\u00EF",
+        "Jcirc;": "\u0134",
+        "jcirc;": "\u0135",
+        "Jcy;": "\u0419",
+        "jcy;": "\u0439",
+        "Jfr;": "\uD835\uDD0D",
+        "jfr;": "\uD835\uDD27",
+        "jmath;": "\u0237",
+        "Jopf;": "\uD835\uDD41",
+        "jopf;": "\uD835\uDD5B",
+        "Jscr;": "\uD835\uDCA5",
+        "jscr;": "\uD835\uDCBF",
+        "Jsercy;": "\u0408",
+        "jsercy;": "\u0458",
+        "Jukcy;": "\u0404",
+        "jukcy;": "\u0454",
+        "Kappa;": "\u039A",
+        "kappa;": "\u03BA",
+        "kappav;": "\u03F0",
+        "Kcedil;": "\u0136",
+        "kcedil;": "\u0137",
+        "Kcy;": "\u041A",
+        "kcy;": "\u043A",
+        "Kfr;": "\uD835\uDD0E",
+        "kfr;": "\uD835\uDD28",
+        "kgreen;": "\u0138",
+        "KHcy;": "\u0425",
+        "khcy;": "\u0445",
+        "KJcy;": "\u040C",
+        "kjcy;": "\u045C",
+        "Kopf;": "\uD835\uDD42",
+        "kopf;": "\uD835\uDD5C",
+        "Kscr;": "\uD835\uDCA6",
+        "kscr;": "\uD835\uDCC0",
+        "lAarr;": "\u21DA",
+        "Lacute;": "\u0139",
+        "lacute;": "\u013A",
+        "laemptyv;": "\u29B4",
+        "lagran;": "\u2112",
+        "Lambda;": "\u039B",
+        "lambda;": "\u03BB",
+        "lang;": "\u27E8",
+        "Lang;": "\u27EA",
+        "langd;": "\u2991",
+        "langle;": "\u27E8",
+        "lap;": "\u2A85",
+        "Laplacetrf;": "\u2112",
+        "laquo;": "\u00AB",
+        "laquo": "\u00AB",
+        "larrb;": "\u21E4",
+        "larrbfs;": "\u291F",
+        "larr;": "\u2190",
+        "Larr;": "\u219E",
+        "lArr;": "\u21D0",
+        "larrfs;": "\u291D",
+        "larrhk;": "\u21A9",
+        "larrlp;": "\u21AB",
+        "larrpl;": "\u2939",
+        "larrsim;": "\u2973",
+        "larrtl;": "\u21A2",
+        "latail;": "\u2919",
+        "lAtail;": "\u291B",
+        "lat;": "\u2AAB",
+        "late;": "\u2AAD",
+        "lates;": "\u2AAD\uFE00",
+        "lbarr;": "\u290C",
+        "lBarr;": "\u290E",
+        "lbbrk;": "\u2772",
+        "lbrace;": "\u007B",
+        "lbrack;": "\u005B",
+        "lbrke;": "\u298B",
+        "lbrksld;": "\u298F",
+        "lbrkslu;": "\u298D",
+        "Lcaron;": "\u013D",
+        "lcaron;": "\u013E",
+        "Lcedil;": "\u013B",
+        "lcedil;": "\u013C",
+        "lceil;": "\u2308",
+        "lcub;": "\u007B",
+        "Lcy;": "\u041B",
+        "lcy;": "\u043B",
+        "ldca;": "\u2936",
+        "ldquo;": "\u201C",
+        "ldquor;": "\u201E",
+        "ldrdhar;": "\u2967",
+        "ldrushar;": "\u294B",
+        "ldsh;": "\u21B2",
+        "le;": "\u2264",
+        "lE;": "\u2266",
+        "LeftAngleBracket;": "\u27E8",
+        "LeftArrowBar;": "\u21E4",
+        "leftarrow;": "\u2190",
+        "LeftArrow;": "\u2190",
+        "Leftarrow;": "\u21D0",
+        "LeftArrowRightArrow;": "\u21C6",
+        "leftarrowtail;": "\u21A2",
+        "LeftCeiling;": "\u2308",
+        "LeftDoubleBracket;": "\u27E6",
+        "LeftDownTeeVector;": "\u2961",
+        "LeftDownVectorBar;": "\u2959",
+        "LeftDownVector;": "\u21C3",
+        "LeftFloor;": "\u230A",
+        "leftharpoondown;": "\u21BD",
+        "leftharpoonup;": "\u21BC",
+        "leftleftarrows;": "\u21C7",
+        "leftrightarrow;": "\u2194",
+        "LeftRightArrow;": "\u2194",
+        "Leftrightarrow;": "\u21D4",
+        "leftrightarrows;": "\u21C6",
+        "leftrightharpoons;": "\u21CB",
+        "leftrightsquigarrow;": "\u21AD",
+        "LeftRightVector;": "\u294E",
+        "LeftTeeArrow;": "\u21A4",
+        "LeftTee;": "\u22A3",
+        "LeftTeeVector;": "\u295A",
+        "leftthreetimes;": "\u22CB",
+        "LeftTriangleBar;": "\u29CF",
+        "LeftTriangle;": "\u22B2",
+        "LeftTriangleEqual;": "\u22B4",
+        "LeftUpDownVector;": "\u2951",
+        "LeftUpTeeVector;": "\u2960",
+        "LeftUpVectorBar;": "\u2958",
+        "LeftUpVector;": "\u21BF",
+        "LeftVectorBar;": "\u2952",
+        "LeftVector;": "\u21BC",
+        "lEg;": "\u2A8B",
+        "leg;": "\u22DA",
+        "leq;": "\u2264",
+        "leqq;": "\u2266",
+        "leqslant;": "\u2A7D",
+        "lescc;": "\u2AA8",
+        "les;": "\u2A7D",
+        "lesdot;": "\u2A7F",
+        "lesdoto;": "\u2A81",
+        "lesdotor;": "\u2A83",
+        "lesg;": "\u22DA\uFE00",
+        "lesges;": "\u2A93",
+        "lessapprox;": "\u2A85",
+        "lessdot;": "\u22D6",
+        "lesseqgtr;": "\u22DA",
+        "lesseqqgtr;": "\u2A8B",
+        "LessEqualGreater;": "\u22DA",
+        "LessFullEqual;": "\u2266",
+        "LessGreater;": "\u2276",
+        "lessgtr;": "\u2276",
+        "LessLess;": "\u2AA1",
+        "lesssim;": "\u2272",
+        "LessSlantEqual;": "\u2A7D",
+        "LessTilde;": "\u2272",
+        "lfisht;": "\u297C",
+        "lfloor;": "\u230A",
+        "Lfr;": "\uD835\uDD0F",
+        "lfr;": "\uD835\uDD29",
+        "lg;": "\u2276",
+        "lgE;": "\u2A91",
+        "lHar;": "\u2962",
+        "lhard;": "\u21BD",
+        "lharu;": "\u21BC",
+        "lharul;": "\u296A",
+        "lhblk;": "\u2584",
+        "LJcy;": "\u0409",
+        "ljcy;": "\u0459",
+        "llarr;": "\u21C7",
+        "ll;": "\u226A",
+        "Ll;": "\u22D8",
+        "llcorner;": "\u231E",
+        "Lleftarrow;": "\u21DA",
+        "llhard;": "\u296B",
+        "lltri;": "\u25FA",
+        "Lmidot;": "\u013F",
+        "lmidot;": "\u0140",
+        "lmoustache;": "\u23B0",
+        "lmoust;": "\u23B0",
+        "lnap;": "\u2A89",
+        "lnapprox;": "\u2A89",
+        "lne;": "\u2A87",
+        "lnE;": "\u2268",
+        "lneq;": "\u2A87",
+        "lneqq;": "\u2268",
+        "lnsim;": "\u22E6",
+        "loang;": "\u27EC",
+        "loarr;": "\u21FD",
+        "lobrk;": "\u27E6",
+        "longleftarrow;": "\u27F5",
+        "LongLeftArrow;": "\u27F5",
+        "Longleftarrow;": "\u27F8",
+        "longleftrightarrow;": "\u27F7",
+        "LongLeftRightArrow;": "\u27F7",
+        "Longleftrightarrow;": "\u27FA",
+        "longmapsto;": "\u27FC",
+        "longrightarrow;": "\u27F6",
+        "LongRightArrow;": "\u27F6",
+        "Longrightarrow;": "\u27F9",
+        "looparrowleft;": "\u21AB",
+        "looparrowright;": "\u21AC",
+        "lopar;": "\u2985",
+        "Lopf;": "\uD835\uDD43",
+        "lopf;": "\uD835\uDD5D",
+        "loplus;": "\u2A2D",
+        "lotimes;": "\u2A34",
+        "lowast;": "\u2217",
+        "lowbar;": "\u005F",
+        "LowerLeftArrow;": "\u2199",
+        "LowerRightArrow;": "\u2198",
+        "loz;": "\u25CA",
+        "lozenge;": "\u25CA",
+        "lozf;": "\u29EB",
+        "lpar;": "\u0028",
+        "lparlt;": "\u2993",
+        "lrarr;": "\u21C6",
+        "lrcorner;": "\u231F",
+        "lrhar;": "\u21CB",
+        "lrhard;": "\u296D",
+        "lrm;": "\u200E",
+        "lrtri;": "\u22BF",
+        "lsaquo;": "\u2039",
+        "lscr;": "\uD835\uDCC1",
+        "Lscr;": "\u2112",
+        "lsh;": "\u21B0",
+        "Lsh;": "\u21B0",
+        "lsim;": "\u2272",
+        "lsime;": "\u2A8D",
+        "lsimg;": "\u2A8F",
+        "lsqb;": "\u005B",
+        "lsquo;": "\u2018",
+        "lsquor;": "\u201A",
+        "Lstrok;": "\u0141",
+        "lstrok;": "\u0142",
+        "ltcc;": "\u2AA6",
+        "ltcir;": "\u2A79",
+        "lt;": "\u003C",
+        "lt": "\u003C",
+        "LT;": "\u003C",
+        "LT": "\u003C",
+        "Lt;": "\u226A",
+        "ltdot;": "\u22D6",
+        "lthree;": "\u22CB",
+        "ltimes;": "\u22C9",
+        "ltlarr;": "\u2976",
+        "ltquest;": "\u2A7B",
+        "ltri;": "\u25C3",
+        "ltrie;": "\u22B4",
+        "ltrif;": "\u25C2",
+        "ltrPar;": "\u2996",
+        "lurdshar;": "\u294A",
+        "luruhar;": "\u2966",
+        "lvertneqq;": "\u2268\uFE00",
+        "lvnE;": "\u2268\uFE00",
+        "macr;": "\u00AF",
+        "macr": "\u00AF",
+        "male;": "\u2642",
+        "malt;": "\u2720",
+        "maltese;": "\u2720",
+        "Map;": "\u2905",
+        "map;": "\u21A6",
+        "mapsto;": "\u21A6",
+        "mapstodown;": "\u21A7",
+        "mapstoleft;": "\u21A4",
+        "mapstoup;": "\u21A5",
+        "marker;": "\u25AE",
+        "mcomma;": "\u2A29",
+        "Mcy;": "\u041C",
+        "mcy;": "\u043C",
+        "mdash;": "\u2014",
+        "mDDot;": "\u223A",
+        "measuredangle;": "\u2221",
+        "MediumSpace;": "\u205F",
+        "Mellintrf;": "\u2133",
+        "Mfr;": "\uD835\uDD10",
+        "mfr;": "\uD835\uDD2A",
+        "mho;": "\u2127",
+        "micro;": "\u00B5",
+        "micro": "\u00B5",
+        "midast;": "\u002A",
+        "midcir;": "\u2AF0",
+        "mid;": "\u2223",
+        "middot;": "\u00B7",
+        "middot": "\u00B7",
+        "minusb;": "\u229F",
+        "minus;": "\u2212",
+        "minusd;": "\u2238",
+        "minusdu;": "\u2A2A",
+        "MinusPlus;": "\u2213",
+        "mlcp;": "\u2ADB",
+        "mldr;": "\u2026",
+        "mnplus;": "\u2213",
+        "models;": "\u22A7",
+        "Mopf;": "\uD835\uDD44",
+        "mopf;": "\uD835\uDD5E",
+        "mp;": "\u2213",
+        "mscr;": "\uD835\uDCC2",
+        "Mscr;": "\u2133",
+        "mstpos;": "\u223E",
+        "Mu;": "\u039C",
+        "mu;": "\u03BC",
+        "multimap;": "\u22B8",
+        "mumap;": "\u22B8",
+        "nabla;": "\u2207",
+        "Nacute;": "\u0143",
+        "nacute;": "\u0144",
+        "nang;": "\u2220\u20D2",
+        "nap;": "\u2249",
+        "napE;": "\u2A70\u0338",
+        "napid;": "\u224B\u0338",
+        "napos;": "\u0149",
+        "napprox;": "\u2249",
+        "natural;": "\u266E",
+        "naturals;": "\u2115",
+        "natur;": "\u266E",
+        "nbsp;": "\u00A0",
+        "nbsp": "\u00A0",
+        "nbump;": "\u224E\u0338",
+        "nbumpe;": "\u224F\u0338",
+        "ncap;": "\u2A43",
+        "Ncaron;": "\u0147",
+        "ncaron;": "\u0148",
+        "Ncedil;": "\u0145",
+        "ncedil;": "\u0146",
+        "ncong;": "\u2247",
+        "ncongdot;": "\u2A6D\u0338",
+        "ncup;": "\u2A42",
+        "Ncy;": "\u041D",
+        "ncy;": "\u043D",
+        "ndash;": "\u2013",
+        "nearhk;": "\u2924",
+        "nearr;": "\u2197",
+        "neArr;": "\u21D7",
+        "nearrow;": "\u2197",
+        "ne;": "\u2260",
+        "nedot;": "\u2250\u0338",
+        "NegativeMediumSpace;": "\u200B",
+        "NegativeThickSpace;": "\u200B",
+        "NegativeThinSpace;": "\u200B",
+        "NegativeVeryThinSpace;": "\u200B",
+        "nequiv;": "\u2262",
+        "nesear;": "\u2928",
+        "nesim;": "\u2242\u0338",
+        "NestedGreaterGreater;": "\u226B",
+        "NestedLessLess;": "\u226A",
+        "NewLine;": "\u000A",
+        "nexist;": "\u2204",
+        "nexists;": "\u2204",
+        "Nfr;": "\uD835\uDD11",
+        "nfr;": "\uD835\uDD2B",
+        "ngE;": "\u2267\u0338",
+        "nge;": "\u2271",
+        "ngeq;": "\u2271",
+        "ngeqq;": "\u2267\u0338",
+        "ngeqslant;": "\u2A7E\u0338",
+        "nges;": "\u2A7E\u0338",
+        "nGg;": "\u22D9\u0338",
+        "ngsim;": "\u2275",
+        "nGt;": "\u226B\u20D2",
+        "ngt;": "\u226F",
+        "ngtr;": "\u226F",
+        "nGtv;": "\u226B\u0338",
+        "nharr;": "\u21AE",
+        "nhArr;": "\u21CE",
+        "nhpar;": "\u2AF2",
+        "ni;": "\u220B",
+        "nis;": "\u22FC",
+        "nisd;": "\u22FA",
+        "niv;": "\u220B",
+        "NJcy;": "\u040A",
+        "njcy;": "\u045A",
+        "nlarr;": "\u219A",
+        "nlArr;": "\u21CD",
+        "nldr;": "\u2025",
+        "nlE;": "\u2266\u0338",
+        "nle;": "\u2270",
+        "nleftarrow;": "\u219A",
+        "nLeftarrow;": "\u21CD",
+        "nleftrightarrow;": "\u21AE",
+        "nLeftrightarrow;": "\u21CE",
+        "nleq;": "\u2270",
+        "nleqq;": "\u2266\u0338",
+        "nleqslant;": "\u2A7D\u0338",
+        "nles;": "\u2A7D\u0338",
+        "nless;": "\u226E",
+        "nLl;": "\u22D8\u0338",
+        "nlsim;": "\u2274",
+        "nLt;": "\u226A\u20D2",
+        "nlt;": "\u226E",
+        "nltri;": "\u22EA",
+        "nltrie;": "\u22EC",
+        "nLtv;": "\u226A\u0338",
+        "nmid;": "\u2224",
+        "NoBreak;": "\u2060",
+        "NonBreakingSpace;": "\u00A0",
+        "nopf;": "\uD835\uDD5F",
+        "Nopf;": "\u2115",
+        "Not;": "\u2AEC",
+        "not;": "\u00AC",
+        "not": "\u00AC",
+        "NotCongruent;": "\u2262",
+        "NotCupCap;": "\u226D",
+        "NotDoubleVerticalBar;": "\u2226",
+        "NotElement;": "\u2209",
+        "NotEqual;": "\u2260",
+        "NotEqualTilde;": "\u2242\u0338",
+        "NotExists;": "\u2204",
+        "NotGreater;": "\u226F",
+        "NotGreaterEqual;": "\u2271",
+        "NotGreaterFullEqual;": "\u2267\u0338",
+        "NotGreaterGreater;": "\u226B\u0338",
+        "NotGreaterLess;": "\u2279",
+        "NotGreaterSlantEqual;": "\u2A7E\u0338",
+        "NotGreaterTilde;": "\u2275",
+        "NotHumpDownHump;": "\u224E\u0338",
+        "NotHumpEqual;": "\u224F\u0338",
+        "notin;": "\u2209",
+        "notindot;": "\u22F5\u0338",
+        "notinE;": "\u22F9\u0338",
+        "notinva;": "\u2209",
+        "notinvb;": "\u22F7",
+        "notinvc;": "\u22F6",
+        "NotLeftTriangleBar;": "\u29CF\u0338",
+        "NotLeftTriangle;": "\u22EA",
+        "NotLeftTriangleEqual;": "\u22EC",
+        "NotLess;": "\u226E",
+        "NotLessEqual;": "\u2270",
+        "NotLessGreater;": "\u2278",
+        "NotLessLess;": "\u226A\u0338",
+        "NotLessSlantEqual;": "\u2A7D\u0338",
+        "NotLessTilde;": "\u2274",
+        "NotNestedGreaterGreater;": "\u2AA2\u0338",
+        "NotNestedLessLess;": "\u2AA1\u0338",
+        "notni;": "\u220C",
+        "notniva;": "\u220C",
+        "notnivb;": "\u22FE",
+        "notnivc;": "\u22FD",
+        "NotPrecedes;": "\u2280",
+        "NotPrecedesEqual;": "\u2AAF\u0338",
+        "NotPrecedesSlantEqual;": "\u22E0",
+        "NotReverseElement;": "\u220C",
+        "NotRightTriangleBar;": "\u29D0\u0338",
+        "NotRightTriangle;": "\u22EB",
+        "NotRightTriangleEqual;": "\u22ED",
+        "NotSquareSubset;": "\u228F\u0338",
+        "NotSquareSubsetEqual;": "\u22E2",
+        "NotSquareSuperset;": "\u2290\u0338",
+        "NotSquareSupersetEqual;": "\u22E3",
+        "NotSubset;": "\u2282\u20D2",
+        "NotSubsetEqual;": "\u2288",
+        "NotSucceeds;": "\u2281",
+        "NotSucceedsEqual;": "\u2AB0\u0338",
+        "NotSucceedsSlantEqual;": "\u22E1",
+        "NotSucceedsTilde;": "\u227F\u0338",
+        "NotSuperset;": "\u2283\u20D2",
+        "NotSupersetEqual;": "\u2289",
+        "NotTilde;": "\u2241",
+        "NotTildeEqual;": "\u2244",
+        "NotTildeFullEqual;": "\u2247",
+        "NotTildeTilde;": "\u2249",
+        "NotVerticalBar;": "\u2224",
+        "nparallel;": "\u2226",
+        "npar;": "\u2226",
+        "nparsl;": "\u2AFD\u20E5",
+        "npart;": "\u2202\u0338",
+        "npolint;": "\u2A14",
+        "npr;": "\u2280",
+        "nprcue;": "\u22E0",
+        "nprec;": "\u2280",
+        "npreceq;": "\u2AAF\u0338",
+        "npre;": "\u2AAF\u0338",
+        "nrarrc;": "\u2933\u0338",
+        "nrarr;": "\u219B",
+        "nrArr;": "\u21CF",
+        "nrarrw;": "\u219D\u0338",
+        "nrightarrow;": "\u219B",
+        "nRightarrow;": "\u21CF",
+        "nrtri;": "\u22EB",
+        "nrtrie;": "\u22ED",
+        "nsc;": "\u2281",
+        "nsccue;": "\u22E1",
+        "nsce;": "\u2AB0\u0338",
+        "Nscr;": "\uD835\uDCA9",
+        "nscr;": "\uD835\uDCC3",
+        "nshortmid;": "\u2224",
+        "nshortparallel;": "\u2226",
+        "nsim;": "\u2241",
+        "nsime;": "\u2244",
+        "nsimeq;": "\u2244",
+        "nsmid;": "\u2224",
+        "nspar;": "\u2226",
+        "nsqsube;": "\u22E2",
+        "nsqsupe;": "\u22E3",
+        "nsub;": "\u2284",
+        "nsubE;": "\u2AC5\u0338",
+        "nsube;": "\u2288",
+        "nsubset;": "\u2282\u20D2",
+        "nsubseteq;": "\u2288",
+        "nsubseteqq;": "\u2AC5\u0338",
+        "nsucc;": "\u2281",
+        "nsucceq;": "\u2AB0\u0338",
+        "nsup;": "\u2285",
+        "nsupE;": "\u2AC6\u0338",
+        "nsupe;": "\u2289",
+        "nsupset;": "\u2283\u20D2",
+        "nsupseteq;": "\u2289",
+        "nsupseteqq;": "\u2AC6\u0338",
+        "ntgl;": "\u2279",
+        "Ntilde;": "\u00D1",
+        "Ntilde": "\u00D1",
+        "ntilde;": "\u00F1",
+        "ntilde": "\u00F1",
+        "ntlg;": "\u2278",
+        "ntriangleleft;": "\u22EA",
+        "ntrianglelefteq;": "\u22EC",
+        "ntriangleright;": "\u22EB",
+        "ntrianglerighteq;": "\u22ED",
+        "Nu;": "\u039D",
+        "nu;": "\u03BD",
+        "num;": "\u0023",
+        "numero;": "\u2116",
+        "numsp;": "\u2007",
+        "nvap;": "\u224D\u20D2",
+        "nvdash;": "\u22AC",
+        "nvDash;": "\u22AD",
+        "nVdash;": "\u22AE",
+        "nVDash;": "\u22AF",
+        "nvge;": "\u2265\u20D2",
+        "nvgt;": "\u003E\u20D2",
+        "nvHarr;": "\u2904",
+        "nvinfin;": "\u29DE",
+        "nvlArr;": "\u2902",
+        "nvle;": "\u2264\u20D2",
+        "nvlt;": "\u003C\u20D2",
+        "nvltrie;": "\u22B4\u20D2",
+        "nvrArr;": "\u2903",
+        "nvrtrie;": "\u22B5\u20D2",
+        "nvsim;": "\u223C\u20D2",
+        "nwarhk;": "\u2923",
+        "nwarr;": "\u2196",
+        "nwArr;": "\u21D6",
+        "nwarrow;": "\u2196",
+        "nwnear;": "\u2927",
+        "Oacute;": "\u00D3",
+        "Oacute": "\u00D3",
+        "oacute;": "\u00F3",
+        "oacute": "\u00F3",
+        "oast;": "\u229B",
+        "Ocirc;": "\u00D4",
+        "Ocirc": "\u00D4",
+        "ocirc;": "\u00F4",
+        "ocirc": "\u00F4",
+        "ocir;": "\u229A",
+        "Ocy;": "\u041E",
+        "ocy;": "\u043E",
+        "odash;": "\u229D",
+        "Odblac;": "\u0150",
+        "odblac;": "\u0151",
+        "odiv;": "\u2A38",
+        "odot;": "\u2299",
+        "odsold;": "\u29BC",
+        "OElig;": "\u0152",
+        "oelig;": "\u0153",
+        "ofcir;": "\u29BF",
+        "Ofr;": "\uD835\uDD12",
+        "ofr;": "\uD835\uDD2C",
+        "ogon;": "\u02DB",
+        "Ograve;": "\u00D2",
+        "Ograve": "\u00D2",
+        "ograve;": "\u00F2",
+        "ograve": "\u00F2",
+        "ogt;": "\u29C1",
+        "ohbar;": "\u29B5",
+        "ohm;": "\u03A9",
+        "oint;": "\u222E",
+        "olarr;": "\u21BA",
+        "olcir;": "\u29BE",
+        "olcross;": "\u29BB",
+        "oline;": "\u203E",
+        "olt;": "\u29C0",
+        "Omacr;": "\u014C",
+        "omacr;": "\u014D",
+        "Omega;": "\u03A9",
+        "omega;": "\u03C9",
+        "Omicron;": "\u039F",
+        "omicron;": "\u03BF",
+        "omid;": "\u29B6",
+        "ominus;": "\u2296",
+        "Oopf;": "\uD835\uDD46",
+        "oopf;": "\uD835\uDD60",
+        "opar;": "\u29B7",
+        "OpenCurlyDoubleQuote;": "\u201C",
+        "OpenCurlyQuote;": "\u2018",
+        "operp;": "\u29B9",
+        "oplus;": "\u2295",
+        "orarr;": "\u21BB",
+        "Or;": "\u2A54",
+        "or;": "\u2228",
+        "ord;": "\u2A5D",
+        "order;": "\u2134",
+        "orderof;": "\u2134",
+        "ordf;": "\u00AA",
+        "ordf": "\u00AA",
+        "ordm;": "\u00BA",
+        "ordm": "\u00BA",
+        "origof;": "\u22B6",
+        "oror;": "\u2A56",
+        "orslope;": "\u2A57",
+        "orv;": "\u2A5B",
+        "oS;": "\u24C8",
+        "Oscr;": "\uD835\uDCAA",
+        "oscr;": "\u2134",
+        "Oslash;": "\u00D8",
+        "Oslash": "\u00D8",
+        "oslash;": "\u00F8",
+        "oslash": "\u00F8",
+        "osol;": "\u2298",
+        "Otilde;": "\u00D5",
+        "Otilde": "\u00D5",
+        "otilde;": "\u00F5",
+        "otilde": "\u00F5",
+        "otimesas;": "\u2A36",
+        "Otimes;": "\u2A37",
+        "otimes;": "\u2297",
+        "Ouml;": "\u00D6",
+        "Ouml": "\u00D6",
+        "ouml;": "\u00F6",
+        "ouml": "\u00F6",
+        "ovbar;": "\u233D",
+        "OverBar;": "\u203E",
+        "OverBrace;": "\u23DE",
+        "OverBracket;": "\u23B4",
+        "OverParenthesis;": "\u23DC",
+        "para;": "\u00B6",
+        "para": "\u00B6",
+        "parallel;": "\u2225",
+        "par;": "\u2225",
+        "parsim;": "\u2AF3",
+        "parsl;": "\u2AFD",
+        "part;": "\u2202",
+        "PartialD;": "\u2202",
+        "Pcy;": "\u041F",
+        "pcy;": "\u043F",
+        "percnt;": "\u0025",
+        "period;": "\u002E",
+        "permil;": "\u2030",
+        "perp;": "\u22A5",
+        "pertenk;": "\u2031",
+        "Pfr;": "\uD835\uDD13",
+        "pfr;": "\uD835\uDD2D",
+        "Phi;": "\u03A6",
+        "phi;": "\u03C6",
+        "phiv;": "\u03D5",
+        "phmmat;": "\u2133",
+        "phone;": "\u260E",
+        "Pi;": "\u03A0",
+        "pi;": "\u03C0",
+        "pitchfork;": "\u22D4",
+        "piv;": "\u03D6",
+        "planck;": "\u210F",
+        "planckh;": "\u210E",
+        "plankv;": "\u210F",
+        "plusacir;": "\u2A23",
+        "plusb;": "\u229E",
+        "pluscir;": "\u2A22",
+        "plus;": "\u002B",
+        "plusdo;": "\u2214",
+        "plusdu;": "\u2A25",
+        "pluse;": "\u2A72",
+        "PlusMinus;": "\u00B1",
+        "plusmn;": "\u00B1",
+        "plusmn": "\u00B1",
+        "plussim;": "\u2A26",
+        "plustwo;": "\u2A27",
+        "pm;": "\u00B1",
+        "Poincareplane;": "\u210C",
+        "pointint;": "\u2A15",
+        "popf;": "\uD835\uDD61",
+        "Popf;": "\u2119",
+        "pound;": "\u00A3",
+        "pound": "\u00A3",
+        "prap;": "\u2AB7",
+        "Pr;": "\u2ABB",
+        "pr;": "\u227A",
+        "prcue;": "\u227C",
+        "precapprox;": "\u2AB7",
+        "prec;": "\u227A",
+        "preccurlyeq;": "\u227C",
+        "Precedes;": "\u227A",
+        "PrecedesEqual;": "\u2AAF",
+        "PrecedesSlantEqual;": "\u227C",
+        "PrecedesTilde;": "\u227E",
+        "preceq;": "\u2AAF",
+        "precnapprox;": "\u2AB9",
+        "precneqq;": "\u2AB5",
+        "precnsim;": "\u22E8",
+        "pre;": "\u2AAF",
+        "prE;": "\u2AB3",
+        "precsim;": "\u227E",
+        "prime;": "\u2032",
+        "Prime;": "\u2033",
+        "primes;": "\u2119",
+        "prnap;": "\u2AB9",
+        "prnE;": "\u2AB5",
+        "prnsim;": "\u22E8",
+        "prod;": "\u220F",
+        "Product;": "\u220F",
+        "profalar;": "\u232E",
+        "profline;": "\u2312",
+        "profsurf;": "\u2313",
+        "prop;": "\u221D",
+        "Proportional;": "\u221D",
+        "Proportion;": "\u2237",
+        "propto;": "\u221D",
+        "prsim;": "\u227E",
+        "prurel;": "\u22B0",
+        "Pscr;": "\uD835\uDCAB",
+        "pscr;": "\uD835\uDCC5",
+        "Psi;": "\u03A8",
+        "psi;": "\u03C8",
+        "puncsp;": "\u2008",
+        "Qfr;": "\uD835\uDD14",
+        "qfr;": "\uD835\uDD2E",
+        "qint;": "\u2A0C",
+        "qopf;": "\uD835\uDD62",
+        "Qopf;": "\u211A",
+        "qprime;": "\u2057",
+        "Qscr;": "\uD835\uDCAC",
+        "qscr;": "\uD835\uDCC6",
+        "quaternions;": "\u210D",
+        "quatint;": "\u2A16",
+        "quest;": "\u003F",
+        "questeq;": "\u225F",
+        "quot;": "\u0022",
+        "quot": "\u0022",
+        "QUOT;": "\u0022",
+        "QUOT": "\u0022",
+        "rAarr;": "\u21DB",
+        "race;": "\u223D\u0331",
+        "Racute;": "\u0154",
+        "racute;": "\u0155",
+        "radic;": "\u221A",
+        "raemptyv;": "\u29B3",
+        "rang;": "\u27E9",
+        "Rang;": "\u27EB",
+        "rangd;": "\u2992",
+        "range;": "\u29A5",
+        "rangle;": "\u27E9",
+        "raquo;": "\u00BB",
+        "raquo": "\u00BB",
+        "rarrap;": "\u2975",
+        "rarrb;": "\u21E5",
+        "rarrbfs;": "\u2920",
+        "rarrc;": "\u2933",
+        "rarr;": "\u2192",
+        "Rarr;": "\u21A0",
+        "rArr;": "\u21D2",
+        "rarrfs;": "\u291E",
+        "rarrhk;": "\u21AA",
+        "rarrlp;": "\u21AC",
+        "rarrpl;": "\u2945",
+        "rarrsim;": "\u2974",
+        "Rarrtl;": "\u2916",
+        "rarrtl;": "\u21A3",
+        "rarrw;": "\u219D",
+        "ratail;": "\u291A",
+        "rAtail;": "\u291C",
+        "ratio;": "\u2236",
+        "rationals;": "\u211A",
+        "rbarr;": "\u290D",
+        "rBarr;": "\u290F",
+        "RBarr;": "\u2910",
+        "rbbrk;": "\u2773",
+        "rbrace;": "\u007D",
+        "rbrack;": "\u005D",
+        "rbrke;": "\u298C",
+        "rbrksld;": "\u298E",
+        "rbrkslu;": "\u2990",
+        "Rcaron;": "\u0158",
+        "rcaron;": "\u0159",
+        "Rcedil;": "\u0156",
+        "rcedil;": "\u0157",
+        "rceil;": "\u2309",
+        "rcub;": "\u007D",
+        "Rcy;": "\u0420",
+        "rcy;": "\u0440",
+        "rdca;": "\u2937",
+        "rdldhar;": "\u2969",
+        "rdquo;": "\u201D",
+        "rdquor;": "\u201D",
+        "rdsh;": "\u21B3",
+        "real;": "\u211C",
+        "realine;": "\u211B",
+        "realpart;": "\u211C",
+        "reals;": "\u211D",
+        "Re;": "\u211C",
+        "rect;": "\u25AD",
+        "reg;": "\u00AE",
+        "reg": "\u00AE",
+        "REG;": "\u00AE",
+        "REG": "\u00AE",
+        "ReverseElement;": "\u220B",
+        "ReverseEquilibrium;": "\u21CB",
+        "ReverseUpEquilibrium;": "\u296F",
+        "rfisht;": "\u297D",
+        "rfloor;": "\u230B",
+        "rfr;": "\uD835\uDD2F",
+        "Rfr;": "\u211C",
+        "rHar;": "\u2964",
+        "rhard;": "\u21C1",
+        "rharu;": "\u21C0",
+        "rharul;": "\u296C",
+        "Rho;": "\u03A1",
+        "rho;": "\u03C1",
+        "rhov;": "\u03F1",
+        "RightAngleBracket;": "\u27E9",
+        "RightArrowBar;": "\u21E5",
+        "rightarrow;": "\u2192",
+        "RightArrow;": "\u2192",
+        "Rightarrow;": "\u21D2",
+        "RightArrowLeftArrow;": "\u21C4",
+        "rightarrowtail;": "\u21A3",
+        "RightCeiling;": "\u2309",
+        "RightDoubleBracket;": "\u27E7",
+        "RightDownTeeVector;": "\u295D",
+        "RightDownVectorBar;": "\u2955",
+        "RightDownVector;": "\u21C2",
+        "RightFloor;": "\u230B",
+        "rightharpoondown;": "\u21C1",
+        "rightharpoonup;": "\u21C0",
+        "rightleftarrows;": "\u21C4",
+        "rightleftharpoons;": "\u21CC",
+        "rightrightarrows;": "\u21C9",
+        "rightsquigarrow;": "\u219D",
+        "RightTeeArrow;": "\u21A6",
+        "RightTee;": "\u22A2",
+        "RightTeeVector;": "\u295B",
+        "rightthreetimes;": "\u22CC",
+        "RightTriangleBar;": "\u29D0",
+        "RightTriangle;": "\u22B3",
+        "RightTriangleEqual;": "\u22B5",
+        "RightUpDownVector;": "\u294F",
+        "RightUpTeeVector;": "\u295C",
+        "RightUpVectorBar;": "\u2954",
+        "RightUpVector;": "\u21BE",
+        "RightVectorBar;": "\u2953",
+        "RightVector;": "\u21C0",
+        "ring;": "\u02DA",
+        "risingdotseq;": "\u2253",
+        "rlarr;": "\u21C4",
+        "rlhar;": "\u21CC",
+        "rlm;": "\u200F",
+        "rmoustache;": "\u23B1",
+        "rmoust;": "\u23B1",
+        "rnmid;": "\u2AEE",
+        "roang;": "\u27ED",
+        "roarr;": "\u21FE",
+        "robrk;": "\u27E7",
+        "ropar;": "\u2986",
+        "ropf;": "\uD835\uDD63",
+        "Ropf;": "\u211D",
+        "roplus;": "\u2A2E",
+        "rotimes;": "\u2A35",
+        "RoundImplies;": "\u2970",
+        "rpar;": "\u0029",
+        "rpargt;": "\u2994",
+        "rppolint;": "\u2A12",
+        "rrarr;": "\u21C9",
+        "Rrightarrow;": "\u21DB",
+        "rsaquo;": "\u203A",
+        "rscr;": "\uD835\uDCC7",
+        "Rscr;": "\u211B",
+        "rsh;": "\u21B1",
+        "Rsh;": "\u21B1",
+        "rsqb;": "\u005D",
+        "rsquo;": "\u2019",
+        "rsquor;": "\u2019",
+        "rthree;": "\u22CC",
+        "rtimes;": "\u22CA",
+        "rtri;": "\u25B9",
+        "rtrie;": "\u22B5",
+        "rtrif;": "\u25B8",
+        "rtriltri;": "\u29CE",
+        "RuleDelayed;": "\u29F4",
+        "ruluhar;": "\u2968",
+        "rx;": "\u211E",
+        "Sacute;": "\u015A",
+        "sacute;": "\u015B",
+        "sbquo;": "\u201A",
+        "scap;": "\u2AB8",
+        "Scaron;": "\u0160",
+        "scaron;": "\u0161",
+        "Sc;": "\u2ABC",
+        "sc;": "\u227B",
+        "sccue;": "\u227D",
+        "sce;": "\u2AB0",
+        "scE;": "\u2AB4",
+        "Scedil;": "\u015E",
+        "scedil;": "\u015F",
+        "Scirc;": "\u015C",
+        "scirc;": "\u015D",
+        "scnap;": "\u2ABA",
+        "scnE;": "\u2AB6",
+        "scnsim;": "\u22E9",
+        "scpolint;": "\u2A13",
+        "scsim;": "\u227F",
+        "Scy;": "\u0421",
+        "scy;": "\u0441",
+        "sdotb;": "\u22A1",
+        "sdot;": "\u22C5",
+        "sdote;": "\u2A66",
+        "searhk;": "\u2925",
+        "searr;": "\u2198",
+        "seArr;": "\u21D8",
+        "searrow;": "\u2198",
+        "sect;": "\u00A7",
+        "sect": "\u00A7",
+        "semi;": "\u003B",
+        "seswar;": "\u2929",
+        "setminus;": "\u2216",
+        "setmn;": "\u2216",
+        "sext;": "\u2736",
+        "Sfr;": "\uD835\uDD16",
+        "sfr;": "\uD835\uDD30",
+        "sfrown;": "\u2322",
+        "sharp;": "\u266F",
+        "SHCHcy;": "\u0429",
+        "shchcy;": "\u0449",
+        "SHcy;": "\u0428",
+        "shcy;": "\u0448",
+        "ShortDownArrow;": "\u2193",
+        "ShortLeftArrow;": "\u2190",
+        "shortmid;": "\u2223",
+        "shortparallel;": "\u2225",
+        "ShortRightArrow;": "\u2192",
+        "ShortUpArrow;": "\u2191",
+        "shy;": "\u00AD",
+        "shy": "\u00AD",
+        "Sigma;": "\u03A3",
+        "sigma;": "\u03C3",
+        "sigmaf;": "\u03C2",
+        "sigmav;": "\u03C2",
+        "sim;": "\u223C",
+        "simdot;": "\u2A6A",
+        "sime;": "\u2243",
+        "simeq;": "\u2243",
+        "simg;": "\u2A9E",
+        "simgE;": "\u2AA0",
+        "siml;": "\u2A9D",
+        "simlE;": "\u2A9F",
+        "simne;": "\u2246",
+        "simplus;": "\u2A24",
+        "simrarr;": "\u2972",
+        "slarr;": "\u2190",
+        "SmallCircle;": "\u2218",
+        "smallsetminus;": "\u2216",
+        "smashp;": "\u2A33",
+        "smeparsl;": "\u29E4",
+        "smid;": "\u2223",
+        "smile;": "\u2323",
+        "smt;": "\u2AAA",
+        "smte;": "\u2AAC",
+        "smtes;": "\u2AAC\uFE00",
+        "SOFTcy;": "\u042C",
+        "softcy;": "\u044C",
+        "solbar;": "\u233F",
+        "solb;": "\u29C4",
+        "sol;": "\u002F",
+        "Sopf;": "\uD835\uDD4A",
+        "sopf;": "\uD835\uDD64",
+        "spades;": "\u2660",
+        "spadesuit;": "\u2660",
+        "spar;": "\u2225",
+        "sqcap;": "\u2293",
+        "sqcaps;": "\u2293\uFE00",
+        "sqcup;": "\u2294",
+        "sqcups;": "\u2294\uFE00",
+        "Sqrt;": "\u221A",
+        "sqsub;": "\u228F",
+        "sqsube;": "\u2291",
+        "sqsubset;": "\u228F",
+        "sqsubseteq;": "\u2291",
+        "sqsup;": "\u2290",
+        "sqsupe;": "\u2292",
+        "sqsupset;": "\u2290",
+        "sqsupseteq;": "\u2292",
+        "square;": "\u25A1",
+        "Square;": "\u25A1",
+        "SquareIntersection;": "\u2293",
+        "SquareSubset;": "\u228F",
+        "SquareSubsetEqual;": "\u2291",
+        "SquareSuperset;": "\u2290",
+        "SquareSupersetEqual;": "\u2292",
+        "SquareUnion;": "\u2294",
+        "squarf;": "\u25AA",
+        "squ;": "\u25A1",
+        "squf;": "\u25AA",
+        "srarr;": "\u2192",
+        "Sscr;": "\uD835\uDCAE",
+        "sscr;": "\uD835\uDCC8",
+        "ssetmn;": "\u2216",
+        "ssmile;": "\u2323",
+        "sstarf;": "\u22C6",
+        "Star;": "\u22C6",
+        "star;": "\u2606",
+        "starf;": "\u2605",
+        "straightepsilon;": "\u03F5",
+        "straightphi;": "\u03D5",
+        "strns;": "\u00AF",
+        "sub;": "\u2282",
+        "Sub;": "\u22D0",
+        "subdot;": "\u2ABD",
+        "subE;": "\u2AC5",
+        "sube;": "\u2286",
+        "subedot;": "\u2AC3",
+        "submult;": "\u2AC1",
+        "subnE;": "\u2ACB",
+        "subne;": "\u228A",
+        "subplus;": "\u2ABF",
+        "subrarr;": "\u2979",
+        "subset;": "\u2282",
+        "Subset;": "\u22D0",
+        "subseteq;": "\u2286",
+        "subseteqq;": "\u2AC5",
+        "SubsetEqual;": "\u2286",
+        "subsetneq;": "\u228A",
+        "subsetneqq;": "\u2ACB",
+        "subsim;": "\u2AC7",
+        "subsub;": "\u2AD5",
+        "subsup;": "\u2AD3",
+        "succapprox;": "\u2AB8",
+        "succ;": "\u227B",
+        "succcurlyeq;": "\u227D",
+        "Succeeds;": "\u227B",
+        "SucceedsEqual;": "\u2AB0",
+        "SucceedsSlantEqual;": "\u227D",
+        "SucceedsTilde;": "\u227F",
+        "succeq;": "\u2AB0",
+        "succnapprox;": "\u2ABA",
+        "succneqq;": "\u2AB6",
+        "succnsim;": "\u22E9",
+        "succsim;": "\u227F",
+        "SuchThat;": "\u220B",
+        "sum;": "\u2211",
+        "Sum;": "\u2211",
+        "sung;": "\u266A",
+        "sup1;": "\u00B9",
+        "sup1": "\u00B9",
+        "sup2;": "\u00B2",
+        "sup2": "\u00B2",
+        "sup3;": "\u00B3",
+        "sup3": "\u00B3",
+        "sup;": "\u2283",
+        "Sup;": "\u22D1",
+        "supdot;": "\u2ABE",
+        "supdsub;": "\u2AD8",
+        "supE;": "\u2AC6",
+        "supe;": "\u2287",
+        "supedot;": "\u2AC4",
+        "Superset;": "\u2283",
+        "SupersetEqual;": "\u2287",
+        "suphsol;": "\u27C9",
+        "suphsub;": "\u2AD7",
+        "suplarr;": "\u297B",
+        "supmult;": "\u2AC2",
+        "supnE;": "\u2ACC",
+        "supne;": "\u228B",
+        "supplus;": "\u2AC0",
+        "supset;": "\u2283",
+        "Supset;": "\u22D1",
+        "supseteq;": "\u2287",
+        "supseteqq;": "\u2AC6",
+        "supsetneq;": "\u228B",
+        "supsetneqq;": "\u2ACC",
+        "supsim;": "\u2AC8",
+        "supsub;": "\u2AD4",
+        "supsup;": "\u2AD6",
+        "swarhk;": "\u2926",
+        "swarr;": "\u2199",
+        "swArr;": "\u21D9",
+        "swarrow;": "\u2199",
+        "swnwar;": "\u292A",
+        "szlig;": "\u00DF",
+        "szlig": "\u00DF",
+        "Tab;": "\u0009",
+        "target;": "\u2316",
+        "Tau;": "\u03A4",
+        "tau;": "\u03C4",
+        "tbrk;": "\u23B4",
+        "Tcaron;": "\u0164",
+        "tcaron;": "\u0165",
+        "Tcedil;": "\u0162",
+        "tcedil;": "\u0163",
+        "Tcy;": "\u0422",
+        "tcy;": "\u0442",
+        "tdot;": "\u20DB",
+        "telrec;": "\u2315",
+        "Tfr;": "\uD835\uDD17",
+        "tfr;": "\uD835\uDD31",
+        "there4;": "\u2234",
+        "therefore;": "\u2234",
+        "Therefore;": "\u2234",
+        "Theta;": "\u0398",
+        "theta;": "\u03B8",
+        "thetasym;": "\u03D1",
+        "thetav;": "\u03D1",
+        "thickapprox;": "\u2248",
+        "thicksim;": "\u223C",
+        "ThickSpace;": "\u205F\u200A",
+        "ThinSpace;": "\u2009",
+        "thinsp;": "\u2009",
+        "thkap;": "\u2248",
+        "thksim;": "\u223C",
+        "THORN;": "\u00DE",
+        "THORN": "\u00DE",
+        "thorn;": "\u00FE",
+        "thorn": "\u00FE",
+        "tilde;": "\u02DC",
+        "Tilde;": "\u223C",
+        "TildeEqual;": "\u2243",
+        "TildeFullEqual;": "\u2245",
+        "TildeTilde;": "\u2248",
+        "timesbar;": "\u2A31",
+        "timesb;": "\u22A0",
+        "times;": "\u00D7",
+        "times": "\u00D7",
+        "timesd;": "\u2A30",
+        "tint;": "\u222D",
+        "toea;": "\u2928",
+        "topbot;": "\u2336",
+        "topcir;": "\u2AF1",
+        "top;": "\u22A4",
+        "Topf;": "\uD835\uDD4B",
+        "topf;": "\uD835\uDD65",
+        "topfork;": "\u2ADA",
+        "tosa;": "\u2929",
+        "tprime;": "\u2034",
+        "trade;": "\u2122",
+        "TRADE;": "\u2122",
+        "triangle;": "\u25B5",
+        "triangledown;": "\u25BF",
+        "triangleleft;": "\u25C3",
+        "trianglelefteq;": "\u22B4",
+        "triangleq;": "\u225C",
+        "triangleright;": "\u25B9",
+        "trianglerighteq;": "\u22B5",
+        "tridot;": "\u25EC",
+        "trie;": "\u225C",
+        "triminus;": "\u2A3A",
+        "TripleDot;": "\u20DB",
+        "triplus;": "\u2A39",
+        "trisb;": "\u29CD",
+        "tritime;": "\u2A3B",
+        "trpezium;": "\u23E2",
+        "Tscr;": "\uD835\uDCAF",
+        "tscr;": "\uD835\uDCC9",
+        "TScy;": "\u0426",
+        "tscy;": "\u0446",
+        "TSHcy;": "\u040B",
+        "tshcy;": "\u045B",
+        "Tstrok;": "\u0166",
+        "tstrok;": "\u0167",
+        "twixt;": "\u226C",
+        "twoheadleftarrow;": "\u219E",
+        "twoheadrightarrow;": "\u21A0",
+        "Uacute;": "\u00DA",
+        "Uacute": "\u00DA",
+        "uacute;": "\u00FA",
+        "uacute": "\u00FA",
+        "uarr;": "\u2191",
+        "Uarr;": "\u219F",
+        "uArr;": "\u21D1",
+        "Uarrocir;": "\u2949",
+        "Ubrcy;": "\u040E",
+        "ubrcy;": "\u045E",
+        "Ubreve;": "\u016C",
+        "ubreve;": "\u016D",
+        "Ucirc;": "\u00DB",
+        "Ucirc": "\u00DB",
+        "ucirc;": "\u00FB",
+        "ucirc": "\u00FB",
+        "Ucy;": "\u0423",
+        "ucy;": "\u0443",
+        "udarr;": "\u21C5",
+        "Udblac;": "\u0170",
+        "udblac;": "\u0171",
+        "udhar;": "\u296E",
+        "ufisht;": "\u297E",
+        "Ufr;": "\uD835\uDD18",
+        "ufr;": "\uD835\uDD32",
+        "Ugrave;": "\u00D9",
+        "Ugrave": "\u00D9",
+        "ugrave;": "\u00F9",
+        "ugrave": "\u00F9",
+        "uHar;": "\u2963",
+        "uharl;": "\u21BF",
+        "uharr;": "\u21BE",
+        "uhblk;": "\u2580",
+        "ulcorn;": "\u231C",
+        "ulcorner;": "\u231C",
+        "ulcrop;": "\u230F",
+        "ultri;": "\u25F8",
+        "Umacr;": "\u016A",
+        "umacr;": "\u016B",
+        "uml;": "\u00A8",
+        "uml": "\u00A8",
+        "UnderBar;": "\u005F",
+        "UnderBrace;": "\u23DF",
+        "UnderBracket;": "\u23B5",
+        "UnderParenthesis;": "\u23DD",
+        "Union;": "\u22C3",
+        "UnionPlus;": "\u228E",
+        "Uogon;": "\u0172",
+        "uogon;": "\u0173",
+        "Uopf;": "\uD835\uDD4C",
+        "uopf;": "\uD835\uDD66",
+        "UpArrowBar;": "\u2912",
+        "uparrow;": "\u2191",
+        "UpArrow;": "\u2191",
+        "Uparrow;": "\u21D1",
+        "UpArrowDownArrow;": "\u21C5",
+        "updownarrow;": "\u2195",
+        "UpDownArrow;": "\u2195",
+        "Updownarrow;": "\u21D5",
+        "UpEquilibrium;": "\u296E",
+        "upharpoonleft;": "\u21BF",
+        "upharpoonright;": "\u21BE",
+        "uplus;": "\u228E",
+        "UpperLeftArrow;": "\u2196",
+        "UpperRightArrow;": "\u2197",
+        "upsi;": "\u03C5",
+        "Upsi;": "\u03D2",
+        "upsih;": "\u03D2",
+        "Upsilon;": "\u03A5",
+        "upsilon;": "\u03C5",
+        "UpTeeArrow;": "\u21A5",
+        "UpTee;": "\u22A5",
+        "upuparrows;": "\u21C8",
+        "urcorn;": "\u231D",
+        "urcorner;": "\u231D",
+        "urcrop;": "\u230E",
+        "Uring;": "\u016E",
+        "uring;": "\u016F",
+        "urtri;": "\u25F9",
+        "Uscr;": "\uD835\uDCB0",
+        "uscr;": "\uD835\uDCCA",
+        "utdot;": "\u22F0",
+        "Utilde;": "\u0168",
+        "utilde;": "\u0169",
+        "utri;": "\u25B5",
+        "utrif;": "\u25B4",
+        "uuarr;": "\u21C8",
+        "Uuml;": "\u00DC",
+        "Uuml": "\u00DC",
+        "uuml;": "\u00FC",
+        "uuml": "\u00FC",
+        "uwangle;": "\u29A7",
+        "vangrt;": "\u299C",
+        "varepsilon;": "\u03F5",
+        "varkappa;": "\u03F0",
+        "varnothing;": "\u2205",
+        "varphi;": "\u03D5",
+        "varpi;": "\u03D6",
+        "varpropto;": "\u221D",
+        "varr;": "\u2195",
+        "vArr;": "\u21D5",
+        "varrho;": "\u03F1",
+        "varsigma;": "\u03C2",
+        "varsubsetneq;": "\u228A\uFE00",
+        "varsubsetneqq;": "\u2ACB\uFE00",
+        "varsupsetneq;": "\u228B\uFE00",
+        "varsupsetneqq;": "\u2ACC\uFE00",
+        "vartheta;": "\u03D1",
+        "vartriangleleft;": "\u22B2",
+        "vartriangleright;": "\u22B3",
+        "vBar;": "\u2AE8",
+        "Vbar;": "\u2AEB",
+        "vBarv;": "\u2AE9",
+        "Vcy;": "\u0412",
+        "vcy;": "\u0432",
+        "vdash;": "\u22A2",
+        "vDash;": "\u22A8",
+        "Vdash;": "\u22A9",
+        "VDash;": "\u22AB",
+        "Vdashl;": "\u2AE6",
+        "veebar;": "\u22BB",
+        "vee;": "\u2228",
+        "Vee;": "\u22C1",
+        "veeeq;": "\u225A",
+        "vellip;": "\u22EE",
+        "verbar;": "\u007C",
+        "Verbar;": "\u2016",
+        "vert;": "\u007C",
+        "Vert;": "\u2016",
+        "VerticalBar;": "\u2223",
+        "VerticalLine;": "\u007C",
+        "VerticalSeparator;": "\u2758",
+        "VerticalTilde;": "\u2240",
+        "VeryThinSpace;": "\u200A",
+        "Vfr;": "\uD835\uDD19",
+        "vfr;": "\uD835\uDD33",
+        "vltri;": "\u22B2",
+        "vnsub;": "\u2282\u20D2",
+        "vnsup;": "\u2283\u20D2",
+        "Vopf;": "\uD835\uDD4D",
+        "vopf;": "\uD835\uDD67",
+        "vprop;": "\u221D",
+        "vrtri;": "\u22B3",
+        "Vscr;": "\uD835\uDCB1",
+        "vscr;": "\uD835\uDCCB",
+        "vsubnE;": "\u2ACB\uFE00",
+        "vsubne;": "\u228A\uFE00",
+        "vsupnE;": "\u2ACC\uFE00",
+        "vsupne;": "\u228B\uFE00",
+        "Vvdash;": "\u22AA",
+        "vzigzag;": "\u299A",
+        "Wcirc;": "\u0174",
+        "wcirc;": "\u0175",
+        "wedbar;": "\u2A5F",
+        "wedge;": "\u2227",
+        "Wedge;": "\u22C0",
+        "wedgeq;": "\u2259",
+        "weierp;": "\u2118",
+        "Wfr;": "\uD835\uDD1A",
+        "wfr;": "\uD835\uDD34",
+        "Wopf;": "\uD835\uDD4E",
+        "wopf;": "\uD835\uDD68",
+        "wp;": "\u2118",
+        "wr;": "\u2240",
+        "wreath;": "\u2240",
+        "Wscr;": "\uD835\uDCB2",
+        "wscr;": "\uD835\uDCCC",
+        "xcap;": "\u22C2",
+        "xcirc;": "\u25EF",
+        "xcup;": "\u22C3",
+        "xdtri;": "\u25BD",
+        "Xfr;": "\uD835\uDD1B",
+        "xfr;": "\uD835\uDD35",
+        "xharr;": "\u27F7",
+        "xhArr;": "\u27FA",
+        "Xi;": "\u039E",
+        "xi;": "\u03BE",
+        "xlarr;": "\u27F5",
+        "xlArr;": "\u27F8",
+        "xmap;": "\u27FC",
+        "xnis;": "\u22FB",
+        "xodot;": "\u2A00",
+        "Xopf;": "\uD835\uDD4F",
+        "xopf;": "\uD835\uDD69",
+        "xoplus;": "\u2A01",
+        "xotime;": "\u2A02",
+        "xrarr;": "\u27F6",
+        "xrArr;": "\u27F9",
+        "Xscr;": "\uD835\uDCB3",
+        "xscr;": "\uD835\uDCCD",
+        "xsqcup;": "\u2A06",
+        "xuplus;": "\u2A04",
+        "xutri;": "\u25B3",
+        "xvee;": "\u22C1",
+        "xwedge;": "\u22C0",
+        "Yacute;": "\u00DD",
+        "Yacute": "\u00DD",
+        "yacute;": "\u00FD",
+        "yacute": "\u00FD",
+        "YAcy;": "\u042F",
+        "yacy;": "\u044F",
+        "Ycirc;": "\u0176",
+        "ycirc;": "\u0177",
+        "Ycy;": "\u042B",
+        "ycy;": "\u044B",
+        "yen;": "\u00A5",
+        "yen": "\u00A5",
+        "Yfr;": "\uD835\uDD1C",
+        "yfr;": "\uD835\uDD36",
+        "YIcy;": "\u0407",
+        "yicy;": "\u0457",
+        "Yopf;": "\uD835\uDD50",
+        "yopf;": "\uD835\uDD6A",
+        "Yscr;": "\uD835\uDCB4",
+        "yscr;": "\uD835\uDCCE",
+        "YUcy;": "\u042E",
+        "yucy;": "\u044E",
+        "yuml;": "\u00FF",
+        "yuml": "\u00FF",
+        "Yuml;": "\u0178",
+        "Zacute;": "\u0179",
+        "zacute;": "\u017A",
+        "Zcaron;": "\u017D",
+        "zcaron;": "\u017E",
+        "Zcy;": "\u0417",
+        "zcy;": "\u0437",
+        "Zdot;": "\u017B",
+        "zdot;": "\u017C",
+        "zeetrf;": "\u2128",
+        "ZeroWidthSpace;": "\u200B",
+        "Zeta;": "\u0396",
+        "zeta;": "\u03B6",
+        "zfr;": "\uD835\uDD37",
+        "Zfr;": "\u2128",
+        "ZHcy;": "\u0416",
+        "zhcy;": "\u0436",
+        "zigrarr;": "\u21DD",
+        "zopf;": "\uD835\uDD6B",
+        "Zopf;": "\u2124",
+        "Zscr;": "\uD835\uDCB5",
+        "zscr;": "\uD835\uDCCF",
+        "zwj;": "\u200D",
+        "zwnj;": "\u200C"
+    };
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = entities;
+});
+
+define('mode/html/InputStream',["require", "exports"], function (require, exports) {
+    // FIXME convert CR to LF http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#input-stream
+    var InputStream = (function () {
+        function InputStream() {
+            this.data = '';
+            this.start = 0;
+            this.committed = 0;
+            this.eof = false;
+            this.lastLocation = { line: 0, column: 0 };
+        }
+        InputStream.prototype.slice = function () {
+            if (this.start >= this.data.length) {
+                if (!this.eof)
+                    throw InputStream.DRAIN;
+                return InputStream.EOF;
+            }
+            return this.data.slice(this.start, this.data.length);
+        };
+        InputStream.prototype.char = function () {
+            if (!this.eof && this.start >= this.data.length - 1)
+                throw InputStream.DRAIN;
+            if (this.start >= this.data.length) {
+                return InputStream.EOF;
+            }
+            var ch = this.data[this.start++];
+            if (ch === '\r')
+                ch = '\n';
+            return ch;
+        };
+        InputStream.prototype.advance = function (amount) {
+            this.start += amount;
+            if (this.start >= this.data.length) {
+                if (!this.eof)
+                    throw InputStream.DRAIN;
+                return InputStream.EOF;
+            }
+            else {
+                if (this.committed > this.data.length / 2) {
+                    // Sliiiide
+                    this.lastLocation = this.location();
+                    this.data = this.data.slice(this.committed);
+                    this.start = this.start - this.committed;
+                    this.committed = 0;
+                }
+            }
+        };
+        InputStream.prototype.matchWhile = function (re) {
+            if (this.eof && this.start >= this.data.length)
+                return '';
+            var r = new RegExp("^" + re + "+");
+            var m = r.exec(this.slice());
+            if (m) {
+                if (!this.eof && m[0].length == this.data.length - this.start)
+                    throw InputStream.DRAIN;
+                this.advance(m[0].length);
+                return m[0];
+            }
+            else {
+                return '';
+            }
+        };
+        InputStream.prototype.matchUntil = function (re) {
+            var m, s;
+            s = this.slice();
+            if (s === InputStream.EOF) {
+                return '';
+            }
+            else if (m = new RegExp(re + (this.eof ? "|$" : "")).exec(s)) {
+                var t = this.data.slice(this.start, this.start + m.index);
+                this.advance(m.index);
+                return t.replace(/\r/g, '\n').replace(/\n{2,}/g, '\n');
+            }
+            else {
+                throw InputStream.DRAIN;
+            }
+        };
+        InputStream.prototype.append = function (data) {
+            this.data += data;
+        };
+        InputStream.prototype.shift = function (n) {
+            if (!this.eof && this.start + n >= this.data.length)
+                throw InputStream.DRAIN;
+            if (this.eof && this.start >= this.data.length)
+                return InputStream.EOF;
+            var d = this.data.slice(this.start, this.start + n).toString();
+            this.advance(Math.min(n, this.data.length - this.start));
+            return d;
+        };
+        InputStream.prototype.peek = function (n) {
+            if (!this.eof && this.start + n >= this.data.length)
+                throw InputStream.DRAIN;
+            if (this.eof && this.start >= this.data.length)
+                return InputStream.EOF;
+            return this.data.slice(this.start, Math.min(this.start + n, this.data.length)).toString();
+        };
+        InputStream.prototype.length = function () {
+            return this.data.length - this.start - 1;
+        };
+        InputStream.prototype.unget = function (d) {
+            if (d === InputStream.EOF)
+                return;
+            this.start -= (d.length);
+        };
+        InputStream.prototype.undo = function () {
+            this.start = this.committed;
+        };
+        InputStream.prototype.commit = function () {
+            this.committed = this.start;
+        };
+        InputStream.prototype.location = function () {
+            var lastLine = this.lastLocation.line;
+            var lastColumn = this.lastLocation.column;
+            var read = this.data.slice(0, this.committed);
+            var newlines = read.match(/\n/g);
+            var line = newlines ? lastLine + newlines.length : lastLine;
+            var column = newlines ? read.length - read.lastIndexOf('\n') - 1 : lastColumn + read.length;
+            return { line: line, column: column };
+        };
+        InputStream.EOF = -1;
+        InputStream.DRAIN = -2;
+        return InputStream;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = InputStream;
+});
+
+define('mode/html/isAlphaNumeric',["require", "exports"], function (require, exports) {
+    function isAlphaNumeric(c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isAlphaNumeric;
+});
+
+define('mode/html/isDecimalDigit',["require", "exports"], function (require, exports) {
+    function isDecimalDigit(c) {
+        return (c >= '0' && c <= '9');
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isDecimalDigit;
+});
+
+define('mode/html/isHexDigit',["require", "exports"], function (require, exports) {
+    function isHexDigit(c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isHexDigit;
+});
+
+define('mode/html/EntityParser',["require", "exports", './entities', './InputStream', './isAlphaNumeric', './isDecimalDigit', './isHexDigit'], function (require, exports, entities_1, InputStream_1, isAlphaNumeric_1, isDecimalDigit_1, isHexDigit_1) {
+    var namedEntityPrefixes = {};
+    Object.keys(entities_1.default).forEach(function (entityKey) {
+        for (var i = 0; i < entityKey.length; i++) {
+            namedEntityPrefixes[entityKey.substring(0, i + 1)] = true;
+        }
+    });
+    var EntityParserClass = (function () {
+        function EntityParserClass() {
+        }
+        EntityParserClass.prototype.consumeEntity = function (buffer, tokenizer, additionalAllowedCharacter) {
+            var decodedCharacter = '';
+            var consumedCharacters = '';
+            var ch = buffer.char();
+            if (ch === InputStream_1.default.EOF)
+                return false;
+            consumedCharacters += ch;
+            if (ch == '\t' || ch == '\n' || ch == '\v' || ch == ' ' || ch == '<' || ch == '&') {
+                buffer.unget(consumedCharacters);
+                return false;
+            }
+            if (additionalAllowedCharacter === ch) {
+                buffer.unget(consumedCharacters);
+                return false;
+            }
+            if (ch == '#') {
+                ch = buffer.shift(1);
+                if (ch === InputStream_1.default.EOF) {
+                    tokenizer._parseError("expected-numeric-entity-but-got-eof");
+                    buffer.unget(consumedCharacters);
+                    return false;
+                }
+                consumedCharacters += ch;
+                var radix = 10;
+                var isDigit = isDecimalDigit_1.default;
+                if (ch == 'x' || ch == 'X') {
+                    radix = 16;
+                    isDigit = isHexDigit_1.default;
+                    ch = buffer.shift(1);
+                    if (ch === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-numeric-entity-but-got-eof");
+                        buffer.unget(consumedCharacters);
+                        return false;
+                    }
+                    consumedCharacters += ch;
+                }
+                if (isDigit(ch)) {
+                    var code = '';
+                    while (ch !== InputStream_1.default.EOF && isDigit(ch)) {
+                        code += ch;
+                        ch = buffer.char();
+                    }
+                    code = parseInt(code, radix);
+                    var replacement = this.replaceEntityNumbers(code);
+                    if (replacement) {
+                        tokenizer._parseError("invalid-numeric-entity-replaced");
+                        code = replacement;
+                    }
+                    if (code > 0xFFFF && code <= 0x10FFFF) {
+                        // we substract 0x10000 from cp to get a 20-bits number
+                        // in the range 0..0xFFFF
+                        code -= 0x10000;
+                        // we add 0xD800 to the number formed by the first 10 bits
+                        // to give the first byte
+                        var first = ((0xffc00 & code) >> 10) + 0xD800;
+                        // we add 0xDC00 to the number formed by the low 10 bits
+                        // to give the second byte
+                        var second = (0x3ff & code) + 0xDC00;
+                        decodedCharacter = String.fromCharCode(first, second);
+                    }
+                    else
+                        decodedCharacter = String.fromCharCode(code);
+                    if (ch !== ';') {
+                        tokenizer._parseError("numeric-entity-without-semicolon");
+                        buffer.unget(ch);
+                    }
+                    return decodedCharacter;
+                }
+                buffer.unget(consumedCharacters);
+                tokenizer._parseError("expected-numeric-entity");
+                return false;
+            }
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                var mostRecentMatch = '';
+                while (namedEntityPrefixes[consumedCharacters]) {
+                    if (entities_1.default[consumedCharacters]) {
+                        mostRecentMatch = consumedCharacters;
+                    }
+                    if (ch == ';')
+                        break;
+                    ch = buffer.char();
+                    if (ch === InputStream_1.default.EOF)
+                        break;
+                    consumedCharacters += ch;
+                }
+                if (!mostRecentMatch) {
+                    tokenizer._parseError("expected-named-entity");
+                    buffer.unget(consumedCharacters);
+                    return false;
+                }
+                decodedCharacter = entities_1.default[mostRecentMatch];
+                if (ch === ';' || !additionalAllowedCharacter || !(isAlphaNumeric_1.default(ch) || ch === '=')) {
+                    if (consumedCharacters.length > mostRecentMatch.length) {
+                        buffer.unget(consumedCharacters.substring(mostRecentMatch.length));
+                    }
+                    if (ch !== ';') {
+                        tokenizer._parseError("named-entity-without-semicolon");
+                    }
+                    return decodedCharacter;
+                }
+                buffer.unget(consumedCharacters);
+                return false;
+            }
+        };
+        EntityParserClass.prototype.replaceEntityNumbers = function (c) {
+            switch (c) {
+                case 0x00: return 0xFFFD; // REPLACEMENT CHARACTER
+                case 0x13: return 0x0010; // Carriage return
+                case 0x80: return 0x20AC; // EURO SIGN
+                case 0x81: return 0x0081; // <control>
+                case 0x82: return 0x201A; // SINGLE LOW-9 QUOTATION MARK
+                case 0x83: return 0x0192; // LATIN SMALL LETTER F WITH HOOK
+                case 0x84: return 0x201E; // DOUBLE LOW-9 QUOTATION MARK
+                case 0x85: return 0x2026; // HORIZONTAL ELLIPSIS
+                case 0x86: return 0x2020; // DAGGER
+                case 0x87: return 0x2021; // DOUBLE DAGGER
+                case 0x88: return 0x02C6; // MODIFIER LETTER CIRCUMFLEX ACCENT
+                case 0x89: return 0x2030; // PER MILLE SIGN
+                case 0x8A: return 0x0160; // LATIN CAPITAL LETTER S WITH CARON
+                case 0x8B: return 0x2039; // SINGLE LEFT-POINTING ANGLE QUOTATION MARK
+                case 0x8C: return 0x0152; // LATIN CAPITAL LIGATURE OE
+                case 0x8D: return 0x008D; // <control>
+                case 0x8E: return 0x017D; // LATIN CAPITAL LETTER Z WITH CARON
+                case 0x8F: return 0x008F; // <control>
+                case 0x90: return 0x0090; // <control>
+                case 0x91: return 0x2018; // LEFT SINGLE QUOTATION MARK
+                case 0x92: return 0x2019; // RIGHT SINGLE QUOTATION MARK
+                case 0x93: return 0x201C; // LEFT DOUBLE QUOTATION MARK
+                case 0x94: return 0x201D; // RIGHT DOUBLE QUOTATION MARK
+                case 0x95: return 0x2022; // BULLET
+                case 0x96: return 0x2013; // EN DASH
+                case 0x97: return 0x2014; // EM DASH
+                case 0x98: return 0x02DC; // SMALL TILDE
+                case 0x99: return 0x2122; // TRADE MARK SIGN
+                case 0x9A: return 0x0161; // LATIN SMALL LETTER S WITH CARON
+                case 0x9B: return 0x203A; // SINGLE RIGHT-POINTING ANGLE QUOTATION MARK
+                case 0x9C: return 0x0153; // LATIN SMALL LIGATURE OE
+                case 0x9D: return 0x009D; // <control>
+                case 0x9E: return 0x017E; // LATIN SMALL LETTER Z WITH CARON
+                case 0x9F: return 0x0178; // LATIN CAPITAL LETTER Y WITH DIAERESIS
+                default:
+                    if ((c >= 0xD800 && c <= 0xDFFF) || c > 0x10FFFF) {
+                        return 0xFFFD;
+                    }
+                    else if ((c >= 0x0001 && c <= 0x0008) || (c >= 0x000E && c <= 0x001F) ||
+                        (c >= 0x007F && c <= 0x009F) || (c >= 0xFDD0 && c <= 0xFDEF) ||
+                        c == 0x000B || c == 0xFFFE || c == 0x1FFFE || c == 0x2FFFFE ||
+                        c == 0x2FFFF || c == 0x3FFFE || c == 0x3FFFF || c == 0x4FFFE ||
+                        c == 0x4FFFF || c == 0x5FFFE || c == 0x5FFFF || c == 0x6FFFE ||
+                        c == 0x6FFFF || c == 0x7FFFE || c == 0x7FFFF || c == 0x8FFFE ||
+                        c == 0x8FFFF || c == 0x9FFFE || c == 0x9FFFF || c == 0xAFFFE ||
+                        c == 0xAFFFF || c == 0xBFFFE || c == 0xBFFFF || c == 0xCFFFE ||
+                        c == 0xCFFFF || c == 0xDFFFE || c == 0xDFFFF || c == 0xEFFFE ||
+                        c == 0xEFFFF || c == 0xFFFFE || c == 0xFFFFF || c == 0x10FFFE ||
+                        c == 0x10FFFF) {
+                        return c;
+                    }
+            }
+        };
+        return EntityParserClass;
+    })();
+    exports.EntityParserClass = EntityParserClass;
+    exports.EntityParser = new EntityParserClass();
+});
+
+define('mode/html/isAlpha',["require", "exports"], function (require, exports) {
+    function isAlpha(c) {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = isAlpha;
+});
+
+define('mode/html/Tokenizer',["require", "exports", './EntityParser', './InputStream', './isAlpha', './isWhitespace'], function (require, exports, EntityParser_1, InputStream_1, isAlpha_1, isWhitespace_1) {
+    /**
+     *
+     * @param {Object} tokenHandler
+     * @constructor
+     */
+    var Tokenizer = (function () {
+        function Tokenizer(tokenHandler) {
+            this._emitCurrentToken = function () {
+                this._state = Tokenizer.DATA;
+                this._emitToken(this._currentToken);
+            };
+            this._currentAttribute = function () {
+                return this._currentToken.data[this._currentToken.data.length - 1];
+            };
+            this.setState = function (state) {
+                this._state = state;
+            };
+            this.tokenize = function (source) {
+                // FIXME proper tokenizer states
+                Tokenizer.DATA = data_state;
+                Tokenizer.RCDATA = rcdata_state;
+                Tokenizer.RAWTEXT = rawtext_state;
+                Tokenizer.SCRIPT_DATA = script_data_state;
+                Tokenizer.PLAINTEXT = plaintext_state;
+                this._state = Tokenizer.DATA;
+                this._inputStream.append(source);
+                this._tokenHandler.startTokenization(this);
+                this._inputStream.eof = true;
+                var tokenizer = this;
+                while (this._state.call(this, this._inputStream))
+                    ;
+                function data_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._emitToken({ type: 'EOF', data: null });
+                        return false;
+                    }
+                    else if (data === '&') {
+                        tokenizer.setState(character_reference_in_data_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(tag_open_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        buffer.commit();
+                    }
+                    else {
+                        var chars = buffer.matchUntil("&|<|\u0000");
+                        tokenizer._emitToken({ type: 'Characters', data: data + chars });
+                        buffer.commit();
+                    }
+                    return true;
+                }
+                function character_reference_in_data_state(buffer) {
+                    var character = EntityParser_1.EntityParser.consumeEntity(buffer, tokenizer);
+                    tokenizer.setState(data_state);
+                    tokenizer._emitToken({ type: 'Characters', data: character || '&' });
+                    return true;
+                }
+                function rcdata_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._emitToken({ type: 'EOF', data: null });
+                        return false;
+                    }
+                    else if (data === '&') {
+                        tokenizer.setState(character_reference_in_rcdata_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(rcdata_less_than_sign_state);
+                    }
+                    else if (data === "\u0000") {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        buffer.commit();
+                    }
+                    else {
+                        var chars = buffer.matchUntil("&|<|\u0000");
+                        tokenizer._emitToken({ type: 'Characters', data: data + chars });
+                        buffer.commit();
+                    }
+                    return true;
+                }
+                function character_reference_in_rcdata_state(buffer) {
+                    var character = EntityParser_1.EntityParser.consumeEntity(buffer, tokenizer);
+                    tokenizer.setState(rcdata_state);
+                    tokenizer._emitToken({ type: 'Characters', data: character || '&' });
+                    return true;
+                }
+                function rawtext_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._emitToken({ type: 'EOF', data: null });
+                        return false;
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(rawtext_less_than_sign_state);
+                    }
+                    else if (data === "\u0000") {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        buffer.commit();
+                    }
+                    else {
+                        var chars = buffer.matchUntil("<|\u0000");
+                        tokenizer._emitToken({ type: 'Characters', data: data + chars });
+                    }
+                    return true;
+                }
+                function plaintext_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._emitToken({ type: 'EOF', data: null });
+                        return false;
+                    }
+                    else if (data === "\u0000") {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        buffer.commit();
+                    }
+                    else {
+                        var chars = buffer.matchUntil("\u0000");
+                        tokenizer._emitToken({ type: 'Characters', data: data + chars });
+                    }
+                    return true;
+                }
+                function script_data_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._emitToken({ type: 'EOF', data: null });
+                        return false;
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(script_data_less_than_sign_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        buffer.commit();
+                    }
+                    else {
+                        var chars = buffer.matchUntil("<|\u0000");
+                        tokenizer._emitToken({ type: 'Characters', data: data + chars });
+                    }
+                    return true;
+                }
+                function rcdata_less_than_sign_state(buffer) {
+                    var data = buffer.char();
+                    if (data === "/") {
+                        this._temporaryBuffer = '';
+                        tokenizer.setState(rcdata_end_tag_open_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        buffer.unget(data);
+                        tokenizer.setState(rcdata_state);
+                    }
+                    return true;
+                }
+                function rcdata_end_tag_open_state(buffer) {
+                    var data = buffer.char();
+                    if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        tokenizer.setState(rcdata_end_tag_name_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' });
+                        buffer.unget(data);
+                        tokenizer.setState(rcdata_state);
+                    }
+                    return true;
+                }
+                function rcdata_end_tag_name_state(buffer) {
+                    var appropriate = tokenizer._currentToken && (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+                    var data = buffer.char();
+                    if (isWhitespace_1.default(data) && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: this._temporaryBuffer, data: [], selfClosing: false };
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (data === '/' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: this._temporaryBuffer, data: [], selfClosing: false };
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === '>' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: this._temporaryBuffer, data: [], selfClosing: false };
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        buffer.commit();
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' + this._temporaryBuffer });
+                        buffer.unget(data);
+                        tokenizer.setState(rcdata_state);
+                    }
+                    return true;
+                }
+                function rawtext_less_than_sign_state(buffer) {
+                    var data = buffer.char();
+                    if (data === "/") {
+                        this._temporaryBuffer = '';
+                        tokenizer.setState(rawtext_end_tag_open_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        buffer.unget(data);
+                        tokenizer.setState(rawtext_state);
+                    }
+                    return true;
+                }
+                function rawtext_end_tag_open_state(buffer) {
+                    var data = buffer.char();
+                    if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        tokenizer.setState(rawtext_end_tag_name_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' });
+                        buffer.unget(data);
+                        tokenizer.setState(rawtext_state);
+                    }
+                    return true;
+                }
+                function rawtext_end_tag_name_state(buffer) {
+                    var appropriate = tokenizer._currentToken && (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+                    var data = buffer.char();
+                    if (isWhitespace_1.default(data) && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: this._temporaryBuffer, data: [], selfClosing: false };
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (data === '/' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: this._temporaryBuffer, data: [], selfClosing: false };
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === '>' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: this._temporaryBuffer, data: [], selfClosing: false };
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        buffer.commit();
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' + this._temporaryBuffer });
+                        buffer.unget(data);
+                        tokenizer.setState(rawtext_state);
+                    }
+                    return true;
+                }
+                function script_data_less_than_sign_state(buffer) {
+                    var data = buffer.char();
+                    if (data === "/") {
+                        this._temporaryBuffer = '';
+                        tokenizer.setState(script_data_end_tag_open_state);
+                    }
+                    else if (data === '!') {
+                        tokenizer._emitToken({ type: 'Characters', data: '<!' });
+                        tokenizer.setState(script_data_escape_start_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_state);
+                    }
+                    return true;
+                }
+                function script_data_end_tag_open_state(buffer) {
+                    var data = buffer.char();
+                    if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        tokenizer.setState(script_data_end_tag_name_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' });
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_state);
+                    }
+                    return true;
+                }
+                function script_data_end_tag_name_state(buffer) {
+                    var appropriate = tokenizer._currentToken && (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+                    var data = buffer.char();
+                    if (isWhitespace_1.default(data) && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: 'script', data: [], selfClosing: false };
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (data === '/' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: 'script', data: [], selfClosing: false };
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === '>' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: 'script', data: [], selfClosing: false };
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        buffer.commit();
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' + this._temporaryBuffer });
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_state);
+                    }
+                    return true;
+                }
+                function script_data_escape_start_state(buffer) {
+                    var data = buffer.char();
+                    if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        tokenizer.setState(script_data_escape_start_dash_state);
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_state);
+                    }
+                    return true;
+                }
+                function script_data_escape_start_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        tokenizer.setState(script_data_escaped_dash_dash_state);
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_state);
+                    }
+                    return true;
+                }
+                function script_data_escaped_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        tokenizer.setState(script_data_escaped_dash_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(script_data_escaped_less_then_sign_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        buffer.commit();
+                    }
+                    else {
+                        var chars = buffer.matchUntil('<|-|\u0000');
+                        tokenizer._emitToken({ type: 'Characters', data: data + chars });
+                    }
+                    return true;
+                }
+                function script_data_escaped_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        tokenizer.setState(script_data_escaped_dash_dash_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(script_data_escaped_less_then_sign_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_escaped_dash_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError('eof-in-script');
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer.setState(script_data_escaped_less_then_sign_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitToken({ type: 'Characters', data: '>' });
+                        tokenizer.setState(script_data_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_escaped_less_then_sign_state(buffer) {
+                    var data = buffer.char();
+                    if (data === '/') {
+                        this._temporaryBuffer = '';
+                        tokenizer.setState(script_data_escaped_end_tag_open_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' + data });
+                        this._temporaryBuffer = data;
+                        tokenizer.setState(script_data_double_escape_start_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_escaped_end_tag_open_state(buffer) {
+                    var data = buffer.char();
+                    if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer = data;
+                        tokenizer.setState(script_data_escaped_end_tag_name_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' });
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_escaped_end_tag_name_state(buffer) {
+                    var appropriate = tokenizer._currentToken && (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+                    var data = buffer.char();
+                    if (isWhitespace_1.default(data) && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: 'script', data: [], selfClosing: false };
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (data === '/' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: 'script', data: [], selfClosing: false };
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === '>' && appropriate) {
+                        tokenizer._currentToken = { type: 'EndTag', name: 'script', data: [], selfClosing: false };
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        this._temporaryBuffer += data;
+                        buffer.commit();
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: '</' + this._temporaryBuffer });
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_double_escape_start_state(buffer) {
+                    var data = buffer.char();
+                    if (isWhitespace_1.default(data) || data === '/' || data === '>') {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        if (this._temporaryBuffer.toLowerCase() === 'script')
+                            tokenizer.setState(script_data_double_escaped_state);
+                        else
+                            tokenizer.setState(script_data_escaped_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        this._temporaryBuffer += data;
+                        buffer.commit();
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_double_escaped_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError('eof-in-script');
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        tokenizer.setState(script_data_double_escaped_dash_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        tokenizer.setState(script_data_double_escaped_less_than_sign_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError('invalid-codepoint');
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        buffer.commit();
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        buffer.commit();
+                    }
+                    return true;
+                }
+                function script_data_double_escaped_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError('eof-in-script');
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        tokenizer.setState(script_data_double_escaped_dash_dash_state);
+                    }
+                    else if (data === '<') {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        tokenizer.setState(script_data_double_escaped_less_than_sign_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError('invalid-codepoint');
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_double_escaped_dash_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError('eof-in-script');
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._emitToken({ type: 'Characters', data: '-' });
+                        buffer.commit();
+                    }
+                    else if (data === '<') {
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        tokenizer.setState(script_data_double_escaped_less_than_sign_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitToken({ type: 'Characters', data: '>' });
+                        tokenizer.setState(script_data_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError('invalid-codepoint');
+                        tokenizer._emitToken({ type: 'Characters', data: '\uFFFD' });
+                        tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    else {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_double_escaped_less_than_sign_state(buffer) {
+                    var data = buffer.char();
+                    if (data === '/') {
+                        tokenizer._emitToken({ type: 'Characters', data: '/' });
+                        this._temporaryBuffer = '';
+                        tokenizer.setState(script_data_double_escape_end_state);
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    return true;
+                }
+                function script_data_double_escape_end_state(buffer) {
+                    var data = buffer.char();
+                    if (isWhitespace_1.default(data) || data === '/' || data === '>') {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        if (this._temporaryBuffer.toLowerCase() === 'script')
+                            tokenizer.setState(script_data_escaped_state);
+                        else
+                            tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                        this._temporaryBuffer += data;
+                        buffer.commit();
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(script_data_double_escaped_state);
+                    }
+                    return true;
+                }
+                function tag_open_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("bare-less-than-sign-at-eof");
+                        tokenizer._emitToken({ type: 'Characters', data: '<' });
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._currentToken = { type: 'StartTag', name: data.toLowerCase(), data: [] };
+                        tokenizer.setState(tag_name_state);
+                    }
+                    else if (data === '!') {
+                        tokenizer.setState(markup_declaration_open_state);
+                    }
+                    else if (data === '/') {
+                        tokenizer.setState(close_tag_open_state);
+                    }
+                    else if (data === '>') {
+                        // XXX In theory it could be something besides a tag name. But
+                        // do we really care?
+                        tokenizer._parseError("expected-tag-name-but-got-right-bracket");
+                        tokenizer._emitToken({ type: 'Characters', data: "<>" });
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '?') {
+                        // XXX In theory it could be something besides a tag name. But
+                        // do we really care?
+                        tokenizer._parseError("expected-tag-name-but-got-question-mark");
+                        buffer.unget(data);
+                        tokenizer.setState(bogus_comment_state);
+                    }
+                    else {
+                        // XXX
+                        tokenizer._parseError("expected-tag-name");
+                        tokenizer._emitToken({ type: 'Characters', data: "<" });
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    return true;
+                }
+                function close_tag_open_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-closing-tag-but-got-eof");
+                        tokenizer._emitToken({ type: 'Characters', data: '</' });
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._currentToken = { type: 'EndTag', name: data.toLowerCase(), data: [] };
+                        tokenizer.setState(tag_name_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("expected-closing-tag-but-got-right-bracket");
+                        tokenizer.setState(data_state);
+                    }
+                    else {
+                        tokenizer._parseError("expected-closing-tag-but-got-char", { data: data }); // param 1 is datavars:
+                        buffer.unget(data);
+                        tokenizer.setState(bogus_comment_state);
+                    }
+                    return true;
+                }
+                function tag_name_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError('eof-in-tag-name');
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._currentToken.name += data.toLowerCase();
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '/') {
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.name += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentToken.name += data;
+                    }
+                    buffer.commit();
+                    return true;
+                }
+                function before_attribute_name_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-attribute-name-but-got-eof");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        return true;
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._currentToken.data.push({ nodeName: data.toLowerCase(), nodeValue: "" });
+                        tokenizer.setState(attribute_name_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '/') {
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === "'" || data === '"' || data === '=' || data === '<') {
+                        tokenizer._parseError("invalid-character-in-attribute-name");
+                        tokenizer._currentToken.data.push({ nodeName: data, nodeValue: "" });
+                        tokenizer.setState(attribute_name_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data.push({ nodeName: "\uFFFD", nodeValue: "" });
+                    }
+                    else {
+                        tokenizer._currentToken.data.push({ nodeName: data, nodeValue: "" });
+                        tokenizer.setState(attribute_name_state);
+                    }
+                    return true;
+                }
+                function attribute_name_state(buffer) {
+                    var data = buffer.char();
+                    var leavingThisState = true;
+                    var shouldEmit = false;
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-attribute-name");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        shouldEmit = true;
+                    }
+                    else if (data === '=') {
+                        tokenizer.setState(before_attribute_value_state);
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._currentAttribute().nodeName += data.toLowerCase();
+                        leavingThisState = false;
+                    }
+                    else if (data === '>') {
+                        // XXX If we emit here the attributes are converted to a dict
+                        // without being checked and when the code below runs we error
+                        // because data is a dict not a list
+                        shouldEmit = true;
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(after_attribute_name_state);
+                    }
+                    else if (data === '/') {
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === "'" || data === '"') {
+                        tokenizer._parseError("invalid-character-in-attribute-name");
+                        tokenizer._currentAttribute().nodeName += data;
+                        leavingThisState = false;
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentAttribute().nodeName += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentAttribute().nodeName += data;
+                        leavingThisState = false;
+                    }
+                    if (leavingThisState) {
+                        // Attributes are not dropped at this stage. That happens when the
+                        // start tag token is emitted so values can still be safely appended
+                        // to attributes, but we do want to report the parse error in time.
+                        var attributes = tokenizer._currentToken.data;
+                        var currentAttribute = attributes[attributes.length - 1];
+                        for (var i = attributes.length - 2; i >= 0; i--) {
+                            if (currentAttribute.nodeName === attributes[i].nodeName) {
+                                tokenizer._parseError("duplicate-attribute", { name: currentAttribute.nodeName });
+                                currentAttribute.nodeName = null;
+                                break;
+                            }
+                        }
+                        if (shouldEmit)
+                            tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        buffer.commit();
+                    }
+                    return true;
+                }
+                function after_attribute_name_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-end-of-tag-but-got-eof");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        return true;
+                    }
+                    else if (data === '=') {
+                        tokenizer.setState(before_attribute_value_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isAlpha_1.default(data)) {
+                        tokenizer._currentToken.data.push({ nodeName: data, nodeValue: "" });
+                        tokenizer.setState(attribute_name_state);
+                    }
+                    else if (data === '/') {
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else if (data === "'" || data === '"' || data === '<') {
+                        tokenizer._parseError("invalid-character-after-attribute-name");
+                        tokenizer._currentToken.data.push({ nodeName: data, nodeValue: "" });
+                        tokenizer.setState(attribute_name_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data.push({ nodeName: "\uFFFD", nodeValue: "" });
+                    }
+                    else {
+                        tokenizer._currentToken.data.push({ nodeName: data, nodeValue: "" });
+                        tokenizer.setState(attribute_name_state);
+                    }
+                    return true;
+                }
+                function before_attribute_value_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-attribute-value-but-got-eof");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        return true;
+                    }
+                    else if (data === '"') {
+                        tokenizer.setState(attribute_value_double_quoted_state);
+                    }
+                    else if (data === '&') {
+                        tokenizer.setState(attribute_value_unquoted_state);
+                        buffer.unget(data);
+                    }
+                    else if (data === "'") {
+                        tokenizer.setState(attribute_value_single_quoted_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("expected-attribute-value-but-got-right-bracket");
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '=' || data === '<' || data === '`') {
+                        tokenizer._parseError("unexpected-character-in-unquoted-attribute-value");
+                        tokenizer._currentAttribute().nodeValue += data;
+                        tokenizer.setState(attribute_value_unquoted_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentAttribute().nodeValue += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentAttribute().nodeValue += data;
+                        tokenizer.setState(attribute_value_unquoted_state);
+                    }
+                    return true;
+                }
+                function attribute_value_double_quoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-attribute-value-double-quote");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '"') {
+                        tokenizer.setState(after_attribute_value_state);
+                    }
+                    else if (data === '&') {
+                        this._additionalAllowedCharacter = '"';
+                        tokenizer.setState(character_reference_in_attribute_value_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentAttribute().nodeValue += "\uFFFD";
+                    }
+                    else {
+                        var s = buffer.matchUntil('[\0"&]');
+                        data = data + s;
+                        tokenizer._currentAttribute().nodeValue += data;
+                    }
+                    return true;
+                }
+                function attribute_value_single_quoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-attribute-value-single-quote");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === "'") {
+                        tokenizer.setState(after_attribute_value_state);
+                    }
+                    else if (data === '&') {
+                        this._additionalAllowedCharacter = "'";
+                        tokenizer.setState(character_reference_in_attribute_value_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentAttribute().nodeValue += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentAttribute().nodeValue += data + buffer.matchUntil("\u0000|['&]");
+                    }
+                    return true;
+                }
+                function attribute_value_unquoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-after-attribute-value");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (data === '&') {
+                        this._additionalAllowedCharacter = ">";
+                        tokenizer.setState(character_reference_in_attribute_value_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '"' || data === "'" || data === '=' || data === '`' || data === '<') {
+                        tokenizer._parseError("unexpected-character-in-unquoted-attribute-value");
+                        tokenizer._currentAttribute().nodeValue += data;
+                        buffer.commit();
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentAttribute().nodeValue += "\uFFFD";
+                    }
+                    else {
+                        var o = buffer.matchUntil("\u0000|[" + "\t\n\v\f\x20\r" + "&<>\"'=`" + "]");
+                        if (o === InputStream_1.default.EOF) {
+                            tokenizer._parseError("eof-in-attribute-value-no-quotes");
+                            tokenizer._emitCurrentToken();
+                        }
+                        // Commit here since this state is re-enterable and its outcome won't change with more data.
+                        buffer.commit();
+                        tokenizer._currentAttribute().nodeValue += data + o;
+                    }
+                    return true;
+                }
+                function character_reference_in_attribute_value_state(buffer) {
+                    var character = EntityParser_1.EntityParser.consumeEntity(buffer, tokenizer, this._additionalAllowedCharacter);
+                    this._currentAttribute().nodeValue += character || '&';
+                    // We're supposed to switch back to the attribute value state that
+                    // we were in when we were switched into this state. Rather than
+                    // keeping track of this explictly, we observe that the previous
+                    // state can be determined by additionalAllowedCharacter.
+                    if (this._additionalAllowedCharacter === '"')
+                        tokenizer.setState(attribute_value_double_quoted_state);
+                    else if (this._additionalAllowedCharacter === '\'')
+                        tokenizer.setState(attribute_value_single_quoted_state);
+                    else if (this._additionalAllowedCharacter === '>')
+                        tokenizer.setState(attribute_value_unquoted_state);
+                    return true;
+                }
+                function after_attribute_value_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-after-attribute-value");
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '/') {
+                        tokenizer.setState(self_closing_tag_state);
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-character-after-attribute-value");
+                        buffer.unget(data);
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    return true;
+                }
+                function self_closing_tag_state(buffer) {
+                    var c = buffer.char();
+                    if (c === InputStream_1.default.EOF) {
+                        tokenizer._parseError("unexpected-eof-after-solidus-in-tag");
+                        buffer.unget(c);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (c === '>') {
+                        tokenizer._currentToken.selfClosing = true;
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-character-after-solidus-in-tag");
+                        buffer.unget(c);
+                        tokenizer.setState(before_attribute_name_state);
+                    }
+                    return true;
+                }
+                function bogus_comment_state(buffer) {
+                    var data = buffer.matchUntil('>');
+                    data = data.replace(/\u0000/g, "\uFFFD");
+                    buffer.char();
+                    tokenizer._emitToken({ type: 'Comment', data: data });
+                    tokenizer.setState(data_state);
+                    return true;
+                }
+                function markup_declaration_open_state(buffer) {
+                    var chars = buffer.shift(2);
+                    if (chars === '--') {
+                        tokenizer._currentToken = { type: 'Comment', data: '' };
+                        tokenizer.setState(comment_start_state);
+                    }
+                    else {
+                        var newchars = buffer.shift(5);
+                        if (newchars === InputStream_1.default.EOF || chars === InputStream_1.default.EOF) {
+                            tokenizer._parseError("expected-dashes-or-doctype");
+                            tokenizer.setState(bogus_comment_state);
+                            buffer.unget(chars);
+                            return true;
+                        }
+                        chars += newchars;
+                        if (chars.toUpperCase() === 'DOCTYPE') {
+                            tokenizer._currentToken = { type: 'Doctype', name: '', publicId: null, systemId: null, forceQuirks: false };
+                            tokenizer.setState(doctype_state);
+                        }
+                        else if (tokenizer._tokenHandler.isCdataSectionAllowed() && chars === '[CDATA[') {
+                            tokenizer.setState(cdata_section_state);
+                        }
+                        else {
+                            tokenizer._parseError("expected-dashes-or-doctype");
+                            buffer.unget(chars);
+                            tokenizer.setState(bogus_comment_state);
+                        }
+                    }
+                    return true;
+                }
+                function cdata_section_state(buffer) {
+                    var data = buffer.matchUntil(']]>');
+                    // skip ]]>
+                    buffer.shift(3);
+                    if (data) {
+                        tokenizer._emitToken({ type: 'Characters', data: data });
+                    }
+                    tokenizer.setState(data_state);
+                    return true;
+                }
+                function comment_start_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-comment");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer.setState(comment_start_dash_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("incorrect-comment");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentToken.data += data;
+                        tokenizer.setState(comment_state);
+                    }
+                    return true;
+                }
+                function comment_start_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-comment");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer.setState(comment_end_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("incorrect-comment");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentToken.data += '-' + data;
+                        tokenizer.setState(comment_state);
+                    }
+                    return true;
+                }
+                function comment_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-comment");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer.setState(comment_end_dash_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data += "\uFFFD";
+                    }
+                    else {
+                        tokenizer._currentToken.data += data;
+                        buffer.commit();
+                    }
+                    return true;
+                }
+                function comment_end_dash_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-comment-end-dash");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer.setState(comment_end_state);
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data += "-\uFFFD";
+                        tokenizer.setState(comment_state);
+                    }
+                    else {
+                        tokenizer._currentToken.data += '-' + data + buffer.matchUntil('\u0000|-');
+                        // Consume the next character which is either a "-" or an :EOF as
+                        // well so if there's a "-" directly after the "-" we go nicely to
+                        // the "comment end state" without emitting a tokenizer._parseError there.
+                        buffer.char();
+                    }
+                    return true;
+                }
+                function comment_end_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-comment-double-dash");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '!') {
+                        tokenizer._parseError("unexpected-bang-after-double-dash-in-comment");
+                        tokenizer.setState(comment_end_bang_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._parseError("unexpected-dash-after-double-dash-in-comment");
+                        tokenizer._currentToken.data += data;
+                    }
+                    else if (data === '\u0000') {
+                        tokenizer._parseError("invalid-codepoint");
+                        tokenizer._currentToken.data += "--\uFFFD";
+                        tokenizer.setState(comment_state);
+                    }
+                    else {
+                        // XXX
+                        tokenizer._parseError("unexpected-char-in-comment");
+                        tokenizer._currentToken.data += '--' + data;
+                        tokenizer.setState(comment_state);
+                    }
+                    return true;
+                }
+                function comment_end_bang_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-comment-end-bang-state");
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitToken(tokenizer._currentToken);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '-') {
+                        tokenizer._currentToken.data += '--!';
+                        tokenizer.setState(comment_end_dash_state);
+                    }
+                    else {
+                        tokenizer._currentToken.data += '--!' + data;
+                        tokenizer.setState(comment_state);
+                    }
+                    return true;
+                }
+                function doctype_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-doctype-name-but-got-eof");
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(before_doctype_name_state);
+                    }
+                    else {
+                        tokenizer._parseError("need-space-after-doctype");
+                        buffer.unget(data);
+                        tokenizer.setState(before_doctype_name_state);
+                    }
+                    return true;
+                }
+                function before_doctype_name_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("expected-doctype-name-but-got-eof");
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("expected-doctype-name-but-got-right-bracket");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        if (isAlpha_1.default(data))
+                            data = data.toLowerCase();
+                        tokenizer._currentToken.name = data;
+                        tokenizer.setState(doctype_name_state);
+                    }
+                    return true;
+                }
+                function doctype_name_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer._parseError("eof-in-doctype-name");
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(after_doctype_name_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        if (isAlpha_1.default(data))
+                            data = data.toLowerCase();
+                        tokenizer._currentToken.name += data;
+                        buffer.commit();
+                    }
+                    return true;
+                }
+                function after_doctype_name_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                    }
+                    else if (data === '>') {
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        if (['p', 'P'].indexOf(data) > -1) {
+                            var expected = [['u', 'U'], ['b', 'B'], ['l', 'L'], ['i', 'I'], ['c', 'C']];
+                            var matched = expected.every(function (expected) {
+                                data = buffer.char();
+                                return expected.indexOf(data) > -1;
+                            });
+                            if (matched) {
+                                tokenizer.setState(after_doctype_public_keyword_state);
+                                return true;
+                            }
+                        }
+                        else if (['s', 'S'].indexOf(data) > -1) {
+                            var expected = [['y', 'Y'], ['s', 'S'], ['t', 'T'], ['e', 'E'], ['m', 'M']];
+                            var matched = expected.every(function (expected) {
+                                data = buffer.char();
+                                return expected.indexOf(data) > -1;
+                            });
+                            if (matched) {
+                                tokenizer.setState(after_doctype_system_keyword_state);
+                                return true;
+                            }
+                        }
+                        // All the characters read before the current 'data' will be
+                        // [a-zA-Z], so they're garbage in the bogus doctype and can be
+                        // discarded; only the latest character might be '>' or EOF
+                        // and needs to be ungetted
+                        buffer.unget(data);
+                        tokenizer._currentToken.forceQuirks = true;
+                        if (data === InputStream_1.default.EOF) {
+                            tokenizer._parseError("eof-in-doctype");
+                            buffer.unget(data);
+                            tokenizer.setState(data_state);
+                            tokenizer._emitCurrentToken();
+                        }
+                        else {
+                            tokenizer._parseError("expected-space-or-right-bracket-in-doctype", { data: data });
+                            tokenizer.setState(bogus_doctype_state);
+                        }
+                    }
+                    return true;
+                }
+                function after_doctype_public_keyword_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(before_doctype_public_identifier_state);
+                    }
+                    else if (data === "'" || data === '"') {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        buffer.unget(data);
+                        tokenizer.setState(before_doctype_public_identifier_state);
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(before_doctype_public_identifier_state);
+                    }
+                    return true;
+                }
+                function before_doctype_public_identifier_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                    }
+                    else if (data === '"') {
+                        tokenizer._currentToken.publicId = '';
+                        tokenizer.setState(doctype_public_identifier_double_quoted_state);
+                    }
+                    else if (data === "'") {
+                        tokenizer._currentToken.publicId = '';
+                        tokenizer.setState(doctype_public_identifier_single_quoted_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("unexpected-end-of-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(bogus_doctype_state);
+                    }
+                    return true;
+                }
+                function doctype_public_identifier_double_quoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '"') {
+                        tokenizer.setState(after_doctype_public_identifier_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("unexpected-end-of-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        tokenizer._currentToken.publicId += data;
+                    }
+                    return true;
+                }
+                function doctype_public_identifier_single_quoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === "'") {
+                        tokenizer.setState(after_doctype_public_identifier_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("unexpected-end-of-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else {
+                        tokenizer._currentToken.publicId += data;
+                    }
+                    return true;
+                }
+                function after_doctype_public_identifier_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(between_doctype_public_and_system_identifiers_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer.setState(data_state);
+                        tokenizer._emitCurrentToken();
+                    }
+                    else if (data === '"') {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer._currentToken.systemId = '';
+                        tokenizer.setState(doctype_system_identifier_double_quoted_state);
+                    }
+                    else if (data === "'") {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer._currentToken.systemId = '';
+                        tokenizer.setState(doctype_system_identifier_single_quoted_state);
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(bogus_doctype_state);
+                    }
+                    return true;
+                }
+                function between_doctype_public_and_system_identifiers_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '"') {
+                        tokenizer._currentToken.systemId = '';
+                        tokenizer.setState(doctype_system_identifier_double_quoted_state);
+                    }
+                    else if (data === "'") {
+                        tokenizer._currentToken.systemId = '';
+                        tokenizer.setState(doctype_system_identifier_single_quoted_state);
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(bogus_doctype_state);
+                    }
+                    return true;
+                }
+                function after_doctype_system_keyword_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                        tokenizer.setState(before_doctype_system_identifier_state);
+                    }
+                    else if (data === "'" || data === '"') {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        buffer.unget(data);
+                        tokenizer.setState(before_doctype_system_identifier_state);
+                    }
+                    else {
+                        buffer.unget(data);
+                        tokenizer.setState(before_doctype_system_identifier_state);
+                    }
+                    return true;
+                }
+                function before_doctype_system_identifier_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                    }
+                    else if (data === '"') {
+                        tokenizer._currentToken.systemId = '';
+                        tokenizer.setState(doctype_system_identifier_double_quoted_state);
+                    }
+                    else if (data === "'") {
+                        tokenizer._currentToken.systemId = '';
+                        tokenizer.setState(doctype_system_identifier_single_quoted_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("unexpected-end-of-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer.setState(bogus_doctype_state);
+                    }
+                    return true;
+                }
+                function doctype_system_identifier_double_quoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '"') {
+                        tokenizer.setState(after_doctype_system_identifier_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("unexpected-end-of-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else {
+                        tokenizer._currentToken.systemId += data;
+                    }
+                    return true;
+                }
+                function doctype_system_identifier_single_quoted_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === "'") {
+                        tokenizer.setState(after_doctype_system_identifier_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._parseError("unexpected-end-of-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else {
+                        tokenizer._currentToken.systemId += data;
+                    }
+                    return true;
+                }
+                function after_doctype_system_identifier_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        tokenizer._parseError("eof-in-doctype");
+                        tokenizer._currentToken.forceQuirks = true;
+                        tokenizer._emitCurrentToken();
+                        buffer.unget(data);
+                        tokenizer.setState(data_state);
+                    }
+                    else if (isWhitespace_1.default(data)) {
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else {
+                        tokenizer._parseError("unexpected-char-in-doctype");
+                        tokenizer.setState(bogus_doctype_state);
+                    }
+                    return true;
+                }
+                function bogus_doctype_state(buffer) {
+                    var data = buffer.char();
+                    if (data === InputStream_1.default.EOF) {
+                        buffer.unget(data);
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    else if (data === '>') {
+                        tokenizer._emitCurrentToken();
+                        tokenizer.setState(data_state);
+                    }
+                    return true;
+                }
+            };
+            this._tokenHandler = tokenHandler;
+            this._state = Tokenizer.DATA;
+            this._inputStream = new InputStream_1.default();
+            this._currentToken = null;
+            this._temporaryBuffer = '';
+            this._additionalAllowedCharacter = '';
+        }
+        Object.defineProperty(Tokenizer.prototype, "lineNumber", {
+            get: function () {
+                return this._inputStream.location().line;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Tokenizer.prototype, "columnNumber", {
+            get: function () {
+                return this._inputStream.location().column;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Tokenizer.prototype._parseError = function (code, args) {
+            this._tokenHandler.parseError(code, args);
+        };
+        Tokenizer.prototype._emitToken = function (token) {
+            if (token.type === 'StartTag') {
+                for (var i = 1; i < token.data.length; i++) {
+                    if (!token.data[i].nodeName)
+                        token.data.splice(i--, 1);
+                }
+            }
+            else if (token.type === 'EndTag') {
+                if (token.selfClosing) {
+                    this._parseError('self-closing-flag-on-end-tag');
+                }
+                if (token.data.length !== 0) {
+                    this._parseError('attributes-in-end-tag');
+                }
+            }
+            this._tokenHandler.processToken(token);
+            if (token.type === 'StartTag' && token.selfClosing && !this._tokenHandler.isSelfClosingFlagAcknowledged()) {
+                this._parseError('non-void-element-with-trailing-solidus', { name: token.name });
+            }
+        };
+        return Tokenizer;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Tokenizer;
+});
+
+define('mode/html/TreeBuilder',["require", "exports", './constants', './CharacterBuffer', './ElementStack', './formatMessage', './getAttribute', './isWhitespace', './isAllWhitespace', './isAllWhitespaceOrReplacementCharacters', './messages', './StackItem', './Tokenizer'], function (require, exports, constants_1, CharacterBuffer_1, ElementStack_1, formatMessage_1, getAttribute_1, isWhitespace_1, isAllWhitespace_1, isAllWhitespaceOrReplacementCharacters_1, messages_1, StackItem_1, Tokenizer_1) {
+    var Marker = {};
+    /**
+     *
+     */
+    var TreeBuilder = (function () {
+        /**
+         *
+         */
+        function TreeBuilder() {
+            this.tokenizer = null;
+            this.errorHandler = null;
+            this.scriptingEnabled = false;
+            this.document = null;
+            this.head = null;
+            this.form = null;
+            this.openElements = new ElementStack_1.default();
+            this.activeFormattingElements = [];
+            this.insertionMode = null;
+            this.insertionModeName = "";
+            this.originalInsertionMode = "";
+            this.inQuirksMode = false; // TODO quirks mode
+            this.compatMode = "no quirks";
+            this.framesetOk = true;
+            this.redirectAttachToFosterParent = false;
+            this.selfClosingFlagAcknowledged = false;
+            this.context = "";
+            this.pendingTableCharacters = [];
+            this.shouldSkipLeadingNewline = false;
+            var tree = this;
+            var modes = this.insertionModes = {};
+            modes.base = {
+                end_tag_handlers: { "-default": 'endTagOther' },
+                start_tag_handlers: { "-default": 'startTagOther' },
+                processEOF: function () {
+                    tree.generateImpliedEndTags();
+                    if (tree.openElements.length > 2) {
+                        tree.parseError('expected-closing-tag-but-got-eof');
+                    }
+                    else if (tree.openElements.length == 2 &&
+                        tree.openElements.item(1).localName != 'body') {
+                        // This happens for framesets or something?
+                        tree.parseError('expected-closing-tag-but-got-eof');
+                    }
+                    else if (tree.context && tree.openElements.length > 1) {
+                    }
+                },
+                processComment: function (data) {
+                    // For most phases the following is forceQuirks. Where it's not it will be
+                    // overridden.
+                    tree.insertComment(data, tree.currentStackItem().node);
+                },
+                processDoctype: function (name, publicId, systemId, forceQuirks) {
+                    tree.parseError('unexpected-doctype');
+                },
+                processStartTag: function (name, attributes, selfClosing) {
+                    if (this[this.start_tag_handlers[name]]) {
+                        this[this.start_tag_handlers[name]](name, attributes, selfClosing);
+                    }
+                    else if (this[this.start_tag_handlers["-default"]]) {
+                        this[this.start_tag_handlers["-default"]](name, attributes, selfClosing);
+                    }
+                    else {
+                        throw (new Error("No handler found for " + name));
+                    }
+                },
+                processEndTag: function (name) {
+                    if (this[this.end_tag_handlers[name]]) {
+                        this[this.end_tag_handlers[name]](name);
+                    }
+                    else if (this[this.end_tag_handlers["-default"]]) {
+                        this[this.end_tag_handlers["-default"]](name);
+                    }
+                    else {
+                        throw (new Error("No handler found for " + name));
+                    }
+                },
+                startTagHtml: function (name, attributes) {
+                    modes.inBody.startTagHtml(name, attributes);
+                }
+            };
+            modes.initial = Object.create(modes.base);
+            modes.initial.processEOF = function () {
+                tree.parseError("expected-doctype-but-got-eof");
+                this.anythingElse();
+                tree.insertionMode.processEOF();
+            };
+            modes.initial.processComment = function (data) {
+                tree.insertComment(data, tree.document);
+            };
+            modes.initial.processDoctype = function (name, publicId, systemId, forceQuirks) {
+                tree.insertDoctype(name || '', publicId || '', systemId || '');
+                if (forceQuirks || name != 'html' || (publicId != null && ([
+                    "+//silmaril//dtd html pro v0r11 19970101//",
+                    "-//advasoft ltd//dtd html 3.0 aswedit + extensions//",
+                    "-//as//dtd html 3.0 aswedit + extensions//",
+                    "-//ietf//dtd html 2.0 level 1//",
+                    "-//ietf//dtd html 2.0 level 2//",
+                    "-//ietf//dtd html 2.0 strict level 1//",
+                    "-//ietf//dtd html 2.0 strict level 2//",
+                    "-//ietf//dtd html 2.0 strict//",
+                    "-//ietf//dtd html 2.0//",
+                    "-//ietf//dtd html 2.1e//",
+                    "-//ietf//dtd html 3.0//",
+                    "-//ietf//dtd html 3.0//",
+                    "-//ietf//dtd html 3.2 final//",
+                    "-//ietf//dtd html 3.2//",
+                    "-//ietf//dtd html 3//",
+                    "-//ietf//dtd html level 0//",
+                    "-//ietf//dtd html level 0//",
+                    "-//ietf//dtd html level 1//",
+                    "-//ietf//dtd html level 1//",
+                    "-//ietf//dtd html level 2//",
+                    "-//ietf//dtd html level 2//",
+                    "-//ietf//dtd html level 3//",
+                    "-//ietf//dtd html level 3//",
+                    "-//ietf//dtd html strict level 0//",
+                    "-//ietf//dtd html strict level 0//",
+                    "-//ietf//dtd html strict level 1//",
+                    "-//ietf//dtd html strict level 1//",
+                    "-//ietf//dtd html strict level 2//",
+                    "-//ietf//dtd html strict level 2//",
+                    "-//ietf//dtd html strict level 3//",
+                    "-//ietf//dtd html strict level 3//",
+                    "-//ietf//dtd html strict//",
+                    "-//ietf//dtd html strict//",
+                    "-//ietf//dtd html strict//",
+                    "-//ietf//dtd html//",
+                    "-//ietf//dtd html//",
+                    "-//ietf//dtd html//",
+                    "-//metrius//dtd metrius presentational//",
+                    "-//microsoft//dtd internet explorer 2.0 html strict//",
+                    "-//microsoft//dtd internet explorer 2.0 html//",
+                    "-//microsoft//dtd internet explorer 2.0 tables//",
+                    "-//microsoft//dtd internet explorer 3.0 html strict//",
+                    "-//microsoft//dtd internet explorer 3.0 html//",
+                    "-//microsoft//dtd internet explorer 3.0 tables//",
+                    "-//netscape comm. corp.//dtd html//",
+                    "-//netscape comm. corp.//dtd strict html//",
+                    "-//o'reilly and associates//dtd html 2.0//",
+                    "-//o'reilly and associates//dtd html extended 1.0//",
+                    "-//spyglass//dtd html 2.0 extended//",
+                    "-//sq//dtd html 2.0 hotmetal + extensions//",
+                    "-//sun microsystems corp.//dtd hotjava html//",
+                    "-//sun microsystems corp.//dtd hotjava strict html//",
+                    "-//w3c//dtd html 3 1995-03-24//",
+                    "-//w3c//dtd html 3.2 draft//",
+                    "-//w3c//dtd html 3.2 final//",
+                    "-//w3c//dtd html 3.2//",
+                    "-//w3c//dtd html 3.2s draft//",
+                    "-//w3c//dtd html 4.0 frameset//",
+                    "-//w3c//dtd html 4.0 transitional//",
+                    "-//w3c//dtd html experimental 19960712//",
+                    "-//w3c//dtd html experimental 970421//",
+                    "-//w3c//dtd w3 html//",
+                    "-//w3o//dtd w3 html 3.0//",
+                    "-//webtechs//dtd mozilla html 2.0//",
+                    "-//webtechs//dtd mozilla html//",
+                    "html"
+                ].some(publicIdStartsWith)
+                    || [
+                        "-//w3o//dtd w3 html strict 3.0//en//",
+                        "-/w3c/dtd html 4.0 transitional/en",
+                        "html"
+                    ].indexOf(publicId.toLowerCase()) > -1
+                    || (systemId == null && [
+                        "-//w3c//dtd html 4.01 transitional//",
+                        "-//w3c//dtd html 4.01 frameset//"
+                    ].some(publicIdStartsWith))))
+                    || (systemId != null && (systemId.toLowerCase() == "http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd"))) {
+                    tree.compatMode = "quirks";
+                    tree.parseError("quirky-doctype");
+                }
+                else if (publicId != null && ([
+                    "-//w3c//dtd xhtml 1.0 transitional//",
+                    "-//w3c//dtd xhtml 1.0 frameset//"
+                ].some(publicIdStartsWith)
+                    || (systemId != null && [
+                        "-//w3c//dtd html 4.01 transitional//",
+                        "-//w3c//dtd html 4.01 frameset//"
+                    ].indexOf(publicId.toLowerCase()) > -1))) {
+                    tree.compatMode = "limited quirks";
+                    tree.parseError("almost-standards-doctype");
+                }
+                else {
+                    if ((publicId == "-//W3C//DTD HTML 4.0//EN" && (systemId == null || systemId == "http://www.w3.org/TR/REC-html40/strict.dtd"))
+                        || (publicId == "-//W3C//DTD HTML 4.01//EN" && (systemId == null || systemId == "http://www.w3.org/TR/html4/strict.dtd"))
+                        || (publicId == "-//W3C//DTD XHTML 1.0 Strict//EN" && (systemId == "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"))
+                        || (publicId == "-//W3C//DTD XHTML 1.1//EN" && (systemId == "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"))) {
+                    }
+                    else if (!((systemId == null || systemId == "about:legacy-compat") && publicId == null)) {
+                        tree.parseError("unknown-doctype");
+                    }
+                }
+                tree.setInsertionMode('beforeHTML');
+                function publicIdStartsWith(string) {
+                    return publicId.toLowerCase().indexOf(string) === 0;
+                }
+            };
+            modes.initial.processCharacters = function (buffer) {
+                buffer.skipLeadingWhitespace();
+                if (!buffer.length)
+                    return;
+                tree.parseError('expected-doctype-but-got-chars');
+                this.anythingElse();
+                tree.insertionMode.processCharacters(buffer);
+            };
+            modes.initial.processStartTag = function (name, attributes, selfClosing) {
+                tree.parseError('expected-doctype-but-got-start-tag', { name: name });
+                this.anythingElse();
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.initial.processEndTag = function (name) {
+                tree.parseError('expected-doctype-but-got-end-tag', { name: name });
+                this.anythingElse();
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.initial.anythingElse = function () {
+                tree.compatMode = 'quirks';
+                tree.setInsertionMode('beforeHTML');
+            };
+            modes.beforeHTML = Object.create(modes.base);
+            modes.beforeHTML.start_tag_handlers = {
+                html: 'startTagHtml',
+                '-default': 'startTagOther'
+            };
+            modes.beforeHTML.processEOF = function () {
+                this.anythingElse();
+                tree.insertionMode.processEOF();
+            };
+            modes.beforeHTML.processComment = function (data) {
+                tree.insertComment(data, tree.document);
+            };
+            modes.beforeHTML.processCharacters = function (buffer) {
+                buffer.skipLeadingWhitespace();
+                if (!buffer.length)
+                    return;
+                this.anythingElse();
+                tree.insertionMode.processCharacters(buffer);
+            };
+            modes.beforeHTML.startTagHtml = function (name, attributes, selfClosing) {
+                tree.insertHtmlElement(attributes);
+                tree.setInsertionMode('beforeHead');
+            };
+            modes.beforeHTML.startTagOther = function (name, attributes, selfClosing) {
+                this.anythingElse();
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.beforeHTML.processEndTag = function (name) {
+                this.anythingElse();
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.beforeHTML.anythingElse = function () {
+                tree.insertHtmlElement();
+                tree.setInsertionMode('beforeHead');
+            };
+            modes.afterAfterBody = Object.create(modes.base);
+            modes.afterAfterBody.start_tag_handlers = {
+                html: 'startTagHtml',
+                '-default': 'startTagOther'
+            };
+            modes.afterAfterBody.processComment = function (data) {
+                tree.insertComment(data, tree.document);
+            };
+            modes.afterAfterBody.processDoctype = function (data) {
+                modes.inBody.processDoctype(data);
+            };
+            modes.afterAfterBody.startTagHtml = function (data, attributes) {
+                modes.inBody.startTagHtml(data, attributes);
+            };
+            modes.afterAfterBody.startTagOther = function (name, attributes, selfClosing) {
+                tree.parseError('unexpected-start-tag', { name: name });
+                tree.setInsertionMode('inBody');
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.afterAfterBody.endTagOther = function (name) {
+                tree.parseError('unexpected-end-tag', { name: name });
+                tree.setInsertionMode('inBody');
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.afterAfterBody.processCharacters = function (data) {
+                if (!isAllWhitespace_1.default(data.characters)) {
+                    tree.parseError('unexpected-char-after-body');
+                    tree.setInsertionMode('inBody');
+                    return tree.insertionMode.processCharacters(data);
+                }
+                modes.inBody.processCharacters(data);
+            };
+            modes.afterBody = Object.create(modes.base);
+            modes.afterBody.end_tag_handlers = {
+                html: 'endTagHtml',
+                '-default': 'endTagOther'
+            };
+            modes.afterBody.processComment = function (data) {
+                // This is needed because data is to be appended to the html element here
+                // and not to whatever is currently open.
+                tree.insertComment(data, tree.openElements.rootNode);
+            };
+            modes.afterBody.processCharacters = function (data) {
+                if (!isAllWhitespace_1.default(data.characters)) {
+                    tree.parseError('unexpected-char-after-body');
+                    tree.setInsertionMode('inBody');
+                    return tree.insertionMode.processCharacters(data);
+                }
+                modes.inBody.processCharacters(data);
+            };
+            modes.afterBody.processStartTag = function (name, attributes, selfClosing) {
+                tree.parseError('unexpected-start-tag-after-body', { name: name });
+                tree.setInsertionMode('inBody');
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.afterBody.endTagHtml = function (name) {
+                if (tree.context) {
+                    tree.parseError('end-html-in-innerhtml');
+                }
+                else {
+                    // XXX This may need to be done, not sure
+                    // Don't set last_phase to the current phase but to the inBody phase
+                    // instead. No need for extra parseErrors if there's something after
+                    // </html>.
+                    // Try <!doctype html>X</html>X for instance
+                    tree.setInsertionMode('afterAfterBody');
+                }
+            };
+            modes.afterBody.endTagOther = function (name) {
+                tree.parseError('unexpected-end-tag-after-body', { name: name });
+                tree.setInsertionMode('inBody');
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.afterFrameset = Object.create(modes.base);
+            modes.afterFrameset.start_tag_handlers = {
+                html: 'startTagHtml',
+                noframes: 'startTagNoframes',
+                '-default': 'startTagOther'
+            };
+            modes.afterFrameset.end_tag_handlers = {
+                html: 'endTagHtml',
+                '-default': 'endTagOther'
+            };
+            modes.afterFrameset.processCharacters = function (buffer) {
+                var characters = buffer.takeRemaining();
+                var whitespace = "";
+                for (var i = 0; i < characters.length; i++) {
+                    var ch = characters[i];
+                    if (isWhitespace_1.default(ch))
+                        whitespace += ch;
+                }
+                if (whitespace) {
+                    tree.insertText(whitespace);
+                }
+                if (whitespace.length < characters.length)
+                    tree.parseError('expected-eof-but-got-char');
+            };
+            modes.afterFrameset.startTagNoframes = function (name, attributes) {
+                modes.inHead.processStartTag(name, attributes);
+            };
+            modes.afterFrameset.startTagOther = function (name, attributes) {
+                tree.parseError("unexpected-start-tag-after-frameset", { name: name });
+            };
+            modes.afterFrameset.endTagHtml = function (name) {
+                tree.setInsertionMode('afterAfterFrameset');
+            };
+            modes.afterFrameset.endTagOther = function (name) {
+                tree.parseError("unexpected-end-tag-after-frameset", { name: name });
+            };
+            modes.beforeHead = Object.create(modes.base);
+            modes.beforeHead.start_tag_handlers = {
+                html: 'startTagHtml',
+                head: 'startTagHead',
+                '-default': 'startTagOther'
+            };
+            modes.beforeHead.end_tag_handlers = {
+                html: 'endTagImplyHead',
+                head: 'endTagImplyHead',
+                body: 'endTagImplyHead',
+                br: 'endTagImplyHead',
+                '-default': 'endTagOther'
+            };
+            modes.beforeHead.processEOF = function () {
+                this.startTagHead('head', []);
+                tree.insertionMode.processEOF();
+            };
+            modes.beforeHead.processCharacters = function (buffer) {
+                buffer.skipLeadingWhitespace();
+                if (!buffer.length)
+                    return;
+                this.startTagHead('head', []);
+                tree.insertionMode.processCharacters(buffer);
+            };
+            modes.beforeHead.startTagHead = function (name, attributes) {
+                tree.insertHeadElement(attributes);
+                tree.setInsertionMode('inHead');
+            };
+            modes.beforeHead.startTagOther = function (name, attributes, selfClosing) {
+                this.startTagHead('head', []);
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.beforeHead.endTagImplyHead = function (name) {
+                this.startTagHead('head', []);
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.beforeHead.endTagOther = function (name) {
+                tree.parseError('end-tag-after-implied-root', { name: name });
+            };
+            modes.inHead = Object.create(modes.base);
+            modes.inHead.start_tag_handlers = {
+                html: 'startTagHtml',
+                head: 'startTagHead',
+                title: 'startTagTitle',
+                script: 'startTagScript',
+                style: 'startTagNoFramesStyle',
+                noscript: 'startTagNoScript',
+                noframes: 'startTagNoFramesStyle',
+                base: 'startTagBaseBasefontBgsoundLink',
+                basefont: 'startTagBaseBasefontBgsoundLink',
+                bgsound: 'startTagBaseBasefontBgsoundLink',
+                link: 'startTagBaseBasefontBgsoundLink',
+                meta: 'startTagMeta',
+                "-default": 'startTagOther'
+            };
+            modes.inHead.end_tag_handlers = {
+                head: 'endTagHead',
+                html: 'endTagHtmlBodyBr',
+                body: 'endTagHtmlBodyBr',
+                br: 'endTagHtmlBodyBr',
+                "-default": 'endTagOther'
+            };
+            modes.inHead.processEOF = function () {
+                var name = tree.currentStackItem().localName;
+                if (['title', 'style', 'script'].indexOf(name) != -1) {
+                    tree.parseError("expected-named-closing-tag-but-got-eof", { name: name });
+                    tree.popElement();
+                }
+                this.anythingElse();
+                tree.insertionMode.processEOF();
+            };
+            modes.inHead.processCharacters = function (buffer) {
+                var leadingWhitespace = buffer.takeLeadingWhitespace();
+                if (leadingWhitespace)
+                    tree.insertText(leadingWhitespace);
+                if (!buffer.length)
+                    return;
+                this.anythingElse();
+                tree.insertionMode.processCharacters(buffer);
+            };
+            modes.inHead.startTagHtml = function (name, attributes) {
+                modes.inBody.processStartTag(name, attributes);
+            };
+            modes.inHead.startTagHead = function (name, attributes) {
+                tree.parseError('two-heads-are-not-better-than-one');
+            };
+            modes.inHead.startTagTitle = function (name, attributes) {
+                tree.processGenericRCDATAStartTag(name, attributes);
+            };
+            modes.inHead.startTagNoScript = function (name, attributes) {
+                if (tree.scriptingEnabled)
+                    return tree.processGenericRawTextStartTag(name, attributes);
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inHeadNoscript');
+            };
+            modes.inHead.startTagNoFramesStyle = function (name, attributes) {
+                // XXX Need to decide whether to implement the scripting disabled case
+                tree.processGenericRawTextStartTag(name, attributes);
+            };
+            modes.inHead.startTagScript = function (name, attributes) {
+                tree.insertElement(name, attributes);
+                tree.tokenizer.setState(Tokenizer_1.default.SCRIPT_DATA);
+                tree.originalInsertionMode = tree.insertionModeName;
+                tree.setInsertionMode('text');
+            };
+            modes.inHead.startTagBaseBasefontBgsoundLink = function (name, attributes) {
+                tree.insertSelfClosingElement(name, attributes);
+            };
+            modes.inHead.startTagMeta = function (name, attributes) {
+                tree.insertSelfClosingElement(name, attributes);
+                // @todo process charset attributes
+            };
+            modes.inHead.startTagOther = function (name, attributes, selfClosing) {
+                this.anythingElse();
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inHead.endTagHead = function (name) {
+                if (tree.openElements.item(tree.openElements.length - 1).localName == 'head') {
+                    tree.openElements.pop();
+                }
+                else {
+                    tree.parseError('unexpected-end-tag', { name: 'head' });
+                }
+                tree.setInsertionMode('afterHead');
+            };
+            modes.inHead.endTagHtmlBodyBr = function (name) {
+                this.anythingElse();
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.inHead.endTagOther = function (name) {
+                tree.parseError('unexpected-end-tag', { name: name });
+            };
+            modes.inHead.anythingElse = function () {
+                this.endTagHead('head');
+            };
+            modes.afterHead = Object.create(modes.base);
+            modes.afterHead.start_tag_handlers = {
+                html: 'startTagHtml',
+                head: 'startTagHead',
+                body: 'startTagBody',
+                frameset: 'startTagFrameset',
+                base: 'startTagFromHead',
+                link: 'startTagFromHead',
+                meta: 'startTagFromHead',
+                script: 'startTagFromHead',
+                // XXX noframes: 'startTagFromHead' ?
+                style: 'startTagFromHead',
+                title: 'startTagFromHead',
+                "-default": 'startTagOther'
+            };
+            modes.afterHead.end_tag_handlers = {
+                body: 'endTagBodyHtmlBr',
+                html: 'endTagBodyHtmlBr',
+                br: 'endTagBodyHtmlBr',
+                "-default": 'endTagOther'
+            };
+            modes.afterHead.processEOF = function () {
+                this.anythingElse();
+                tree.insertionMode.processEOF();
+            };
+            modes.afterHead.processCharacters = function (buffer) {
+                var leadingWhitespace = buffer.takeLeadingWhitespace();
+                if (leadingWhitespace)
+                    tree.insertText(leadingWhitespace);
+                if (!buffer.length)
+                    return;
+                this.anythingElse();
+                tree.insertionMode.processCharacters(buffer);
+            };
+            modes.afterHead.startTagHtml = function (name, attributes) {
+                modes.inBody.processStartTag(name, attributes);
+            };
+            modes.afterHead.startTagBody = function (name, attributes) {
+                tree.framesetOk = false;
+                tree.insertBodyElement(attributes);
+                tree.setInsertionMode('inBody');
+            };
+            modes.afterHead.startTagFrameset = function (name, attributes) {
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inFrameset');
+            };
+            modes.afterHead.startTagFromHead = function (name, attributes, selfClosing) {
+                tree.parseError("unexpected-start-tag-out-of-my-head", { name: name });
+                // FIXME head pointer
+                tree.openElements.push(tree.head);
+                modes.inHead.processStartTag(name, attributes, selfClosing);
+                tree.openElements.remove(tree.head);
+            };
+            modes.afterHead.startTagHead = function (name, attributes, selfClosing) {
+                tree.parseError('unexpected-start-tag', { name: name });
+            };
+            modes.afterHead.startTagOther = function (name, attributes, selfClosing) {
+                this.anythingElse();
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.afterHead.endTagBodyHtmlBr = function (name) {
+                this.anythingElse();
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.afterHead.endTagOther = function (name) {
+                tree.parseError('unexpected-end-tag', { name: name });
+            };
+            modes.afterHead.anythingElse = function () {
+                tree.insertBodyElement([]);
+                tree.setInsertionMode('inBody');
+                tree.framesetOk = true;
+            };
+            modes.inBody = Object.create(modes.base);
+            modes.inBody.start_tag_handlers = {
+                html: 'startTagHtml',
+                head: 'startTagMisplaced',
+                base: 'startTagProcessInHead',
+                basefont: 'startTagProcessInHead',
+                bgsound: 'startTagProcessInHead',
+                link: 'startTagProcessInHead',
+                meta: 'startTagProcessInHead',
+                noframes: 'startTagProcessInHead',
+                script: 'startTagProcessInHead',
+                style: 'startTagProcessInHead',
+                title: 'startTagProcessInHead',
+                body: 'startTagBody',
+                form: 'startTagForm',
+                plaintext: 'startTagPlaintext',
+                a: 'startTagA',
+                button: 'startTagButton',
+                xmp: 'startTagXmp',
+                table: 'startTagTable',
+                hr: 'startTagHr',
+                image: 'startTagImage',
+                input: 'startTagInput',
+                textarea: 'startTagTextarea',
+                select: 'startTagSelect',
+                isindex: 'startTagIsindex',
+                applet: 'startTagAppletMarqueeObject',
+                marquee: 'startTagAppletMarqueeObject',
+                object: 'startTagAppletMarqueeObject',
+                li: 'startTagListItem',
+                dd: 'startTagListItem',
+                dt: 'startTagListItem',
+                address: 'startTagCloseP',
+                article: 'startTagCloseP',
+                aside: 'startTagCloseP',
+                blockquote: 'startTagCloseP',
+                center: 'startTagCloseP',
+                details: 'startTagCloseP',
+                dir: 'startTagCloseP',
+                div: 'startTagCloseP',
+                dl: 'startTagCloseP',
+                fieldset: 'startTagCloseP',
+                figcaption: 'startTagCloseP',
+                figure: 'startTagCloseP',
+                footer: 'startTagCloseP',
+                header: 'startTagCloseP',
+                hgroup: 'startTagCloseP',
+                main: 'startTagCloseP',
+                menu: 'startTagCloseP',
+                nav: 'startTagCloseP',
+                ol: 'startTagCloseP',
+                p: 'startTagCloseP',
+                section: 'startTagCloseP',
+                summary: 'startTagCloseP',
+                ul: 'startTagCloseP',
+                listing: 'startTagPreListing',
+                pre: 'startTagPreListing',
+                b: 'startTagFormatting',
+                big: 'startTagFormatting',
+                code: 'startTagFormatting',
+                em: 'startTagFormatting',
+                font: 'startTagFormatting',
+                i: 'startTagFormatting',
+                s: 'startTagFormatting',
+                small: 'startTagFormatting',
+                strike: 'startTagFormatting',
+                strong: 'startTagFormatting',
+                tt: 'startTagFormatting',
+                u: 'startTagFormatting',
+                nobr: 'startTagNobr',
+                area: 'startTagVoidFormatting',
+                br: 'startTagVoidFormatting',
+                embed: 'startTagVoidFormatting',
+                img: 'startTagVoidFormatting',
+                keygen: 'startTagVoidFormatting',
+                wbr: 'startTagVoidFormatting',
+                param: 'startTagParamSourceTrack',
+                source: 'startTagParamSourceTrack',
+                track: 'startTagParamSourceTrack',
+                iframe: 'startTagIFrame',
+                noembed: 'startTagRawText',
+                noscript: 'startTagRawText',
+                h1: 'startTagHeading',
+                h2: 'startTagHeading',
+                h3: 'startTagHeading',
+                h4: 'startTagHeading',
+                h5: 'startTagHeading',
+                h6: 'startTagHeading',
+                caption: 'startTagMisplaced',
+                col: 'startTagMisplaced',
+                colgroup: 'startTagMisplaced',
+                frame: 'startTagMisplaced',
+                frameset: 'startTagFrameset',
+                tbody: 'startTagMisplaced',
+                td: 'startTagMisplaced',
+                tfoot: 'startTagMisplaced',
+                th: 'startTagMisplaced',
+                thead: 'startTagMisplaced',
+                tr: 'startTagMisplaced',
+                option: 'startTagOptionOptgroup',
+                optgroup: 'startTagOptionOptgroup',
+                math: 'startTagMath',
+                svg: 'startTagSVG',
+                rt: 'startTagRpRt',
+                rp: 'startTagRpRt',
+                "-default": 'startTagOther'
+            };
+            modes.inBody.end_tag_handlers = {
+                p: 'endTagP',
+                body: 'endTagBody',
+                html: 'endTagHtml',
+                address: 'endTagBlock',
+                article: 'endTagBlock',
+                aside: 'endTagBlock',
+                blockquote: 'endTagBlock',
+                button: 'endTagBlock',
+                center: 'endTagBlock',
+                details: 'endTagBlock',
+                dir: 'endTagBlock',
+                div: 'endTagBlock',
+                dl: 'endTagBlock',
+                fieldset: 'endTagBlock',
+                figcaption: 'endTagBlock',
+                figure: 'endTagBlock',
+                footer: 'endTagBlock',
+                header: 'endTagBlock',
+                hgroup: 'endTagBlock',
+                listing: 'endTagBlock',
+                main: 'endTagBlock',
+                menu: 'endTagBlock',
+                nav: 'endTagBlock',
+                ol: 'endTagBlock',
+                pre: 'endTagBlock',
+                section: 'endTagBlock',
+                summary: 'endTagBlock',
+                ul: 'endTagBlock',
+                form: 'endTagForm',
+                applet: 'endTagAppletMarqueeObject',
+                marquee: 'endTagAppletMarqueeObject',
+                object: 'endTagAppletMarqueeObject',
+                dd: 'endTagListItem',
+                dt: 'endTagListItem',
+                li: 'endTagListItem',
+                h1: 'endTagHeading',
+                h2: 'endTagHeading',
+                h3: 'endTagHeading',
+                h4: 'endTagHeading',
+                h5: 'endTagHeading',
+                h6: 'endTagHeading',
+                a: 'endTagFormatting',
+                b: 'endTagFormatting',
+                big: 'endTagFormatting',
+                code: 'endTagFormatting',
+                em: 'endTagFormatting',
+                font: 'endTagFormatting',
+                i: 'endTagFormatting',
+                nobr: 'endTagFormatting',
+                s: 'endTagFormatting',
+                small: 'endTagFormatting',
+                strike: 'endTagFormatting',
+                strong: 'endTagFormatting',
+                tt: 'endTagFormatting',
+                u: 'endTagFormatting',
+                br: 'endTagBr',
+                "-default": 'endTagOther'
+            };
+            modes.inBody.processCharacters = function (buffer) {
+                if (tree.shouldSkipLeadingNewline) {
+                    tree.shouldSkipLeadingNewline = false;
+                    buffer.skipAtMostOneLeadingNewline();
+                }
+                tree.reconstructActiveFormattingElements();
+                var characters = buffer.takeRemaining();
+                characters = characters.replace(/\u0000/g, function (match, index) {
+                    // @todo position
+                    tree.parseError("invalid-codepoint");
+                    return '';
+                });
+                if (!characters)
+                    return;
+                tree.insertText(characters);
+                if (tree.framesetOk && !isAllWhitespaceOrReplacementCharacters_1.default(characters))
+                    tree.framesetOk = false;
+            };
+            modes.inBody.startTagHtml = function (name, attributes) {
+                tree.parseError('non-html-root');
+                tree.addAttributesToElement(tree.openElements.rootNode, attributes);
+            };
+            modes.inBody.startTagProcessInHead = function (name, attributes) {
+                modes.inHead.processStartTag(name, attributes);
+            };
+            modes.inBody.startTagBody = function (name, attributes) {
+                tree.parseError('unexpected-start-tag', { name: 'body' });
+                if (tree.openElements.length == 1 ||
+                    tree.openElements.item(1).localName != 'body') {
+                }
+                else {
+                    tree.framesetOk = false;
+                    tree.addAttributesToElement(tree.openElements.bodyElement, attributes);
+                }
+            };
+            modes.inBody.startTagFrameset = function (name, attributes) {
+                tree.parseError('unexpected-start-tag', { name: 'frameset' });
+                if (tree.openElements.length == 1 ||
+                    tree.openElements.item(1).localName != 'body') {
+                }
+                else if (tree.framesetOk) {
+                    tree.detachFromParent(tree.openElements.bodyElement);
+                    while (tree.openElements.length > 1)
+                        tree.openElements.pop();
+                    tree.insertElement(name, attributes);
+                    tree.setInsertionMode('inFrameset');
+                }
+            };
+            modes.inBody.startTagCloseP = function (name, attributes) {
+                if (tree.openElements.inButtonScope('p'))
+                    this.endTagP('p');
+                tree.insertElement(name, attributes);
+            };
+            modes.inBody.startTagPreListing = function (name, attributes) {
+                if (tree.openElements.inButtonScope('p'))
+                    this.endTagP('p');
+                tree.insertElement(name, attributes);
+                tree.framesetOk = false;
+                tree.shouldSkipLeadingNewline = true;
+            };
+            modes.inBody.startTagForm = function (name, attributes) {
+                if (tree.form) {
+                    tree.parseError('unexpected-start-tag', { name: name });
+                }
+                else {
+                    if (tree.openElements.inButtonScope('p'))
+                        this.endTagP('p');
+                    tree.insertElement(name, attributes);
+                    tree.form = tree.currentStackItem();
+                }
+            };
+            modes.inBody.startTagRpRt = function (name, attributes) {
+                if (tree.openElements.inScope('ruby')) {
+                    tree.generateImpliedEndTags();
+                    if (tree.currentStackItem().localName != 'ruby') {
+                        tree.parseError('unexpected-start-tag', { name: name });
+                    }
+                }
+                tree.insertElement(name, attributes);
+            };
+            modes.inBody.startTagListItem = function (name, attributes) {
+                /// @todo: Fix according to current spec. http://www.w3.org/TR/html5/tree-construction.html#parsing-main-inbody
+                var stopNames = { li: ['li'], dd: ['dd', 'dt'], dt: ['dd', 'dt'] };
+                var stopName = stopNames[name];
+                var els = tree.openElements;
+                for (var i = els.length - 1; i >= 0; i--) {
+                    var node = els.item(i);
+                    if (stopName.indexOf(node.localName) != -1) {
+                        tree.insertionMode.processEndTag(node.localName);
+                        break;
+                    }
+                    // todo isScoping()
+                    if (node.isSpecial() && node.localName !== 'p' && node.localName !== 'address' && node.localName !== 'div')
+                        break;
+                }
+                if (tree.openElements.inButtonScope('p'))
+                    this.endTagP('p');
+                // Always insert an <li> element
+                tree.insertElement(name, attributes);
+                tree.framesetOk = false;
+            };
+            modes.inBody.startTagPlaintext = function (name, attributes) {
+                if (tree.openElements.inButtonScope('p'))
+                    this.endTagP('p');
+                tree.insertElement(name, attributes);
+                tree.tokenizer.setState(Tokenizer_1.default.PLAINTEXT);
+            };
+            modes.inBody.startTagHeading = function (name, attributes) {
+                if (tree.openElements.inButtonScope('p'))
+                    this.endTagP('p');
+                if (tree.currentStackItem().isNumberedHeader()) {
+                    tree.parseError('unexpected-start-tag', { name: name });
+                    tree.popElement();
+                }
+                tree.insertElement(name, attributes);
+            };
+            modes.inBody.startTagA = function (name, attributes) {
+                var activeA = tree.elementInActiveFormattingElements('a');
+                if (activeA) {
+                    tree.parseError("unexpected-start-tag-implies-end-tag", { startName: "a", endName: "a" });
+                    tree.adoptionAgencyEndTag('a');
+                    if (tree.openElements.contains(activeA))
+                        tree.openElements.remove(activeA);
+                    tree.removeElementFromActiveFormattingElements(activeA);
+                }
+                tree.reconstructActiveFormattingElements();
+                tree.insertFormattingElement(name, attributes);
+            };
+            modes.inBody.startTagFormatting = function (name, attributes) {
+                tree.reconstructActiveFormattingElements();
+                tree.insertFormattingElement(name, attributes);
+            };
+            modes.inBody.startTagNobr = function (name, attributes) {
+                tree.reconstructActiveFormattingElements();
+                if (tree.openElements.inScope('nobr')) {
+                    tree.parseError("unexpected-start-tag-implies-end-tag", { startName: 'nobr', endName: 'nobr' });
+                    this.processEndTag('nobr');
+                    // XXX Need tests that trigger the following
+                    tree.reconstructActiveFormattingElements();
+                }
+                tree.insertFormattingElement(name, attributes);
+            };
+            modes.inBody.startTagButton = function (name, attributes) {
+                if (tree.openElements.inScope('button')) {
+                    tree.parseError('unexpected-start-tag-implies-end-tag', { startName: 'button', endName: 'button' });
+                    this.processEndTag('button');
+                    tree.insertionMode.processStartTag(name, attributes);
+                }
+                else {
+                    tree.framesetOk = false;
+                    tree.reconstructActiveFormattingElements();
+                    tree.insertElement(name, attributes);
+                }
+            };
+            modes.inBody.startTagAppletMarqueeObject = function (name, attributes) {
+                tree.reconstructActiveFormattingElements();
+                tree.insertElement(name, attributes);
+                tree.activeFormattingElements.push(Marker);
+                tree.framesetOk = false;
+            };
+            modes.inBody.endTagAppletMarqueeObject = function (name) {
+                if (!tree.openElements.inScope(name)) {
+                    tree.parseError("unexpected-end-tag", { name: name });
+                }
+                else {
+                    tree.generateImpliedEndTags();
+                    if (tree.currentStackItem().localName != name) {
+                        tree.parseError('end-tag-too-early', { name: name });
+                    }
+                    tree.openElements.popUntilPopped(name);
+                    tree.clearActiveFormattingElements();
+                }
+            };
+            modes.inBody.startTagXmp = function (name, attributes) {
+                if (tree.openElements.inButtonScope('p'))
+                    this.processEndTag('p');
+                tree.reconstructActiveFormattingElements();
+                tree.processGenericRawTextStartTag(name, attributes);
+                tree.framesetOk = false;
+            };
+            modes.inBody.startTagTable = function (name, attributes) {
+                if (tree.compatMode !== "quirks")
+                    if (tree.openElements.inButtonScope('p'))
+                        this.processEndTag('p');
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inTable');
+                tree.framesetOk = false;
+            };
+            modes.inBody.startTagVoidFormatting = function (name, attributes) {
+                tree.reconstructActiveFormattingElements();
+                tree.insertSelfClosingElement(name, attributes);
+                tree.framesetOk = false;
+            };
+            modes.inBody.startTagParamSourceTrack = function (name, attributes) {
+                tree.insertSelfClosingElement(name, attributes);
+            };
+            modes.inBody.startTagHr = function (name, attributes) {
+                if (tree.openElements.inButtonScope('p'))
+                    this.endTagP('p');
+                tree.insertSelfClosingElement(name, attributes);
+                tree.framesetOk = false;
+            };
+            modes.inBody.startTagImage = function (name, attributes) {
+                // No, really...
+                tree.parseError('unexpected-start-tag-treated-as', { originalName: 'image', newName: 'img' });
+                this.processStartTag('img', attributes);
+            };
+            modes.inBody.startTagInput = function (name, attributes) {
+                var currentFramesetOk = tree.framesetOk;
+                this.startTagVoidFormatting(name, attributes);
+                for (var key in attributes) {
+                    // input type=hidden doesn't change framesetOk
+                    if (attributes[key].nodeName == 'type') {
+                        if (attributes[key].nodeValue.toLowerCase() == 'hidden')
+                            tree.framesetOk = currentFramesetOk;
+                        break;
+                    }
+                }
+            };
+            modes.inBody.startTagIsindex = function (name, attributes) {
+                tree.parseError('deprecated-tag', { name: 'isindex' });
+                tree.selfClosingFlagAcknowledged = true;
+                if (tree.form)
+                    return;
+                var formAttributes = [];
+                var inputAttributes = [];
+                var prompt = "This is a searchable index. Enter search keywords: ";
+                for (var key in attributes) {
+                    switch (attributes[key].nodeName) {
+                        case 'action':
+                            formAttributes.push({
+                                nodeName: 'action',
+                                nodeValue: attributes[key].nodeValue
+                            });
+                            break;
+                        case 'prompt':
+                            prompt = attributes[key].nodeValue;
+                            break;
+                        case 'name':
+                            break;
+                        default:
+                            inputAttributes.push({
+                                nodeName: attributes[key].nodeName,
+                                nodeValue: attributes[key].nodeValue
+                            });
+                    }
+                }
+                inputAttributes.push({ nodeName: 'name', nodeValue: 'isindex' });
+                this.processStartTag('form', formAttributes);
+                this.processStartTag('hr');
+                this.processStartTag('label');
+                this.processCharacters(new CharacterBuffer_1.default(prompt));
+                this.processStartTag('input', inputAttributes);
+                this.processEndTag('label');
+                this.processStartTag('hr');
+                this.processEndTag('form');
+            };
+            modes.inBody.startTagTextarea = function (name, attributes) {
+                // XXX Form element pointer checking here as well...
+                tree.insertElement(name, attributes);
+                tree.tokenizer.setState(Tokenizer_1.default.RCDATA);
+                tree.originalInsertionMode = tree.insertionModeName;
+                tree.shouldSkipLeadingNewline = true;
+                tree.framesetOk = false;
+                tree.setInsertionMode('text');
+            };
+            modes.inBody.startTagIFrame = function (name, attributes) {
+                tree.framesetOk = false;
+                this.startTagRawText(name, attributes);
+            };
+            modes.inBody.startTagRawText = function (name, attributes) {
+                tree.processGenericRawTextStartTag(name, attributes);
+            };
+            modes.inBody.startTagSelect = function (name, attributes) {
+                tree.reconstructActiveFormattingElements();
+                tree.insertElement(name, attributes);
+                tree.framesetOk = false;
+                var insertionModeName = tree.insertionModeName;
+                if (insertionModeName == 'inTable' ||
+                    insertionModeName == 'inCaption' ||
+                    insertionModeName == 'inColumnGroup' ||
+                    insertionModeName == 'inTableBody' ||
+                    insertionModeName == 'inRow' ||
+                    insertionModeName == 'inCell') {
+                    tree.setInsertionMode('inSelectInTable');
+                }
+                else {
+                    tree.setInsertionMode('inSelect');
+                }
+            };
+            modes.inBody.startTagMisplaced = function (name, attributes) {
+                tree.parseError('unexpected-start-tag-ignored', { name: name });
+            };
+            modes.inBody.endTagMisplaced = function (name) {
+                // This handles elements with end tags in other insertion modes.
+                tree.parseError("unexpected-end-tag", { name: name });
+            };
+            modes.inBody.endTagBr = function (name) {
+                tree.parseError("unexpected-end-tag-treated-as", { originalName: "br", newName: "br element" });
+                tree.reconstructActiveFormattingElements();
+                tree.insertElement(name, []);
+                tree.popElement();
+            };
+            modes.inBody.startTagOptionOptgroup = function (name, attributes) {
+                if (tree.currentStackItem().localName == 'option')
+                    tree.popElement();
+                tree.reconstructActiveFormattingElements();
+                tree.insertElement(name, attributes);
+            };
+            modes.inBody.startTagOther = function (name, attributes) {
+                tree.reconstructActiveFormattingElements();
+                tree.insertElement(name, attributes);
+            };
+            modes.inBody.endTagOther = function (name) {
+                var node;
+                for (var i = tree.openElements.length - 1; i > 0; i--) {
+                    node = tree.openElements.item(i);
+                    if (node.localName == name) {
+                        tree.generateImpliedEndTags(name);
+                        if (tree.currentStackItem().localName != name)
+                            tree.parseError('unexpected-end-tag', { name: name });
+                        // todo optimize
+                        tree.openElements.remove_openElements_until(function (x) { return x === node; });
+                        break;
+                    }
+                    if (node.isSpecial()) {
+                        tree.parseError('unexpected-end-tag', { name: name });
+                        break;
+                    }
+                }
+            };
+            modes.inBody.startTagMath = function (name, attributes, selfClosing) {
+                tree.reconstructActiveFormattingElements();
+                attributes = tree.adjustMathMLAttributes(attributes);
+                attributes = tree.adjustForeignAttributes(attributes);
+                tree.insertForeignElement(name, attributes, "http://www.w3.org/1998/Math/MathML", selfClosing);
+                // Need to get the parse error right for the case where the token
+                // has a namespace not equal to the xmlns attribute
+            };
+            modes.inBody.startTagSVG = function (name, attributes, selfClosing) {
+                tree.reconstructActiveFormattingElements();
+                attributes = tree.adjustSVGAttributes(attributes);
+                attributes = tree.adjustForeignAttributes(attributes);
+                tree.insertForeignElement(name, attributes, "http://www.w3.org/2000/svg", selfClosing);
+                // Need to get the parse error right for the case where the token
+                // has a namespace not equal to the xmlns attribute
+            };
+            modes.inBody.endTagP = function (name) {
+                if (!tree.openElements.inButtonScope('p')) {
+                    tree.parseError('unexpected-end-tag', { name: 'p' });
+                    this.startTagCloseP('p', []);
+                    this.endTagP('p');
+                }
+                else {
+                    tree.generateImpliedEndTags('p');
+                    if (tree.currentStackItem().localName != 'p')
+                        tree.parseError('unexpected-implied-end-tag', { name: 'p' });
+                    tree.openElements.popUntilPopped(name);
+                }
+            };
+            modes.inBody.endTagBody = function (name) {
+                if (!tree.openElements.inScope('body')) {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                    return;
+                }
+                /// @todo Emit parse error on end tags other than the ones listed in http://www.w3.org/TR/html5/tree-construction.html#parsing-main-inbody
+                // ['dd', 'dt', 'li', 'optgroup', 'option', 'p', 'rp', 'rt', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'body', 'html']
+                if (tree.currentStackItem().localName != 'body') {
+                    tree.parseError('expected-one-end-tag-but-got-another', {
+                        expectedName: tree.currentStackItem().localName,
+                        gotName: name
+                    });
+                }
+                tree.setInsertionMode('afterBody');
+            };
+            modes.inBody.endTagHtml = function (name) {
+                if (!tree.openElements.inScope('body')) {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                    return;
+                }
+                /// @todo Emit parse error on end tags other than the ones listed in http://www.w3.org/TR/html5/tree-construction.html#parsing-main-inbody
+                // ['dd', 'dt', 'li', 'optgroup', 'option', 'p', 'rp', 'rt', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'body', 'html']
+                if (tree.currentStackItem().localName != 'body') {
+                    tree.parseError('expected-one-end-tag-but-got-another', {
+                        expectedName: tree.currentStackItem().localName,
+                        gotName: name
+                    });
+                }
+                tree.setInsertionMode('afterBody');
+                tree.insertionMode.processEndTag(name);
+            };
+            modes.inBody.endTagBlock = function (name) {
+                if (!tree.openElements.inScope(name)) {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+                else {
+                    tree.generateImpliedEndTags();
+                    if (tree.currentStackItem().localName != name) {
+                        tree.parseError('end-tag-too-early', { name: name });
+                    }
+                    tree.openElements.popUntilPopped(name);
+                }
+            };
+            modes.inBody.endTagForm = function (name) {
+                var node = tree.form;
+                tree.form = null;
+                if (!node || !tree.openElements.inScope(name)) {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+                else {
+                    tree.generateImpliedEndTags();
+                    if (tree.currentStackItem() != node) {
+                        tree.parseError('end-tag-too-early-ignored', { name: 'form' });
+                    }
+                    tree.openElements.remove(node);
+                }
+            };
+            modes.inBody.endTagListItem = function (name) {
+                if (!tree.openElements.inListItemScope(name)) {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+                else {
+                    tree.generateImpliedEndTags(name);
+                    if (tree.currentStackItem().localName != name)
+                        tree.parseError('end-tag-too-early', { name: name });
+                    tree.openElements.popUntilPopped(name);
+                }
+            };
+            modes.inBody.endTagHeading = function (name) {
+                if (!tree.openElements.hasNumberedHeaderElementInScope()) {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                    return;
+                }
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem().localName != name)
+                    tree.parseError('end-tag-too-early', { name: name });
+                tree.openElements.remove_openElements_until(function (e) {
+                    return e.isNumberedHeader();
+                });
+            };
+            modes.inBody.endTagFormatting = function (name, attributes) {
+                if (!tree.adoptionAgencyEndTag(name))
+                    this.endTagOther(name, attributes);
+            };
+            modes.inCaption = Object.create(modes.base);
+            modes.inCaption.start_tag_handlers = {
+                html: 'startTagHtml',
+                caption: 'startTagTableElement',
+                col: 'startTagTableElement',
+                colgroup: 'startTagTableElement',
+                tbody: 'startTagTableElement',
+                td: 'startTagTableElement',
+                tfoot: 'startTagTableElement',
+                thead: 'startTagTableElement',
+                tr: 'startTagTableElement',
+                '-default': 'startTagOther'
+            };
+            modes.inCaption.end_tag_handlers = {
+                caption: 'endTagCaption',
+                table: 'endTagTable',
+                body: 'endTagIgnore',
+                col: 'endTagIgnore',
+                colgroup: 'endTagIgnore',
+                html: 'endTagIgnore',
+                tbody: 'endTagIgnore',
+                td: 'endTagIgnore',
+                tfood: 'endTagIgnore',
+                thead: 'endTagIgnore',
+                tr: 'endTagIgnore',
+                '-default': 'endTagOther'
+            };
+            modes.inCaption.processCharacters = function (data) {
+                modes.inBody.processCharacters(data);
+            };
+            modes.inCaption.startTagTableElement = function (name, attributes) {
+                tree.parseError('unexpected-end-tag', { name: name });
+                var ignoreEndTag = !tree.openElements.inTableScope('caption');
+                tree.insertionMode.processEndTag('caption');
+                if (!ignoreEndTag)
+                    tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inCaption.startTagOther = function (name, attributes, selfClosing) {
+                modes.inBody.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inCaption.endTagCaption = function (name) {
+                if (!tree.openElements.inTableScope('caption')) {
+                    // context case
+                    // TODO assert.ok(tree.context);
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+                else {
+                    // AT this code is quite similar to endTagTable in inTable
+                    tree.generateImpliedEndTags();
+                    if (tree.currentStackItem().localName != 'caption') {
+                        // @todo this is confusing for implied end tag
+                        tree.parseError('expected-one-end-tag-but-got-another', {
+                            gotName: "caption",
+                            expectedName: tree.currentStackItem().localName
+                        });
+                    }
+                    tree.openElements.popUntilPopped('caption');
+                    tree.clearActiveFormattingElements();
+                    tree.setInsertionMode('inTable');
+                }
+            };
+            modes.inCaption.endTagTable = function (name) {
+                tree.parseError("unexpected-end-table-in-caption");
+                var ignoreEndTag = !tree.openElements.inTableScope('caption');
+                tree.insertionMode.processEndTag('caption');
+                if (!ignoreEndTag)
+                    tree.insertionMode.processEndTag(name);
+            };
+            modes.inCaption.endTagIgnore = function (name) {
+                tree.parseError('unexpected-end-tag', { name: name });
+            };
+            modes.inCaption.endTagOther = function (name) {
+                modes.inBody.processEndTag(name);
+            };
+            modes.inCell = Object.create(modes.base);
+            modes.inCell.start_tag_handlers = {
+                html: 'startTagHtml',
+                caption: 'startTagTableOther',
+                col: 'startTagTableOther',
+                colgroup: 'startTagTableOther',
+                tbody: 'startTagTableOther',
+                td: 'startTagTableOther',
+                tfoot: 'startTagTableOther',
+                th: 'startTagTableOther',
+                thead: 'startTagTableOther',
+                tr: 'startTagTableOther',
+                '-default': 'startTagOther'
+            };
+            modes.inCell.end_tag_handlers = {
+                td: 'endTagTableCell',
+                th: 'endTagTableCell',
+                body: 'endTagIgnore',
+                caption: 'endTagIgnore',
+                col: 'endTagIgnore',
+                colgroup: 'endTagIgnore',
+                html: 'endTagIgnore',
+                table: 'endTagImply',
+                tbody: 'endTagImply',
+                tfoot: 'endTagImply',
+                thead: 'endTagImply',
+                tr: 'endTagImply',
+                '-default': 'endTagOther'
+            };
+            modes.inCell.processCharacters = function (data) {
+                modes.inBody.processCharacters(data);
+            };
+            modes.inCell.startTagTableOther = function (name, attributes, selfClosing) {
+                if (tree.openElements.inTableScope('td') || tree.openElements.inTableScope('th')) {
+                    this.closeCell();
+                    tree.insertionMode.processStartTag(name, attributes, selfClosing);
+                }
+                else {
+                    // context case
+                    tree.parseError('unexpected-start-tag', { name: name });
+                }
+            };
+            modes.inCell.startTagOther = function (name, attributes, selfClosing) {
+                modes.inBody.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inCell.endTagTableCell = function (name) {
+                if (tree.openElements.inTableScope(name)) {
+                    tree.generateImpliedEndTags(name);
+                    if (tree.currentStackItem().localName != name.toLowerCase()) {
+                        tree.parseError('unexpected-cell-end-tag', { name: name });
+                        tree.openElements.popUntilPopped(name);
+                    }
+                    else {
+                        tree.popElement();
+                    }
+                    tree.clearActiveFormattingElements();
+                    tree.setInsertionMode('inRow');
+                }
+                else {
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+            };
+            modes.inCell.endTagIgnore = function (name) {
+                tree.parseError('unexpected-end-tag', { name: name });
+            };
+            modes.inCell.endTagImply = function (name) {
+                if (tree.openElements.inTableScope(name)) {
+                    this.closeCell();
+                    tree.insertionMode.processEndTag(name);
+                }
+                else {
+                    // sometimes context case
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+            };
+            modes.inCell.endTagOther = function (name) {
+                modes.inBody.processEndTag(name);
+            };
+            modes.inCell.closeCell = function () {
+                if (tree.openElements.inTableScope('td')) {
+                    this.endTagTableCell('td');
+                }
+                else if (tree.openElements.inTableScope('th')) {
+                    this.endTagTableCell('th');
+                }
+            };
+            modes.inColumnGroup = Object.create(modes.base);
+            modes.inColumnGroup.start_tag_handlers = {
+                html: 'startTagHtml',
+                col: 'startTagCol',
+                '-default': 'startTagOther'
+            };
+            modes.inColumnGroup.end_tag_handlers = {
+                colgroup: 'endTagColgroup',
+                col: 'endTagCol',
+                '-default': 'endTagOther'
+            };
+            modes.inColumnGroup.ignoreEndTagColgroup = function () {
+                return tree.currentStackItem().localName == 'html';
+            };
+            modes.inColumnGroup.processCharacters = function (buffer) {
+                var leadingWhitespace = buffer.takeLeadingWhitespace();
+                if (leadingWhitespace)
+                    tree.insertText(leadingWhitespace);
+                if (!buffer.length)
+                    return;
+                var ignoreEndTag = this.ignoreEndTagColgroup();
+                this.endTagColgroup('colgroup');
+                if (!ignoreEndTag)
+                    tree.insertionMode.processCharacters(buffer);
+            };
+            modes.inColumnGroup.startTagCol = function (name, attributes) {
+                tree.insertSelfClosingElement(name, attributes);
+            };
+            modes.inColumnGroup.startTagOther = function (name, attributes, selfClosing) {
+                var ignoreEndTag = this.ignoreEndTagColgroup();
+                this.endTagColgroup('colgroup');
+                if (!ignoreEndTag)
+                    tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inColumnGroup.endTagColgroup = function (name) {
+                if (this.ignoreEndTagColgroup()) {
+                    // context case
+                    // TODO: assert.ok(tree.context);
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+                else {
+                    tree.popElement();
+                    tree.setInsertionMode('inTable');
+                }
+            };
+            modes.inColumnGroup.endTagCol = function (name) {
+                tree.parseError("no-end-tag", { name: 'col' });
+            };
+            modes.inColumnGroup.endTagOther = function (name) {
+                var ignoreEndTag = this.ignoreEndTagColgroup();
+                this.endTagColgroup('colgroup');
+                if (!ignoreEndTag)
+                    tree.insertionMode.processEndTag(name);
+            };
+            modes.inForeignContent = Object.create(modes.base);
+            modes.inForeignContent.processStartTag = function (name, attributes, selfClosing) {
+                if (['b', 'big', 'blockquote', 'body', 'br', 'center', 'code', 'dd', 'div', 'dl', 'dt', 'em', 'embed', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'hr', 'i', 'img', 'li', 'listing', 'menu', 'meta', 'nobr', 'ol', 'p', 'pre', 'ruby', 's', 'small', 'span', 'strong', 'strike', 'sub', 'sup', 'table', 'tt', 'u', 'ul', 'var'].indexOf(name) != -1
+                    || (name == 'font' && attributes.some(function (attr) { return ['color', 'face', 'size'].indexOf(attr.nodeName) >= 0; }))) {
+                    tree.parseError('unexpected-html-element-in-foreign-content', { name: name });
+                    while (tree.currentStackItem().isForeign()
+                        && !tree.currentStackItem().isHtmlIntegrationPoint()
+                        && !tree.currentStackItem().isMathMLTextIntegrationPoint()) {
+                        tree.openElements.pop();
+                    }
+                    tree.insertionMode.processStartTag(name, attributes, selfClosing);
+                    return;
+                }
+                if (tree.currentStackItem().namespaceURI == "http://www.w3.org/1998/Math/MathML") {
+                    attributes = tree.adjustMathMLAttributes(attributes);
+                }
+                if (tree.currentStackItem().namespaceURI == "http://www.w3.org/2000/svg") {
+                    name = tree.adjustSVGTagNameCase(name);
+                    attributes = tree.adjustSVGAttributes(attributes);
+                }
+                attributes = tree.adjustForeignAttributes(attributes);
+                tree.insertForeignElement(name, attributes, tree.currentStackItem().namespaceURI, selfClosing);
+            };
+            modes.inForeignContent.processEndTag = function (name) {
+                var node = tree.currentStackItem();
+                var index = tree.openElements.length - 1;
+                if (node.localName.toLowerCase() != name)
+                    tree.parseError("unexpected-end-tag", { name: name });
+                while (true) {
+                    if (index === 0)
+                        break;
+                    if (node.localName.toLowerCase() == name) {
+                        while (tree.openElements.pop() != node)
+                            ;
+                        break;
+                    }
+                    index -= 1;
+                    node = tree.openElements.item(index);
+                    if (node.isForeign()) {
+                        continue;
+                    }
+                    else {
+                        tree.insertionMode.processEndTag(name);
+                        break;
+                    }
+                }
+            };
+            modes.inForeignContent.processCharacters = function (buffer) {
+                var characters = buffer.takeRemaining();
+                characters = characters.replace(/\u0000/g, function (match, index) {
+                    // @todo position
+                    tree.parseError('invalid-codepoint');
+                    return '\uFFFD';
+                });
+                if (tree.framesetOk && !isAllWhitespaceOrReplacementCharacters_1.default(characters))
+                    tree.framesetOk = false;
+                tree.insertText(characters);
+            };
+            modes.inHeadNoscript = Object.create(modes.base);
+            modes.inHeadNoscript.start_tag_handlers = {
+                html: 'startTagHtml',
+                basefont: 'startTagBasefontBgsoundLinkMetaNoframesStyle',
+                bgsound: 'startTagBasefontBgsoundLinkMetaNoframesStyle',
+                link: 'startTagBasefontBgsoundLinkMetaNoframesStyle',
+                meta: 'startTagBasefontBgsoundLinkMetaNoframesStyle',
+                noframes: 'startTagBasefontBgsoundLinkMetaNoframesStyle',
+                style: 'startTagBasefontBgsoundLinkMetaNoframesStyle',
+                head: 'startTagHeadNoscript',
+                noscript: 'startTagHeadNoscript',
+                "-default": 'startTagOther'
+            };
+            modes.inHeadNoscript.end_tag_handlers = {
+                noscript: 'endTagNoscript',
+                br: 'endTagBr',
+                '-default': 'endTagOther'
+            };
+            modes.inHeadNoscript.processCharacters = function (buffer) {
+                var leadingWhitespace = buffer.takeLeadingWhitespace();
+                if (leadingWhitespace)
+                    tree.insertText(leadingWhitespace);
+                if (!buffer.length)
+                    return;
+                // FIXME error message
+                tree.parseError("unexpected-char-in-frameset");
+                this.anythingElse();
+                tree.insertionMode.processCharacters(buffer);
+            };
+            modes.inHeadNoscript.processComment = function (data) {
+                modes.inHead.processComment(data);
+            };
+            modes.inHeadNoscript.startTagBasefontBgsoundLinkMetaNoframesStyle = function (name, attributes) {
+                modes.inHead.processStartTag(name, attributes);
+            };
+            modes.inHeadNoscript.startTagHeadNoscript = function (name, attributes) {
+                // FIXME error message
+                tree.parseError("unexpected-start-tag-in-frameset", { name: name });
+            };
+            modes.inHeadNoscript.startTagOther = function (name, attributes) {
+                // FIXME error message
+                tree.parseError("unexpected-start-tag-in-frameset", { name: name });
+                this.anythingElse();
+                tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inHeadNoscript.endTagBr = function (name, attributes) {
+                // FIXME error message
+                tree.parseError("unexpected-end-tag-in-frameset", { name: name });
+                this.anythingElse();
+                tree.insertionMode.processEndTag(name, attributes);
+            };
+            modes.inHeadNoscript.endTagNoscript = function (name, attributes) {
+                tree.popElement();
+                tree.setInsertionMode('inHead');
+            };
+            modes.inHeadNoscript.endTagOther = function (name, attributes) {
+                // FIXME error message
+                tree.parseError("unexpected-end-tag-in-frameset", { name: name });
+            };
+            modes.inHeadNoscript.anythingElse = function () {
+                tree.popElement();
+                tree.setInsertionMode('inHead');
+            };
+            modes.inFrameset = Object.create(modes.base);
+            modes.inFrameset.start_tag_handlers = {
+                html: 'startTagHtml',
+                frameset: 'startTagFrameset',
+                frame: 'startTagFrame',
+                noframes: 'startTagNoframes',
+                "-default": 'startTagOther'
+            };
+            modes.inFrameset.end_tag_handlers = {
+                frameset: 'endTagFrameset',
+                noframes: 'endTagNoframes',
+                '-default': 'endTagOther'
+            };
+            modes.inFrameset.processCharacters = function (data) {
+                tree.parseError("unexpected-char-in-frameset");
+            };
+            modes.inFrameset.startTagFrameset = function (name, attributes) {
+                tree.insertElement(name, attributes);
+            };
+            modes.inFrameset.startTagFrame = function (name, attributes) {
+                tree.insertSelfClosingElement(name, attributes);
+            };
+            modes.inFrameset.startTagNoframes = function (name, attributes) {
+                modes.inBody.processStartTag(name, attributes);
+            };
+            modes.inFrameset.startTagOther = function (name, attributes) {
+                tree.parseError("unexpected-start-tag-in-frameset", { name: name });
+            };
+            modes.inFrameset.endTagFrameset = function (name, attributes) {
+                if (tree.currentStackItem().localName == 'html') {
+                    // context case
+                    tree.parseError("unexpected-frameset-in-frameset-innerhtml");
+                }
+                else {
+                    tree.popElement();
+                }
+                if (!tree.context && tree.currentStackItem().localName != 'frameset') {
+                    // If we're not in context mode an the current node is not a "frameset" element (anymore) then switch
+                    tree.setInsertionMode('afterFrameset');
+                }
+            };
+            modes.inFrameset.endTagNoframes = function (name) {
+                modes.inBody.processEndTag(name);
+            };
+            modes.inFrameset.endTagOther = function (name) {
+                tree.parseError("unexpected-end-tag-in-frameset", { name: name });
+            };
+            modes.inTable = Object.create(modes.base);
+            modes.inTable.start_tag_handlers = {
+                html: 'startTagHtml',
+                caption: 'startTagCaption',
+                colgroup: 'startTagColgroup',
+                col: 'startTagCol',
+                table: 'startTagTable',
+                tbody: 'startTagRowGroup',
+                tfoot: 'startTagRowGroup',
+                thead: 'startTagRowGroup',
+                td: 'startTagImplyTbody',
+                th: 'startTagImplyTbody',
+                tr: 'startTagImplyTbody',
+                style: 'startTagStyleScript',
+                script: 'startTagStyleScript',
+                input: 'startTagInput',
+                form: 'startTagForm',
+                '-default': 'startTagOther'
+            };
+            modes.inTable.end_tag_handlers = {
+                table: 'endTagTable',
+                body: 'endTagIgnore',
+                caption: 'endTagIgnore',
+                col: 'endTagIgnore',
+                colgroup: 'endTagIgnore',
+                html: 'endTagIgnore',
+                tbody: 'endTagIgnore',
+                td: 'endTagIgnore',
+                tfoot: 'endTagIgnore',
+                th: 'endTagIgnore',
+                thead: 'endTagIgnore',
+                tr: 'endTagIgnore',
+                '-default': 'endTagOther'
+            };
+            modes.inTable.processCharacters = function (data) {
+                if (tree.currentStackItem().isFosterParenting()) {
+                    var originalInsertionMode = tree.insertionModeName;
+                    tree.setInsertionMode('inTableText');
+                    tree.originalInsertionMode = originalInsertionMode;
+                    tree.insertionMode.processCharacters(data);
+                }
+                else {
+                    tree.redirectAttachToFosterParent = true;
+                    modes.inBody.processCharacters(data);
+                    tree.redirectAttachToFosterParent = false;
+                }
+            };
+            modes.inTable.startTagCaption = function (name, attributes) {
+                tree.openElements.popUntilTableScopeMarker();
+                tree.activeFormattingElements.push(Marker);
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inCaption');
+            };
+            modes.inTable.startTagColgroup = function (name, attributes) {
+                tree.openElements.popUntilTableScopeMarker();
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inColumnGroup');
+            };
+            modes.inTable.startTagCol = function (name, attributes) {
+                this.startTagColgroup('colgroup', []);
+                tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inTable.startTagRowGroup = function (name, attributes) {
+                tree.openElements.popUntilTableScopeMarker();
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inTableBody');
+            };
+            modes.inTable.startTagImplyTbody = function (name, attributes) {
+                this.startTagRowGroup('tbody', []);
+                tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inTable.startTagTable = function (name, attributes) {
+                tree.parseError("unexpected-start-tag-implies-end-tag", { startName: "table", endName: "table" });
+                tree.insertionMode.processEndTag('table');
+                if (!tree.context)
+                    tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inTable.startTagStyleScript = function (name, attributes) {
+                modes.inHead.processStartTag(name, attributes);
+            };
+            modes.inTable.startTagInput = function (name, attributes) {
+                for (var key in attributes) {
+                    if (attributes[key].nodeName.toLowerCase() == 'type') {
+                        if (attributes[key].nodeValue.toLowerCase() == 'hidden') {
+                            tree.parseError("unexpected-hidden-input-in-table");
+                            tree.insertElement(name, attributes);
+                            // XXX associate with form
+                            tree.openElements.pop();
+                            return;
+                        }
+                        break;
+                    }
+                }
+                this.startTagOther(name, attributes);
+            };
+            modes.inTable.startTagForm = function (name, attributes) {
+                tree.parseError("unexpected-form-in-table");
+                if (!tree.form) {
+                    tree.insertElement(name, attributes);
+                    tree.form = tree.currentStackItem();
+                    tree.openElements.pop();
+                }
+            };
+            modes.inTable.startTagOther = function (name, attributes, selfClosing) {
+                tree.parseError("unexpected-start-tag-implies-table-voodoo", { name: name });
+                tree.redirectAttachToFosterParent = true;
+                modes.inBody.processStartTag(name, attributes, selfClosing);
+                tree.redirectAttachToFosterParent = false;
+            };
+            modes.inTable.endTagTable = function (name) {
+                if (tree.openElements.inTableScope(name)) {
+                    tree.generateImpliedEndTags();
+                    if (tree.currentStackItem().localName != name) {
+                        tree.parseError("end-tag-too-early-named", { gotName: 'table', expectedName: tree.currentStackItem().localName });
+                    }
+                    tree.openElements.popUntilPopped('table');
+                    tree.resetInsertionMode();
+                }
+                else {
+                    // TODO assert.ok(tree.context);
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+            };
+            modes.inTable.endTagIgnore = function (name) {
+                tree.parseError("unexpected-end-tag", { name: name });
+            };
+            modes.inTable.endTagOther = function (name) {
+                tree.parseError("unexpected-end-tag-implies-table-voodoo", { name: name });
+                // Make all the special element rearranging voodoo kick in
+                tree.redirectAttachToFosterParent = true;
+                // Process the end tag in the "in body" mode
+                modes.inBody.processEndTag(name);
+                tree.redirectAttachToFosterParent = false;
+            };
+            modes.inTableText = Object.create(modes.base);
+            modes.inTableText.flushCharacters = function () {
+                var characters = tree.pendingTableCharacters.join('');
+                if (!isAllWhitespace_1.default(characters)) {
+                    tree.redirectAttachToFosterParent = true;
+                    tree.reconstructActiveFormattingElements();
+                    tree.insertText(characters);
+                    tree.framesetOk = false;
+                    tree.redirectAttachToFosterParent = false;
+                }
+                else {
+                    tree.insertText(characters);
+                }
+                tree.pendingTableCharacters = [];
+            };
+            modes.inTableText.processComment = function (data) {
+                this.flushCharacters();
+                tree.setInsertionMode(tree.originalInsertionMode);
+                tree.insertionMode.processComment(data);
+            };
+            modes.inTableText.processEOF = function (data) {
+                this.flushCharacters();
+                tree.setInsertionMode(tree.originalInsertionMode);
+                tree.insertionMode.processEOF();
+            };
+            modes.inTableText.processCharacters = function (buffer) {
+                var characters = buffer.takeRemaining();
+                characters = characters.replace(/\u0000/g, function (match, index) {
+                    // @todo position
+                    tree.parseError("invalid-codepoint");
+                    return '';
+                });
+                if (!characters)
+                    return;
+                tree.pendingTableCharacters.push(characters);
+            };
+            modes.inTableText.processStartTag = function (name, attributes, selfClosing) {
+                this.flushCharacters();
+                tree.setInsertionMode(tree.originalInsertionMode);
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inTableText.processEndTag = function (name, attributes) {
+                this.flushCharacters();
+                tree.setInsertionMode(tree.originalInsertionMode);
+                tree.insertionMode.processEndTag(name, attributes);
+            };
+            modes.inTableBody = Object.create(modes.base);
+            modes.inTableBody.start_tag_handlers = {
+                html: 'startTagHtml',
+                tr: 'startTagTr',
+                td: 'startTagTableCell',
+                th: 'startTagTableCell',
+                caption: 'startTagTableOther',
+                col: 'startTagTableOther',
+                colgroup: 'startTagTableOther',
+                tbody: 'startTagTableOther',
+                tfoot: 'startTagTableOther',
+                thead: 'startTagTableOther',
+                '-default': 'startTagOther'
+            };
+            modes.inTableBody.end_tag_handlers = {
+                table: 'endTagTable',
+                tbody: 'endTagTableRowGroup',
+                tfoot: 'endTagTableRowGroup',
+                thead: 'endTagTableRowGroup',
+                body: 'endTagIgnore',
+                caption: 'endTagIgnore',
+                col: 'endTagIgnore',
+                colgroup: 'endTagIgnore',
+                html: 'endTagIgnore',
+                td: 'endTagIgnore',
+                th: 'endTagIgnore',
+                tr: 'endTagIgnore',
+                '-default': 'endTagOther'
+            };
+            modes.inTableBody.processCharacters = function (data) {
+                modes.inTable.processCharacters(data);
+            };
+            modes.inTableBody.startTagTr = function (name, attributes) {
+                tree.openElements.popUntilTableBodyScopeMarker();
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inRow');
+            };
+            modes.inTableBody.startTagTableCell = function (name, attributes) {
+                tree.parseError("unexpected-cell-in-table-body", { name: name });
+                this.startTagTr('tr', []);
+                tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inTableBody.startTagTableOther = function (name, attributes) {
+                // XXX any ideas on how to share this with endTagTable
+                if (tree.openElements.inTableScope('tbody') || tree.openElements.inTableScope('thead') || tree.openElements.inTableScope('tfoot')) {
+                    tree.openElements.popUntilTableBodyScopeMarker();
+                    this.endTagTableRowGroup(tree.currentStackItem().localName);
+                    tree.insertionMode.processStartTag(name, attributes);
+                }
+                else {
+                    // context case
+                    tree.parseError('unexpected-start-tag', { name: name });
+                }
+            };
+            modes.inTableBody.startTagOther = function (name, attributes) {
+                modes.inTable.processStartTag(name, attributes);
+            };
+            modes.inTableBody.endTagTableRowGroup = function (name) {
+                if (tree.openElements.inTableScope(name)) {
+                    tree.openElements.popUntilTableBodyScopeMarker();
+                    tree.popElement();
+                    tree.setInsertionMode('inTable');
+                }
+                else {
+                    tree.parseError('unexpected-end-tag-in-table-body', { name: name });
+                }
+            };
+            modes.inTableBody.endTagTable = function (name) {
+                if (tree.openElements.inTableScope('tbody') || tree.openElements.inTableScope('thead') || tree.openElements.inTableScope('tfoot')) {
+                    tree.openElements.popUntilTableBodyScopeMarker();
+                    this.endTagTableRowGroup(tree.currentStackItem().localName);
+                    tree.insertionMode.processEndTag(name);
+                }
+                else {
+                    // context case
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+            };
+            modes.inTableBody.endTagIgnore = function (name) {
+                tree.parseError("unexpected-end-tag-in-table-body", { name: name });
+            };
+            modes.inTableBody.endTagOther = function (name) {
+                modes.inTable.processEndTag(name);
+            };
+            modes.inSelect = Object.create(modes.base);
+            modes.inSelect.start_tag_handlers = {
+                html: 'startTagHtml',
+                option: 'startTagOption',
+                optgroup: 'startTagOptgroup',
+                select: 'startTagSelect',
+                input: 'startTagInput',
+                keygen: 'startTagInput',
+                textarea: 'startTagInput',
+                script: 'startTagScript',
+                '-default': 'startTagOther'
+            };
+            modes.inSelect.end_tag_handlers = {
+                option: 'endTagOption',
+                optgroup: 'endTagOptgroup',
+                select: 'endTagSelect',
+                caption: 'endTagTableElements',
+                table: 'endTagTableElements',
+                tbody: 'endTagTableElements',
+                tfoot: 'endTagTableElements',
+                thead: 'endTagTableElements',
+                tr: 'endTagTableElements',
+                td: 'endTagTableElements',
+                th: 'endTagTableElements',
+                '-default': 'endTagOther'
+            };
+            modes.inSelect.processCharacters = function (buffer) {
+                var data = buffer.takeRemaining();
+                data = data.replace(/\u0000/g, function (match, index) {
+                    // @todo position
+                    tree.parseError("invalid-codepoint");
+                    return '';
+                });
+                if (!data)
+                    return;
+                tree.insertText(data);
+            };
+            modes.inSelect.startTagOption = function (name, attributes) {
+                // we need to imply </option> if <option> is the current node
+                if (tree.currentStackItem().localName == 'option')
+                    tree.popElement();
+                tree.insertElement(name, attributes);
+            };
+            modes.inSelect.startTagOptgroup = function (name, attributes) {
+                if (tree.currentStackItem().localName == 'option')
+                    tree.popElement();
+                if (tree.currentStackItem().localName == 'optgroup')
+                    tree.popElement();
+                tree.insertElement(name, attributes);
+            };
+            modes.inSelect.endTagOption = function (name) {
+                if (tree.currentStackItem().localName !== 'option') {
+                    tree.parseError('unexpected-end-tag-in-select', { name: name });
+                    return;
+                }
+                tree.popElement();
+            };
+            modes.inSelect.endTagOptgroup = function (name) {
+                // </optgroup> implicitly closes <option>
+                if (tree.currentStackItem().localName == 'option' && tree.openElements.item(tree.openElements.length - 2).localName == 'optgroup') {
+                    tree.popElement();
+                }
+                // it also closes </optgroup>
+                if (tree.currentStackItem().localName == 'optgroup') {
+                    tree.popElement();
+                }
+                else {
+                    // But nothing else
+                    tree.parseError('unexpected-end-tag-in-select', { name: 'optgroup' });
+                }
+            };
+            modes.inSelect.startTagSelect = function (name) {
+                tree.parseError("unexpected-select-in-select");
+                this.endTagSelect('select');
+            };
+            modes.inSelect.endTagSelect = function (name) {
+                if (tree.openElements.inTableScope('select')) {
+                    tree.openElements.popUntilPopped('select');
+                    tree.resetInsertionMode();
+                }
+                else {
+                    // context case
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+            };
+            modes.inSelect.startTagInput = function (name, attributes) {
+                tree.parseError("unexpected-input-in-select");
+                if (tree.openElements.inSelectScope('select')) {
+                    this.endTagSelect('select');
+                    tree.insertionMode.processStartTag(name, attributes);
+                }
+            };
+            modes.inSelect.startTagScript = function (name, attributes) {
+                modes.inHead.processStartTag(name, attributes);
+            };
+            modes.inSelect.endTagTableElements = function (name) {
+                tree.parseError('unexpected-end-tag-in-select', { name: name });
+                if (tree.openElements.inTableScope(name)) {
+                    this.endTagSelect('select');
+                    tree.insertionMode.processEndTag(name);
+                }
+            };
+            modes.inSelect.startTagOther = function (name, attributes) {
+                tree.parseError("unexpected-start-tag-in-select", { name: name });
+            };
+            modes.inSelect.endTagOther = function (name) {
+                tree.parseError('unexpected-end-tag-in-select', { name: name });
+            };
+            modes.inSelectInTable = Object.create(modes.base);
+            modes.inSelectInTable.start_tag_handlers = {
+                caption: 'startTagTable',
+                table: 'startTagTable',
+                tbody: 'startTagTable',
+                tfoot: 'startTagTable',
+                thead: 'startTagTable',
+                tr: 'startTagTable',
+                td: 'startTagTable',
+                th: 'startTagTable',
+                '-default': 'startTagOther'
+            };
+            modes.inSelectInTable.end_tag_handlers = {
+                caption: 'endTagTable',
+                table: 'endTagTable',
+                tbody: 'endTagTable',
+                tfoot: 'endTagTable',
+                thead: 'endTagTable',
+                tr: 'endTagTable',
+                td: 'endTagTable',
+                th: 'endTagTable',
+                '-default': 'endTagOther'
+            };
+            modes.inSelectInTable.processCharacters = function (data) {
+                modes.inSelect.processCharacters(data);
+            };
+            modes.inSelectInTable.startTagTable = function (name, attributes) {
+                tree.parseError("unexpected-table-element-start-tag-in-select-in-table", { name: name });
+                this.endTagOther("select");
+                tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inSelectInTable.startTagOther = function (name, attributes, selfClosing) {
+                modes.inSelect.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inSelectInTable.endTagTable = function (name) {
+                tree.parseError("unexpected-table-element-end-tag-in-select-in-table", { name: name });
+                if (tree.openElements.inTableScope(name)) {
+                    this.endTagOther("select");
+                    tree.insertionMode.processEndTag(name);
+                }
+            };
+            modes.inSelectInTable.endTagOther = function (name) {
+                modes.inSelect.processEndTag(name);
+            };
+            modes.inRow = Object.create(modes.base);
+            modes.inRow.start_tag_handlers = {
+                html: 'startTagHtml',
+                td: 'startTagTableCell',
+                th: 'startTagTableCell',
+                caption: 'startTagTableOther',
+                col: 'startTagTableOther',
+                colgroup: 'startTagTableOther',
+                tbody: 'startTagTableOther',
+                tfoot: 'startTagTableOther',
+                thead: 'startTagTableOther',
+                tr: 'startTagTableOther',
+                '-default': 'startTagOther'
+            };
+            modes.inRow.end_tag_handlers = {
+                tr: 'endTagTr',
+                table: 'endTagTable',
+                tbody: 'endTagTableRowGroup',
+                tfoot: 'endTagTableRowGroup',
+                thead: 'endTagTableRowGroup',
+                body: 'endTagIgnore',
+                caption: 'endTagIgnore',
+                col: 'endTagIgnore',
+                colgroup: 'endTagIgnore',
+                html: 'endTagIgnore',
+                td: 'endTagIgnore',
+                th: 'endTagIgnore',
+                '-default': 'endTagOther'
+            };
+            modes.inRow.processCharacters = function (data) {
+                modes.inTable.processCharacters(data);
+            };
+            modes.inRow.startTagTableCell = function (name, attributes) {
+                tree.openElements.popUntilTableRowScopeMarker();
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode('inCell');
+                tree.activeFormattingElements.push(Marker);
+            };
+            modes.inRow.startTagTableOther = function (name, attributes) {
+                var ignoreEndTag = this.ignoreEndTagTr();
+                this.endTagTr('tr');
+                // XXX how are we sure it's always ignored in the context case?
+                if (!ignoreEndTag)
+                    tree.insertionMode.processStartTag(name, attributes);
+            };
+            modes.inRow.startTagOther = function (name, attributes, selfClosing) {
+                modes.inTable.processStartTag(name, attributes, selfClosing);
+            };
+            modes.inRow.endTagTr = function (name) {
+                if (this.ignoreEndTagTr()) {
+                    // TODO: assert.ok(tree.context);
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+                else {
+                    tree.openElements.popUntilTableRowScopeMarker();
+                    tree.popElement();
+                    tree.setInsertionMode('inTableBody');
+                }
+            };
+            modes.inRow.endTagTable = function (name) {
+                var ignoreEndTag = this.ignoreEndTagTr();
+                this.endTagTr('tr');
+                // Reprocess the current tag if the tr end tag was not ignored
+                // XXX how are we sure it's always ignored in the context case?
+                if (!ignoreEndTag)
+                    tree.insertionMode.processEndTag(name);
+            };
+            modes.inRow.endTagTableRowGroup = function (name) {
+                if (tree.openElements.inTableScope(name)) {
+                    this.endTagTr('tr');
+                    tree.insertionMode.processEndTag(name);
+                }
+                else {
+                    // context case
+                    tree.parseError('unexpected-end-tag', { name: name });
+                }
+            };
+            modes.inRow.endTagIgnore = function (name) {
+                tree.parseError("unexpected-end-tag-in-table-row", { name: name });
+            };
+            modes.inRow.endTagOther = function (name) {
+                modes.inTable.processEndTag(name);
+            };
+            modes.inRow.ignoreEndTagTr = function () {
+                return !tree.openElements.inTableScope('tr');
+            };
+            modes.afterAfterFrameset = Object.create(modes.base);
+            modes.afterAfterFrameset.start_tag_handlers = {
+                html: 'startTagHtml',
+                noframes: 'startTagNoFrames',
+                '-default': 'startTagOther'
+            };
+            modes.afterAfterFrameset.processEOF = function () { };
+            modes.afterAfterFrameset.processComment = function (data) {
+                tree.insertComment(data, tree.document);
+            };
+            modes.afterAfterFrameset.processCharacters = function (buffer) {
+                var characters = buffer.takeRemaining();
+                var whitespace = "";
+                for (var i = 0; i < characters.length; i++) {
+                    var ch = characters[i];
+                    if (isWhitespace_1.default(ch))
+                        whitespace += ch;
+                }
+                if (whitespace) {
+                    tree.reconstructActiveFormattingElements();
+                    tree.insertText(whitespace);
+                }
+                if (whitespace.length < characters.length)
+                    tree.parseError('expected-eof-but-got-char');
+            };
+            modes.afterAfterFrameset.startTagNoFrames = function (name, attributes) {
+                modes.inHead.processStartTag(name, attributes);
+            };
+            modes.afterAfterFrameset.startTagOther = function (name, attributes, selfClosing) {
+                tree.parseError('expected-eof-but-got-start-tag', { name: name });
+            };
+            modes.afterAfterFrameset.processEndTag = function (name, attributes) {
+                tree.parseError('expected-eof-but-got-end-tag', { name: name });
+            };
+            modes.text = Object.create(modes.base);
+            modes.text.start_tag_handlers = {
+                '-default': 'startTagOther'
+            };
+            modes.text.end_tag_handlers = {
+                script: 'endTagScript',
+                '-default': 'endTagOther'
+            };
+            modes.text.processCharacters = function (buffer) {
+                if (tree.shouldSkipLeadingNewline) {
+                    tree.shouldSkipLeadingNewline = false;
+                    buffer.skipAtMostOneLeadingNewline();
+                }
+                var data = buffer.takeRemaining();
+                if (!data)
+                    return;
+                tree.insertText(data);
+            };
+            modes.text.processEOF = function () {
+                tree.parseError("expected-named-closing-tag-but-got-eof", { name: tree.currentStackItem().localName });
+                tree.openElements.pop();
+                tree.setInsertionMode(tree.originalInsertionMode);
+                tree.insertionMode.processEOF();
+            };
+            modes.text.startTagOther = function (name) {
+                throw "Tried to process start tag " + name + " in RCDATA/RAWTEXT mode";
+            };
+            modes.text.endTagScript = function (name) {
+                var node = tree.openElements.pop();
+                // TODO assert.ok(node.localName == 'script');
+                tree.setInsertionMode(tree.originalInsertionMode);
+            };
+            modes.text.endTagOther = function (name) {
+                tree.openElements.pop();
+                tree.setInsertionMode(tree.originalInsertionMode);
+            };
+        }
+        TreeBuilder.prototype.setInsertionMode = function (name) {
+            this.insertionMode = this.insertionModes[name];
+            this.insertionModeName = name;
+        };
+        /**
+         * Adoption agency algorithm (http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#adoption-agency-algorithm)
+         * @param {String} name A tag name subject for which the algorithm is being run
+         * @return {Boolean} Returns false if the algorithm was aborted
+         */
+        TreeBuilder.prototype.adoptionAgencyEndTag = function (name) {
+            var outerIterationLimit = 8;
+            var innerIterationLimit = 3;
+            var formattingElement;
+            function isActiveFormattingElement(el) {
+                return el === formattingElement;
+            }
+            var outerLoopCounter = 0;
+            while (outerLoopCounter++ < outerIterationLimit) {
+                // 4.
+                formattingElement = this.elementInActiveFormattingElements(name);
+                if (!formattingElement || (this.openElements.contains(formattingElement) && !this.openElements.inScope(formattingElement.localName))) {
+                    this.parseError('adoption-agency-1.1', { name: name });
+                    return false;
+                }
+                if (!this.openElements.contains(formattingElement)) {
+                    this.parseError('adoption-agency-1.2', { name: name });
+                    this.removeElementFromActiveFormattingElements(formattingElement);
+                    return true;
+                }
+                if (!this.openElements.inScope(formattingElement.localName)) {
+                    this.parseError('adoption-agency-4.4', { name: name });
+                }
+                if (formattingElement != this.currentStackItem()) {
+                    this.parseError('adoption-agency-1.3', { name: name });
+                }
+                // Start of the adoption agency algorithm proper
+                // todo ElementStack
+                var furthestBlock = this.openElements.furthestBlockForFormattingElement(formattingElement.node);
+                if (!furthestBlock) {
+                    this.openElements.remove_openElements_until(isActiveFormattingElement);
+                    this.removeElementFromActiveFormattingElements(formattingElement);
+                    return true;
+                }
+                var afeIndex = this.openElements.elements.indexOf(formattingElement);
+                var commonAncestor = this.openElements.item(afeIndex - 1);
+                var bookmark = this.activeFormattingElements.indexOf(formattingElement);
+                var node = furthestBlock;
+                var lastNode = furthestBlock;
+                var index = this.openElements.elements.indexOf(node);
+                var innerLoopCounter = 0;
+                while (innerLoopCounter++ < innerIterationLimit) {
+                    index -= 1;
+                    node = this.openElements.item(index);
+                    if (this.activeFormattingElements.indexOf(node) < 0) {
+                        this.openElements.elements.splice(index, 1);
+                        continue;
+                    }
+                    if (node == formattingElement)
+                        break;
+                    if (lastNode == furthestBlock)
+                        bookmark = this.activeFormattingElements.indexOf(node) + 1;
+                    var clone = this.createElement(node.namespaceURI, node.localName, node.attributes);
+                    var newNode = new StackItem_1.default(node.namespaceURI, node.localName, node.attributes, clone);
+                    this.activeFormattingElements[this.activeFormattingElements.indexOf(node)] = newNode;
+                    this.openElements.elements[this.openElements.elements.indexOf(node)] = newNode;
+                    node = newNode;
+                    this.detachFromParent(lastNode.node);
+                    this.attachNode(lastNode.node, node.node);
+                    lastNode = node;
+                }
+                this.detachFromParent(lastNode.node);
+                if (commonAncestor.isFosterParenting()) {
+                    this.insertIntoFosterParent(lastNode.node);
+                }
+                else {
+                    this.attachNode(lastNode.node, commonAncestor.node);
+                }
+                var clone = this.createElement("http://www.w3.org/1999/xhtml", formattingElement.localName, formattingElement.attributes);
+                var formattingClone = new StackItem_1.default(formattingElement.namespaceURI, formattingElement.localName, formattingElement.attributes, clone);
+                this.reparentChildren(furthestBlock.node, clone);
+                this.attachNode(clone, furthestBlock.node);
+                this.removeElementFromActiveFormattingElements(formattingElement);
+                this.activeFormattingElements.splice(Math.min(bookmark, this.activeFormattingElements.length), 0, formattingClone);
+                this.openElements.remove(formattingElement);
+                this.openElements.elements.splice(this.openElements.elements.indexOf(furthestBlock) + 1, 0, formattingClone);
+            }
+            return true;
+        };
+        TreeBuilder.prototype.start = function (tokenizer) {
+            throw "Not implemented";
+        };
+        TreeBuilder.prototype.startTokenization = function (tokenizer) {
+            this.tokenizer = tokenizer;
+            this.compatMode = "no quirks";
+            this.originalInsertionMode = "initial";
+            this.framesetOk = true;
+            this.openElements = new ElementStack_1.default();
+            this.activeFormattingElements = [];
+            this.start(tokenizer);
+            if (this.context) {
+                switch (this.context) {
+                    case 'title':
+                    case 'textarea':
+                        this.tokenizer.setState(Tokenizer_1.default.RCDATA);
+                        break;
+                    case 'style':
+                    case 'xmp':
+                    case 'iframe':
+                    case 'noembed':
+                    case 'noframes':
+                        this.tokenizer.setState(Tokenizer_1.default.RAWTEXT);
+                        break;
+                    case 'script':
+                        this.tokenizer.setState(Tokenizer_1.default.SCRIPT_DATA);
+                        break;
+                    case 'noscript':
+                        if (this.scriptingEnabled)
+                            this.tokenizer.setState(Tokenizer_1.default.RAWTEXT);
+                        break;
+                    case 'plaintext':
+                        this.tokenizer.setState(Tokenizer_1.default.PLAINTEXT);
+                        break;
+                }
+                this.insertHtmlElement();
+                this.resetInsertionMode();
+            }
+            else {
+                this.setInsertionMode('initial');
+            }
+        };
+        TreeBuilder.prototype.processToken = function (token) {
+            this.selfClosingFlagAcknowledged = false;
+            var currentNode = this.openElements.top || null;
+            var insertionMode;
+            if (!currentNode || !currentNode.isForeign() ||
+                (currentNode.isMathMLTextIntegrationPoint() &&
+                    ((token.type == 'StartTag' &&
+                        !(token.name in { mglyph: 0, malignmark: 0 })) ||
+                        (token.type === 'Characters'))) ||
+                (currentNode.namespaceURI == "http://www.w3.org/1998/Math/MathML" &&
+                    currentNode.localName == 'annotation-xml' &&
+                    token.type == 'StartTag' && token.name == 'svg') ||
+                (currentNode.isHtmlIntegrationPoint() &&
+                    token.type in { StartTag: 0, Characters: 0 }) ||
+                token.type == 'EOF') {
+                insertionMode = this.insertionMode;
+            }
+            else {
+                insertionMode = this.insertionModes.inForeignContent;
+            }
+            switch (token.type) {
+                case 'Characters':
+                    var buffer = new CharacterBuffer_1.default(token.data);
+                    insertionMode.processCharacters(buffer);
+                    break;
+                case 'Comment':
+                    insertionMode.processComment(token.data);
+                    break;
+                case 'StartTag':
+                    insertionMode.processStartTag(token.name, token.data, token.selfClosing);
+                    break;
+                case 'EndTag':
+                    insertionMode.processEndTag(token.name);
+                    break;
+                case 'Doctype':
+                    insertionMode.processDoctype(token.name, token.publicId, token.systemId, token.forceQuirks);
+                    break;
+                case 'EOF':
+                    insertionMode.processEOF();
+                    break;
+            }
+        };
+        /**
+         *
+         * @return {Boolean}
+         */
+        TreeBuilder.prototype.isCdataSectionAllowed = function () {
+            return this.openElements.length > 0 && this.currentStackItem().isForeign();
+        };
+        /**
+         *
+         * @return {Boolean}
+         */
+        TreeBuilder.prototype.isSelfClosingFlagAcknowledged = function () {
+            return this.selfClosingFlagAcknowledged;
+        };
+        TreeBuilder.prototype.createElement = function (namespaceURI, localName, attributes) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.attachNode = function (child, parent) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.attachNodeToFosterParent = function (child, table, stackParent) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.detachFromParent = function (node) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.addAttributesToElement = function (element, attributes) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.insertHtmlElement = function (attributes) {
+            var root = this.createElement("http://www.w3.org/1999/xhtml", 'html', attributes);
+            this.attachNode(root, this.document);
+            this.openElements.pushHtmlElement(new StackItem_1.default("http://www.w3.org/1999/xhtml", 'html', attributes, root));
+            return root;
+        };
+        TreeBuilder.prototype.insertHeadElement = function (attributes) {
+            var element = this.createElement("http://www.w3.org/1999/xhtml", "head", attributes);
+            this.head = new StackItem_1.default("http://www.w3.org/1999/xhtml", "head", attributes, element);
+            this.attachNode(element, this.openElements.top.node);
+            this.openElements.pushHeadElement(this.head);
+            return element;
+        };
+        TreeBuilder.prototype.insertBodyElement = function (attributes) {
+            var element = this.createElement("http://www.w3.org/1999/xhtml", "body", attributes);
+            this.attachNode(element, this.openElements.top.node);
+            this.openElements.pushBodyElement(new StackItem_1.default("http://www.w3.org/1999/xhtml", "body", attributes, element));
+            return element;
+        };
+        TreeBuilder.prototype.insertIntoFosterParent = function (node) {
+            var tableIndex = this.openElements.findIndex('table');
+            var tableElement = this.openElements.item(tableIndex).node;
+            if (tableIndex === 0)
+                return this.attachNode(node, tableElement);
+            this.attachNodeToFosterParent(node, tableElement, this.openElements.item(tableIndex - 1).node);
+        };
+        TreeBuilder.prototype.insertElement = function (name, attributes, namespaceURI, selfClosing) {
+            if (!namespaceURI)
+                namespaceURI = "http://www.w3.org/1999/xhtml";
+            var element = this.createElement(namespaceURI, name, attributes);
+            if (this.shouldFosterParent())
+                this.insertIntoFosterParent(element);
+            else
+                this.attachNode(element, this.openElements.top.node);
+            if (!selfClosing)
+                this.openElements.push(new StackItem_1.default(namespaceURI, name, attributes, element));
+        };
+        TreeBuilder.prototype.insertFormattingElement = function (name, attributes) {
+            this.insertElement(name, attributes, "http://www.w3.org/1999/xhtml");
+            this.appendElementToActiveFormattingElements(this.currentStackItem());
+        };
+        TreeBuilder.prototype.insertSelfClosingElement = function (name, attributes) {
+            this.selfClosingFlagAcknowledged = true;
+            this.insertElement(name, attributes, "http://www.w3.org/1999/xhtml", true);
+        };
+        TreeBuilder.prototype.insertForeignElement = function (name, attributes, namespaceURI, selfClosing) {
+            if (selfClosing)
+                this.selfClosingFlagAcknowledged = true;
+            this.insertElement(name, attributes, namespaceURI, selfClosing);
+        };
+        TreeBuilder.prototype.insertComment = function (data, parent) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.insertDoctype = function (name, publicId, systemId) {
+            throw new Error("Not implemented");
+        };
+        TreeBuilder.prototype.insertText = function (data) {
+            throw new Error("Not implemented");
+        };
+        /**
+         * Returns topmost open element
+         * @return {StackItem}
+         */
+        TreeBuilder.prototype.currentStackItem = function () {
+            return this.openElements.top;
+        };
+        /**
+         * Populates current open element
+         * @return {StackItem}
+         */
+        TreeBuilder.prototype.popElement = function () {
+            return this.openElements.pop();
+        };
+        /**
+         * Returns true if redirect is required and current open element causes foster parenting
+         * @return {Boolean}
+         */
+        TreeBuilder.prototype.shouldFosterParent = function () {
+            return this.redirectAttachToFosterParent && this.currentStackItem().isFosterParenting();
+        };
+        /**
+         * Implements http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#closing-elements-that-have-implied-end-tags
+         * @param {String} [exclude] Ignore specific tag name
+         */
+        TreeBuilder.prototype.generateImpliedEndTags = function (exclude) {
+            // FIXME get rid of the recursion
+            var name = this.openElements.top.localName;
+            if (['dd', 'dt', 'li', 'option', 'optgroup', 'p', 'rp', 'rt'].indexOf(name) != -1 && name != exclude) {
+                this.popElement();
+                this.generateImpliedEndTags(exclude);
+            }
+        };
+        /**
+         * Performs http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reconstruct-the-active-formatting-elements
+         */
+        TreeBuilder.prototype.reconstructActiveFormattingElements = function () {
+            // Within this algorithm the order of steps decribed in the specification
+            // is not quite the same as the order of steps in the code. It should still
+            // do the same though.
+            // Step 1: stop if there's nothing to do
+            if (this.activeFormattingElements.length === 0)
+                return;
+            // Step 2 and 3: start with the last element
+            var i = this.activeFormattingElements.length - 1;
+            var entry = this.activeFormattingElements[i];
+            if (entry == Marker || this.openElements.contains(entry))
+                return;
+            while (entry != Marker && !this.openElements.contains(entry)) {
+                i -= 1;
+                entry = this.activeFormattingElements[i];
+                if (!entry)
+                    break;
+            }
+            while (true) {
+                i += 1;
+                entry = this.activeFormattingElements[i];
+                this.insertElement(entry.localName, entry.attributes);
+                var element = this.currentStackItem();
+                this.activeFormattingElements[i] = element;
+                if (element == this.activeFormattingElements[this.activeFormattingElements.length - 1])
+                    break;
+            }
+        };
+        /**
+         *
+         * @param {StackItem} item
+         */
+        TreeBuilder.prototype.ensureNoahsArkCondition = function (item) {
+            var kNoahsArkCapacity = 3;
+            if (this.activeFormattingElements.length < kNoahsArkCapacity)
+                return;
+            var candidates = [];
+            var newItemAttributeCount = item.attributes.length;
+            for (var i = this.activeFormattingElements.length - 1; i >= 0; i--) {
+                var candidate = this.activeFormattingElements[i];
+                if (candidate === Marker)
+                    break;
+                if (item.localName !== candidate.localName || item.namespaceURI !== candidate.namespaceURI)
+                    continue;
+                if (candidate.attributes.length != newItemAttributeCount)
+                    continue;
+                candidates.push(candidate);
+            }
+            if (candidates.length < kNoahsArkCapacity)
+                return;
+            var remainingCandidates = [];
+            var attributes = item.attributes;
+            for (var i = 0; i < attributes.length; i++) {
+                var attribute = attributes[i];
+                for (var j = 0; j < candidates.length; j++) {
+                    var candidate = candidates[j];
+                    var candidateAttribute = getAttribute_1.default(candidate, attribute.nodeName);
+                    if (candidateAttribute && candidateAttribute.nodeValue === attribute.nodeValue)
+                        remainingCandidates.push(candidate);
+                }
+                if (remainingCandidates.length < kNoahsArkCapacity)
+                    return;
+                candidates = remainingCandidates;
+                remainingCandidates = [];
+            }
+            // Inductively, we shouldn't spin this loop very many times. It's possible,
+            // however, that we wil spin the loop more than once because of how the
+            // formatting element list gets permuted.
+            for (var i = kNoahsArkCapacity - 1; i < candidates.length; i++)
+                this.removeElementFromActiveFormattingElements(candidates[i]);
+        };
+        /**
+         *
+         * @param {StackItem} item
+         */
+        TreeBuilder.prototype.appendElementToActiveFormattingElements = function (item) {
+            this.ensureNoahsArkCondition(item);
+            this.activeFormattingElements.push(item);
+        };
+        /**
+         *
+         * @param {StackItem} item
+         */
+        TreeBuilder.prototype.removeElementFromActiveFormattingElements = function (item) {
+            var index = this.activeFormattingElements.indexOf(item);
+            if (index >= 0)
+                this.activeFormattingElements.splice(index, 1);
+        };
+        TreeBuilder.prototype.elementInActiveFormattingElements = function (name) {
+            var els = this.activeFormattingElements;
+            for (var i = els.length - 1; i >= 0; i--) {
+                if (els[i] == Marker)
+                    break;
+                if (els[i].localName == name)
+                    return els[i];
+            }
+            return false;
+        };
+        TreeBuilder.prototype.clearActiveFormattingElements = function () {
+            while (!(this.activeFormattingElements.length === 0 || this.activeFormattingElements.pop() == Marker))
+                ;
+        };
+        TreeBuilder.prototype.reparentChildren = function (oldParent, newParent) {
+            throw new Error("Not implemented");
+        };
+        /**
+         *
+         * @param {String} context A context element name for fragment parsing
+         */
+        TreeBuilder.prototype.setFragmentContext = function (context) {
+            // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
+            // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
+            // For efficiency, we skip step 4.2 ("Let root be a new html element with no attributes")
+            // and instead use the DocumentFragment as a root node.
+            // m_tree.openElements()->pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
+            this.context = context;
+        };
+        /**
+         *
+         * @param {String} code
+         * @param {Object} [args]
+         */
+        TreeBuilder.prototype.parseError = function (code, args) {
+            // FIXME: this.errors.push([this.tokenizer.position, code, data]);
+            if (!this.errorHandler)
+                return;
+            var message = formatMessage_1.default(messages_1.default[code], args);
+            this.errorHandler.error(message, this.tokenizer._inputStream.location(), code);
+        };
+        /**
+         * Resets the insertion mode (http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reset-the-insertion-mode-appropriately)
+         */
+        TreeBuilder.prototype.resetInsertionMode = function () {
+            var last = false;
+            var node = null;
+            for (var i = this.openElements.length - 1; i >= 0; i--) {
+                node = this.openElements.item(i);
+                if (i === 0) {
+                    // TODO assert.ok(this.context);
+                    last = true;
+                    node = new StackItem_1.default("http://www.w3.org/1999/xhtml", this.context, [], null);
+                }
+                if (node.namespaceURI === "http://www.w3.org/1999/xhtml") {
+                    // TODO template tag
+                    if (node.localName === 'select')
+                        // FIXME handle inSelectInTable
+                        return this.setInsertionMode('inSelect');
+                    if (node.localName === 'td' || node.localName === 'th')
+                        return this.setInsertionMode('inCell');
+                    if (node.localName === 'tr')
+                        return this.setInsertionMode('inRow');
+                    if (node.localName === 'tbody' || node.localName === 'thead' || node.localName === 'tfoot')
+                        return this.setInsertionMode('inTableBody');
+                    if (node.localName === 'caption')
+                        return this.setInsertionMode('inCaption');
+                    if (node.localName === 'colgroup')
+                        return this.setInsertionMode('inColumnGroup');
+                    if (node.localName === 'table')
+                        return this.setInsertionMode('inTable');
+                    if (node.localName === 'head' && !last)
+                        return this.setInsertionMode('inHead');
+                    if (node.localName === 'body')
+                        return this.setInsertionMode('inBody');
+                    if (node.localName === 'frameset')
+                        return this.setInsertionMode('inFrameset');
+                    if (node.localName === 'html')
+                        if (!this.openElements.headElement)
+                            return this.setInsertionMode('beforeHead');
+                        else
+                            return this.setInsertionMode('afterHead');
+                }
+                if (last)
+                    return this.setInsertionMode('inBody');
+            }
+        };
+        TreeBuilder.prototype.processGenericRCDATAStartTag = function (name, attributes) {
+            this.insertElement(name, attributes);
+            this.tokenizer.setState(Tokenizer_1.default.RCDATA);
+            this.originalInsertionMode = this.insertionModeName;
+            this.setInsertionMode('text');
+        };
+        TreeBuilder.prototype.processGenericRawTextStartTag = function (name, attributes) {
+            this.insertElement(name, attributes);
+            this.tokenizer.setState(Tokenizer_1.default.RAWTEXT);
+            this.originalInsertionMode = this.insertionModeName;
+            this.setInsertionMode('text');
+        };
+        TreeBuilder.prototype.adjustMathMLAttributes = function (attributes) {
+            attributes.forEach(function (a) {
+                a.namespaceURI = "http://www.w3.org/1998/Math/MathML";
+                if (constants_1.MATHMLAttributeMap[a.nodeName])
+                    a.nodeName = constants_1.MATHMLAttributeMap[a.nodeName];
+            });
+            return attributes;
+        };
+        TreeBuilder.prototype.adjustSVGTagNameCase = function (name) {
+            return constants_1.SVGTagMap[name] || name;
+        };
+        TreeBuilder.prototype.adjustSVGAttributes = function (attributes) {
+            attributes.forEach(function (a) {
+                a.namespaceURI = "http://www.w3.org/2000/svg";
+                if (constants_1.SVGAttributeMap[a.nodeName])
+                    a.nodeName = constants_1.SVGAttributeMap[a.nodeName];
+            });
+            return attributes;
+        };
+        TreeBuilder.prototype.adjustForeignAttributes = function (attributes) {
+            for (var i = 0; i < attributes.length; i++) {
+                var attribute = attributes[i];
+                var adjusted = constants_1.ForeignAttributeMap[attribute.nodeName];
+                if (adjusted) {
+                    attribute.nodeName = adjusted.localName;
+                    attribute.prefix = adjusted.prefix;
+                    attribute.namespaceURI = adjusted.namespaceURI;
+                }
+            }
+            return attributes;
+        };
+        return TreeBuilder;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = TreeBuilder;
+});
+
+define('mode/html/Node',["require", "exports"], function (require, exports) {
+    var Node = (function () {
+        /**
+         * The common node superclass.
+         * @version $Id$
+         * @author hsivonen
+         */
+        function Node(locator) {
+            if (!locator) {
+                this.columnNumber = -1;
+                this.lineNumber = -1;
+            }
+            else {
+                this.columnNumber = locator.columnNumber;
+                this.lineNumber = locator.lineNumber;
+            }
+            this.parentNode = null;
+            this.nextSibling = null;
+            this.firstChild = null;
+        }
+        /**
+         * Visit the node.
+         *
+         * @param treeParser the visitor
+         * @throws SAXException if stuff goes wrong
+         */
+        Node.prototype.visit = function (treeParser) {
+            throw new Error("Not Implemented");
+        };
+        /**
+         * Revisit the node.
+         *
+         * @param treeParser the visitor
+         * @throws SAXException if stuff goes wrong
+         */
+        Node.prototype.revisit = function (treeParser) {
+            return;
+        };
+        // Subclass-specific accessors that are hoisted here to 
+        // avoid casting.
+        /**
+         * Detach this node from its parent.
+         */
+        Node.prototype.detach = function () {
+            if (this.parentNode !== null) {
+                this.parentNode.removeChild(this);
+                this.parentNode = null;
+            }
+        };
+        Object.defineProperty(Node.prototype, "previousSibling", {
+            get: function () {
+                var prev = null;
+                var next = this.parentNode.firstChild;
+                for (;;) {
+                    if (this == next) {
+                        return prev;
+                    }
+                    prev = next;
+                    next = next.nextSibling;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return Node;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Node;
+});
+
+define('mode/html/NodeType',["require", "exports"], function (require, exports) {
+    var NodeType = {
+        /**
+         * A CDATA section.
+         */
+        CDATA: 1,
+        /**
+         * A run of characters.
+         */
+        CHARACTERS: 2,
+        /**
+         * A comment.
+         */
+        COMMENT: 3,
+        /**
+         * A document.
+         */
+        DOCUMENT: 4,
+        /**
+         * A document fragment.
+         */
+        DOCUMENT_FRAGMENT: 5,
+        /**
+         * A DTD.
+         */
+        DTD: 6,
+        /**
+         * An element.
+         */
+        ELEMENT: 7,
+        /**
+         * An entity.
+         */
+        ENTITY: 8,
+        /**
+         * A run of ignorable whitespace.
+         */
+        IGNORABLE_WHITESPACE: 9,
+        /**
+         * A processing instruction.
+         */
+        PROCESSING_INSTRUCTION: 10,
+        /**
+         * A skipped entity.
+         */
+        SKIPPED_ENTITY: 11
+    };
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = NodeType;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/Characters',["require", "exports", './Node', './NodeType'], function (require, exports, Node_1, NodeType_1) {
+    var Characters = (function (_super) {
+        __extends(Characters, _super);
+        /**
+         * The constructor.
+         * @param locator the locator
+         * @param {String} data the buffer
+         */
+        function Characters(locator, data) {
+            _super.call(this, locator);
+            this.data = data;
+            this.nodeType = NodeType_1.default.CHARACTERS;
+        }
+        /**
+         *
+         * @see nu.validator.saxtree.Node#visit(nu.validator.saxtree.TreeParser)
+         */
+        Characters.prototype.visit = function (treeParser) {
+            treeParser.characters(this.data, 0, this.data.length, this);
+        };
+        return Characters;
+    })(Node_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Characters;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/Comment',["require", "exports", './Node', './NodeType'], function (require, exports, Node_1, NodeType_1) {
+    /**
+     * A comment.
+     *
+     * @version $Id$
+     * @author hsivonen
+     */
+    var Comment = (function (_super) {
+        __extends(Comment, _super);
+        /**
+         * The constructor.
+         * @param locator the locator
+         * @param buf the buffer
+         * @param start the offset
+         * @param length the length
+         */
+        function Comment(locator, data) {
+            _super.call(this, locator);
+            this.data = data;
+            this.nodeType = NodeType_1.default.COMMENT;
+        }
+        /**
+         *
+         * @see nu.validator.saxtree.Node#visit(nu.validator.saxtree.TreeParser)
+         */
+        Comment.prototype.visit = function (treeParser) {
+            treeParser.comment(this.data, 0, this.data.length, this);
+        };
+        return Comment;
+    })(Node_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Comment;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/ParentNode',["require", "exports", './Node'], function (require, exports, Node_1) {
+    var ParentNode = (function (_super) {
+        __extends(ParentNode, _super);
+        function ParentNode(locator) {
+            _super.call(this, locator);
+            this.lastChild = null;
+            this._endLocator = null;
+        }
+        /**
+         * Insert a new child before a pre-existing child and return the newly inserted child.
+         * @param child the new child
+         * @param sibling the existing child before which to insert (must be a child of this node) or <code>null</code> to append
+         * @return <code>child</code>
+         */
+        ParentNode.prototype.insertBefore = function (child, sibling) {
+            //assert sibling == null || this == sibling.getParentNode();
+            if (!sibling) {
+                return this.appendChild(child);
+            }
+            child.detach();
+            child.parentNode = this;
+            if (this.firstChild == sibling) {
+                child.nextSibling = sibling;
+                this.firstChild = child;
+            }
+            else {
+                var prev = this.firstChild;
+                var next = this.firstChild.nextSibling;
+                while (next != sibling) {
+                    prev = next;
+                    next = next.nextSibling;
+                }
+                prev.nextSibling = child;
+                child.nextSibling = next;
+            }
+            return child;
+        };
+        ParentNode.prototype.insertBetween = function (child, prev, next) {
+            // assert prev == null || this == prev.getParentNode();
+            // assert next == null || this == next.getParentNode();
+            // assert prev != null || next == firstChild;
+            // assert next != null || prev == lastChild;
+            // assert prev == null || next == null || prev.getNextSibling() == next;
+            if (!next) {
+                return this.appendChild(child);
+            }
+            child.detach();
+            child.parentNode = this;
+            child.nextSibling = next;
+            if (!prev) {
+                this.firstChild = child;
+            }
+            else {
+                prev.nextSibling = child;
+            }
+            return child;
+        };
+        /**
+         * Append a child to this node and return the child.
+         *
+         * @param child the child to append.
+         * @return <code>child</code>
+         */
+        ParentNode.prototype.appendChild = function (child) {
+            child.detach();
+            child.parentNode = this;
+            if (!this.firstChild) {
+                this.firstChild = child;
+            }
+            else {
+                this.lastChild.nextSibling = child;
+            }
+            this.lastChild = child;
+            return child;
+        };
+        /**
+         * Append the children of another node to this node removing them from the other node .
+         * @param parent the other node whose children to append to this one
+         */
+        ParentNode.prototype.appendChildren = function (parent) {
+            var child = parent.firstChild;
+            if (!child) {
+                return;
+            }
+            var another = parent;
+            if (!this.firstChild) {
+                this.firstChild = child;
+            }
+            else {
+                this.lastChild.nextSibling = child;
+            }
+            this.lastChild = another.lastChild;
+            do {
+                child.parentNode = this;
+            } while ((child = child.nextSibling));
+            another.firstChild = null;
+            another.lastChild = null;
+        };
+        /**
+         * Remove a child from this node.
+         * @param node the child to remove
+         */
+        ParentNode.prototype.removeChild = function (node) {
+            //assert this == node.getParentNode();
+            if (this.firstChild == node) {
+                this.firstChild = node.nextSibling;
+                if (this.lastChild == node) {
+                    this.lastChild = null;
+                }
+            }
+            else {
+                var prev = this.firstChild;
+                var next = this.firstChild.nextSibling;
+                while (next != node) {
+                    prev = next;
+                    next = next.nextSibling;
+                }
+                prev.nextSibling = node.nextSibling;
+                if (this.lastChild == node) {
+                    this.lastChild = prev;
+                }
+            }
+            node.parentNode = null;
+            return node;
+        };
+        Object.defineProperty(ParentNode.prototype, "endLocator", {
+            get: function () {
+                return this._endLocator;
+            },
+            set: function (endLocator) {
+                this._endLocator = {
+                    lineNumber: endLocator.lineNumber,
+                    columnNumber: endLocator.columnNumber
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ParentNode;
+    })(Node_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = ParentNode;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/Document',["require", "exports", './ParentNode', './NodeType'], function (require, exports, ParentNode_1, NodeType_1) {
+    var Document = (function (_super) {
+        __extends(Document, _super);
+        /**
+         * A document.
+         * @version $Id$
+         * @author hsivonen
+         */
+        function Document(locator) {
+            _super.call(this, locator);
+            this.nodeType = NodeType_1.default.DOCUMENT;
+        }
+        /**
+         *
+         * @see nu.validator.saxtree.Node#visit(nu.validator.saxtree.TreeParser)
+         */
+        Document.prototype.visit = function (treeParser) {
+            treeParser.startDocument(this);
+        };
+        /**
+         * @see nu.validator.saxtree.Node#revisit(nu.validator.saxtree.TreeParser)
+         */
+        Document.prototype.revisit = function (treeParser) {
+            treeParser.endDocument(this.endLocator);
+        };
+        return Document;
+    })(ParentNode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Document;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/DTD',["require", "exports", './ParentNode', './NodeType'], function (require, exports, ParentNode_1, NodeType_1) {
+    var DTD = (function (_super) {
+        __extends(DTD, _super);
+        /**
+         * The constructor.
+         * @param locator the locator
+         * @param name the name
+         * @param publicIdentifier the public id
+         * @param systemIdentifier the system id
+         */
+        function DTD(locator, name, publicIdentifier, systemIdentifier) {
+            _super.call(this, locator);
+            this.name = name;
+            this.publicIdentifier = publicIdentifier;
+            this.systemIdentifier = systemIdentifier;
+            this.nodeType = NodeType_1.default.DTD;
+        }
+        /**
+         *
+         * @see nu.validator.saxtree.Node#visit(nu.validator.saxtree.TreeParser)
+         */
+        DTD.prototype.visit = function (treeParser) {
+            treeParser.startDTD(this.name, this.publicIdentifier, this.systemIdentifier, this);
+        };
+        /**
+         * @see nu.validator.saxtree.Node#revisit(nu.validator.saxtree.TreeParser)
+         */
+        DTD.prototype.revisit = function (treeParser) {
+            treeParser.endDTD();
+        };
+        return DTD;
+    })(ParentNode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = DTD;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/Element',["require", "exports", './ParentNode', './NodeType'], function (require, exports, ParentNode_1, NodeType_1) {
+    var Element = (function (_super) {
+        __extends(Element, _super);
+        /**
+         * An element.
+         * @version $Id$
+         * @author hsivonen
+         */
+        function Element(locator, uri, localName, qName, atts, prefixMappings) {
+            _super.call(this, locator);
+            this.uri = uri;
+            this.localName = localName;
+            this.qName = qName;
+            this.attributes = atts;
+            this.prefixMappings = prefixMappings;
+            this.nodeType = NodeType_1.default.ELEMENT;
+        }
+        /**
+         *
+         * @see nu.validator.saxtree.Node#visit(nu.validator.saxtree.TreeParser)
+         */
+        Element.prototype.visit = function (treeParser) {
+            if (this.prefixMappings) {
+                for (var key in this.prefixMappings) {
+                    var mapping = this.prefixMappings[key];
+                    treeParser.startPrefixMapping(mapping.getPrefix(), mapping.getUri(), this);
+                }
+            }
+            treeParser.startElement(this.uri, this.localName, this.qName, this.attributes, this);
+        };
+        /**
+         * @see nu.validator.saxtree.Node#revisit(nu.validator.saxtree.TreeParser)
+         */
+        Element.prototype.revisit = function (treeParser) {
+            treeParser.endElement(this.uri, this.localName, this.qName, this.endLocator);
+            if (this.prefixMappings) {
+                for (var key in this.prefixMappings) {
+                    var mapping = this.prefixMappings[key];
+                    treeParser.endPrefixMapping(mapping.getPrefix(), this.endLocator);
+                }
+            }
+        };
+        return Element;
+    })(ParentNode_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Element;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/html/SAXTreeBuilder',["require", "exports", './TreeBuilder', './Characters', './Comment', './Document', './DTD', './Element', './getAttribute'], function (require, exports, TreeBuilder_1, Characters_1, Comment_1, Document_1, DTD_1, Element_1, getAttribute_1) {
+    var SAXTreeBuilder = (function (_super) {
+        __extends(SAXTreeBuilder, _super);
+        function SAXTreeBuilder() {
+            _super.call(this);
+        }
+        SAXTreeBuilder.prototype.start = function (tokenizer) {
+            this.document = new Document_1.default(this.tokenizer);
+        };
+        SAXTreeBuilder.prototype.end = function () {
+            this.document.endLocator = this.tokenizer;
+        };
+        SAXTreeBuilder.prototype.insertDoctype = function (name, publicId, systemId) {
+            var doctype = new DTD_1.default(this.tokenizer, name, publicId, systemId);
+            doctype.endLocator = this.tokenizer;
+            this.document.appendChild(doctype);
+        };
+        SAXTreeBuilder.prototype.createElement = function (namespaceURI, localName, attributes) {
+            var element = new Element_1.default(this.tokenizer, namespaceURI, localName, localName, attributes || []);
+            return element;
+        };
+        SAXTreeBuilder.prototype.insertComment = function (data, parent) {
+            if (!parent)
+                parent = this.currentStackItem();
+            var comment = new Comment_1.default(this.tokenizer, data);
+            parent.appendChild(comment);
+        };
+        SAXTreeBuilder.prototype.appendCharacters = function (parent, data) {
+            var text = new Characters_1.default(this.tokenizer, data);
+            parent.appendChild(text);
+        };
+        SAXTreeBuilder.prototype.insertText = function (data) {
+            if (this.redirectAttachToFosterParent && this.openElements.top.isFosterParenting()) {
+                var tableIndex = this.openElements.findIndex('table');
+                var tableItem = this.openElements.item(tableIndex);
+                var table = tableItem.node;
+                if (tableIndex === 0) {
+                    return this.appendCharacters(table, data);
+                }
+                var text = new Characters_1.default(this.tokenizer, data);
+                var parent = table.parentNode;
+                if (parent) {
+                    parent.insertBetween(text, table.previousSibling, table);
+                    return;
+                }
+                var stackParent = this.openElements.item(tableIndex - 1).node;
+                stackParent.appendChild(text);
+                return;
+            }
+            this.appendCharacters(this.currentStackItem().node, data);
+        };
+        SAXTreeBuilder.prototype.attachNode = function (node, parent) {
+            parent.appendChild(node);
+        };
+        SAXTreeBuilder.prototype.attachNodeToFosterParent = function (child, table, stackParent) {
+            var parent = table.parentNode;
+            if (parent)
+                parent.insertBetween(child, table.previousSibling, table);
+            else
+                stackParent.appendChild(child);
+        };
+        SAXTreeBuilder.prototype.detachFromParent = function (element) {
+            element.detach();
+        };
+        SAXTreeBuilder.prototype.reparentChildren = function (oldParent, newParent) {
+            newParent.appendChildren(oldParent.firstChild);
+        };
+        SAXTreeBuilder.prototype.getFragment = function () {
+            var fragment = new DocumentFragment();
+            this.reparentChildren(this.openElements.rootNode, fragment);
+            return fragment;
+        };
+        SAXTreeBuilder.prototype.addAttributesToElement = function (element, attributes) {
+            for (var i = 0; i < attributes.length; i++) {
+                var attribute = attributes[i];
+                if (!getAttribute_1.default(element, attribute.nodeName))
+                    element.attributes.push(attribute);
+            }
+        };
+        return SAXTreeBuilder;
+    })(TreeBuilder_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = SAXTreeBuilder;
+});
+
+define('mode/html/TreeParser',["require", "exports"], function (require, exports) {
+    var TreeParser = (function () {
+        function TreeParser(contextHandler) {
+        }
+        TreeParser.prototype.parse = function (something) {
+        };
+        return TreeParser;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = TreeParser;
+});
+
+define('mode/html/SAXParser',["require", "exports", './SAXTreeBuilder', './Tokenizer', './TreeParser'], function (require, exports, SAXTreeBuilder_1, Tokenizer_1, TreeParser_1) {
+    var SAXParser = (function () {
+        function SAXParser() {
+            this.contentHandler = null;
+            this._errorHandler = null;
+            this._treeBuilder = new SAXTreeBuilder_1.default();
+            this._tokenizer = new Tokenizer_1.default(this._treeBuilder);
+            this._scriptingEnabled = false;
+        }
+        SAXParser.prototype.parseFragment = function (source, context) {
+            this._treeBuilder.setFragmentContext(context);
+            this._tokenizer.tokenize(source);
+            var fragment = this._treeBuilder.getFragment();
+            if (fragment) {
+                new TreeParser_1.default(this.contentHandler).parse(fragment);
+            }
+        };
+        SAXParser.prototype.parse = function (source) {
+            this._tokenizer.tokenize(source);
+            var document = this._treeBuilder.document;
+            if (document) {
+                new TreeParser_1.default(this.contentHandler).parse(document);
+            }
+        };
+        Object.defineProperty(SAXParser.prototype, "scriptingEnabled", {
+            get: function () {
+                return this._scriptingEnabled;
+            },
+            set: function (scriptingEnabled) {
+                this._scriptingEnabled = scriptingEnabled;
+                this._treeBuilder.scriptingEnabled = scriptingEnabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SAXParser.prototype, "errorHandler", {
+            get: function () {
+                return this._errorHandler;
+            },
+            set: function (errorHandler) {
+                this._errorHandler = errorHandler;
+                this._treeBuilder.errorHandler = errorHandler;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return SAXParser;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = SAXParser;
+});
+
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+define('mode/HtmlWorker',["require", "exports", "../worker/Mirror", "./html/SAXParser"], function (require, exports, Mirror_1, SAXParser_1) {
+    var errorTypes = {
+        "expected-doctype-but-got-start-tag": "info",
+        "expected-doctype-but-got-chars": "info",
+        "non-html-root": "info",
+    };
+    var HtmlWorker = (function (_super) {
+        __extends(HtmlWorker, _super);
+        function HtmlWorker(sender) {
+            _super.call(this, sender);
+            this.setOptions();
+            sender.emit('initAfter');
+        }
+        HtmlWorker.prototype.setOptions = function (options) {
+            if (options) {
+                this.context = options.context;
+            }
+            else {
+                this.context = void 0;
+            }
+            this.doc.getValue() && this.deferredUpdate.schedule(100);
+        };
+        HtmlWorker.prototype.onUpdate = function () {
+            var value = this.doc.getValue();
+            if (!value) {
+                return;
+            }
+            var errors = [];
+            var parser = new SAXParser_1.default();
+            if (parser) {
+                var noop = function () { };
+                parser.contentHandler = {
+                    startDocument: noop,
+                    endDocument: noop,
+                    startElement: noop,
+                    endElement: noop,
+                    characters: noop
+                };
+                parser.errorHandler = {
+                    error: function (message, location, code) {
+                        errors.push({
+                            row: location.line,
+                            column: location.column,
+                            text: message,
+                            type: errorTypes[code] || "error"
+                        });
+                    }
+                };
+                if (this.context) {
+                    parser.parseFragment(value, this.context);
+                }
+                else {
+                    parser.parse(value);
+                }
+            }
+            this.sender.emit("error", errors);
+        };
+        return HtmlWorker;
+    })(Mirror_1.default);
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HtmlWorker;
+});
+
+  var library = require('deuce');
   if(typeof module !== 'undefined' && module.exports) {
     module.exports = library;
   } else if(globalDefine) {

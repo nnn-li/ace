@@ -105,6 +105,7 @@ define(["require", "exports", "./keyboard/HashHandler", "./autocomplete/popup", 
             }
             else {
                 if (this.completions.filterText) {
+                    // FIXME: getAllRanges on Selection?
                     var ranges = this.editor.selection['getAllRanges']();
                     // TODO: Assignment in conditional expression.
                     // TODO: Assignment in conditional expression.
@@ -113,7 +114,7 @@ define(["require", "exports", "./keyboard/HashHandler", "./autocomplete/popup", 
                     // Use assertion within the loop to look for falsey values.
                     for (var i = 0, range; range = ranges[i]; i++) {
                         range.start.column -= this.completions.filterText.length;
-                        this.editor.session.remove(range);
+                        this.editor.getSession().remove(range);
                     }
                 }
                 if (data.snippet) {
@@ -194,7 +195,7 @@ define(["require", "exports", "./keyboard/HashHandler", "./autocomplete/popup", 
             var prefix;
             if (keepPopupPosition && this.base && this.completions) {
                 var range = new Range_1.default(this.base.row, this.base.column, pos.row, pos.column);
-                prefix = this.editor.session.getTextRange(range);
+                prefix = this.editor.getSession().getTextRange(range);
                 if (prefix == this.completions.filterText)
                     return;
                 this.completions.setFilter(prefix);

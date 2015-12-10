@@ -1148,7 +1148,7 @@ export class Compiler {
      * @param {*} args arguments to function, if any
      * @param {Function} callback called after setup to do actual work of function
      *
-     * @returns the name of the newly created function or generator object.
+     * @return the name of the newly created function or generator object.
      *
      */
     buildcodeobj(n, coname, decorator_list, args, callback) {

@@ -43,17 +43,17 @@ export default class Selection extends EventEmitterClass {
     /**
      *
      * Returns `true` if the selection is empty.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isEmpty(): boolean;
     /**
     * Returns `true` if the selection is a multi-line.
-    * @returns {Boolean}
+    * @return {Boolean}
     **/
     isMultiLine(): boolean;
     /**
     * Returns an object containing the `row` and `column` current position of the cursor.
-    * @returns {Object}
+    * @return {Object}
     **/
     getCursor(): {
         row: number;
@@ -68,7 +68,7 @@ export default class Selection extends EventEmitterClass {
     /**
     * Returns an object containing the `row` and `column` of the calling selection anchor.
     *
-    * @returns {Object}
+    * @return {Object}
     * @related Anchor.getPosition
     **/
     getSelectionAnchor(): {
@@ -78,7 +78,7 @@ export default class Selection extends EventEmitterClass {
     /**
     *
     * Returns an object containing the `row` and `column` of the calling selection lead.
-    * @returns {Object}
+    * @return {Object}
     **/
     getSelectionLead(): {
         row: number;
@@ -94,12 +94,12 @@ export default class Selection extends EventEmitterClass {
     shiftSelection(columns: any): void;
     /**
     * Returns `true` if the selection is going backwards in the document.
-    * @returns {Boolean}
+    * @return {Boolean}
     **/
     isBackwards(): boolean;
     /**
     * [Returns the [[Range]] for the selected text.]{: #Selection.getRange}
-    * @returns {Range}
+    * @return {Range}
     **/
     getRange(): Range;
     /**
@@ -326,7 +326,7 @@ export default class Selection extends EventEmitterClass {
     * postion. The result is the range of the starting and eventual cursor position.
     * Will reset the cursor position.
     * @param {Function} The callback that should change the cursor position
-    * @returns {Range}
+    * @return {Range}
     *
     **/
     getRangeOfMovements(func: any): Range;

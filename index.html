@@ -1,14 +1,40 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Example</title>
+    <title>DEUCE Example</title>
     <link rel="stylesheet" type="text/css" href="src/css/editor.css">
     <link rel="stylesheet" type="text/css" href="src/theme/twilight.css">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="jspm_packages/system.js"></script>
-    <script src="config.js"></script>
+    <script src="dist/deuce.js"></script>
     <script>
-      System.import('main');
+    window.onload = function() {
+      var editor = DEUCE.edit('editor');
+    }
+    /*
+    // var cMode = new DEUCE.CssMode()
+    var hMode = new DEUCE.HtmlMode()
+    // var jMode = new DEUCE.JavaScriptMode()
+
+    var code = "";
+
+    var doc = new DEUCE.EditorDocument(code);
+
+    var editSession = new DEUCE.EditSession(doc, hMode);
+    editSession.setTabSize(2);
+    editSession.setUseSoftTabs(true);
+
+    var element = document.getElementById('editor')
+    var renderer = new DEUCE.VirtualRenderer(element);
+    // renderer.setTheme...
+    // The Editor acts as a controller between the renderer and the EditSession.
+    var editor = new DEUCE.Editor(renderer, editSession);
+    editor.setFontSize("16px");
+    editor.setHighlightActiveLine(true);
+    editor.setHighlightGutterLine(true);
+    editor.setHighlightSelectedWord(true);
+    editor.setAnimatedScroll(false);
+    editor.setShowInvisibles(true);
+    */
     </script>
   </head>
   <body>

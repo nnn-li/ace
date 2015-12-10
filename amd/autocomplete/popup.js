@@ -62,7 +62,7 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
                 editor.setHighlightActiveLine(false);
                 // FIXME: This must be a RegExp.
                 // editor.session.highlight("");
-                editor.session.$searchHighlight.clazz = "ace_highlight-marker";
+                editor.getSession().$searchHighlight.clazz = "ace_highlight-marker";
                 return editor;
             }
             var el = dom_1.createElement("div");
@@ -77,14 +77,14 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
                 self.selectionMarker.start.row = self.selectionMarker.end.row = pos.row;
                 e.stop();
             });
-            this.selectionMarkerId = this.editor.session.addMarker(this.selectionMarker, "ace_active-line", "fullLine");
+            this.selectionMarkerId = this.editor.getSession().addMarker(this.selectionMarker, "ace_active-line", "fullLine");
             this.setSelectOnHover(false);
             this.editor.on("mousemove", function (e) {
                 if (!self.lastMouseEvent) {
                     self.lastMouseEvent = e;
                     return;
                 }
-                if (self.lastMouseEvent.x == e.x && self.lastMouseEvent.y == e.y) {
+                if (self.lastMouseEvent.x === e.x && self.lastMouseEvent.y === e.y) {
                     return;
                 }
                 self.lastMouseEvent = e;
@@ -124,17 +124,17 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
             event_1.addListener(this.editor.container, "mouseout", hideHoverMarker);
             this.editor.on("hide", hideHoverMarker);
             this.editor.on("changeSelection", hideHoverMarker);
-            this.editor.session.doc.getLength = function () {
+            this.editor.getSession().doc.getLength = function () {
                 return self.data.length;
             };
-            this.editor.session.doc.getLine = function (i) {
+            this.editor.getSession().doc.getLine = function (i) {
                 var data = self.data[i];
                 if (typeof data == "string") {
                     return data;
                 }
                 return (data && data.value) || "";
             };
-            var bgTokenizer = this.editor.session.bgTokenizer;
+            var bgTokenizer = this.editor.getSession().bgTokenizer;
             bgTokenizer.$tokenizeRow = function (dataIndex) {
                 var data = self.data[dataIndex];
                 var tokens = [];
@@ -166,7 +166,7 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
             };
             bgTokenizer.$updateOnChange = noop;
             bgTokenizer.start = noop;
-            this.editor.session.$computeWidth = function () {
+            this.editor.getSession().$computeWidth = function () {
                 return self.screenWidth = 0;
             };
             this.editor.on("changeSelection", function () {
@@ -231,10 +231,10 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
         };
         ListViewPopup.prototype.setSelectOnHover = function (val) {
             if (!val) {
-                this.hoverMarkerId = this.editor.session.addMarker(this.hoverMarker, "ace_line-hover", "fullLine");
+                this.hoverMarkerId = this.editor.getSession().addMarker(this.hoverMarker, "ace_line-hover", "fullLine");
             }
             else if (this.hoverMarkerId) {
-                this.editor.session.removeMarker(this.hoverMarkerId);
+                this.editor.getSession().removeMarker(this.hoverMarkerId);
                 this.hoverMarkerId = null;
             }
         };
@@ -242,7 +242,7 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
             if (row !== this.hoverMarker.start.row) {
                 this.hoverMarker.start.row = this.hoverMarker.end.row = row;
                 if (!suppressRedraw) {
-                    this.editor.session._emit("changeBackMarker");
+                    this.editor.getSession()._emit("changeBackMarker");
                 }
                 this.editor._emit("changeHoverMarker");
             }
@@ -258,7 +258,7 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
             if (this.selectionMarker.start.row != row) {
                 this.editor.selection.clearSelection();
                 this.selectionMarker.start.row = this.selectionMarker.end.row = row || 0;
-                this.editor.session._emit("changeBackMarker");
+                this.editor.getSession()._emit("changeBackMarker");
                 this.editor.moveCursorTo(row || 0, 0);
                 if (this.isOpen) {
                     this.editor._signal("select");
@@ -279,7 +279,7 @@ define(["require", "exports", "../EditorDocument", "../EditSession", "../Virtual
             configurable: true
         });
         ListViewPopup.prototype.getLength = function () {
-            return this.editor.session.getLength();
+            return this.editor.getSession().getLength();
         };
         Object.defineProperty(ListViewPopup.prototype, "container", {
             get: function () {

@@ -40,12 +40,15 @@ export default class ScrollBar extends EventEmitterClass {
     public inner: HTMLDivElement;
     public isVisible: boolean;
     public skipEvent: boolean;
+
     /**
-     * Creates a new `ScrollBar`. `parent` is the owner of the scroll bar.
-     * @param {DOMElement} parent A DOM element 
+     * Creates a new `ScrollBar`.
      *
+     * @class
      * @constructor
-     **/
+     * @param parent {HTMLlement} A paent of the scrollbar.
+     * @param classSuffix {string}
+     */
     constructor(parent: HTMLElement, classSuffix: string) {
         super();
         this.element = <HTMLDivElement>createElement("div");
@@ -62,8 +65,15 @@ export default class ScrollBar extends EventEmitterClass {
 
         addListener(this.element, "mousedown", event.preventDefault);
     }
-    setVisible(isVisible) {
+
+    /**
+     * @method setVisible
+     * @param isVisible {boolean}
+     * @return {ScrollBar}
+     */
+    setVisible(isVisible: boolean): ScrollBar {
         this.element.style.display = isVisible ? "" : "none";
         this.isVisible = isVisible;
+        return this;
     }
 } 

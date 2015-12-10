@@ -12,7 +12,7 @@ var now = Date.now;
  * @param {Function} fn
  * @param {Number} timeout
  * @param {Object} context
- * @returns {number}
+ * @return {number}
  */
 export function setTimeoutContext(fn, timeout: number, context) {
     return setTimeout(bindFn(fn, context), timeout);
@@ -25,7 +25,7 @@ export function setTimeoutContext(fn, timeout: number, context) {
  * @param {*|Array} arg
  * @param {String} fn
  * @param {Object} [context]
- * @returns {Boolean}
+ * @return {Boolean}
  */
 export function invokeArrayArg(arg, fn, context) {
     if (Array.isArray(arg)) {
@@ -69,7 +69,7 @@ export function each(obj, iterator, context?) {
  * @param {Object} dest
  * @param {Object} src
  * @param {Boolean} [merge]
- * @returns {Object} dest
+ * @return {Object} dest
  */
 export function extend(dest, src, merge?: boolean) {
     var keys = Object.keys(src);
@@ -88,7 +88,7 @@ export function extend(dest, src, merge?: boolean) {
  * means that properties that exist in dest will not be overwritten by src
  * @param {Object} dest
  * @param {Object} src
- * @returns {Object} dest
+ * @return {Object} dest
  */
 export function merge(dest, src) {
     return extend(dest, src, true);
@@ -117,7 +117,7 @@ export function inherit(child, base, properties) {
  * simple function bind
  * @param {Function} fn
  * @param {Object} context
- * @returns {Function}
+ * @return {Function}
  */
 export function bindFn(fn, context) {
     return function boundFn() {
@@ -129,7 +129,7 @@ export function bindFn(fn, context) {
  * use the val2 when val1 is undefined
  * @param {*} val1
  * @param {*} val2
- * @returns {*}
+ * @return {*}
  */
 export function ifUndefined(val1, val2) {
     return (val1 === undefined) ? val2 : val1;
@@ -180,7 +180,7 @@ export function hasParent(node, parent) {
  * small indexOf wrapper
  * @param {String} str
  * @param {String} find
- * @returns {Boolean} found
+ * @return {Boolean} found
  */
 export function inStr(str: string, find: string): boolean {
     return str.indexOf(find) > -1;
@@ -189,7 +189,7 @@ export function inStr(str: string, find: string): boolean {
 /**
  * split string on whitespace
  * @param {String} str
- * @returns {Array} words
+ * @return {Array} words
  */
 export function splitStr(str) {
     return str.trim().split(/\s+/g);
@@ -220,7 +220,7 @@ export function inArray(src: any[], find, findByKey?: string) {
 /**
  * convert array-like objects to real arrays
  * @param {Object} obj
- * @returns {Array}
+ * @return {Array}
  */
 export function toArray(obj) {
     return Array.prototype.slice.call(obj, 0);
@@ -231,7 +231,7 @@ export function toArray(obj) {
  * @param {Array} src [{id:1},{id:2},{id:1}]
  * @param {String} [key]
  * @param {Boolean} [sort=False]
- * @returns {Array} [{id:1},{id:2}]
+ * @return {Array} [{id:1},{id:2}]
  */
 export function uniqueArray(src, key, sort) {
     var results = [];
@@ -264,7 +264,7 @@ export function uniqueArray(src, key, sort) {
  * get the prefixed property
  * @param {Object} obj
  * @param {String} property
- * @returns {String|Undefined} prefixed
+ * @return {String|Undefined} prefixed
  */
 export function prefixed(obj, property) {
     var prefix, prop;
@@ -285,7 +285,7 @@ export function prefixed(obj, property) {
 
 /**
  * get a unique id
- * @returns {number} uniqueId
+ * @return {number} uniqueId
  */
 var _uniqueId = 1;
 export function uniqueId() {
@@ -295,7 +295,7 @@ export function uniqueId() {
 /**
  * get the window object of an element
  * @param {HTMLElement} element
- * @returns {Window}
+ * @return {Window}
  */
 export function getWindowForElement(element: HTMLElement): Window {
     var doc = element.ownerDocument;

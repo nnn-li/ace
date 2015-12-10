@@ -44,7 +44,7 @@ define(["require", "exports", "./lib/event", './ScrollBar', "./lib/dom"], functi
         Object.defineProperty(VScrollBar.prototype, "width", {
             /**
              * Returns the width of the scroll bar.
-             * @returns {Number}
+             * @return {Number}
              **/
             get: function () {
                 return this.isVisible ? this._width : 0;

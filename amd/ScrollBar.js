@@ -11,11 +11,13 @@ define(["require", "exports", "./lib/dom", "./lib/event", "./lib/event_emitter"]
     var ScrollBar = (function (_super) {
         __extends(ScrollBar, _super);
         /**
-         * Creates a new `ScrollBar`. `parent` is the owner of the scroll bar.
-         * @param {DOMElement} parent A DOM element
+         * Creates a new `ScrollBar`.
          *
+         * @class
          * @constructor
-         **/
+         * @param parent {HTMLlement} A paent of the scrollbar.
+         * @param classSuffix {string}
+         */
         function ScrollBar(parent, classSuffix) {
             _super.call(this);
             this.element = dom_1.createElement("div");
@@ -28,9 +30,15 @@ define(["require", "exports", "./lib/dom", "./lib/event", "./lib/event_emitter"]
             this.skipEvent = false;
             event_1.addListener(this.element, "mousedown", event.preventDefault);
         }
+        /**
+         * @method setVisible
+         * @param isVisible {boolean}
+         * @return {ScrollBar}
+         */
         ScrollBar.prototype.setVisible = function (isVisible) {
             this.element.style.display = isVisible ? "" : "none";
             this.isVisible = isVisible;
+            return this;
         };
         return ScrollBar;
     })(event_emitter_1.default);

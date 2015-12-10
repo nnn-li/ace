@@ -150,7 +150,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     private $vScrollBarAlwaysVisible;
     private $showGutter;
     private showInvisibles;
-    private $animatedScroll;
+    private $animatedScroll: boolean;
     private $scrollPastEnd;
     private $highlightGutterLine;
     private desiredHeight;
@@ -159,7 +159,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * Constructs a new `VirtualRenderer` within the `container` specified.
      * @class VirtualRenderer
      * @constructor
-     * @param container {HTMLElement} The root element of the editor
+     * @param container {HTMLElement} The root element of the editor.
      */
     constructor(container: HTMLElement) {
         super();
@@ -248,27 +248,50 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         _emit("renderer", this);
     }
 
+    /**
+     * @property maxLines
+     * @type number
+     */
     set maxLines(maxLines: number) {
         this.$maxLines = maxLines;
     }
 
+    /**
+     * @property keepTextAreaAtCursor
+     * @type boolean
+     */
     set keepTextAreaAtCursor(keepTextAreaAtCursor: boolean) {
         this.$keepTextAreaAtCursor = keepTextAreaAtCursor;
     }
 
+    /**
+     * Sets the <code>style</code> property of the content to "default".
+     *
+     * @method setDefaultCursorStyle
+     * @return {void}
+     */
     setDefaultCursorStyle(): void {
         this.content.style.cursor = "default";
     }
 
     /**
-     * Not sure what the correct semantics should be for this.
+     * Sets the <code>opacity</code> of the cursor layer to "0".
+     *
+     * @method setCursorLayerOff
+     * @return {VirtualRenderer}
+     * @chainable
      */
-    setCursorLayerOff(): void {
+    setCursorLayerOff(): VirtualRenderer {
         var noop = function() { };
         this.$cursorLayer.restartTimer = noop;
         this.$cursorLayer.element.style.opacity = "0";
+        return this;
     }
 
+    /**
+     * @method updateCharacterSize
+     * @return {void}
+     */
     updateCharacterSize(): void {
         // FIXME: DGH allowBoldFonts does not exist on Text
         if (this.$textLayer['allowBoldFonts'] != this.$allowBoldFonts) {
@@ -282,7 +305,11 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-     * Associates the renderer with an EditSession.
+     * Associates the renderer with a different EditSession.
+     *
+     * @method setSession
+     * @param session {EditSession}
+     * @return {void}
      */
     setSession(session: EditSession): void {
         if (this.session) {
@@ -294,8 +321,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
             return;
         }
 
-        if (this.scrollMargin.top && session.getScrollTop() <= 0)
+        if (this.scrollMargin.top && session.getScrollTop() <= 0) {
             session.setScrollTop(-this.scrollMargin.top);
+        }
 
         this.$cursorLayer.setSession(session);
         this.$markerBack.setSession(session);
@@ -311,12 +339,13 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    * Triggers a partial update of the text, from the range given by the two parameters.
-    * @param {Number} firstRow The first row to update
-    * @param {Number} lastRow The last row to update
-    *
-    *
-    **/
+     * Triggers a partial update of the text, from the range given by the two parameters.
+     *
+     * @param {Number} firstRow The first row to update.
+     * @param {Number} lastRow The last row to update.
+     * @param [force] {boolean}
+     * @return {void}
+     */
     updateLines(firstRow: number, lastRow: number, force?: boolean): void {
         if (lastRow === undefined) {
             lastRow = Infinity;
@@ -416,14 +445,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
-    * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
-    * @param {Number} gutterWidth The width of the gutter in pixels
-    * @param {Number} width The width of the editor in pixels
-    * @param {Number} height The hiehgt of the editor, in pixels
-    *
-    *
-    **/
+     * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
+     * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
+     * @param {Number} gutterWidth The width of the gutter in pixels
+     * @param {Number} width The width of the editor in pixels
+     * @param {Number} height The hiehgt of the editor, in pixels
+     */
     onResize(force?: boolean, gutterWidth?: number, width?: number, height?: number) {
         if (this.resizing > 2)
             return;
@@ -533,18 +560,22 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    * Identifies whether you want to have an animated scroll or not.
-    * @param {Boolean} shouldAnimate Set to `true` to show animated scrolls
-    *
-    **/
-    setAnimatedScroll(shouldAnimate) {
+     * Identifies whether you want to have an animated scroll or not.
+     *
+     * @method setAnimatedScroll
+     * @param shouldAnimate {boolean} Set to `true` to show animated scrolls.
+     * @return {void}
+     */
+    setAnimatedScroll(shouldAnimate: boolean): void {
         this.setOption("animatedScroll", shouldAnimate);
     }
 
     /**
-    * Returns whether an animated scroll happens or not.
-    * @returns {Boolean}
-    **/
+     * Returns whether an animated scroll happens or not.
+     *
+     * @method getAnimatedScroll
+     * @return {Boolean}
+     */
     getAnimatedScroll() {
         return this.$animatedScroll;
     }
@@ -559,7 +590,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns whether invisible characters are being shown or not.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     getShowInvisibles(): boolean {
         return this.getOption("showInvisibles");
@@ -584,7 +615,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns whether the print margin is being shown or not.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     getShowPrintMargin(): boolean {
         return this.getOption("showPrintMargin");
@@ -600,7 +631,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns the column number of where the print margin is.
-     * @returns {Number}
+     * @return {Number}
      */
     getPrintMarginColumn(): number {
         return this.getOption("printMarginColumn");
@@ -608,7 +639,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns `true` if the gutter is being shown.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     getShowGutter() {
         return this.getOption("showGutter");
@@ -676,7 +707,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the root element containing this renderer.
-    * @returns {DOMElement}
+    * @return {DOMElement}
     **/
     getContainerElement() {
         return this.container;
@@ -685,7 +716,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the element that the mouse events are attached to
-    * @returns {DOMElement}
+    * @return {DOMElement}
     **/
     getMouseEventTarget(): HTMLDivElement {
         return this.content;
@@ -694,7 +725,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the element to which the hidden text area is added.
-    * @returns {DOMElement}
+    * @return {DOMElement}
     **/
     getTextAreaContainer() {
         return this.container;
@@ -736,7 +767,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * [Returns the index of the first visible row.]{: #VirtualRenderer.getFirstVisibleRow}
-    * @returns {Number}
+    * @return {Number}
     **/
     getFirstVisibleRow() {
         return this.layerConfig.firstRow;
@@ -745,7 +776,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the index of the first fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-    * @returns {Number}
+    * @return {Number}
     **/
     getFirstFullyVisibleRow() {
         return this.layerConfig.firstRow + (this.layerConfig.offset === 0 ? 0 : 1);
@@ -754,7 +785,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the index of the last fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-    * @returns {Number}
+    * @return {Number}
     **/
     getLastFullyVisibleRow() {
         var flint = Math.floor((this.layerConfig.height + this.layerConfig.offset) / this.layerConfig.lineHeight);
@@ -764,7 +795,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * [Returns the index of the last visible row.]{: #VirtualRenderer.getLastVisibleRow}
-    * @returns {Number}
+    * @return {Number}
     **/
     getLastVisibleRow() {
         return this.layerConfig.lastRow;
@@ -799,7 +830,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns whether the horizontal scrollbar is set to be always visible.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getHScrollBarAlwaysVisible() {
         // FIXME
@@ -816,7 +847,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns whether the vertical scrollbar is set to be always visible.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getVScrollBarAlwaysVisible() {
         return this.$vScrollBarAlwaysVisible;
@@ -1246,7 +1277,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     * {:EditSession.getScrollTop}
     * @related EditSession.getScrollTop
-    * @returns {Number}
+    * @return {Number}
     **/
     getScrollTop(): number {
         return this.session.getScrollTop();
@@ -1255,7 +1286,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     * {:EditSession.getScrollLeft}
     * @related EditSession.getScrollLeft
-    * @returns {Number}
+    * @return {Number}
     **/
     getScrollLeft(): number {
         return this.session.getScrollLeft();
@@ -1264,7 +1295,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the first visible row, regardless of whether it's fully visible or not.
-    * @returns {Number}
+    * @return {Number}
     **/
     getScrollTopRow(): number {
         return this.scrollTop / this.lineHeight;
@@ -1273,7 +1304,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
     *
     * Returns the last visible row, regardless of whether it's fully visible or not.
-    * @returns {Number}
+    * @return {Number}
     **/
     getScrollBottomRow(): number {
         return Math.max(0, Math.floor((this.scrollTop + this.$size.scrollerHeight) / this.lineHeight) - 1);
@@ -1433,7 +1464,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     * @param {Number} deltaY The y value to scroll by
     *
     *
-    * @returns {Boolean}
+    * @return {Boolean}
     **/
     isScrollableBy(deltaX: number, deltaY: number): boolean {
         if (deltaY < 0 && this.session.getScrollTop() >= 1 - this.scrollMargin.top)
@@ -1472,7 +1503,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     * Returns an object containing the `pageX` and `pageY` coordinates of the document position.
     * @param {Number} row The document row position
     * @param {Number} column The document column position
-    * @returns {Object}
+    * @return {Object}
     **/
     textToScreenCoordinates(row: number, column: number): { pageX: number; pageY: number } {
         var canvasPos = this.scroller.getBoundingClientRect();
@@ -1548,8 +1579,11 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
      * Sets a new theme for the editor.
      * `theme` should exist, and be a directory path, like `ace/theme/textmate`.
-     * @param {String} theme The path to a theme
-     * @param {Function} cb optional callback
+     *
+     * @method setTheme
+     * @param theme {String} theme The path to a theme
+     * @param theme {Function} cb optional callback
+     * @return {void}
      */
     setTheme(theme: any, cb?: () => any): void {
         console.log("VirtualRenderer setTheme, theme = " + theme)
@@ -1607,7 +1641,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns the path of the current theme.
-     * @returns {String}
+     *
+     * @method getTheme
+     * @return {string}
      */
     getTheme(): string {
         return this.$themeId;

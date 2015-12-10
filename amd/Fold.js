@@ -33,11 +33,20 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 define(["require", "exports", "./range_list"], function (require, exports, range_list_1) {
-    /*
+    //import {inherits} from "./lib/oop";
+    /**
      * Simple fold-data struct.
-     **/
+     * @class Fold
+     * @extends RangeList
+     */
     var Fold = (function (_super) {
         __extends(Fold, _super);
+        /**
+         * @class Fold
+         * @constructor
+         * @param range {Range}
+         * @param placeholder {string}
+         */
         function Fold(range, placeholder) {
             _super.call(this);
             this.foldLine = null;
@@ -48,15 +57,28 @@ define(["require", "exports", "./range_list"], function (require, exports, range
             this.sameRow = range.start.row === range.end.row;
             this.subFolds = this.ranges = [];
         }
+        /**
+         * @method toString
+         * @return {string}
+         */
         Fold.prototype.toString = function () {
             return '"' + this.placeholder + '" ' + this.range.toString();
         };
+        /**
+         * @method setFoldLine
+         * @param foldLine {FoldLine}
+         * @return {void}
+         */
         Fold.prototype.setFoldLine = function (foldLine) {
             this.foldLine = foldLine;
             this.subFolds.forEach(function (fold) {
                 fold.setFoldLine(foldLine);
             });
         };
+        /**
+         * @method clone
+         * @return {Fold}
+         */
         Fold.prototype.clone = function () {
             var range = this.range.clone();
             var fold = new Fold(range, this.placeholder);
@@ -66,6 +88,11 @@ define(["require", "exports", "./range_list"], function (require, exports, range
             fold.collapseChildren = this.collapseChildren;
             return fold;
         };
+        /**
+         * @method addSubFold
+         * @param fold {Fold}
+         * @return {Fold}
+         */
         Fold.prototype.addSubFold = function (fold) {
             if (this.range.isEqual(fold))
                 return;
@@ -96,6 +123,11 @@ define(["require", "exports", "./range_list"], function (require, exports, range
             fold.setFoldLine(this.foldLine);
             return fold;
         };
+        /**
+         * @method restoreRange
+         * @param range {Fold}
+         * @return {void}
+         */
         Fold.prototype.restoreRange = function (range) {
             return restoreRange(range, this.start);
         };

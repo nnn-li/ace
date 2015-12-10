@@ -45,7 +45,7 @@ export default class VScrollBar extends ScrollBar {
 
     /**
      * Returns the width of the scroll bar.
-     * @returns {Number}
+     * @return {Number}
      **/
     get width(): number {
         return this.isVisible ? this._width : 0;

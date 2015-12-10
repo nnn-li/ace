@@ -12,7 +12,7 @@ Object.keys(entities).forEach(function(entityKey) {
     }
 });
 
-class EntityParserClass {
+export class EntityParserClass {
     constructor() {
     }
     consumeEntity(buffer: InputStream, tokenizer: Tokenizer, additionalAllowedCharacter?: string): any {

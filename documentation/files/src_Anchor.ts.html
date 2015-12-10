@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -139,26 +137,49 @@ import EventEmitterClass from &#x27;./lib/event_emitter&#x27;;
 import { assert } from &#x27;./lib/asserts&#x27;;
 
 /**
- *
  * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
- *
  * @class Anchor
- * 
- * Creates a new &#x60;Anchor&#x60; and associates it with a document.
- *
- * @param {EditorDocument} doc The document to associate with the anchor
- * @param {Number} row The starting row position
- * @param {Number} column The starting column position
- *
- * @constructor
- **/
-
+ * @extends EventEmitterClass
+ */
 export default class Anchor extends EventEmitterClass {
+
+    /**
+     * @property row
+     * @type number
+     */
     public row: number;
+
+    /**
+     * @property column
+     * @type number
+     */
     public column: number;
+
+    /**
+     * @property document
+     * @type {EditorDocument}
+     * @private
+     */
     private document: EditorDocument;
     private $onChange: (event, doc: EditorDocument) =&gt; void;
+
+    /**
+     * @property $insertRight
+     * @type boolean
+     * @default false
+     * @private
+     */
     private $insertRight: boolean;
+
+    /**
+     * Creates a new &lt;code&gt;Anchor&lt;/code&gt; and associates it with a document.
+     *
+     * @param doc {EditorDocument} The document to associate with the anchor.
+     * @param row {number} The starting row position.
+     * @param column {number} The starting column position.
+     *
+     * @constructor
+     */
     constructor(doc: EditorDocument, row: number, column: number) {
         super();
         assert(typeof row === &#x27;number&#x27;, &quot;row must be a number&quot;);
@@ -168,20 +189,21 @@ export default class Anchor extends EventEmitterClass {
         this.setPosition(row, column);
         this.$insertRight = false;
     }
+
     /**
      * Returns an object identifying the &#x60;row&#x60; and &#x60;column&#x60; position of the current anchor.
-     * @returns {Object}
+     * @return {Object}
      **/
     getPosition() {
         return this.$clipPositionToDocument(this.row, this.column);
     }
 
     /**
-     *
      * Returns the current document.
-     * @returns {EditorDocument}
-     **/
-    getDocument() {
+     * @method getDocument
+     * @return {EditorDocument}
+     */
+    getDocument(): EditorDocument {
         return this.document;
     }
 
@@ -278,7 +300,6 @@ export default class Anchor extends EventEmitterClass {
      * @param {Number} row The row index to move the anchor to
      * @param {Number} column The column index to move the anchor to
      * @param {Boolean} noClip Identifies if you want the position to be clipped
-     *
      **/
     setPosition(row: number, column: number, noClip?: boolean): void {
         var pos: { row: number; column: number };

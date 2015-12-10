@@ -29,7 +29,7 @@ export class ContinuousRecognizer extends Recognizer {
      * Used to check if the recognizer receives valid input, like input.distance > 10.
      * @memberof ContinuousRecognizer
      * @param {IComputedEvent} input
-     * @returns {Boolean} recognized
+     * @return {Boolean} recognized
      */
     attributeTest(input: IComputedEvent): boolean {
         switch (input.eventType) {
@@ -59,7 +59,7 @@ export class ContinuousRecognizer extends Recognizer {
      * Process the input and return the state for the recognizer
      * @memberof ContinuousRecognizer
      * @param {Object} input
-     * @returns {*} State
+     * @return {*} State
      */
     process(input: IComputedEvent): number {
 

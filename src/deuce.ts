@@ -27,46 +27,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-/**
- * The main class required to set up an Ace instance in the browser.
- *
- * @class Ace
- **/
-
 //require("./lib/fixoldbrowsers");
 
 import {getInnerText} from "./lib/dom";
 import {addListener, removeListener} from "./lib/event";
 import Editor from "./Editor";
+import EditorDocument from "./EditorDocument";
 import EditSession from "./EditSession";
 import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
-//import {} from './config';
 
 // The following require()s are for inclusion in the built ace file
-//require("./worker/worker_client");
-//require("./keyboard/hash_handler");
-//require("./placeholder");
-//require("./multi_select");
-//require("./mode/folding/fold_mode");
-//require("./theme/textmate");
-//require("./ext/error_marker");
+import HtmlMode from "./mode/HtmlMode";
+import HtmlWorker from "./mode/HtmlWorker";
 
-// export var config = cfg;
-
-/**
- * Provides access to require in packed noconflict mode
- * @param {String} moduleName
- * @returns {Object}
- **/
-// FIXME: Trying to export this in the ACE namespace is problematic in TypeScript.
-// export var require = require;
-
-/**
- * Embeds the Ace editor into the DOM, at the element provided by `el`.
- * @param {String | DOMElement} el Either the id of an element, or the element itself
- */
 export function edit(source: any) {
     var element: HTMLElement;
     if (typeof source === 'string') {
@@ -96,10 +70,9 @@ export function edit(source: any) {
         element.innerHTML = '';
     }
 
-    var editSession = createEditSession(value);
+    var editSession = createEditSession(new EditorDocument(value), new HtmlMode());
 
     var editor = new Editor(new VirtualRenderer(element), editSession);
-    editor.setSession(editSession);
 
     // FIXME: The first property is incorrectly named.
     var env = {
@@ -109,23 +82,21 @@ export function edit(source: any) {
     };
 
     if (oldNode) env['textarea'] = oldNode;
+
     addListener(window, "resize", env.onResize);
+
     editor.on("destroy", function() {
         removeListener(window, "resize", env.onResize);
         env.editor.container['env'] = null; // prevent memory leak on old ie
     });
+
     editor.container['env'] = editor['env'] = env;
+
     return editor;
 };
 
-/**
- * Creates a new [[EditSession]], and returns the associated [[Document]].
- * @param {Document | String} text {:textParam}
- * @param {TextMode} mode {:modeParam}
- * 
- **/
-export function createEditSession(text, mode?) {
-    var doc = new EditSession(text, mode);
-    doc.setUndoManager(new UndoManager());
-    return doc;
+export function createEditSession(doc: EditorDocument, mode?, callback?): EditSession {
+    var editSession = new EditSession(doc, mode, callback);
+    editSession.setUndoManager(new UndoManager());
+    return editSession;
 };

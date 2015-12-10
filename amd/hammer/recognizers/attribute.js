@@ -19,7 +19,7 @@ define(["require", "exports", '../hammer'], function (require, exports, hammer_1
          * Used to check if the recognizer receives valid input, like input.distance > 10.
          * @memberof ContinuousRecognizer
          * @param {IComputedEvent} input
-         * @returns {Boolean} recognized
+         * @return {Boolean} recognized
          */
         ContinuousRecognizer.prototype.attributeTest = function (input) {
             switch (input.eventType) {
@@ -52,7 +52,7 @@ define(["require", "exports", '../hammer'], function (require, exports, hammer_1
          * Process the input and return the state for the recognizer
          * @memberof ContinuousRecognizer
          * @param {Object} input
-         * @returns {*} State
+         * @return {*} State
          */
         ContinuousRecognizer.prototype.process = function (input) {
             var state = this.state;

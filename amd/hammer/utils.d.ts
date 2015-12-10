@@ -4,7 +4,7 @@ export declare var TEST_ELEMENT: HTMLDivElement;
  * @param {Function} fn
  * @param {Number} timeout
  * @param {Object} context
- * @returns {number}
+ * @return {number}
  */
 export declare function setTimeoutContext(fn: any, timeout: number, context: any): number;
 /**
@@ -14,7 +14,7 @@ export declare function setTimeoutContext(fn: any, timeout: number, context: any
  * @param {*|Array} arg
  * @param {String} fn
  * @param {Object} [context]
- * @returns {Boolean}
+ * @return {Boolean}
  */
 export declare function invokeArrayArg(arg: any, fn: any, context: any): boolean;
 /**
@@ -30,7 +30,7 @@ export declare function each(obj: any, iterator: any, context?: any): void;
  * @param {Object} dest
  * @param {Object} src
  * @param {Boolean} [merge]
- * @returns {Object} dest
+ * @return {Object} dest
  */
 export declare function extend(dest: any, src: any, merge?: boolean): any;
 /**
@@ -38,7 +38,7 @@ export declare function extend(dest: any, src: any, merge?: boolean): any;
  * means that properties that exist in dest will not be overwritten by src
  * @param {Object} dest
  * @param {Object} src
- * @returns {Object} dest
+ * @return {Object} dest
  */
 export declare function merge(dest: any, src: any): any;
 /**
@@ -52,14 +52,14 @@ export declare function inherit(child: any, base: any, properties: any): void;
  * simple function bind
  * @param {Function} fn
  * @param {Object} context
- * @returns {Function}
+ * @return {Function}
  */
 export declare function bindFn(fn: any, context: any): () => any;
 /**
  * use the val2 when val1 is undefined
  * @param {*} val1
  * @param {*} val2
- * @returns {*}
+ * @return {*}
  */
 export declare function ifUndefined(val1: any, val2: any): any;
 /**
@@ -88,13 +88,13 @@ export declare function hasParent(node: any, parent: any): boolean;
  * small indexOf wrapper
  * @param {String} str
  * @param {String} find
- * @returns {Boolean} found
+ * @return {Boolean} found
  */
 export declare function inStr(str: string, find: string): boolean;
 /**
  * split string on whitespace
  * @param {String} str
- * @returns {Array} words
+ * @return {Array} words
  */
 export declare function splitStr(str: any): any;
 /**
@@ -108,7 +108,7 @@ export declare function inArray(src: any[], find: any, findByKey?: string): numb
 /**
  * convert array-like objects to real arrays
  * @param {Object} obj
- * @returns {Array}
+ * @return {Array}
  */
 export declare function toArray(obj: any): any;
 /**
@@ -116,20 +116,20 @@ export declare function toArray(obj: any): any;
  * @param {Array} src [{id:1},{id:2},{id:1}]
  * @param {String} [key]
  * @param {Boolean} [sort=False]
- * @returns {Array} [{id:1},{id:2}]
+ * @return {Array} [{id:1},{id:2}]
  */
 export declare function uniqueArray(src: any, key: any, sort: any): any[];
 /**
  * get the prefixed property
  * @param {Object} obj
  * @param {String} property
- * @returns {String|Undefined} prefixed
+ * @return {String|Undefined} prefixed
  */
 export declare function prefixed(obj: any, property: any): any;
 export declare function uniqueId(): number;
 /**
  * get the window object of an element
  * @param {HTMLElement} element
- * @returns {Window}
+ * @return {Window}
  */
 export declare function getWindowForElement(element: HTMLElement): Window;

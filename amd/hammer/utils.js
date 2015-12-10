@@ -10,7 +10,7 @@ define(["require", "exports"], function (require, exports) {
      * @param {Function} fn
      * @param {Number} timeout
      * @param {Object} context
-     * @returns {number}
+     * @return {number}
      */
     function setTimeoutContext(fn, timeout, context) {
         return setTimeout(bindFn(fn, context), timeout);
@@ -23,7 +23,7 @@ define(["require", "exports"], function (require, exports) {
      * @param {*|Array} arg
      * @param {String} fn
      * @param {Object} [context]
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     function invokeArrayArg(arg, fn, context) {
         if (Array.isArray(arg)) {
@@ -67,7 +67,7 @@ define(["require", "exports"], function (require, exports) {
      * @param {Object} dest
      * @param {Object} src
      * @param {Boolean} [merge]
-     * @returns {Object} dest
+     * @return {Object} dest
      */
     function extend(dest, src, merge) {
         var keys = Object.keys(src);
@@ -86,7 +86,7 @@ define(["require", "exports"], function (require, exports) {
      * means that properties that exist in dest will not be overwritten by src
      * @param {Object} dest
      * @param {Object} src
-     * @returns {Object} dest
+     * @return {Object} dest
      */
     function merge(dest, src) {
         return extend(dest, src, true);
@@ -112,7 +112,7 @@ define(["require", "exports"], function (require, exports) {
      * simple function bind
      * @param {Function} fn
      * @param {Object} context
-     * @returns {Function}
+     * @return {Function}
      */
     function bindFn(fn, context) {
         return function boundFn() {
@@ -124,7 +124,7 @@ define(["require", "exports"], function (require, exports) {
      * use the val2 when val1 is undefined
      * @param {*} val1
      * @param {*} val2
-     * @returns {*}
+     * @return {*}
      */
     function ifUndefined(val1, val2) {
         return (val1 === undefined) ? val2 : val1;
@@ -175,7 +175,7 @@ define(["require", "exports"], function (require, exports) {
      * small indexOf wrapper
      * @param {String} str
      * @param {String} find
-     * @returns {Boolean} found
+     * @return {Boolean} found
      */
     function inStr(str, find) {
         return str.indexOf(find) > -1;
@@ -184,7 +184,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * split string on whitespace
      * @param {String} str
-     * @returns {Array} words
+     * @return {Array} words
      */
     function splitStr(str) {
         return str.trim().split(/\s+/g);
@@ -216,7 +216,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * convert array-like objects to real arrays
      * @param {Object} obj
-     * @returns {Array}
+     * @return {Array}
      */
     function toArray(obj) {
         return Array.prototype.slice.call(obj, 0);
@@ -227,7 +227,7 @@ define(["require", "exports"], function (require, exports) {
      * @param {Array} src [{id:1},{id:2},{id:1}]
      * @param {String} [key]
      * @param {Boolean} [sort=False]
-     * @returns {Array} [{id:1},{id:2}]
+     * @return {Array} [{id:1},{id:2}]
      */
     function uniqueArray(src, key, sort) {
         var results = [];
@@ -258,7 +258,7 @@ define(["require", "exports"], function (require, exports) {
      * get the prefixed property
      * @param {Object} obj
      * @param {String} property
-     * @returns {String|Undefined} prefixed
+     * @return {String|Undefined} prefixed
      */
     function prefixed(obj, property) {
         var prefix, prop;
@@ -277,7 +277,7 @@ define(["require", "exports"], function (require, exports) {
     exports.prefixed = prefixed;
     /**
      * get a unique id
-     * @returns {number} uniqueId
+     * @return {number} uniqueId
      */
     var _uniqueId = 1;
     function uniqueId() {
@@ -287,7 +287,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * get the window object of an element
      * @param {HTMLElement} element
-     * @returns {Window}
+     * @return {Window}
      */
     function getWindowForElement(element) {
         var doc = element.ownerDocument;

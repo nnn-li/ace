@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -140,41 +138,37 @@ import Range from &quot;./Range&quot;;
 import EditSession from &quot;./EditSession&quot;;
 
 /**
- * @class Search
- *
  * A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].
- *
- **/
-
-/**
- * 
- *
- * Creates a new &#x60;Search&#x60; object. The following search options are avaliable:
- *
- * - &#x60;needle&#x60;: The string or regular expression you&#x27;re looking for
- * - &#x60;backwards&#x60;: Whether to search backwards from where cursor currently is. Defaults to &#x60;false&#x60;.
- * - &#x60;wrap&#x60;: Whether to wrap the search back to the beginning when it hits the end. Defaults to &#x60;false&#x60;.
- * - &#x60;caseSensitive&#x60;: Whether the search ought to be case-sensitive. Defaults to &#x60;false&#x60;.
- * - &#x60;wholeWord&#x60;: Whether the search matches only on whole words. Defaults to &#x60;false&#x60;.
- * - &#x60;range&#x60;: The [[Range]] to search within. Set this to &#x60;null&#x60; for the whole document
- * - &#x60;regExp&#x60;: Whether the search is a regular expression or not. Defaults to &#x60;false&#x60;.
- * - &#x60;start&#x60;: The starting [[Range]] or cursor position to begin the search
- * - &#x60;skipCurrent&#x60;: Whether or not to include the current line in the search. Default to &#x60;false&#x60;.
- * 
- * @constructor
- **/
-
+ * @class Search
+ */
 export default class Search {
     $options;
+    /**
+     * Creates a new &#x60;Search&#x60; object. The following search options are avaliable:
+     *
+     * - &#x60;needle&#x60;: The string or regular expression you&#x27;re looking for
+     * - &#x60;backwards&#x60;: Whether to search backwards from where cursor currently is. Defaults to &#x60;false&#x60;.
+     * - &#x60;wrap&#x60;: Whether to wrap the search back to the beginning when it hits the end. Defaults to &#x60;false&#x60;.
+     * - &#x60;caseSensitive&#x60;: Whether the search ought to be case-sensitive. Defaults to &#x60;false&#x60;.
+     * - &#x60;wholeWord&#x60;: Whether the search matches only on whole words. Defaults to &#x60;false&#x60;.
+     * - &#x60;range&#x60;: The [[Range]] to search within. Set this to &#x60;null&#x60; for the whole document
+     * - &#x60;regExp&#x60;: Whether the search is a regular expression or not. Defaults to &#x60;false&#x60;.
+     * - &#x60;start&#x60;: The starting [[Range]] or cursor position to begin the search
+     * - &#x60;skipCurrent&#x60;: Whether or not to include the current line in the search. Default to &#x60;false&#x60;.
+     *
+     * @class Search 
+     * @constructor
+     */
     constructor() {
         this.$options = {};
     }
+
     /**
      * Sets the search options via the &#x60;options&#x60; parameter.
      * @param {Object} options An object containing all the new search properties
      *
      * 
-     * @returns {Search}
+     * @return {Search}
      * @chainable
     **/
     set(options) {
@@ -184,7 +178,7 @@ export default class Search {
 
     /**
      * [Returns an object containing all the search options.]{: #Search.getOptions}
-     * @returns {Object}
+     * @return {Object}
     **/
     getOptions() {
         return copyObject(this.$options);
@@ -204,7 +198,7 @@ export default class Search {
      * @param {EditSession} session The session to search with
      *
      * 
-     * @returns {Range}
+     * @return {Range}
     **/
     find(session: EditSession): Range {
         var iterator = this.$matchIterator(session, this.$options);
@@ -231,7 +225,7 @@ export default class Search {
      * @param {EditSession} session The session to search with
      *
      * 
-     * @returns {[Range]}
+     * @return {[Range]}
     **/
     findAll(session: EditSession): Range[] {
         var options = this.$options;
@@ -271,7 +265,8 @@ export default class Search {
                 if (len &gt; 2)
                     row = row + len - 2;
             }
-        } else {
+        }
+        else {
             for (var i = 0; i &lt; lines.length; i++) {
                 var matches = getMatchOffsets(lines[i], re);
                 for (var j = 0; j &lt; matches.length; j++) {
@@ -309,7 +304,7 @@ export default class Search {
      * If &#x60;options.needle&#x60; was not found, this function returns &#x60;null&#x60;.
      *
      * 
-     * @returns {String}
+     * @return {String}
     **/
     replace(input: string, replacement: string): string {
         var options = this.$options;
@@ -372,14 +367,16 @@ export default class Search {
                 if (callback(range))
                     return true;
             };
-        } else if (backwards) {
+        }
+        else if (backwards) {
             var matchIterator = function(line, row, startIndex) {
                 var matches = getMatchOffsets(line, re);
                 for (var i = matches.length - 1; i &gt;= 0; i--)
                     if (callback(matches[i], row, startIndex))
                         return true;
             };
-        } else {
+        }
+        else {
             var matchIterator = function(line, row, startIndex) {
                 var matches = getMatchOffsets(line, re);
                 for (var i = 0; i &lt; matches.length; i++)
@@ -501,7 +498,6 @@ export default class Search {
 
         return { forEach: forEach };
     }
-
 }
 
     </pre>

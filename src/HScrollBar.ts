@@ -45,7 +45,7 @@ export default class HScrollBar extends ScrollBar {
 
     /**
      * Returns the height of the scroll bar.
-     * @returns {Number}
+     * @return {Number}
      **/
     get height(): number {
         return this.isVisible ? this._height : 0;

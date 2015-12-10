@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/HtmlMode.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.15</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/HtmlMode.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+import {inherits} from &quot;../lib/oop&quot;;
+import {arrayToMap} from &quot;../lib/lang&quot;;
+import TextMode from &quot;./Mode&quot;;
+import JavaScriptMode from &quot;./JavaScriptMode&quot;;
+import CssMode from &quot;./CssMode&quot;;
+import HtmlHighlightRules from &quot;./HtmlHighlightRules&quot;;
+import XmlBehaviour from &quot;./behaviour/XmlBehaviour&quot;;
+import HtmlFoldMode from &quot;./folding/HtmlFoldMode&quot;;
+import HtmlCompletions from &quot;./HtmlCompletions&quot;;
+import WorkerClient from &quot;../worker/WorkerClient&quot;;
+import EditSession from &quot;../EditSession&quot;;
+
+// http://www.w3.org/TR/html5/syntax.html#void-elements
+var voidElements = [&quot;area&quot;, &quot;base&quot;, &quot;br&quot;, &quot;col&quot;, &quot;embed&quot;, &quot;hr&quot;, &quot;img&quot;, &quot;input&quot;, &quot;keygen&quot;, &quot;link&quot;, &quot;meta&quot;, &quot;param&quot;, &quot;source&quot;, &quot;track&quot;, &quot;wbr&quot;];
+var optionalEndTags = [&quot;li&quot;, &quot;dt&quot;, &quot;dd&quot;, &quot;p&quot;, &quot;rt&quot;, &quot;rp&quot;, &quot;optgroup&quot;, &quot;option&quot;, &quot;colgroup&quot;, &quot;td&quot;, &quot;th&quot;];
+
+/**
+ * @class HtmlMode
+ */
+export default class HtmlMode extends TextMode {
+    protected blockComment = { start: &quot;&lt;!--&quot;, end: &quot;--&gt;&quot; };
+    private voidElements = arrayToMap(voidElements);
+    public $id = &quot;ace/mode/html&quot;;
+
+    /**
+     * The name of the element for fragment parsing.
+     */
+    private fragmentContext: string;
+
+    $completer: HtmlCompletions;
+
+    /**
+     * @class HtmlMode
+     * @constructor
+     */
+    constructor(options?: {fragmentContext: string}) {
+        super();
+        this.fragmentContext = options &amp;&amp; options.fragmentContext;
+        this.HighlightRules = HtmlHighlightRules;
+        this.$behaviour = new XmlBehaviour();
+        this.$completer = new HtmlCompletions();
+
+        this.createModeDelegates({
+            &quot;js-&quot;: JavaScriptMode,
+            &quot;css-&quot;: CssMode
+        });
+
+        this.foldingRules = new HtmlFoldMode(this.voidElements, arrayToMap(optionalEndTags));
+    }
+
+    getNextLineIndent(state: string, line: string, tab: string): string {
+        return this.$getIndent(line);
+    }
+
+    checkOutdent(state: string, line: string, text: string): boolean {
+        return false;
+    }
+
+    getCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
+        return this.$completer.getCompletions(state, session, pos, prefix);
+    }
+
+    createWorker(session: EditSession): WorkerClient {
+
+        var worker = new WorkerClient(&quot;lib/worker/worker-systemjs.js&quot;);
+        var mode = this;
+
+        worker.on(&quot;initAfter&quot;, function() {
+            worker.attachToDocument(session.getDocument());
+            if (mode.fragmentContext) {
+                worker.call(&quot;setOptions&quot;, [{ context: mode.fragmentContext }]);
+            }
+        });
+
+        worker.on(&quot;error&quot;, function(e) {
+            session.setAnnotations(e.data);
+        });
+
+        worker.on(&quot;terminate&quot;, function() {
+            session.clearAnnotations();
+        });
+
+        worker.init(&quot;lib/mode/HtmlWorker&quot;, &quot;default&quot;);
+
+        return worker;
+    };
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

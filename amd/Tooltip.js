@@ -30,7 +30,7 @@ define(["require", "exports", "./lib/dom"], function (require, exports, dom_1) {
         /**
          * Provides the HTML div element.
          * @method getElement
-         * @returns {HTMLElement}
+         * @return {HTMLElement}
          */
         Tooltip.prototype.getElement = function () {
             return this.$element || this.$init();

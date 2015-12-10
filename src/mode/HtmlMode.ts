@@ -44,13 +44,26 @@ import EditSession from "../EditSession";
 var voidElements = ["area", "base", "br", "col", "embed", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr"];
 var optionalEndTags = ["li", "dt", "dd", "p", "rt", "rp", "optgroup", "option", "colgroup", "td", "th"];
 
+/**
+ * @class HtmlMode
+ */
 export default class HtmlMode extends TextMode {
-    blockComment = { start: "<!--", end: "-->" };
-    voidElements = arrayToMap(voidElements);
-    $id = "ace/mode/html";
-    fragmentContext;
+    protected blockComment = { start: "<!--", end: "-->" };
+    private voidElements = arrayToMap(voidElements);
+    public $id = "ace/mode/html";
+
+    /**
+     * The name of the element for fragment parsing.
+     */
+    private fragmentContext: string;
+
     $completer: HtmlCompletions;
-    constructor(options) {
+
+    /**
+     * @class HtmlMode
+     * @constructor
+     */
+    constructor(options?: {fragmentContext: string}) {
         super();
         this.fragmentContext = options && options.fragmentContext;
         this.HighlightRules = HtmlHighlightRules;

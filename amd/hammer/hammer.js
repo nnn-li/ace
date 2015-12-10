@@ -217,7 +217,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * remove a recognizer by name or instance
          * @param {Recognizer|String} recognizer
-         * @returns {Manager}
+         * @return {Manager}
          */
         Manager.prototype.remove = function (recognizer) {
             var recognizers = this.recognizers;
@@ -230,7 +230,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
          * bind event
          * @param {String} events
          * @param {Function} handler
-         * @returns {EventEmitter} this
+         * @return {EventEmitter} this
          */
         Manager.prototype.on = function (events, handler) {
             var handlers = this.handlers;
@@ -244,7 +244,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
          * unbind event, leave emit blank to remove all handlers
          * @param {String} events
          * @param {Function} [handler]
-         * @returns {EventEmitter} this
+         * @return {EventEmitter} this
          */
         Manager.prototype.off = function (events, handler) {
             var handlers = this.handlers;
@@ -365,7 +365,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         };
         /**
          * compute the value for the touchAction property based on the recognizer's settings
-         * @returns {String} value
+         * @return {String} value
          */
         TouchAction.prototype.compute = function () {
             var actions = [];
@@ -417,7 +417,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
     /**
      * when the touchActions are collected they are not a valid value, so we need to clean things up. *
      * @param {String} actions
-     * @returns {*}
+     * @return {*}
      */
     function cleanTouchActions(actions) {
         // none
@@ -483,7 +483,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * create new input type manager
          * @param {Manager} manager
-         * @returns {Input}
+         * @return {Input}
          * @constructor
          */
         function Input(manager, touchElementEvents, touchTargetEvents, touchWindowEvents) {
@@ -757,7 +757,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
      * @this {TouchInput}
      * @param {Object} ev
      * @param {Number} type flag
-     * @returns {undefined|Array} [all, changed]
+     * @return {undefined|Array} [all, changed]
      */
     function getTouches(event, type) {
         var allTouches = utils_1.toArray(event.touches);
@@ -862,7 +862,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * recognize simultaneous with an other recognizer.
          * @param {Recognizer} otherRecognizer
-         * @returns {Recognizer} this
+         * @return {Recognizer} this
          */
         Recognizer.prototype.recognizeWith = function (otherRecognizer) {
             var simultaneous = this.simultaneous;
@@ -876,7 +876,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * drop the simultaneous link. it doesnt remove the link on the other recognizer.
          * @param {Recognizer} otherRecognizer
-         * @returns {Recognizer} this
+         * @return {Recognizer} this
          */
         Recognizer.prototype.dropRecognizeWith = function (otherRecognizer) {
             otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
@@ -898,7 +898,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * drop the requireFailure link. it does not remove the link on the other recognizer.
          * @param {Recognizer} otherRecognizer
-         * @returns {Recognizer} this
+         * @return {Recognizer} this
          */
         Recognizer.prototype.dropRequireFailure = function (otherRecognizer) {
             otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this.manager);
@@ -910,7 +910,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         };
         /**
          * has require failures boolean
-         * @returns {boolean}
+         * @return {boolean}
          */
         Recognizer.prototype.hasRequireFailures = function () {
             return this.requireFail.length > 0;
@@ -918,7 +918,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * if the recognizer can recognize simultaneous with an other recognizer
          * @param {Recognizer} otherRecognizer
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Recognizer.prototype.canRecognizeWith = function (otherRecognizer) {
             return !!this.simultaneous[otherRecognizer.id];
@@ -963,7 +963,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         };
         /**
          * can we emit?
-         * @returns {boolean}
+         * @return {boolean}
          */
         Recognizer.prototype.canEmit = function () {
             var i = 0;
@@ -1000,7 +1000,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
          * the actual recognizing happens in this method
          * @virtual
          * @param {Object} inputData
-         * @returns {Const} STATE
+         * @return {Const} STATE
          */
         Recognizer.prototype.process = function (inputData) {
             return exports.STATE_UNDEFINED;
@@ -1008,7 +1008,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
         /**
          * return the preferred touch-action
          * @virtual
-         * @returns {Array}
+         * @return {Array}
          */
         Recognizer.prototype.getTouchAction = function () { return []; };
         /**
@@ -1024,7 +1024,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
      * TODO: Are the string values part of the API, or just for debugging?
      * get a usable string, used as event postfix
      * @param {Const} state
-     * @returns {String} state
+     * @return {String} state
      */
     function stateStr(state) {
         if (state & exports.STATE_CANCELLED) {
@@ -1080,7 +1080,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
      * TODO: This really belongs in the input service.
      * direction cons to string
      * @param {Const} direction
-     * @returns {String}
+     * @return {String}
      */
     function directionStr(direction) {
         var ds = [];
@@ -1103,7 +1103,7 @@ define(["require", "exports", './utils'], function (require, exports, utils_1) {
      * get a recognizer by name if it is bound to a manager
      * @param {Recognizer|String} otherRecognizer
      * @param {Recognizer} recognizer
-     * @returns {Recognizer}
+     * @return {Recognizer}
      */
     function getRecognizerByNameIfManager(recognizer, manager) {
         if (manager) {

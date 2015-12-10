@@ -1,6 +1,6 @@
-import CursorPosition from './CursorPosition';
+import Position from './Position';
 interface CursorRange {
-    start: CursorPosition;
-    end: CursorPosition;
+    start: Position;
+    end: Position;
 }
 export default CursorRange;

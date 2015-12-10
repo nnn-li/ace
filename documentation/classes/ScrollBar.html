@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -122,17 +120,410 @@
     <ul class="api-class-tabs">
         <li class="api-class-tab index"><a href="#index">Index</a></li>
 
+            <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
     </ul>
 
     <div>
         <div id="index" class="api-class-tabpanel index">
             <h2 class="off-left">Item Index</h2>
 
+                <div class="index-section methods">
+                    <h3>Methods</h3>
+
+                    <ul class="index-list methods">
+                            <li class="index-item method">
+                                <a href="#method_comparePoint">comparePoint</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_compareRange">compareRange</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_contains">contains</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_containsRange">containsRange</a>
+
+                            </li>
+                            <li class="index-item method">
+                                <a href="#method_isEqual">isEqual</a>
+
+                            </li>
+                    </ul>
+                </div>
 
 
 
         </div>
 
+            <div id="methods" class="api-class-tabpanel">
+                <h2 class="off-left">Methods</h2>
+
+<div id="method_comparePoint" class="method item">
+    <h3 class="name"><code>comparePoint</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>p</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Number</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Range.ts.html#l167"><code>src&#x2F;Range.ts:167</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Checks the row and column points of <code>p</code> with the row and column points of the calling range.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">p</code>
+                        <span class="type"><a href="../classes/Position.html" class="crosslink">Position</a></span>
+
+
+                    <div class="param-description">
+                        <p>A point to compare with</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Number</span>:
+                    <p>This method returns one of the following numbers:<br/></p>
+<ul>
+<li><code>0</code> if the two points are exactly equal<br/></li>
+<li><code>-1</code> if <code>p.row</code> is less then the calling range<br/></li>
+<li><code>1</code> if <code>p.row</code> is greater than the calling range<br/>
+<br/>
+If the starting row of the calling range is equal to <code>p.row</code>, and:<br/></li>
+<li><code>p.column</code> is greater than or equal to the calling range's starting column, this returns <code>0</code><br/></li>
+<li>Otherwise, it returns -1<br/>
+<br/>
+If the ending row of the calling range is equal to <code>p.row</code>, and:<br/></li>
+<li><code>p.column</code> is less than or equal to the calling range's ending column, this returns <code>0</code><br/></li>
+<li>Otherwise, it returns 1<br/></li>
+</ul>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_compareRange" class="method item">
+    <h3 class="name"><code>compareRange</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>range</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Number</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Range.ts.html#l118"><code>src&#x2F;Range.ts:118</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Compares <code>this</code> range (A) with another range (B).</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">range</code>
+                        <span class="type"><a href="../classes/Range.html" class="crosslink">Range</a></span>
+
+
+                    <div class="param-description">
+                        <p>A range to compare with</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Number</span>:
+                    <p>This method returns one of the following numbers:<br/>
+<br/></p>
+<ul>
+<li><code>-2</code>: (B) is in front of (A), and doesn't intersect with (A)<br/></li>
+<li><code>-1</code>: (B) begins before (A) but ends inside of (A)<br/></li>
+<li><code>0</code>: (B) is completely inside of (A) OR (A) is completely inside of (B)<br/></li>
+<li><code>+1</code>: (B) begins inside of (A) but ends outside of (A)<br/></li>
+<li><code>+2</code>: (B) is after (A) and doesn't intersect with (A)<br/></li>
+<li><code>42</code>: FTW state: (B) ends in (A) but starts outside of (A)</li>
+</ul>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_contains" class="method item">
+    <h3 class="name"><code>contains</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>row</code>
+                </li>
+                <li class="arg">
+                        <code>column</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Boolean</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Range.ts.html#l106"><code>src&#x2F;Range.ts:106</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns <code>true</code> if the <code>row</code> and <code>column</code> provided are within the given range.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">row</code>
+                        <span class="type">Number</span>
+
+
+                    <div class="param-description">
+                        <p>A row to check for</p>
+
+                    </div>
+
+                </li>
+                <li class="param">
+                        <code class="param-name">column</code>
+                        <span class="type">Number</span>
+
+
+                    <div class="param-description">
+                        <p>A column to check for</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Boolean</span>:
+            </div>
+        </div>
+
+
+</div>
+<div id="method_containsRange" class="method item">
+    <h3 class="name"><code>containsRange</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>range</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Boolean</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Range.ts.html#l189"><code>src&#x2F;Range.ts:189</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Checks the start and end points of <code>range</code> and compares them to the calling range.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">range</code>
+                        <span class="type"><a href="../classes/Range.html" class="crosslink">Range</a></span>
+
+
+                    <div class="param-description">
+                        <p>A range to compare with</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Boolean</span>:
+                    <p>Returns <code>true</code> if the <code>range</code> is contained within the caller's range.</p>
+
+            </div>
+        </div>
+
+
+</div>
+<div id="method_isEqual" class="method item">
+    <h3 class="name"><code>isEqual</code></h3>
+
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+                <li class="arg">
+                        <code>range</code>
+                </li>
+            </ul><span class="paren">)</span>
+        </div>
+
+        <span class="returns-inline">
+            <span class="type">Boolean</span>
+        </span>
+
+
+
+
+
+
+
+    <div class="meta">
+                <p>
+                Defined in
+        <a href="../files/src_Range.ts.html#l82"><code>src&#x2F;Range.ts:82</code></a>
+        </p>
+
+
+
+    </div>
+
+    <div class="description">
+        <p>Returns <code>true</code> if and only if the starting row and column, and ending row and column, are equivalent to those given by <code>range</code>.</p>
+
+    </div>
+
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+                <li class="param">
+                        <code class="param-name">range</code>
+                        <span class="type"><a href="../classes/Range.html" class="crosslink">Range</a></span>
+
+
+                    <div class="param-description">
+                        <p>A range to check against.</p>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                        <span class="type">Boolean</span>:
+            </div>
+        </div>
+
+
+</div>
+            </div>
 
 
 

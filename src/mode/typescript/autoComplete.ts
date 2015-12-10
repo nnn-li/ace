@@ -1,6 +1,6 @@
 declare var $: any;
 
-import CursorPosition from '../../CursorPosition';
+import Position from '../../Position';
 import HashHandler from '../../keyboard/HashHandler';
 import EventEmitterClass from '../../lib/event_emitter';
 import Editor from '../../Editor';
@@ -155,7 +155,7 @@ export default function autoComplete(editor: Editor, fileNameProvider: () => str
     /**
      * Returns the number of completions asynchronously in the callback with the side effect of showing the completions.
      */
-    function activateUsingCursor(cursor: CursorPosition) {
+    function activateUsingCursor(cursor: Position) {
         completionService.getCompletionsAtCursor(fileNameProvider(), cursor, function(err, completionInfo: ts.CompletionInfo) {
             if (!err) {
                 // FIXME: The matchText should not be visisble, or rather part of the callback.

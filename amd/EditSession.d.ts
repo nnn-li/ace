@@ -11,6 +11,11 @@ import UndoManager from './UndoManager';
 import FontMetrics from "./layer/FontMetrics";
 import LineWidget from './LineWidget';
 import LineWidgets from './LineWidgets';
+import Position from './Position';
+/**
+ * @class EditSession
+ * @extends EventEmitterClass
+ */
 export default class EditSession extends EventEmitterClass {
     $breakpoints: string[];
     $decorations: string[];
@@ -95,9 +100,18 @@ export default class EditSession extends EventEmitterClass {
      */
     $selectionMarker: number;
     private $bracketMatcher;
+    /**
+     * @class EditSession
+     * @constructor
+     * @param doc {EditorDocument}
+     * @param [mode]
+     * @param [cb]
+     */
     constructor(doc: EditorDocument, mode?: any, cb?: () => any);
     /**
-     * Sets the `EditSession` to point to a new `EditorDocument`. If a `BackgroundTokenizer` exists, it also points to `doc`.
+     * Sets the `EditSession` to point to a new `EditorDocument`.
+     * If a `BackgroundTokenizer` exists, it also points to `doc`.
+     *
      * @method setDocument
      * @param doc {EditorDocument} The new `EditorDocument` to use.
      * @return {void}
@@ -105,13 +119,14 @@ export default class EditSession extends EventEmitterClass {
     private setDocument(doc);
     /**
      * Returns the `EditorDocument` associated with this session.
+     *
      * @method getDocument
      * @return {EditorDocument}
      */
     getDocument(): EditorDocument;
     /**
      * @method $resetRowCache
-     * @param {number} row The row to work with
+     * @param docRow {number} The row to work with.
      * @return {void}
      * @private
      */
@@ -129,84 +144,111 @@ export default class EditSession extends EventEmitterClass {
      */
     private setValue(text);
     /**
-    * Returns the current [[EditorDocument `EditorDocument`]] as a string.
-    * @method toString
-    * @returns {string}
-    * @alias EditSession.getValue
-    **/
+     * Returns the current EditorDocument as a string.
+     *
+     * @method toString
+     * @return {string}
+     * @alias EditSession.getValue
+     */
     toString(): string;
     /**
-    * Returns the current [[EditorDocument `EditorDocument`]] as a string.
-    * @method getValue
-    * @returns {string}
-    * @alias EditSession.toString
-    **/
+     * Returns the current EditorDocument as a string.
+     *
+     * @method getValue
+     * @return {string}
+     * @alias EditSession.toString
+     */
     getValue(): string;
     /**
-     * Returns the string of the current selection.
+     * Returns the current selection.
+     *
+     * @method getSelection
+     * @return {Selection}
      */
     getSelection(): Selection;
+    /**
+     * Sets the current selection.
+     *
+     * @method setSelection
+     * @param selection {Selection}
+     * @return {void}
+     */
     setSelection(selection: Selection): void;
     /**
-     * {:BackgroundTokenizer.getState}
-     * @param {Number} row The row to start at
-     *
-     * @related BackgroundTokenizer.getState
-     **/
+     * @method getState
+     * @param row {number} The row to start at.
+     * @return {string}
+     */
     getState(row: number): string;
     /**
      * Starts tokenizing at the row indicated. Returns a list of objects of the tokenized rows.
      * @method getTokens
      * @param row {number} The row to start at.
-     **/
+     */
     getTokens(row: number): {
         start: number;
         type: string;
         value: string;
     }[];
     /**
-    * Returns an object indicating the token at the current row. The object has two properties: `index` and `start`.
-    * @param {Number} row The row number to retrieve from
-    * @param {Number} column The column number to retrieve from
-    *
-    *
-    **/
+     * Returns an object indicating the token at the current row.
+     * The object has two properties: `index` and `start`.
+     *
+     * @method getTokenAt
+     * @param {Number} row The row number to retrieve from
+     * @param {Number} column The column number to retrieve from.
+     */
     getTokenAt(row: number, column?: number): {
         index?: number;
         start?: number;
         value: string;
     };
     /**
-    * Sets the undo manager.
-    * @param {UndoManager} undoManager The new undo manager
-    **/
+     * Sets the undo manager.
+     *
+     * @method setUndoManager
+     * @param undoManager {UndoManager} The new undo manager.
+     * @return {void}
+     */
     setUndoManager(undoManager: UndoManager): void;
     /**
-     * starts a new group in undo history
+     * Starts a new group in undo history.
+     *
+     * @method markUndoGroup
+     * @return {void}
      */
     markUndoGroup(): void;
     /**
-    * Returns the current undo manager.
-    **/
-    getUndoManager(): {
-        undo: () => void;
-        redo: () => void;
-        reset: () => void;
-    };
+     * Returns the current undo manager.
+     *
+     * @method getUndoManager
+     * @return {UndoManager}
+     */
+    getUndoManager(): UndoManager;
     /**
-    * Returns the current value for tabs. If the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\t'`.
-    **/
+     * Returns the current value for tabs.
+     * If the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\t'`.
+     *
+     * @method getTabString
+     * @return {string}
+     */
     getTabString(): string;
     /**
-    /**
-    * Pass `true` to enable the use of soft tabs. Soft tabs means you're using spaces instead of the tab character (`'\t'`).
-    * @param {Boolean} useSoftTabs Value indicating whether or not to use soft tabs
-    **/
+     * Pass `true` to enable the use of soft tabs.
+     * Soft tabs means you're using spaces instead of the tab character (`'\t'`).
+     *
+     * @method setUseSoftTabs
+     * @param useSoftTabs {boolean} Value indicating whether or not to use soft tabs.
+     * @return {EditSession}
+     * @chainable
+     */
     private setUseSoftTabs(useSoftTabs);
     /**
-    * Returns `true` if soft tabs are being used, `false` otherwise.
-    * @returns {Boolean}
-    **/
+     * Returns `true` if soft tabs are being used, `false` otherwise.
+     *
+     * @method getUseSoftTabs
+     * @return {boolean}
+     */
     getUseSoftTabs(): boolean;
     /**
     * Set the number of spaces that define a soft tab.
@@ -260,7 +302,7 @@ export default class EditSession extends EventEmitterClass {
     removeGutterDecoration(row: number, className: string): void;
     /**
     * Returns an array of numbers, indicating which rows have breakpoints.
-    * @returns {[Number]}
+    * @return {[Number]}
     **/
     private getBreakpoints();
     /**
@@ -322,7 +364,7 @@ export default class EditSession extends EventEmitterClass {
     * Returns an array containing the IDs of all the markers, either front or back.
     * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers
     *
-    * @returns {Array}
+    * @return {Array}
     **/
     getMarkers(inFront: boolean): {};
     highlight(re: RegExp): void;
@@ -335,7 +377,7 @@ export default class EditSession extends EventEmitterClass {
     setAnnotations(annotations: any): void;
     /**
     * Returns the annotations for the `EditSession`.
-    * @returns {Array}
+    * @return {Array}
     **/
     getAnnotations: () => any;
     /**
@@ -355,7 +397,7 @@ export default class EditSession extends EventEmitterClass {
     * @param {Number} row The row to start at
     * @param {Number} column The column to start at
     *
-    * @returns {Range}
+    * @return {Range}
     **/
     getWordRange(row: number, column: number): Range;
     /**
@@ -377,7 +419,7 @@ export default class EditSession extends EventEmitterClass {
     /**
     *
     * Returns the current new line mode.
-    * @returns {String}
+    * @return {String}
     * @related EditorDocument.getNewLineMode
     **/
     private getNewLineMode();
@@ -407,7 +449,7 @@ export default class EditSession extends EventEmitterClass {
     private $startWorker();
     /**
     * Returns the current text mode.
-    * @returns {TextMode} The current text mode
+    * @return {TextMode} The current text mode
     **/
     getMode(): Mode;
     /**
@@ -418,7 +460,7 @@ export default class EditSession extends EventEmitterClass {
     setScrollTop(scrollTop: number): void;
     /**
     * [Returns the value of the distance between the top of the editor and the topmost part of the visible content.]{: #EditSession.getScrollTop}
-    * @returns {Number}
+    * @return {Number}
     **/
     getScrollTop(): number;
     /**
@@ -427,12 +469,12 @@ export default class EditSession extends EventEmitterClass {
     setScrollLeft(scrollLeft: number): void;
     /**
     * [Returns the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.getScrollLeft}
-    * @returns {Number}
+    * @return {Number}
     **/
     getScrollLeft(): number;
     /**
     * Returns the width of the screen.
-    * @returns {Number}
+    * @return {Number}
     **/
     getScreenWidth(): number;
     private getLineWidgetMaxWidth();
@@ -442,7 +484,7 @@ export default class EditSession extends EventEmitterClass {
      * @param {Number} row The row to retrieve from
      *
     *
-     * @returns {String}
+     * @return {String}
     *
     **/
     getLine(row: number): string;
@@ -451,27 +493,27 @@ export default class EditSession extends EventEmitterClass {
      * @param {Number} firstRow The first row index to retrieve
      * @param {Number} lastRow The final row index to retrieve
      *
-     * @returns {[String]}
+     * @return {[String]}
      *
      **/
     getLines(firstRow: number, lastRow: number): string[];
     /**
      * Returns the number of rows in the document.
-     * @returns {Number}
+     * @return {Number}
      **/
     getLength(): number;
     /**
      * {:EditorDocument.getTextRange.desc}
      * @param {Range} range The range to work with
      *
-     * @returns {string}
+     * @return {string}
      **/
     getTextRange(range: Range): string;
     /**
      * Inserts a block of `text` and the indicated `position`.
      * @param {Object} position The position {row, column} to start inserting at
      * @param {String} text A chunk of text to insert
-     * @returns {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+     * @return {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
      *
      *
      **/
@@ -485,19 +527,19 @@ export default class EditSession extends EventEmitterClass {
     /**
      * Removes the `range` from the document.
      * @param {Range} range A specified Range to remove
-     * @returns {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
+     * @return {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
      *
      * @related EditorDocument.remove
      *
      **/
-    remove(range: Range): any;
+    remove(range: Range): Position;
     /**
      * Reverts previous changes to your document.
      * @param {Array} deltas An array of previous changes
      * @param {Boolean} dontSelect [If `true`, doesn't select the range of where the change occured]{: #dontSelect}
      *
      *
-     * @returns {Range}
+     * @return {Range}
     **/
     undoChanges(deltas: any, dontSelect?: boolean): Range;
     /**
@@ -506,7 +548,7 @@ export default class EditSession extends EventEmitterClass {
      * @param {Boolean} dontSelect {:dontSelect}
      *
     *
-     * @returns {Range}
+     * @return {Range}
     **/
     redoChanges(deltas: any, dontSelect?: boolean): Range;
     /**
@@ -517,27 +559,16 @@ export default class EditSession extends EventEmitterClass {
     private setUndoSelect(enable);
     private $getUndoSelection(deltas, isUndo, lastUndoRange);
     /**
-    * Replaces a range in the document with the new `text`.
-    *
-    * @param {Range} range A specified Range to replace
-    * @param {String} text The new text to use as a replacement
-    * @returns {Object} An object containing the final row and column, like this:
-    * ```
-    * {row: endRow, column: 0}
-    * ```
-    * If the text and range are empty, this function returns an object containing the current `range.start` value.
-    * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
-    *
-    *
-    *
-    * @related EditorDocument.replace
-    *
-    *
-    **/
-    replace(range: Range, text: string): {
-        row: number;
-        column: number;
-    };
+     * Replaces a range in the document with the new `text`.
+     *
+     * @method replace
+     * @param range {Range} A specified Range to replace.
+     * @param text {string} The new text to use as a replacement.
+     * @return {Position}
+     * If the text and range are empty, this function returns an object containing the current `range.start` value.
+     * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
+     */
+    replace(range: Range, text: string): Position;
     /**
     * Moves a range of text from the given range to the given position. `toPosition` is an object that looks like this:
      *  ```json
@@ -545,7 +576,7 @@ export default class EditSession extends EventEmitterClass {
      *  ```
      * @param {Range} fromRange The range of text you want moved within the document
      * @param {Object} toPosition The location (row and column) where you want to move the text to
-     * @returns {Range} The new range where the text was moved to.
+     * @return {Range} The new range where the text was moved to.
     *
     *
     *
@@ -577,7 +608,7 @@ export default class EditSession extends EventEmitterClass {
     * Shifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.
     * @param {Number} firstRow The starting row to move up
     * @param {Number} lastRow The final row to move up
-    * @returns {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+    * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
     *
     * @related EditorDocument.insertLines
     *
@@ -587,7 +618,7 @@ export default class EditSession extends EventEmitterClass {
     * Shifts all the lines in the document down one, starting from `firstRow` and ending at `lastRow`.
     * @param {Number} firstRow The starting row to move down
     * @param {Number} lastRow The final row to move down
-    * @returns {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+    * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
     *
     * @related EditorDocument.insertLines
     **/
@@ -596,7 +627,7 @@ export default class EditSession extends EventEmitterClass {
     * Duplicates all the text between `firstRow` and `lastRow`.
     * @param {Number} firstRow The starting row to duplicate
     * @param {Number} lastRow The final row to duplicate
-    * @returns {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
+    * @return {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
     *
     *
     **/
@@ -614,7 +645,7 @@ export default class EditSession extends EventEmitterClass {
     private setUseWrapMode(useWrapMode);
     /**
     * Returns `true` if wrap mode is being used; `false` otherwise.
-    * @returns {Boolean}
+    * @return {Boolean}
     **/
     getUseWrapMode(): boolean;
     /**
@@ -628,7 +659,7 @@ export default class EditSession extends EventEmitterClass {
     /**
     * This should generally only be called by the renderer when a resize is detected.
     * @param {Number} desiredLimit The new wrap limit
-    * @returns {Boolean}
+    * @return {Boolean}
     *
     * @private
     **/
@@ -636,7 +667,7 @@ export default class EditSession extends EventEmitterClass {
     private $constrainWrapLimit(wrapLimit, min, max);
     /**
     * Returns the value of wrap limit.
-    * @returns {Number} The wrap limit.
+    * @return {Number} The wrap limit.
     **/
     private getWrapLimit();
     /**
@@ -651,7 +682,7 @@ export default class EditSession extends EventEmitterClass {
     *
     *     { min: wrapLimitRange_min, max: wrapLimitRange_max }
     *
-    * @returns {Object}
+    * @return {Object}
     **/
     private getWrapLimitRange();
     private $updateInternalDataOnChange(e);
@@ -671,7 +702,7 @@ export default class EditSession extends EventEmitterClass {
     * @param {String} str The string to calculate the screen width of
     * @param {Number} maxScreenColumn
     * @param {Number} screenColumn
-    * @returns {[Number]} Returns an `int[]` array with two elements:<br/>
+    * @return {[Number]} Returns an `int[]` array with two elements:<br/>
     * The first position indicates the number of columns for `str` on screen.<br/>
     * The second value contains the position of the document column that this function read until.
     *
@@ -681,7 +712,7 @@ export default class EditSession extends EventEmitterClass {
     * Returns number of screenrows in a wrapped line.
     * @param {Number} row The row number to check
     *
-    * @returns {Number}
+    * @return {Number}
     **/
     getRowLength(row: number): number;
     getRowLineCount(row: number): number;
@@ -689,7 +720,7 @@ export default class EditSession extends EventEmitterClass {
     /**
      * Returns the position (on screen) for the last character in the provided screen row.
      * @param {Number} screenRow The screen row to check
-     * @returns {Number}
+     * @return {Number}
      *
      * @related EditSession.documentToScreenColumn
     **/
@@ -714,7 +745,7 @@ export default class EditSession extends EventEmitterClass {
     };
     /**
     * For the given row, this returns the split data.
-    * @returns {String}
+    * @return {String}
     **/
     getRowSplitData(row: number): number[];
     /**
@@ -730,7 +761,7 @@ export default class EditSession extends EventEmitterClass {
     * Converts characters coordinates on the screen to characters coordinates within the document. [This takes into account code folding, word wrap, tab size, and any other visual modifications.]{: #conversionConsiderations}
     * @param {number} screenRow The screen row to check
     * @param {number} screenColumn The screen column to check
-    * @returns {Object} The object returned has two properties: `row` and `column`.
+    * @return {Object} The object returned has two properties: `row` and `column`.
     **/
     screenToDocumentPosition(screenRow: number, screenColumn: number): {
         row: number;
@@ -740,7 +771,7 @@ export default class EditSession extends EventEmitterClass {
     * Converts document coordinates to screen coordinates. {:conversionConsiderations}
     * @param {Number} docRow The document row to check
     * @param {Number} docColumn The document column to check
-    * @returns {Object} The object returned by this method has two properties: `row` and `column`.
+    * @return {Object} The object returned by this method has two properties: `row` and `column`.
     *
     * @related EditSession.screenToDocumentPosition
     **/
@@ -752,7 +783,7 @@ export default class EditSession extends EventEmitterClass {
     * For the given document row and column, returns the screen column.
     * @param {Number} docRow
     * @param {Number} docColumn
-    * @returns {Number}
+    * @return {Number}
     *
     **/
     documentToScreenColumn(docRow: number, docColumn: number): number;
@@ -765,7 +796,7 @@ export default class EditSession extends EventEmitterClass {
     documentToScreenRange(range: Range): Range;
     /**
     * Returns the length of the screen.
-    * @returns {Number}
+    * @return {Number}
     **/
     getScreenLength(): number;
     /**
@@ -816,7 +847,7 @@ export default class EditSession extends EventEmitterClass {
     /**
      * Adds a new fold.
      *
-     * @returns
+     * @return
      *      The new created Fold object or an existing fold object in case the
      *      passed in range fits an existing fold exactly.
      */

@@ -24,7 +24,7 @@ define(["require", "exports"], function (require, exports) {
         /**
         *
         * Tokenizes all the items from the current point to the row prior in the document.
-        * @returns {[String]} If the current point is not at the top of the file, this function returns `null`. Otherwise, it returns an array of the tokenized strings.
+        * @return {[String]} If the current point is not at the top of the file, this function returns `null`. Otherwise, it returns an array of the tokenized strings.
         **/
         TokenIterator.prototype.stepBackward = function () {
             this.$tokenIndex -= 1;
@@ -42,7 +42,7 @@ define(["require", "exports"], function (require, exports) {
         /**
         *
         * Tokenizes all the items from the current point until the next row in the document. If the current point is at the end of the file, this function returns `null`. Otherwise, it returns the tokenized string.
-        * @returns {String}
+        * @return {String}
         **/
         TokenIterator.prototype.stepForward = function () {
             this.$tokenIndex += 1;
@@ -63,7 +63,7 @@ define(["require", "exports"], function (require, exports) {
         /**
         *
         * Returns the current tokenized string.
-        * @returns {String}
+        * @return {String}
         **/
         TokenIterator.prototype.getCurrentToken = function () {
             return this.$rowTokens[this.$tokenIndex];
@@ -71,7 +71,7 @@ define(["require", "exports"], function (require, exports) {
         /**
         *
         * Returns the current row.
-        * @returns {Number}
+        * @return {Number}
         **/
         TokenIterator.prototype.getCurrentTokenRow = function () {
             return this.$row;
@@ -79,7 +79,7 @@ define(["require", "exports"], function (require, exports) {
         /**
         *
         * Returns the current column.
-        * @returns {Number}
+        * @return {Number}
         **/
         TokenIterator.prototype.getCurrentTokenColumn = function () {
             var rowTokens = this.$rowTokens;

@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -164,26 +162,26 @@ import Tooltip from &quot;./Tooltip&quot;;
 //var DragdropHandler = require(&quot;./mouse/dragdrop_handler&quot;).DragdropHandler;
 
 /**
- * The main entry point into the Ace functionality.
+ * The &#x60;Editor&#x60; acts as a controller, mediating between the editSession and renderer.
  *
- * The &#x60;Editor&#x60; manages the [[EditSession]] (which manages [[Document]]s), as well as the [[VirtualRenderer]], which draws everything to the screen.
- *
- * Event sessions dealing with the mouse and keyboard are bubbled up from &#x60;Document&#x60; to the &#x60;Editor&#x60;, which decides what to do with them.
  * @class Editor
- */
-
-/**
- * Creates a new &#x60;Editor&#x60; object.
- *
- * @param {VirtualRenderer} renderer Associated &#x60;VirtualRenderer&#x60; that draws everything
- * @param {EditSession} session The &#x60;EditSession&#x60; to refer to
- *
- *
- * @constructor
+ * @extends EventEmitterClass
  */
 export default class Editor extends EventEmitterClass {
+
+    /**
+     * @property renderer
+     * @type VirtualRenderer
+     */
     public renderer: VirtualRenderer;
-    public session: EditSession;
+
+    /**
+     * @property session
+     * @type EditSession
+     * @private
+     */
+    private session: EditSession;
+
     private $touchHandler: IGestureHandler;
     private $mouseHandler: IGestureHandler;
     public getOption;
@@ -244,6 +242,15 @@ export default class Editor extends EventEmitterClass {
     public $onSelectionChange: (event, selection: Selection) =&gt; void;
     public exitMultiSelectMode;
     public forEachSelection;
+
+    /**
+     * Creates a new &#x60;Editor&#x60; object.
+     *
+     * @class
+     * @constructor
+     * @param renderer {VirtualRenderer} The view.
+     * @param session {EditSession} The model.
+     */
     constructor(renderer: VirtualRenderer, session: EditSession) {
         super();
         this.curOp = null;
@@ -295,6 +302,10 @@ export default class Editor extends EventEmitterClass {
         this.$mouseHandler.cancelContextMenu();
     }
 
+    /**
+     * @property selection
+     * @type Selection
+     */
     get selection(): Selection {
         return this.session.getSelection();
     }
@@ -439,10 +450,12 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Sets a new key handler, such as &quot;vim&quot; or &quot;windows&quot;.
-     * @param {string|HasgHandler} keyboardHandler The new key handler
      *
-     **/
-    setKeyboardHandler(keyboardHandler: string | HashHandler) {
+     * @method setKeyboardHandler
+     * @param keyboardHandler {string | HashHandler} The new key handler.
+     * @return {void}
+     */
+    setKeyboardHandler(keyboardHandler: string | HashHandler): void {
         if (!keyboardHandler) {
             this.keyBinding.setKeyboardHandler(null);
         }
@@ -463,28 +476,25 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns the keyboard handler, such as &quot;vim&quot; or &quot;windows&quot;.
      *
-     * @returns {String}
-     *
+     * @method getKeyboardHandler
+     * @return {HashHandler}
      */
     getKeyboardHandler(): HashHandler {
         return this.keyBinding.getKeyboardHandler();
     }
 
-
     /**
-     * Emitted whenever the [[EditSession]] changes.
-     * @event changeSession
-     * @param {Object} e An object with two properties, &#x60;oldSession&#x60; and &#x60;session&#x60;, that represent the old and new [[EditSession]]s.
+     * Sets a new EditSession to use.
+     * This method also emits the &#x60;&#x27;changeSession&#x27;&#x60; event.
      *
-     **/
-    /**
-     * Sets a new editsession to use. This method also emits the &#x60;&#x27;changeSession&#x27;&#x60; event.
-     * @param {EditSession} session The new session to use
-     *
-     **/
-    setSession(session: EditSession) {
-        if (this.session == session)
+     * @method setSession
+     * @param session {EditSession} The new session to use.
+     * @return {void}
+     */
+    setSession(session: EditSession): void {
+        if (this.session === session) {
             return;
+        }
 
         var oldSession = this.session;
         if (oldSession) {
@@ -588,8 +598,10 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the current session being used.
-     * @returns {EditSession}
-     **/
+     *
+     * @method getSession
+     * @return {EditSession}
+     */
     getSession(): EditSession {
         return this.session;
     }
@@ -599,7 +611,7 @@ export default class Editor extends EventEmitterClass {
      * @param {String} val The new value to set for the document
      * @param {Number} cursorPos Where to set the new value. &#x60;undefined&#x60; or 0 is selectAll, -1 is at the document start, and +1 is at the end
      *
-     * @returns {String} The current document value
+     * @return {String} The current document value
      * @related Document.setValue
      **/
     setValue(val: string, cursorPos?: number): string {
@@ -621,7 +633,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns the current session&#x27;s content.
      *
-     * @returns {String}
+     * @return {String}
      * @related EditSession.getValue
      **/
     getValue(): string {
@@ -631,7 +643,7 @@ export default class Editor extends EventEmitterClass {
     /**
      *
      * Returns the currently highlighted selection.
-     * @returns {String} The highlighted selection
+     * @return {String} The highlighted selection
      **/
     getSelection(): Selection {
         return this.selection;
@@ -658,7 +670,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:VirtualRenderer.getTheme}
      *
-     * @returns {String} The set theme
+     * @return {String} The set theme
      * @related VirtualRenderer.getTheme
      **/
     getTheme(): string {
@@ -1067,7 +1079,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the string of text currently highlighted.
-     * @returns {String}
+     * @return {String}
      **/
     getSelectedText() {
         return this.session.getTextRange(this.getSelectionRange());
@@ -1081,7 +1093,7 @@ export default class Editor extends EventEmitterClass {
      **/
     /**
      * Returns the string of text currently highlighted.
-     * @returns {String}
+     * @return {String}
      * @deprecated Use getSelectedText instead.
      **/
     getCopyText() {
@@ -1247,7 +1259,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns &#x60;true&#x60; if overwrites are enabled; &#x60;false&#x60; otherwise.
-     * @returns {Boolean}
+     * @return {Boolean}
      * @related EditSession.getOverwrite
      **/
     getOverwrite() {
@@ -1272,7 +1284,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the value indicating how fast the mouse scroll speed is (in milliseconds).
-     * @returns {Number}
+     * @return {Number}
      **/
     getScrollSpeed(): number {
         return this.getOption(&quot;scrollSpeed&quot;);
@@ -1288,7 +1300,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the current mouse drag delay.
-     * @returns {Number}
+     * @return {Number}
      **/
     getDragDelay(): number {
         return this.getOption(&quot;dragDelay&quot;);
@@ -1310,7 +1322,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the current selection style.
-     * @returns {String}
+     * @return {String}
      **/
     getSelectionStyle(): string {
         return this.getOption(&quot;selectionStyle&quot;);
@@ -1351,7 +1363,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns &#x60;true&#x60; if currently highlighted words are to be highlighted.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getHighlightSelectedWord(): boolean {
         return this.$highlightSelectedWord;
@@ -1376,7 +1388,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns &#x60;true&#x60; if invisible characters are being shown.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getShowInvisibles(): boolean {
         return this.renderer.getShowInvisibles();
@@ -1400,7 +1412,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns &#x60;true&#x60; if the print margin is being shown.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     getShowPrintMargin(): boolean {
         return this.renderer.getShowPrintMargin();
@@ -1416,7 +1428,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the column number of where the print margin is.
-     * @returns {Number}
+     * @return {Number}
      */
     getPrintMarginColumn(): number {
         return this.renderer.getPrintMarginColumn();
@@ -1433,7 +1445,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns &#x60;true&#x60; if the editor is set to read-only mode.
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getReadOnly(): boolean {
         return this.getOption(&quot;readOnly&quot;);
@@ -1451,7 +1463,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns &#x60;true&#x60; if the behaviors are currently enabled. {:BehaviorsDef}
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     getBehavioursEnabled(): boolean {
         return this.getOption(&quot;behavioursEnabled&quot;);
@@ -1757,7 +1769,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Works like [[EditSession.getTokenAt]], except it returns a number.
-     * @returns {Number}
+     * @return {Number}
      **/
     getNumberAt(row: number, column: number): { value: string; start: number; end: number } {
         var _numberRx = /[\-]?[0-9]+(?:\.[0-9]+)?/g;
@@ -1863,7 +1875,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Shifts all the selected lines down one row.
      *
-     * @returns {Number} On success, it returns -1.
+     * @return {Number} On success, it returns -1.
      * @related EditSession.moveLinesUp
      **/
     moveLinesDown() {
@@ -1874,7 +1886,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Shifts all the selected lines up one row.
-     * @returns {Number} On success, it returns -1.
+     * @return {Number} On success, it returns -1.
      * @related EditSession.moveLinesDown
      **/
     moveLinesUp() {
@@ -1891,7 +1903,7 @@ export default class Editor extends EventEmitterClass {
      * @param {Range} fromRange The range of text you want moved within the document
      * @param {Object} toPosition The location (row and column) where you want to move the text to
      *
-     * @returns {Range} The new range where the text was moved to.
+     * @return {Range} The new range where the text was moved to.
      * @related EditSession.moveText
      **/
     moveText(range, toPosition, copy) {
@@ -1900,7 +1912,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Copies all the selected lines up one row.
-     * @returns {Number} On success, returns 0.
+     * @return {Number} On success, returns 0.
      *
      **/
     copyLinesUp() {
@@ -1912,7 +1924,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Copies all the selected lines down one row.
-     * @returns {Number} On success, returns the number of new rows added; in other words, &#x60;lastRow - firstRow + 1&#x60;.
+     * @return {Number} On success, returns the number of new rows added; in other words, &#x60;lastRow - firstRow + 1&#x60;.
      * @related EditSession.duplicateLines
      *
      **/
@@ -1969,7 +1981,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns an object indicating the currently selected rows.
      *
-     * @returns {Object}
+     * @return {Object}
      **/
     private $getSelectedRows(): { first: number; last: number } {
         var range = this.getSelectionRange().collapseRows();
@@ -1995,7 +2007,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:VirtualRenderer.getFirstVisibleRow}
      *
-     * @returns {Number}
+     * @return {Number}
      * @related VirtualRenderer.getFirstVisibleRow
      **/
     getFirstVisibleRow(): number {
@@ -2005,7 +2017,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:VirtualRenderer.getLastVisibleRow}
      *
-     * @returns {Number}
+     * @return {Number}
      * @related VirtualRenderer.getLastVisibleRow
      **/
     getLastVisibleRow(): number {
@@ -2016,7 +2028,7 @@ export default class Editor extends EventEmitterClass {
      * Indicates if the row is currently visible on the screen.
      * @param {Number} row The row to check
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     isRowVisible(row: number): boolean {
         return (row &gt;= this.getFirstVisibleRow() &amp;&amp; row &lt;= this.getLastVisibleRow());
@@ -2027,7 +2039,7 @@ export default class Editor extends EventEmitterClass {
      * @param {Number} row The row to check
      *
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     isRowFullyVisible(row: number): boolean {
         return (row &gt;= this.renderer.getFirstFullyVisibleRow() &amp;&amp; row &lt;= this.renderer.getLastFullyVisibleRow());
@@ -2035,7 +2047,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Returns the number of currently visibile rows.
-     * @returns {Number}
+     * @return {Number}
      **/
     private $getVisibleRowCount(): number {
         return this.renderer.getScrollBottomRow() - this.renderer.getScrollTopRow() + 1;
@@ -2153,7 +2165,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Gets the current position of the cursor.
-     * @returns {Object} An object that looks something like this:
+     * @return {Object} An object that looks something like this:
      *
      * &#x60;&#x60;&#x60;json
      * { row: currRow, column: currCol }
@@ -2175,7 +2187,7 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * {:Selection.getRange}
-     * @returns {Range}
+     * @return {Range}
      * @related Selection.getRange
      **/
     getSelectionRange(): Range {
@@ -2622,7 +2634,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * {:Search.getOptions} For more information on &#x60;options&#x60;, see [[Search &#x60;Search&#x60;]].
      * @related Search.getOptions
-     * @returns {Object}
+     * @return {Object}
      **/
     getLastSearchOptions() {
         return this.$search.getOptions();
@@ -2910,7 +2922,7 @@ class FoldHandler {
         // to determine whether to remove or expand a fold.
         editor.on(&quot;click&quot;, function(e: EditorMouseEvent) {
             var position = e.getDocumentPosition();
-            var session = editor.session;
+            var session = editor.getSession();
 
             // If the user clicked on a fold, then expand it.
             var fold = session.getFoldAt(position.row, position.column, 1);
@@ -2932,9 +2944,9 @@ class FoldHandler {
             var gutterRegion = editor.renderer.$gutterLayer.getRegion(e);
             if (gutterRegion === &#x27;foldWidgets&#x27;) {
                 var row = e.getDocumentPosition().row;
-                var session = editor.session;
+                var session = editor.getSession();
                 if (session[&#x27;foldWidgets&#x27;] &amp;&amp; session[&#x27;foldWidgets&#x27;][row]) {
-                    editor.session[&#x27;onFoldWidgetClick&#x27;](row, e);
+                    session[&#x27;onFoldWidgetClick&#x27;](row, e);
                 }
                 if (!editor.isFocused()) {
                     editor.focus();
@@ -2948,7 +2960,7 @@ class FoldHandler {
 
             if (gutterRegion == &#x27;foldWidgets&#x27;) {
                 var row = e.getDocumentPosition().row;
-                var session = editor.session;
+                var session = editor.getSession();
                 var data = session[&#x27;getParentFoldRangeData&#x27;](row, true);
                 var range = data.range || data.firstRange;
 
@@ -3060,7 +3072,7 @@ class MouseHandler {
             }
             // FIXME: Probably s/b clientXY
             var char = editor.renderer.screenToTextCoordinates(e.x, e.y);
-            var range = editor.session.getSelection().getRange();
+            var range = editor.getSession().getSelection().getRange();
             var renderer = editor.renderer;
 
             if (!range.isEmpty() &amp;&amp; range.insideStart(char.row, char.column)) {
@@ -3438,7 +3450,7 @@ function makeMouseWheelHandler(editor: Editor, mouseHandler: MouseHandler) {
 function makeDoubleClickHandler(editor: Editor, mouseHandler: MouseHandler) {
     return function(editorMouseEvent: EditorMouseEvent) {
         var pos = editorMouseEvent.getDocumentPosition();
-        var session = editor.session;
+        var session = editor.getSession();
 
         var range = session.getBracketRange(pos);
         if (range) {
@@ -3560,7 +3572,7 @@ class GutterHandler {
             }
 
             var row = e.getDocumentPosition().row;
-            var selection = editor.session.getSelection();
+            var selection = editor.getSession().getSelection();
 
             if (e.getShiftKey()) {
                 selection.selectTo(row, 0);
@@ -3589,11 +3601,12 @@ class GutterHandler {
                 return hideTooltip(void 0, editor);
             }
 
-            var maxRow = editor.session.getLength();
+            var session = editor.getSession();
+            var maxRow = session.getLength();
             if (row == maxRow) {
                 var screenRow = editor.renderer.pixelToScreenCoordinates(0, mouseEvent.clientY).row;
                 var pos = mouseEvent.getDocumentPosition();
-                if (screenRow &gt; editor.session.documentToScreenRow(pos.row, pos.column)) {
+                if (screenRow &gt; session.documentToScreenRow(pos.row, pos.column)) {
                     return hideTooltip(void 0, editor);
                 }
             }
@@ -3613,7 +3626,7 @@ class GutterHandler {
                 moveTooltip(mouseEvent);
             }
             else {
-                var gutterElement = gutter.$cells[editor.session.documentToScreenRow(row, 0)].element;
+                var gutterElement = gutter.$cells[editor.getSession().documentToScreenRow(row, 0)].element;
                 var rect = gutterElement.getBoundingClientRect();
                 var style = tooltip.getElement().style;
                 style.left = rect.right + &quot;px&quot;;

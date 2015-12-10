@@ -34,41 +34,37 @@ import Range from "./Range";
 import EditSession from "./EditSession";
 
 /**
- * @class Search
- *
  * A class designed to handle all sorts of text searches within a [[Document `Document`]].
- *
- **/
-
-/**
- * 
- *
- * Creates a new `Search` object. The following search options are avaliable:
- *
- * - `needle`: The string or regular expression you're looking for
- * - `backwards`: Whether to search backwards from where cursor currently is. Defaults to `false`.
- * - `wrap`: Whether to wrap the search back to the beginning when it hits the end. Defaults to `false`.
- * - `caseSensitive`: Whether the search ought to be case-sensitive. Defaults to `false`.
- * - `wholeWord`: Whether the search matches only on whole words. Defaults to `false`.
- * - `range`: The [[Range]] to search within. Set this to `null` for the whole document
- * - `regExp`: Whether the search is a regular expression or not. Defaults to `false`.
- * - `start`: The starting [[Range]] or cursor position to begin the search
- * - `skipCurrent`: Whether or not to include the current line in the search. Default to `false`.
- * 
- * @constructor
- **/
-
+ * @class Search
+ */
 export default class Search {
     $options;
+    /**
+     * Creates a new `Search` object. The following search options are avaliable:
+     *
+     * - `needle`: The string or regular expression you're looking for
+     * - `backwards`: Whether to search backwards from where cursor currently is. Defaults to `false`.
+     * - `wrap`: Whether to wrap the search back to the beginning when it hits the end. Defaults to `false`.
+     * - `caseSensitive`: Whether the search ought to be case-sensitive. Defaults to `false`.
+     * - `wholeWord`: Whether the search matches only on whole words. Defaults to `false`.
+     * - `range`: The [[Range]] to search within. Set this to `null` for the whole document
+     * - `regExp`: Whether the search is a regular expression or not. Defaults to `false`.
+     * - `start`: The starting [[Range]] or cursor position to begin the search
+     * - `skipCurrent`: Whether or not to include the current line in the search. Default to `false`.
+     *
+     * @class Search 
+     * @constructor
+     */
     constructor() {
         this.$options = {};
     }
+
     /**
      * Sets the search options via the `options` parameter.
      * @param {Object} options An object containing all the new search properties
      *
      * 
-     * @returns {Search}
+     * @return {Search}
      * @chainable
     **/
     set(options) {
@@ -78,7 +74,7 @@ export default class Search {
 
     /**
      * [Returns an object containing all the search options.]{: #Search.getOptions}
-     * @returns {Object}
+     * @return {Object}
     **/
     getOptions() {
         return copyObject(this.$options);
@@ -98,7 +94,7 @@ export default class Search {
      * @param {EditSession} session The session to search with
      *
      * 
-     * @returns {Range}
+     * @return {Range}
     **/
     find(session: EditSession): Range {
         var iterator = this.$matchIterator(session, this.$options);
@@ -125,7 +121,7 @@ export default class Search {
      * @param {EditSession} session The session to search with
      *
      * 
-     * @returns {[Range]}
+     * @return {[Range]}
     **/
     findAll(session: EditSession): Range[] {
         var options = this.$options;
@@ -165,7 +161,8 @@ export default class Search {
                 if (len > 2)
                     row = row + len - 2;
             }
-        } else {
+        }
+        else {
             for (var i = 0; i < lines.length; i++) {
                 var matches = getMatchOffsets(lines[i], re);
                 for (var j = 0; j < matches.length; j++) {
@@ -203,7 +200,7 @@ export default class Search {
      * If `options.needle` was not found, this function returns `null`.
      *
      * 
-     * @returns {String}
+     * @return {String}
     **/
     replace(input: string, replacement: string): string {
         var options = this.$options;
@@ -266,14 +263,16 @@ export default class Search {
                 if (callback(range))
                     return true;
             };
-        } else if (backwards) {
+        }
+        else if (backwards) {
             var matchIterator = function(line, row, startIndex) {
                 var matches = getMatchOffsets(line, re);
                 for (var i = matches.length - 1; i >= 0; i--)
                     if (callback(matches[i], row, startIndex))
                         return true;
             };
-        } else {
+        }
+        else {
             var matchIterator = function(line, row, startIndex) {
                 var matches = getMatchOffsets(line, re);
                 for (var i = 0; i < matches.length; i++)
@@ -395,5 +394,4 @@ export default class Search {
 
         return { forEach: forEach };
     }
-
 }

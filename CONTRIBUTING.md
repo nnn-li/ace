@@ -28,3 +28,12 @@ http-server -o
 Grunt is used to create a classic distribution and documentation.
 
 grunt
+
+# Documentation #
+
+This is currently generated from comments in the code.
+There will be some redundancy in type declarations until a TypeScript-aware tool is used.
+
+# d.ts #
+
+This is manually maintained in src/modules/deuce.d.ts

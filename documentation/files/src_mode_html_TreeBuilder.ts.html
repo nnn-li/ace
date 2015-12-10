@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -121,12 +119,11 @@ var Marker = {};
 
 /**
  *
- * @constructor
  */
 export default class TreeBuilder {
     activeFormattingElements;
     compatMode: string;
-    context;
+    context: string;
     document;
     errorHandler;
     form;
@@ -144,6 +141,10 @@ export default class TreeBuilder {
     selfClosingFlagAcknowledged: boolean;
     scriptingEnabled: boolean;
     shouldSkipLeadingNewline;
+
+    /**
+     *
+     */
     constructor() {
         this.tokenizer = null;
         this.errorHandler = null;
@@ -3000,12 +3001,12 @@ export default class TreeBuilder {
      *
      * @param {String} context A context element name for fragment parsing
      */
-    setFragmentContext(context) {
+    setFragmentContext(context: string) {
         // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
         // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
         // For efficiency, we skip step 4.2 (&quot;Let root be a new html element with no attributes&quot;)
         // and instead use the DocumentFragment as a root node.
-        //m_tree.openElements()-&gt;pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
+        // m_tree.openElements()-&gt;pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
         this.context = context;
     }
 

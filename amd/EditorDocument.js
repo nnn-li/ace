@@ -32,7 +32,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], function (require, exports, event_emitter_1, Range_1, Anchor_1) {
+define(["require", "exports", './Anchor', './lib/event_emitter', './Range'], function (require, exports, Anchor_1, event_emitter_1, Range_1) {
     var $split = (function () {
         function foo(text) {
             return text.replace(/\r\n|\r/g, "\n").split("\n");
@@ -58,8 +58,16 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         }
         return position;
     }
+    /**
+     * @class EditorDocument
+     */
     var EditorDocument = (function (_super) {
         __extends(EditorDocument, _super);
+        /**
+         * @class EditorDocument
+         * @constructor
+         * @param text {string | Array<string>}
+         */
         function EditorDocument(text) {
             _super.call(this);
             this.$lines = [];
@@ -79,8 +87,9 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         }
         /**
          * Replaces all the lines in the current `EditorDocument` with the value of `text`.
+         *
          * @method setValue
-         * @param {string} text The text to use
+         * @param text {string} The text to use
          * @return {void}
          */
         EditorDocument.prototype.setValue = function (text) {
@@ -90,6 +99,7 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         };
         /**
          * Returns all the lines in the document as a single string, joined by the new line character.
+         *
          * @method getValue
          * @return {string}
          */
@@ -102,7 +112,6 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
          * @param {number} row The row number to use
          * @param {number} column The column number to use
          * @return {Anchor}
-         *
          */
         EditorDocument.prototype.createAnchor = function (row, column) {
             return new Anchor_1.default(this, row, column);
@@ -112,6 +121,8 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
          *
          * @method $split
          * @param {string} text The text to work with
+         * @return {void}
+         * @private
          */
         EditorDocument.prototype.$detectNewLine = function (text) {
             var match = text.match(/^.*?(\r\n|\r|\n)/m);
@@ -120,11 +131,12 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         };
         /**
         * Returns the newline character that's being used, depending on the value of `newLineMode`.
-        * @method getNewLineCharacter
-        * @returns {String}
         *  If `newLineMode == windows`, `\r\n` is returned.
         *  If `newLineMode == unix`, `\n` is returned.
         *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
+        *
+        * @method getNewLineCharacter
+        * @return {string}
         *
         **/
         EditorDocument.prototype.getNewLineCharacter = function () {
@@ -139,18 +151,21 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         };
         /**
          * Sets the new line mode.
+         *
          * @method setNewLineMode
-         * @param {String} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #EditorDocument.setNewLineMode.param}
+         * @param {string} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #EditorDocument.setNewLineMode.param}
          * @return {void}
          */
         EditorDocument.prototype.setNewLineMode = function (newLineMode) {
-            if (this.$newLineMode === newLineMode)
+            if (this.$newLineMode === newLineMode) {
                 return;
+            }
             this.$newLineMode = newLineMode;
             this._signal("changeNewLineMode");
         };
         /**
-         * Returns the type of newlines being used; either `windows`, `unix`, or `auto`
+         * Returns the type of newlines being used; either `windows`, `unix`, or `auto`.
+         *
          * @method getNewLineMode
          * @return {string}
          */
@@ -159,49 +174,62 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         };
         /**
          * Returns `true` if `text` is a newline character (either `\r\n`, `\r`, or `\n`).
+         *
          * @method isNewLine
-         * @param {string} text The text to check
+         * @param text {string} The text to check
          * @return {boolean}
          */
         EditorDocument.prototype.isNewLine = function (text) {
             return (text == "\r\n" || text == "\r" || text == "\n");
         };
         /**
-         * Returns a verbatim copy of the given line as it is in the document
-         * @param {Number} row The row index to retrieve
+         * Returns a verbatim copy of the given line as it is in the document.
+         *
+         * @method getLine
+         * @param row {Number} The row index to retrieve.
          * @return {string}
          */
         EditorDocument.prototype.getLine = function (row) {
             return this.$lines[row] || "";
         };
         /**
-        * Returns an array of strings of the rows between `firstRow` and `lastRow`. This function is inclusive of `lastRow`.
-        * @param {Number} firstRow The first row index to retrieve
-        * @param {Number} lastRow The final row index to retrieve
-        *
-        **/
+         * Returns an array of strings of the rows between `firstRow` and `lastRow`.
+         * This function is inclusive of `lastRow`.
+         *
+         * @param {Number} firstRow The first row index to retrieve
+         * @param {Number} lastRow The final row index to retrieve
+         * @return {string[]}
+         */
         EditorDocument.prototype.getLines = function (firstRow, lastRow) {
             return this.$lines.slice(firstRow, lastRow + 1);
         };
         /**
-        * Returns all lines in the document as string array.
-        **/
+         * Returns all lines in the document as string array.
+         *
+         * @method getAllLines()
+         * @return {string[]}
+         */
         EditorDocument.prototype.getAllLines = function () {
             return this.getLines(0, this.getLength());
         };
         /**
-        * Returns the number of rows in the document.
-        **/
+         * Returns the number of rows in the document.
+         *
+         * @method getLength
+         * @return {number}
+         */
         EditorDocument.prototype.getLength = function () {
             return this.$lines.length;
         };
         /**
          * Given a range within the document, returns all the text within that range as a single string.
-         * @param {Range} range The range to work with
          *
+         * @method getTextRange
+         * @param range {Range} The range to work with.
+         * @return {string}
          */
         EditorDocument.prototype.getTextRange = function (range) {
-            if (range.start.row == range.end.row) {
+            if (range.start.row === range.end.row) {
                 return this.getLine(range.start.row).substring(range.start.column, range.end.column);
             }
             var lines = this.getLines(range.start.row, range.end.row);
@@ -213,12 +241,13 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
             return lines.join(this.getNewLineCharacter());
         };
         /**
-        * Inserts a block of `text` at the indicated `position`.
-        * @param {Object} position The position to start inserting at; it's an object that looks like `{ row: row, column: column}`
-        * @param {string} text A chunk of text to insert
-        * @returns {Object} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
-        *
-        **/
+         * Inserts a block of `text` at the indicated `position`.
+         *
+         * @method insert
+         * @param {Object} position The position to start inserting at; it's an object that looks like `{ row: row, column: column}`
+         * @param text {string} A chunk of text to insert.
+         * @return {Object} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+         */
         EditorDocument.prototype.insert = function (position, text) {
             if (!text || text.length === 0)
                 return position;
@@ -265,7 +294,7 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         * Inserts the elements in `lines` into the document, starting at the row index given by `row`. This method also triggers the `'change'` event.
         * @param {Number} row The index of the row to insert at
         * @param {Array} lines An array of strings
-        * @returns {Object} Contains the final row and column, like this:
+        * @return {Object} Contains the final row and column, like this:
         *   ```
         *   {row: endRow, column: 0}
         *   ```
@@ -303,14 +332,13 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
             return range.end;
         };
         /**
-        * Inserts a new line into the document at the current row's `position`. This method also triggers the `'change'` event.
-        * @param {Object} position The position to insert at
-        * @returns {Object} Returns an object containing the final row and column, like this:<br/>
-        *    ```
-        *    {row: endRow, column: 0}
-        *    ```
-        *
-        **/
+         * Inserts a new line into the document at the current row's `position`. This method also triggers the `'change'` event.
+         * @param {Object} position The position to insert at
+         * @return {Object} Returns an object containing the final row and column, like this:<br/>
+         *    ```
+         *    {row: endRow, column: 0}
+         *    ```
+         */
         EditorDocument.prototype.insertNewLine = function (position) {
             position = $clipPosition(this, position);
             var line = this.$lines[position.row] || "";
@@ -329,11 +357,14 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
             return end;
         };
         /**
-        * Inserts `text` into the `position` at the current row. This method also triggers the `'change'` event.
-        * @param {Object} position The position to insert at.
-        * @param {String} text A chunk of text
-        * @returns {Object} Returns an object containing the final row and column.
-        **/
+         * Inserts `text` into the `position` at the current row.
+         *
+         * @method insertInLine
+         * This method also triggers the `'change'` event.
+         * @param {Object} position The position to insert at.
+         * @param {String} text A chunk of text
+         * @return {Object} Returns an object containing the final row and column.
+         */
         EditorDocument.prototype.insertInLine = function (position, text) {
             if (text.length == 0)
                 return position;
@@ -348,14 +379,17 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
             return end;
         };
         /**
-        * Removes the `range` from the document.
-        * @param {Range} range A specified Range to remove
-        * @returns {Object} Returns the new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
-        *
-        **/
+         * Removes the `range` from the document.
+         *
+         * @method remove
+         * @param {Range} range A specified Range to remove
+         * @return {Position} Returns the new `start` property of the range.
+         * If `range` is empty, this function returns the unmodified value of `range.start`.
+         */
         EditorDocument.prototype.remove = function (range) {
-            if (!(range instanceof Range_1.default))
+            if (!(range instanceof Range_1.default)) {
                 range = Range_1.default.fromPoints(range.start, range.end);
+            }
             // clip to document
             range.start = $clipPosition(this, range.start);
             range.end = $clipPosition(this, range.end);
@@ -381,13 +415,16 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
             return range.start;
         };
         /**
-        * Removes the specified columns from the `row`. This method also triggers the `'change'` event.
-        * @param {Number} row The row to remove from
-        * @param {Number} startColumn The column to start removing at
-        * @param {Number} endColumn The column to stop removing at
-        * @returns {Object} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
-        *
-        **/
+         * Removes the specified columns from the `row`.
+         * This method also triggers the `'change'` event.
+         *
+         * @method removeInLine
+         * @param {Number} row The row to remove from
+         * @param {Number} startColumn The column to start removing at
+         * @param {Number} endColumn The column to stop removing at
+         * @return {Object} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
+         *
+         */
         EditorDocument.prototype.removeInLine = function (row, startColumn, endColumn) {
             if (startColumn === endColumn)
                 return;
@@ -405,15 +442,19 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
             return range.start;
         };
         /**
-        * Removes a range of full lines. This method also triggers the `'change'` event.
-        * @param {Number} firstRow The first row to be removed
-        * @param {Number} lastRow The last row to be removed
-        * @returns {[String]} Returns all the removed lines.
-        *
-        **/
+         * Removes a range of full lines.
+         * This method also triggers the `'change'` event.
+         *
+         * @method removeLines
+         * @param firstRow {number} The first row to be removed.
+         * @param lastRow {number} The last row to be removed.
+         * @return {string[]} Returns all the removed lines.
+         */
         EditorDocument.prototype.removeLines = function (firstRow, lastRow) {
-            if (firstRow < 0 || lastRow >= this.getLength())
-                return this.remove(new Range_1.default(firstRow, 0, lastRow + 1, 0));
+            if (firstRow < 0 || lastRow >= this.getLength()) {
+                throw new Error("EditorDocument.removeLines");
+            }
+            // This returns a string[].
             return this._removeLines(firstRow, lastRow);
         };
         EditorDocument.prototype._removeLines = function (firstRow, lastRow) {
@@ -450,7 +491,7 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
         * Replaces a range in the document with the new `text`.
         * @param {Range} range A specified Range to replace
         * @param {String} text The new text to use as a replacement
-        * @returns {Object} Returns an object containing the final row and column, like this:
+        * @return {Object} Returns an object containing the final row and column, like this:
         *     {row: endRow, column: 0}
         * If the text and range are empty, this function returns an object containing the current `range.start` value.
         * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
@@ -520,7 +561,7 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
          *
          * @param {Number} index An index to convert
          * @param {Number} startRow=0 The row from which to start the conversion
-         * @returns {Object} A `{row, column}` object of the `index` position
+         * @return {Object} A `{row, column}` object of the `index` position
          */
         EditorDocument.prototype.indexToPosition = function (index, startRow) {
             var lines = this.$lines || this.getAllLines();
@@ -546,7 +587,7 @@ define(["require", "exports", './lib/event_emitter', './Range', './Anchor'], fun
          *
          * @param {Object} pos The `{row, column}` to convert
          * @param {Number} startRow=0 The row from which to start the conversion
-         * @returns {Number} The index position in the document
+         * @return {Number} The index position in the document
          */
         EditorDocument.prototype.positionToIndex = function (pos, startRow) {
             var lines = this.$lines || this.getAllLines();

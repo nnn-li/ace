@@ -33,26 +33,49 @@ import EventEmitterClass from './lib/event_emitter';
 import { assert } from './lib/asserts';
 
 /**
- *
  * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
- *
  * @class Anchor
- * 
- * Creates a new `Anchor` and associates it with a document.
- *
- * @param {EditorDocument} doc The document to associate with the anchor
- * @param {Number} row The starting row position
- * @param {Number} column The starting column position
- *
- * @constructor
- **/
-
+ * @extends EventEmitterClass
+ */
 export default class Anchor extends EventEmitterClass {
+
+    /**
+     * @property row
+     * @type number
+     */
     public row: number;
+
+    /**
+     * @property column
+     * @type number
+     */
     public column: number;
+
+    /**
+     * @property document
+     * @type {EditorDocument}
+     * @private
+     */
     private document: EditorDocument;
     private $onChange: (event, doc: EditorDocument) => void;
+
+    /**
+     * @property $insertRight
+     * @type boolean
+     * @default false
+     * @private
+     */
     private $insertRight: boolean;
+
+    /**
+     * Creates a new <code>Anchor</code> and associates it with a document.
+     *
+     * @param doc {EditorDocument} The document to associate with the anchor.
+     * @param row {number} The starting row position.
+     * @param column {number} The starting column position.
+     *
+     * @constructor
+     */
     constructor(doc: EditorDocument, row: number, column: number) {
         super();
         assert(typeof row === 'number', "row must be a number");
@@ -62,20 +85,21 @@ export default class Anchor extends EventEmitterClass {
         this.setPosition(row, column);
         this.$insertRight = false;
     }
+
     /**
      * Returns an object identifying the `row` and `column` position of the current anchor.
-     * @returns {Object}
+     * @return {Object}
      **/
     getPosition() {
         return this.$clipPositionToDocument(this.row, this.column);
     }
 
     /**
-     *
      * Returns the current document.
-     * @returns {EditorDocument}
-     **/
-    getDocument() {
+     * @method getDocument
+     * @return {EditorDocument}
+     */
+    getDocument(): EditorDocument {
         return this.document;
     }
 
@@ -172,7 +196,6 @@ export default class Anchor extends EventEmitterClass {
      * @param {Number} row The row index to move the anchor to
      * @param {Number} column The column index to move the anchor to
      * @param {Boolean} noClip Identifies if you want the position to be clipped
-     *
      **/
     setPosition(row: number, column: number, noClip?: boolean): void {
         var pos: { row: number; column: number };

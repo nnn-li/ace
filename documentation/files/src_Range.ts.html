@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -133,25 +131,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+import Position from &quot;./Position&quot;;
 /**
  * This object is used in various places to indicate a region within the editor.
  * To better visualize how this works, imagine a rectangle.
  * Each quadrant of the rectangle is analogus to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
+ *
  * @class Range
  */
-
-/**
- * Creates a new &#x60;EditorRange&#x60; object with the given starting and ending row and column points.
- * @param {Number} startRow The starting row
- * @param {Number} startColumn The starting column
- * @param {Number} endRow The ending row
- * @param {Number} endColumn The ending column
- *
- * @constructor
- **/
 export default class Range {
-    public start: { row: number; column: number };
-    public end: { row: number; column: number };
+
+    /**
+     * @property start
+     * @type Position
+     */
+    public start: Position;
+
+    /**
+     * @property end
+     * @type Position
+     */
+    public end: Position;
+
     /**
      * A marker id that is being sneaked onto the Range.
      */
@@ -159,9 +160,16 @@ export default class Range {
     public collapseChildren: number;
     //  public cursor: Range;
     //  public isBackwards: boolean;
+
     /**
-     * @class Range
+     * Creates a new &#x60;EditorRange&#x60; object with the given starting and ending row and column points.
+     *
+     * @class
      * @constructor
+     * @param {Number} startRow The starting row
+     * @param {Number} startColumn The starting column
+     * @param {Number} endRow The ending row
+     * @param {Number} endColumn The ending column
      */
     constructor(startRow: number, startColumn: number, endRow: number, endColumn: number) {
         this.start = {
@@ -177,11 +185,12 @@ export default class Range {
 
     /**
      * Returns &#x60;true&#x60; if and only if the starting row and column, and ending row and column, are equivalent to those given by &#x60;range&#x60;.
-     * @param {EditorRange} range A range to check against
      *
-     * @return {Boolean}
-     **/
-    isEqual(range: { start: { row: number; column: number }; end: { row: number; column: number } }) {
+     * @method isEqual
+     * @param range {Range} A range to check against.
+     * @return {boolean}
+     */
+    isEqual(range: { start: Position; end: Position }): boolean {
         return this.start.row === range.start.row &amp;&amp;
             this.end.row === range.end.row &amp;&amp;
             this.start.column === range.start.column &amp;&amp;
@@ -190,40 +199,32 @@ export default class Range {
 
     /**
      *
-     * Returns a string containing the range&#x27;s row and column information, given like this:
-     * &#x60;&#x60;&#x60;
-     *    [start.row/start.column] -&gt; [end.row/end.column]
-     * &#x60;&#x60;&#x60;
-     * @return {String}
-     **/
-    toString() {
+     * Returns a string containing the range&#x27;s row and column information.
+     * @return {string}
+     */
+    toString(): string {
         return (&quot;Range: [&quot; + this.start.row + &quot;/&quot; + this.start.column +
             &quot;] -&gt; [&quot; + this.end.row + &quot;/&quot; + this.end.column + &quot;]&quot;);
     }
 
     /**
+     * Returns &#x60;true&#x60; if the &#x60;row&#x60; and &#x60;column&#x60; provided are within the given range.
      *
-     * Returns &#x60;true&#x60; if the &#x60;row&#x60; and &#x60;column&#x60; provided are within the given range. This can better be expressed as returning &#x60;true&#x60; if:
-     * &#x60;&#x60;&#x60;javascript
-     *    this.start.row &lt;= row &lt;= this.end.row &amp;&amp;
-     *    this.start.column &lt;= column &lt;= this.end.column
-     * &#x60;&#x60;&#x60;
-     * @param {Number} row A row to check for
-     * @param {Number} column A column to check for
-     * @returns {Boolean}
-     * @related EditorRange.compare
-     **/
-
+     * @method contains
+     * @param row {number} A row to check for
+     * @param column {number} A column to check for
+     * @return {boolean}
+     */
     contains(row: number, column: number): boolean {
         return this.compare(row, column) === 0;
     }
 
     /**
      * Compares &#x60;this&#x60; range (A) with another range (B).
-     * @param {EditorRange} range A range to compare with
      *
-     * @related EditorRange.compare
-     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * @method compareRange
+     * @param {Range} range A range to compare with
+     * @return {number} This method returns one of the following numbers:&lt;br/&gt;
      * &lt;br/&gt;
      * * &#x60;-2&#x60;: (B) is in front of (A), and doesn&#x27;t intersect with (A)&lt;br/&gt;
      * * &#x60;-1&#x60;: (B) begins before (A) but ends inside of (A)&lt;br/&gt;
@@ -270,10 +271,9 @@ export default class Range {
     /**
      * Checks the row and column points of &#x60;p&#x60; with the row and column points of the calling range.
      *
-     * @param {EditorRange} p A point to compare with
-     *
-     * @related EditorRange.compare
-     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * @method comparePoint
+     * @param p {Position} A point to compare with
+     * @return {number} This method returns one of the following numbers:&lt;br/&gt;
      * * &#x60;0&#x60; if the two points are exactly equal&lt;br/&gt;
      * * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range&lt;br/&gt;
      * * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range&lt;br/&gt;
@@ -286,18 +286,18 @@ export default class Range {
      * * &#x60;p.column&#x60; is less than or equal to the calling range&#x27;s ending column, this returns &#x60;0&#x60;&lt;br/&gt;
      * * Otherwise, it returns 1&lt;br/&gt;
      **/
-    comparePoint(p: { row: number; column: number }): number {
+    comparePoint(p: Position): number {
         return this.compare(p.row, p.column);
     }
 
     /**
-     * Checks the start and end points of &#x60;range&#x60; and compares them to the calling range. Returns &#x60;true&#x60; if the &#x60;range&#x60; is contained within the caller&#x27;s range.
-     * @param {EditorRange} range A range to compare with
+     * Checks the start and end points of &#x60;range&#x60; and compares them to the calling range.
      *
-     * @returns {Boolean}
-     * @related EditorRange.comparePoint
-     **/
-    containsRange(range: { start: { row: number; column: number }; end: { row: number; column: number } }) {
+     * @method containsRange
+     * @param range {Range} A range to compare with
+     * @return {boolean} Returns &#x60;true&#x60; if the &#x60;range&#x60; is contained within the caller&#x27;s range.
+     */
+    containsRange(range: { start: Position; end: Position }) {
         return this.comparePoint(range.start) === 0 &amp;&amp; this.comparePoint(range.end) === 0;
     }
 
@@ -305,7 +305,7 @@ export default class Range {
      * Returns &#x60;true&#x60; if passed in &#x60;range&#x60; intersects with the one calling this method.
      * @param {EditorRange} range A range to compare with
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     intersects(range: Range) {
         var cmp = this.compareRange(range);
@@ -317,7 +317,7 @@ export default class Range {
      * @param {Number} row A row point to compare with
      * @param {Number} column A column point to compare with
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     isEnd(row: number, column: number): boolean {
         return this.end.row === row &amp;&amp; this.end.column === column;
@@ -328,7 +328,7 @@ export default class Range {
      * @param {Number} row A row point to compare with
      * @param {Number} column A column point to compare with
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      **/
     isStart(row: number, column: number): boolean {
         return this.start.row === row &amp;&amp; this.start.column === column;
@@ -376,7 +376,7 @@ export default class Range {
      * @param {Number} column A column point to compare with
      *
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      * @related EditorRange.compare
      **/
     inside(row: number, column: number): boolean {
@@ -396,7 +396,7 @@ export default class Range {
      * @param {Number} row A row point to compare with
      * @param {Number} column A column point to compare with
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      * @related EditorRange.compare
      **/
     insideStart(row: number, column: number): boolean {
@@ -416,7 +416,7 @@ export default class Range {
      * @param {Number} row A row point to compare with
      * @param {Number} column A column point to compare with
      *
-     * @returns {Boolean}
+     * @return {Boolean}
      * @related EditorRange.compare
      *
      **/
@@ -438,7 +438,7 @@ export default class Range {
      * @param {Number} column A column point to compare with
      *
      *
-     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * @return {Number} This method returns one of the following numbers:&lt;br/&gt;
      * &#x60;0&#x60; if the two points are exactly equal &lt;br/&gt;
      * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range &lt;br/&gt;
      * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range &lt;br/&gt;
@@ -478,7 +478,7 @@ export default class Range {
      * @param {Number} row A row point to compare with
      * @param {Number} column A column point to compare with
      *
-     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * @return {Number} This method returns one of the following numbers:&lt;br/&gt;
      * &lt;br/&gt;
      * &#x60;0&#x60; if the two points are exactly equal&lt;br/&gt;
      * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range&lt;br/&gt;
@@ -508,7 +508,7 @@ export default class Range {
      * @param {Number} column A column point to compare with
      *
      *
-     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * @return {Number} This method returns one of the following numbers:&lt;br/&gt;
      * &#x60;0&#x60; if the two points are exactly equal&lt;br/&gt;
      * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range&lt;br/&gt;
      * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range, or if &#x60;isEnd&#x60; is &#x60;true.&lt;br/&gt;
@@ -536,7 +536,7 @@ export default class Range {
      * @param {Number} column A column point to compare with
      *
      *
-     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * @return {Number} This method returns one of the following numbers:&lt;br/&gt;
      * * &#x60;1&#x60; if the ending row of the calling range is equal to &#x60;row&#x60;, and the ending column of the calling range is equal to &#x60;column&#x60;&lt;br/&gt;
      * * &#x60;-1&#x60; if the starting row of the calling range is equal to &#x60;row&#x60;, and the starting column of the calling range is equal to &#x60;column&#x60;&lt;br/&gt;
      * &lt;br/&gt;
@@ -559,7 +559,7 @@ export default class Range {
      * Returns the part of the current &#x60;EditorRange&#x60; that occurs within the boundaries of &#x60;firstRow&#x60; and &#x60;lastRow&#x60; as a new &#x60;EditorRange&#x60; object.
      * @param {Number} firstRow The starting row
      * @param {Number} lastRow The ending row
-     * @returns {EditorRange}
+     * @return {EditorRange}
     **/
     clipRows(firstRow: number, lastRow: number): Range {
         var start: { row: number; column: number };
@@ -581,7 +581,7 @@ export default class Range {
      * Changes the row and column points for the calling range for both the starting and ending points.
      * @param {Number} row A new row to extend to
      * @param {Number} column A new column to extend to
-     * @returns {EditorRange} The original range with the new row
+     * @return {EditorRange} The original range with the new row
     **/
     extend(row: number, column: number): Range {
         var cmp = this.compare(row, column);
@@ -604,7 +604,7 @@ export default class Range {
 
     /**
      * Returns &#x60;true&#x60; if the range spans across multiple lines.
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isMultiLine(): boolean {
         return (this.start.row !== this.end.row);
@@ -613,17 +613,16 @@ export default class Range {
     /**
      *
      * Returns a duplicate of the calling range.
-     * @returns {EditorRange}
+     * @return {EditorRange}
     **/
     clone() {
         return Range.fromPoints(this.start, this.end);
     }
 
     /**
-     *
      * Returns a range containing the starting and ending rows of the original range, but with a column value of &#x60;0&#x60;.
-     * @returns {EditorRange}
-    **/
+     * @return {EditorRange}
+     */
     collapseRows() {
         if (this.end.column === 0)
             return new Range(this.start.row, 0, Math.max(this.start.row, this.end.row - 1), 0)
@@ -641,16 +640,15 @@ export default class Range {
 
     /**
      * Creates and returns a new &#x60;EditorRange&#x60; based on the row and column of the given parameters.
-     * @param {EditorRange} start A starting point to use
-     * @param {EditorRange} end An ending point to use
-     *
-     * @returns {EditorRange}
-    **/
-    public static fromPoints(start: { row: number; column: number }, end: { row: number; column: number }) {
+     * @param start {Position} A starting point to use
+     * @param end {Position} An ending point to use
+     * @return {Range}
+     */
+    public static fromPoints(start: Position, end: Position): Range {
         return new Range(start.row, start.column, end.row, end.column);
     }
 
-    public static comparePoints(p1: { row: number; column: number }, p2: { row: number; column: number }) {
+    public static comparePoints(p1: Position, p2: Position): number {
         return p1.row - p2.row || p1.column - p2.column;
     }
 }

@@ -17,7 +17,7 @@
                 <h1><img src="../../assets/logo.png" title="deuce"></h1>
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.1.13</em>
+            <em>API Docs for: 0.1.15</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -38,24 +38,22 @@
                 
                         <div id="api-tabview-panel">
                             <ul id="api-classes" class="apis classes">
-                                <li><a href="../classes/Ace.html">Ace</a></li>
-                                <li><a href="../classes/Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
-                 
-                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
                                 <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
                                 <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
                                 <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
                                 <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
                                 <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
                                 <li><a href="../classes/Range.html">Range</a></li>
                                 <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
-                                <li><a href="../classes/Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
-                
-                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
                                 <li><a href="../classes/Selection.html">Selection</a></li>
                                 <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
                                 <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
@@ -209,7 +207,7 @@ export class ListViewPopup implements ListView {
             editor.setHighlightActiveLine(false);
             // FIXME: This must be a RegExp.
             // editor.session.highlight(&quot;&quot;);
-            editor.session.$searchHighlight.clazz = &quot;ace_highlight-marker&quot;;
+            editor.getSession().$searchHighlight.clazz = &quot;ace_highlight-marker&quot;;
 
             return editor;
         }
@@ -229,7 +227,7 @@ export class ListViewPopup implements ListView {
             e.stop();
         });
 
-        this.selectionMarkerId = this.editor.session.addMarker(this.selectionMarker, &quot;ace_active-line&quot;, &quot;fullLine&quot;);
+        this.selectionMarkerId = this.editor.getSession().addMarker(this.selectionMarker, &quot;ace_active-line&quot;, &quot;fullLine&quot;);
 
         this.setSelectOnHover(false);
 
@@ -238,7 +236,7 @@ export class ListViewPopup implements ListView {
                 self.lastMouseEvent = e;
                 return;
             }
-            if (self.lastMouseEvent.x == e.x &amp;&amp; self.lastMouseEvent.y == e.y) {
+            if (self.lastMouseEvent.x === e.x &amp;&amp; self.lastMouseEvent.y === e.y) {
                 return;
             }
             self.lastMouseEvent = e;
@@ -281,10 +279,10 @@ export class ListViewPopup implements ListView {
         this.editor.on(&quot;hide&quot;, hideHoverMarker);
         this.editor.on(&quot;changeSelection&quot;, hideHoverMarker);
 
-        this.editor.session.doc.getLength = function() {
+        this.editor.getSession().doc.getLength = function() {
             return self.data.length;
         };
-        this.editor.session.doc.getLine = function(i) {
+        this.editor.getSession().doc.getLine = function(i) {
             var data = self.data[i];
             if (typeof data == &quot;string&quot;) {
                 return data;
@@ -292,7 +290,7 @@ export class ListViewPopup implements ListView {
             return (data &amp;&amp; data.value) || &quot;&quot;;
         };
 
-        var bgTokenizer = this.editor.session.bgTokenizer;
+        var bgTokenizer = this.editor.getSession().bgTokenizer;
         bgTokenizer.$tokenizeRow = function(dataIndex) {
             var data = self.data[dataIndex];
             var tokens = [];
@@ -326,7 +324,7 @@ export class ListViewPopup implements ListView {
         bgTokenizer.$updateOnChange = noop;
         bgTokenizer.start = noop;
 
-        this.editor.session.$computeWidth = function() {
+        this.editor.getSession().$computeWidth = function() {
             return self.screenWidth = 0;
         };
 
@@ -388,7 +386,7 @@ export class ListViewPopup implements ListView {
     getData(row: number) {
         return this.data[row];
     }
-    on(eventName: string, callback: (event, ee: EventEmitterClass)=&gt;any, capturing?: boolean) {
+    on(eventName: string, callback: (event, ee: EventEmitterClass) =&gt; any, capturing?: boolean) {
         return this.editor.on(eventName, callback, capturing);
     }
     getTextLeftOffset(): number {
@@ -396,10 +394,10 @@ export class ListViewPopup implements ListView {
     }
     setSelectOnHover(val) {
         if (!val) {
-            this.hoverMarkerId = this.editor.session.addMarker(this.hoverMarker, &quot;ace_line-hover&quot;, &quot;fullLine&quot;);
+            this.hoverMarkerId = this.editor.getSession().addMarker(this.hoverMarker, &quot;ace_line-hover&quot;, &quot;fullLine&quot;);
         }
         else if (this.hoverMarkerId) {
-            this.editor.session.removeMarker(this.hoverMarkerId);
+            this.editor.getSession().removeMarker(this.hoverMarkerId);
             this.hoverMarkerId = null;
         }
     }
@@ -407,7 +405,7 @@ export class ListViewPopup implements ListView {
         if (row !== this.hoverMarker.start.row) {
             this.hoverMarker.start.row = this.hoverMarker.end.row = row;
             if (!suppressRedraw) {
-                this.editor.session._emit(&quot;changeBackMarker&quot;);
+                this.editor.getSession()._emit(&quot;changeBackMarker&quot;);
             }
             this.editor._emit(&quot;changeHoverMarker&quot;);
         }
@@ -423,7 +421,7 @@ export class ListViewPopup implements ListView {
         if (this.selectionMarker.start.row != row) {
             this.editor.selection.clearSelection();
             this.selectionMarker.start.row = this.selectionMarker.end.row = row || 0;
-            this.editor.session._emit(&quot;changeBackMarker&quot;);
+            this.editor.getSession()._emit(&quot;changeBackMarker&quot;);
             this.editor.moveCursorTo(row || 0, 0);
             if (this.isOpen) {
                 this.editor._signal(&quot;select&quot;);
@@ -442,7 +440,7 @@ export class ListViewPopup implements ListView {
     }
 
     getLength(): number {
-        return this.editor.session.getLength();
+        return this.editor.getSession().getLength();
     }
 
     get container() {

@@ -73,8 +73,19 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             c >= 0xFF01 && c <= 0xFF60 ||
             c >= 0xFFE0 && c <= 0xFFE6;
     }
+    /**
+     * @class EditSession
+     * @extends EventEmitterClass
+     */
     var EditSession = (function (_super) {
         __extends(EditSession, _super);
+        /**
+         * @class EditSession
+         * @constructor
+         * @param doc {EditorDocument}
+         * @param [mode]
+         * @param [cb]
+         */
         function EditSession(doc, mode, cb) {
             _super.call(this);
             this.$breakpoints = [];
@@ -111,7 +122,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             this.$bracketMatcher = new BracketMatch_1.default(this);
             /**
             * Returns the annotations for the `EditSession`.
-            * @returns {Array}
+            * @return {Array}
             **/
             this.getAnnotations = function () {
                 return this.$annotations || [];
@@ -135,7 +146,9 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             config_1._signal("session", this);
         }
         /**
-         * Sets the `EditSession` to point to a new `EditorDocument`. If a `BackgroundTokenizer` exists, it also points to `doc`.
+         * Sets the `EditSession` to point to a new `EditorDocument`.
+         * If a `BackgroundTokenizer` exists, it also points to `doc`.
+         *
          * @method setDocument
          * @param doc {EditorDocument} The new `EditorDocument` to use.
          * @return {void}
@@ -156,6 +169,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
          * Returns the `EditorDocument` associated with this session.
+         *
          * @method getDocument
          * @return {EditorDocument}
          */
@@ -164,7 +178,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
          * @method $resetRowCache
-         * @param {number} row The row to work with
+         * @param docRow {number} The row to work with.
          * @return {void}
          * @private
          */
@@ -248,38 +262,49 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             this.getUndoManager().reset();
         };
         /**
-        * Returns the current [[EditorDocument `EditorDocument`]] as a string.
-        * @method toString
-        * @returns {string}
-        * @alias EditSession.getValue
-        **/
+         * Returns the current EditorDocument as a string.
+         *
+         * @method toString
+         * @return {string}
+         * @alias EditSession.getValue
+         */
         EditSession.prototype.toString = function () {
             return this.getValue();
         };
         /**
-        * Returns the current [[EditorDocument `EditorDocument`]] as a string.
-        * @method getValue
-        * @returns {string}
-        * @alias EditSession.toString
-        **/
+         * Returns the current EditorDocument as a string.
+         *
+         * @method getValue
+         * @return {string}
+         * @alias EditSession.toString
+         */
         EditSession.prototype.getValue = function () {
             return this.doc.getValue();
         };
         /**
-         * Returns the string of the current selection.
+         * Returns the current selection.
+         *
+         * @method getSelection
+         * @return {Selection}
          */
         EditSession.prototype.getSelection = function () {
             return this.selection;
         };
+        /**
+         * Sets the current selection.
+         *
+         * @method setSelection
+         * @param selection {Selection}
+         * @return {void}
+         */
         EditSession.prototype.setSelection = function (selection) {
             this.selection = selection;
         };
         /**
-         * {:BackgroundTokenizer.getState}
-         * @param {Number} row The row to start at
-         *
-         * @related BackgroundTokenizer.getState
-         **/
+         * @method getState
+         * @param row {number} The row to start at.
+         * @return {string}
+         */
         EditSession.prototype.getState = function (row) {
             return this.bgTokenizer.getState(row);
         };
@@ -287,17 +312,18 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * Starts tokenizing at the row indicated. Returns a list of objects of the tokenized rows.
          * @method getTokens
          * @param row {number} The row to start at.
-         **/
+         */
         EditSession.prototype.getTokens = function (row) {
             return this.bgTokenizer.getTokens(row);
         };
         /**
-        * Returns an object indicating the token at the current row. The object has two properties: `index` and `start`.
-        * @param {Number} row The row number to retrieve from
-        * @param {Number} column The column number to retrieve from
-        *
-        *
-        **/
+         * Returns an object indicating the token at the current row.
+         * The object has two properties: `index` and `start`.
+         *
+         * @method getTokenAt
+         * @param {Number} row The row number to retrieve from
+         * @param {Number} column The column number to retrieve from.
+         */
         EditSession.prototype.getTokenAt = function (row, column) {
             var tokens = this.bgTokenizer.getTokens(row);
             var token;
@@ -321,9 +347,12 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             return token;
         };
         /**
-        * Sets the undo manager.
-        * @param {UndoManager} undoManager The new undo manager
-        **/
+         * Sets the undo manager.
+         *
+         * @method setUndoManager
+         * @param undoManager {UndoManager} The new undo manager.
+         * @return {void}
+         */
         EditSession.prototype.setUndoManager = function (undoManager) {
             this.$undoManager = undoManager;
             this.$deltas = [];
@@ -363,7 +392,10 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             }
         };
         /**
-         * starts a new group in undo history
+         * Starts a new group in undo history.
+         *
+         * @method markUndoGroup
+         * @return {void}
          */
         EditSession.prototype.markUndoGroup = function () {
             if (this.$syncInformUndoManager) {
@@ -371,14 +403,22 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             }
         };
         /**
-        * Returns the current undo manager.
-        **/
+         * Returns the current undo manager.
+         *
+         * @method getUndoManager
+         * @return {UndoManager}
+         */
         EditSession.prototype.getUndoManager = function () {
+            // FIXME: Want simple API, don't want to cast.
             return this.$undoManager || this.$defaultUndoManager;
         };
         /**
-        * Returns the current value for tabs. If the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\t'`.
-        **/
+         * Returns the current value for tabs.
+         * If the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\t'`.
+         *
+         * @method getTabString
+         * @return {string}
+         */
         EditSession.prototype.getTabString = function () {
             if (this.getUseSoftTabs()) {
                 return lang_1.stringRepeat(" ", this.getTabSize());
@@ -388,17 +428,24 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             }
         };
         /**
-        /**
-        * Pass `true` to enable the use of soft tabs. Soft tabs means you're using spaces instead of the tab character (`'\t'`).
-        * @param {Boolean} useSoftTabs Value indicating whether or not to use soft tabs
-        **/
+         * Pass `true` to enable the use of soft tabs.
+         * Soft tabs means you're using spaces instead of the tab character (`'\t'`).
+         *
+         * @method setUseSoftTabs
+         * @param useSoftTabs {boolean} Value indicating whether or not to use soft tabs.
+         * @return {EditSession}
+         * @chainable
+         */
         EditSession.prototype.setUseSoftTabs = function (useSoftTabs) {
             this.setOption("useSoftTabs", useSoftTabs);
+            return this;
         };
         /**
-        * Returns `true` if soft tabs are being used, `false` otherwise.
-        * @returns {Boolean}
-        **/
+         * Returns `true` if soft tabs are being used, `false` otherwise.
+         *
+         * @method getUseSoftTabs
+         * @return {boolean}
+         */
         EditSession.prototype.getUseSoftTabs = function () {
             // todo might need more general way for changing settings from mode, but this is ok for now
             return this.$useSoftTabs && !this.$mode.$indentWithTabs;
@@ -474,7 +521,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * Returns an array of numbers, indicating which rows have breakpoints.
-        * @returns {[Number]}
+        * @return {[Number]}
         **/
         EditSession.prototype.getBreakpoints = function () {
             return this.$breakpoints;
@@ -602,7 +649,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Returns an array containing the IDs of all the markers, either front or back.
         * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers
         *
-        * @returns {Array}
+        * @return {Array}
         **/
         EditSession.prototype.getMarkers = function (inFront) {
             return inFront ? this.$frontMarkers : this.$backMarkers;
@@ -665,7 +712,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * @param {Number} row The row to start at
         * @param {Number} column The column to start at
         *
-        * @returns {Range}
+        * @return {Range}
         **/
         EditSession.prototype.getWordRange = function (row, column) {
             var line = this.getLine(row);
@@ -721,7 +768,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         /**
         *
         * Returns the current new line mode.
-        * @returns {String}
+        * @return {String}
         * @related EditorDocument.getNewLineMode
         **/
         EditSession.prototype.getNewLineMode = function () {
@@ -848,7 +895,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * Returns the current text mode.
-        * @returns {TextMode} The current text mode
+        * @return {TextMode} The current text mode
         **/
         EditSession.prototype.getMode = function () {
             return this.$mode;
@@ -868,7 +915,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * [Returns the value of the distance between the top of the editor and the topmost part of the visible content.]{: #EditSession.getScrollTop}
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScrollTop = function () {
             return this.$scrollTop;
@@ -885,14 +932,14 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * [Returns the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.getScrollLeft}
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScrollLeft = function () {
             return this.$scrollLeft;
         };
         /**
         * Returns the width of the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScreenWidth = function () {
             this.$computeWidth();
@@ -944,7 +991,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * @param {Number} row The row to retrieve from
          *
         *
-         * @returns {String}
+         * @return {String}
         *
         **/
         EditSession.prototype.getLine = function (row) {
@@ -955,7 +1002,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * @param {Number} firstRow The first row index to retrieve
          * @param {Number} lastRow The final row index to retrieve
          *
-         * @returns {[String]}
+         * @return {[String]}
          *
          **/
         EditSession.prototype.getLines = function (firstRow, lastRow) {
@@ -963,7 +1010,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
          * Returns the number of rows in the document.
-         * @returns {Number}
+         * @return {Number}
          **/
         EditSession.prototype.getLength = function () {
             return this.doc.getLength();
@@ -972,7 +1019,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * {:EditorDocument.getTextRange.desc}
          * @param {Range} range The range to work with
          *
-         * @returns {string}
+         * @return {string}
          **/
         EditSession.prototype.getTextRange = function (range) {
             return this.doc.getTextRange(range || this.selection.getRange());
@@ -981,7 +1028,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * Inserts a block of `text` and the indicated `position`.
          * @param {Object} position The position {row, column} to start inserting at
          * @param {String} text A chunk of text to insert
-         * @returns {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+         * @return {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
          *
          *
          **/
@@ -991,7 +1038,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         /**
          * Removes the `range` from the document.
          * @param {Range} range A specified Range to remove
-         * @returns {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
+         * @return {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
          *
          * @related EditorDocument.remove
          *
@@ -1005,7 +1052,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * @param {Boolean} dontSelect [If `true`, doesn't select the range of where the change occured]{: #dontSelect}
          *
          *
-         * @returns {Range}
+         * @return {Range}
         **/
         EditSession.prototype.undoChanges = function (deltas, dontSelect) {
             if (!deltas.length)
@@ -1038,7 +1085,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          * @param {Boolean} dontSelect {:dontSelect}
          *
         *
-         * @returns {Range}
+         * @return {Range}
         **/
         EditSession.prototype.redoChanges = function (deltas, dontSelect) {
             if (!deltas.length)
@@ -1124,23 +1171,15 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             return range;
         };
         /**
-        * Replaces a range in the document with the new `text`.
-        *
-        * @param {Range} range A specified Range to replace
-        * @param {String} text The new text to use as a replacement
-        * @returns {Object} An object containing the final row and column, like this:
-        * ```
-        * {row: endRow, column: 0}
-        * ```
-        * If the text and range are empty, this function returns an object containing the current `range.start` value.
-        * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
-        *
-        *
-        *
-        * @related EditorDocument.replace
-        *
-        *
-        **/
+         * Replaces a range in the document with the new `text`.
+         *
+         * @method replace
+         * @param range {Range} A specified Range to replace.
+         * @param text {string} The new text to use as a replacement.
+         * @return {Position}
+         * If the text and range are empty, this function returns an object containing the current `range.start` value.
+         * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
+         */
         EditSession.prototype.replace = function (range, text) {
             return this.doc.replace(range, text);
         };
@@ -1151,7 +1190,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
          *  ```
          * @param {Range} fromRange The range of text you want moved within the document
          * @param {Object} toPosition The location (row and column) where you want to move the text to
-         * @returns {Range} The new range where the text was moved to.
+         * @return {Range} The new range where the text was moved to.
         *
         *
         *
@@ -1270,9 +1309,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
                 x.end.row += diff;
                 return x;
             });
-            var lines = dir == 0
-                ? this.doc.getLines(firstRow, lastRow)
-                : this.doc.removeLines(firstRow, lastRow);
+            var lines = (dir === 0) ? this.doc.getLines(firstRow, lastRow) : this.doc.removeLines(firstRow, lastRow);
             this.doc.insertLines(firstRow + diff, lines);
             folds.length && this.addFolds(folds);
             return diff;
@@ -1281,7 +1318,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Shifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.
         * @param {Number} firstRow The starting row to move up
         * @param {Number} lastRow The final row to move up
-        * @returns {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+        * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
         *
         * @related EditorDocument.insertLines
         *
@@ -1293,7 +1330,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Shifts all the lines in the document down one, starting from `firstRow` and ending at `lastRow`.
         * @param {Number} firstRow The starting row to move down
         * @param {Number} lastRow The final row to move down
-        * @returns {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+        * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
         *
         * @related EditorDocument.insertLines
         **/
@@ -1304,7 +1341,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Duplicates all the text between `firstRow` and `lastRow`.
         * @param {Number} firstRow The starting row to duplicate
         * @param {Number} lastRow The final row to duplicate
-        * @returns {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
+        * @return {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
         *
         *
         **/
@@ -1380,7 +1417,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * Returns `true` if wrap mode is being used; `false` otherwise.
-        * @returns {Boolean}
+        * @return {Boolean}
         **/
         EditSession.prototype.getUseWrapMode = function () {
             return this.$useWrapMode;
@@ -1410,7 +1447,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         /**
         * This should generally only be called by the renderer when a resize is detected.
         * @param {Number} desiredLimit The new wrap limit
-        * @returns {Boolean}
+        * @return {Boolean}
         *
         * @private
         **/
@@ -1440,7 +1477,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * Returns the value of wrap limit.
-        * @returns {Number} The wrap limit.
+        * @return {Number} The wrap limit.
         **/
         EditSession.prototype.getWrapLimit = function () {
             return this.$wrapLimit;
@@ -1459,7 +1496,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         *
         *     { min: wrapLimitRange_min, max: wrapLimitRange_max }
         *
-        * @returns {Object}
+        * @return {Object}
         **/
         EditSession.prototype.getWrapLimitRange = function () {
             // Avoid unexpected mutation by returning a copy
@@ -1771,7 +1808,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * @param {String} str The string to calculate the screen width of
         * @param {Number} maxScreenColumn
         * @param {Number} screenColumn
-        * @returns {[Number]} Returns an `int[]` array with two elements:<br/>
+        * @return {[Number]} Returns an `int[]` array with two elements:<br/>
         * The first position indicates the number of columns for `str` on screen.<br/>
         * The second value contains the position of the document column that this function read until.
         *
@@ -1806,7 +1843,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Returns number of screenrows in a wrapped line.
         * @param {Number} row The row number to check
         *
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getRowLength = function (row) {
             if (this.lineWidgets)
@@ -1842,7 +1879,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         /**
          * Returns the position (on screen) for the last character in the provided screen row.
          * @param {Number} screenRow The screen row to check
-         * @returns {Number}
+         * @return {Number}
          *
          * @related EditSession.documentToScreenColumn
         **/
@@ -1873,7 +1910,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * For the given row, this returns the split data.
-        * @returns {String}
+        * @return {String}
         **/
         EditSession.prototype.getRowSplitData = function (row) {
             if (!this.$useWrapMode) {
@@ -1902,7 +1939,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Converts characters coordinates on the screen to characters coordinates within the document. [This takes into account code folding, word wrap, tab size, and any other visual modifications.]{: #conversionConsiderations}
         * @param {number} screenRow The screen row to check
         * @param {number} screenColumn The screen column to check
-        * @returns {Object} The object returned has two properties: `row` and `column`.
+        * @return {Object} The object returned has two properties: `row` and `column`.
         **/
         EditSession.prototype.screenToDocumentPosition = function (screenRow, screenColumn) {
             if (screenRow < 0) {
@@ -1986,7 +2023,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * Converts document coordinates to screen coordinates. {:conversionConsiderations}
         * @param {Number} docRow The document row to check
         * @param {Number} docColumn The document column to check
-        * @returns {Object} The object returned by this method has two properties: `row` and `column`.
+        * @return {Object} The object returned by this method has two properties: `row` and `column`.
         *
         * @related EditSession.screenToDocumentPosition
         **/
@@ -2078,7 +2115,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         * For the given document row and column, returns the screen column.
         * @param {Number} docRow
         * @param {Number} docColumn
-        * @returns {Number}
+        * @return {Number}
         *
         **/
         EditSession.prototype.documentToScreenColumn = function (docRow, docColumn) {
@@ -2099,7 +2136,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         };
         /**
         * Returns the length of the screen.
-        * @returns {Number}
+        * @return {Number}
         **/
         EditSession.prototype.getScreenLength = function () {
             var screenRows = 0;
@@ -2359,7 +2396,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
         /**
          * Adds a new fold.
          *
-         * @returns
+         * @return
          *      The new created Fold object or an existing fold object in case the
          *      passed in range fits an existing fold exactly.
          */
@@ -2431,7 +2468,7 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
                 }
             }
             if (!added)
-                foldLine = this.$addFoldLine(new FoldLine_1.default(this.$foldData, fold));
+                foldLine = this.$addFoldLine(new FoldLine_1.default(this.$foldData, [fold]));
             if (this.$useWrapMode)
                 this.$updateWrapData(foldLine.start.row, foldLine.start.row);
             else

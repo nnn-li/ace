@@ -23,7 +23,7 @@ export default class HScrollBar extends ScrollBar {
     onScroll(): void;
     /**
      * Returns the height of the scroll bar.
-     * @returns {Number}
+     * @return {Number}
      **/
     height: number;
     /**

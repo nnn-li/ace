@@ -1,54 +1,23 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * Distributed under the BSD license:
- *
- * Copyright (c) 2010, Ajax.org B.V.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Ajax.org B.V. nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ***** END LICENSE BLOCK ***** */
-/**
- * This object is used in various places to indicate a region within the editor.
- * To better visualize how this works, imagine a rectangle.
- * Each quadrant of the rectangle is analogus to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
- * @class Range
- */
 define(["require", "exports"], function (require, exports) {
     /**
-     * Creates a new `EditorRange` object with the given starting and ending row and column points.
-     * @param {Number} startRow The starting row
-     * @param {Number} startColumn The starting column
-     * @param {Number} endRow The ending row
-     * @param {Number} endColumn The ending column
+     * This object is used in various places to indicate a region within the editor.
+     * To better visualize how this works, imagine a rectangle.
+     * Each quadrant of the rectangle is analogus to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
      *
-     * @constructor
-     **/
+     * @class Range
+     */
     var Range = (function () {
         //  public cursor: Range;
         //  public isBackwards: boolean;
         /**
-         * @class Range
+         * Creates a new `EditorRange` object with the given starting and ending row and column points.
+         *
+         * @class
          * @constructor
+         * @param {Number} startRow The starting row
+         * @param {Number} startColumn The starting column
+         * @param {Number} endRow The ending row
+         * @param {Number} endColumn The ending column
          */
         function Range(startRow, startColumn, endRow, endColumn) {
             this.start = {
@@ -62,10 +31,11 @@ define(["require", "exports"], function (require, exports) {
         }
         /**
          * Returns `true` if and only if the starting row and column, and ending row and column, are equivalent to those given by `range`.
-         * @param {EditorRange} range A range to check against
          *
-         * @return {Boolean}
-         **/
+         * @method isEqual
+         * @param range {Range} A range to check against.
+         * @return {boolean}
+         */
         Range.prototype.isEqual = function (range) {
             return this.start.row === range.start.row &&
                 this.end.row === range.end.row &&
@@ -74,37 +44,30 @@ define(["require", "exports"], function (require, exports) {
         };
         /**
          *
-         * Returns a string containing the range's row and column information, given like this:
-         * ```
-         *    [start.row/start.column] -> [end.row/end.column]
-         * ```
-         * @return {String}
-         **/
+         * Returns a string containing the range's row and column information.
+         * @return {string}
+         */
         Range.prototype.toString = function () {
             return ("Range: [" + this.start.row + "/" + this.start.column +
                 "] -> [" + this.end.row + "/" + this.end.column + "]");
         };
         /**
+         * Returns `true` if the `row` and `column` provided are within the given range.
          *
-         * Returns `true` if the `row` and `column` provided are within the given range. This can better be expressed as returning `true` if:
-         * ```javascript
-         *    this.start.row <= row <= this.end.row &&
-         *    this.start.column <= column <= this.end.column
-         * ```
-         * @param {Number} row A row to check for
-         * @param {Number} column A column to check for
-         * @returns {Boolean}
-         * @related EditorRange.compare
-         **/
+         * @method contains
+         * @param row {number} A row to check for
+         * @param column {number} A column to check for
+         * @return {boolean}
+         */
         Range.prototype.contains = function (row, column) {
             return this.compare(row, column) === 0;
         };
         /**
          * Compares `this` range (A) with another range (B).
-         * @param {EditorRange} range A range to compare with
          *
-         * @related EditorRange.compare
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @method compareRange
+         * @param {Range} range A range to compare with
+         * @return {number} This method returns one of the following numbers:<br/>
          * <br/>
          * * `-2`: (B) is in front of (A), and doesn't intersect with (A)<br/>
          * * `-1`: (B) begins before (A) but ends inside of (A)<br/>
@@ -149,10 +112,9 @@ define(["require", "exports"], function (require, exports) {
         /**
          * Checks the row and column points of `p` with the row and column points of the calling range.
          *
-         * @param {EditorRange} p A point to compare with
-         *
-         * @related EditorRange.compare
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @method comparePoint
+         * @param p {Position} A point to compare with
+         * @return {number} This method returns one of the following numbers:<br/>
          * * `0` if the two points are exactly equal<br/>
          * * `-1` if `p.row` is less then the calling range<br/>
          * * `1` if `p.row` is greater than the calling range<br/>
@@ -169,12 +131,12 @@ define(["require", "exports"], function (require, exports) {
             return this.compare(p.row, p.column);
         };
         /**
-         * Checks the start and end points of `range` and compares them to the calling range. Returns `true` if the `range` is contained within the caller's range.
-         * @param {EditorRange} range A range to compare with
+         * Checks the start and end points of `range` and compares them to the calling range.
          *
-         * @returns {Boolean}
-         * @related EditorRange.comparePoint
-         **/
+         * @method containsRange
+         * @param range {Range} A range to compare with
+         * @return {boolean} Returns `true` if the `range` is contained within the caller's range.
+         */
         Range.prototype.containsRange = function (range) {
             return this.comparePoint(range.start) === 0 && this.comparePoint(range.end) === 0;
         };
@@ -182,7 +144,7 @@ define(["require", "exports"], function (require, exports) {
          * Returns `true` if passed in `range` intersects with the one calling this method.
          * @param {EditorRange} range A range to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Range.prototype.intersects = function (range) {
             var cmp = this.compareRange(range);
@@ -193,7 +155,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Range.prototype.isEnd = function (row, column) {
             return this.end.row === row && this.end.column === column;
@@ -203,7 +165,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          **/
         Range.prototype.isStart = function (row, column) {
             return this.start.row === row && this.start.column === column;
@@ -248,7 +210,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditorRange.compare
          **/
         Range.prototype.inside = function (row, column) {
@@ -267,7 +229,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditorRange.compare
          **/
         Range.prototype.insideStart = function (row, column) {
@@ -286,7 +248,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Boolean}
+         * @return {Boolean}
          * @related EditorRange.compare
          *
          **/
@@ -307,7 +269,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * `0` if the two points are exactly equal <br/>
          * `-1` if `p.row` is less then the calling range <br/>
          * `1` if `p.row` is greater than the calling range <br/>
@@ -341,7 +303,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} row A row point to compare with
          * @param {Number} column A column point to compare with
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * <br/>
          * `0` if the two points are exactly equal<br/>
          * `-1` if `p.row` is less then the calling range<br/>
@@ -370,7 +332,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * `0` if the two points are exactly equal<br/>
          * `-1` if `p.row` is less then the calling range<br/>
          * `1` if `p.row` is greater than the calling range, or if `isEnd` is `true.<br/>
@@ -397,7 +359,7 @@ define(["require", "exports"], function (require, exports) {
          * @param {Number} column A column point to compare with
          *
          *
-         * @returns {Number} This method returns one of the following numbers:<br/>
+         * @return {Number} This method returns one of the following numbers:<br/>
          * * `1` if the ending row of the calling range is equal to `row`, and the ending column of the calling range is equal to `column`<br/>
          * * `-1` if the starting row of the calling range is equal to `row`, and the starting column of the calling range is equal to `column`<br/>
          * <br/>
@@ -419,7 +381,7 @@ define(["require", "exports"], function (require, exports) {
          * Returns the part of the current `EditorRange` that occurs within the boundaries of `firstRow` and `lastRow` as a new `EditorRange` object.
          * @param {Number} firstRow The starting row
          * @param {Number} lastRow The ending row
-         * @returns {EditorRange}
+         * @return {EditorRange}
         **/
         Range.prototype.clipRows = function (firstRow, lastRow) {
             var start;
@@ -438,7 +400,7 @@ define(["require", "exports"], function (require, exports) {
          * Changes the row and column points for the calling range for both the starting and ending points.
          * @param {Number} row A new row to extend to
          * @param {Number} column A new column to extend to
-         * @returns {EditorRange} The original range with the new row
+         * @return {EditorRange} The original range with the new row
         **/
         Range.prototype.extend = function (row, column) {
             var cmp = this.compare(row, column);
@@ -458,7 +420,7 @@ define(["require", "exports"], function (require, exports) {
         };
         /**
          * Returns `true` if the range spans across multiple lines.
-         * @returns {Boolean}
+         * @return {Boolean}
          */
         Range.prototype.isMultiLine = function () {
             return (this.start.row !== this.end.row);
@@ -466,16 +428,15 @@ define(["require", "exports"], function (require, exports) {
         /**
          *
          * Returns a duplicate of the calling range.
-         * @returns {EditorRange}
+         * @return {EditorRange}
         **/
         Range.prototype.clone = function () {
             return Range.fromPoints(this.start, this.end);
         };
         /**
-         *
          * Returns a range containing the starting and ending rows of the original range, but with a column value of `0`.
-         * @returns {EditorRange}
-        **/
+         * @return {EditorRange}
+         */
         Range.prototype.collapseRows = function () {
             if (this.end.column === 0)
                 return new Range(this.start.row, 0, Math.max(this.start.row, this.end.row - 1), 0);
@@ -491,11 +452,10 @@ define(["require", "exports"], function (require, exports) {
         };
         /**
          * Creates and returns a new `EditorRange` based on the row and column of the given parameters.
-         * @param {EditorRange} start A starting point to use
-         * @param {EditorRange} end An ending point to use
-         *
-         * @returns {EditorRange}
-        **/
+         * @param start {Position} A starting point to use
+         * @param end {Position} An ending point to use
+         * @return {Range}
+         */
         Range.fromPoints = function (start, end) {
             return new Range(start.row, start.column, end.row, end.column);
         };
