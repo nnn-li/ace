@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2010, Ajax.org B.V.
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  *     * Neither the name of Ajax.org B.V. nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,76 +27,54 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-import {inherits} from "../lib/oop";
-import Mode from "./Mode";
-import JavaScriptHighlightRules from "./JavaScriptHighlightRules";
+import TextMode from "./Mode";
+import CssHighlightRules from "./CssHighlightRules";
 import MatchingBraceOutdent from "./MatchingBraceOutdent";
-import Range from "../Range";
 import WorkerClient from "../worker/WorkerClient";
-import CstyleBehaviour from "./behaviour/CstyleBehaviour";
+import CssBehaviour from "./behaviour/CssBehaviour";
 import CStyleFoldMode from "./folding/CstyleFoldMode";
 import EditSession from "../EditSession";
 
-export default class JavaScriptMode extends Mode {
+export default class CssMode extends TextMode {
+    $id = "ace/mode/css";
     $outdent: MatchingBraceOutdent;
-    lineCommentStart: string;
-    blockComment: { start: string; end: string };
+    blockComment = { start: "/*", end: "*/" };
+
     constructor() {
         super();
-        // The Tokenizer will be built using these rules.
-        this.HighlightRules = JavaScriptHighlightRules;
-
+        this.HighlightRules = CssHighlightRules;
         this.$outdent = new MatchingBraceOutdent();
-        this.$behaviour = new CstyleBehaviour();
+        this.$behaviour = new CssBehaviour();
         this.foldingRules = new CStyleFoldMode();
-        this.lineCommentStart = "//";
-        this.blockComment = { start: "/*", end: "*/" };
-
-        this.$id = "ace/mode/javascript";
     }
-    getNextLineIndent(state: string, line: string, tab: string): string {
+
+
+    getNextLineIndent(state, line: string, tab: string) {
         var indent = this.$getIndent(line);
 
-        var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
-        var tokens = tokenizedLine.tokens;
-        var endState = tokenizedLine.state;
-
+        // ignore braces in comments
+        var tokens = this.getTokenizer().getLineTokens(line, state).tokens;
         if (tokens.length && tokens[tokens.length - 1].type == "comment") {
             return indent;
         }
 
-        if (state === "start" || state === "no_regex") {
-            var match = line.match(/^.*(?:\bcase\b.*\:|[\{\(\[])\s*$/);
-            if (match) {
-                indent += tab;
-            }
-        }
-        else if (state === "doc-start") {
-            if (endState == "start" || endState == "no_regex") {
-                return "";
-            }
-            var match = line.match(/^\s*(\/?)\*/);
-            if (match) {
-                if (match[1]) {
-                    indent += " ";
-                }
-                indent += "* ";
-            }
+        var match = line.match(/^.*\{\s*$/);
+        if (match) {
+            indent += tab;
         }
 
         return indent;
     }
 
-    checkOutdent(state, line: string, input: string): boolean {
+    checkOutdent(state, line: string, input: string) {
         return this.$outdent.checkOutdent(line, input);
-    };
+    }
 
     autoOutdent(state, session: EditSession, row: number) {
         this.$outdent.autoOutdent(session, row);
-    };
+    }
 
-    createWorker(session: EditSession): WorkerClient {
+    createWorker(session: EditSession) {
 
         var worker = new WorkerClient("lib/worker/worker-systemjs.js");
 
@@ -104,15 +82,15 @@ export default class JavaScriptMode extends Mode {
             worker.attachToDocument(session.getDocument());
         });
 
-        worker.on("jslint", function(results) {
-            session.setAnnotations(results.data);
+        worker.on("csslint", function(e) {
+            session.setAnnotations(e.data);
         });
 
         worker.on("terminate", function() {
             session.clearAnnotations();
         });
 
-        worker.init("lib/mode/JavaScriptWorker", "default");
+        worker.init("ace/mode/css_worker", "Worker");
 
         return worker;
     }

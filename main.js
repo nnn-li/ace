@@ -3,13 +3,19 @@ import EditorDocument from './lib/EditorDocument';
 import EditSession from './lib/EditSession';
 import VirtualRenderer from './lib/VirtualRenderer';
 
+import CssMode from './lib/mode/CssMode';
+import HtmlMode from './lib/mode/HtmlMode';
 import JavaScriptMode from './lib/mode/JavaScriptMode';
 
-var code = "// Hello, World!\nvar x = 3;\nvar y = 4;\n";
-var doc = new EditorDocument(code);
-var mode = new JavaScriptMode()
+var cMode = new CssMode()
+var hMode = new HtmlMode()
+var jMode = new JavaScriptMode()
 
-var editSession = new EditSession(doc, mode);
+var code = "";
+
+var doc = new EditorDocument(code);
+
+var editSession = new EditSession(doc, hMode);
 editSession.setTabSize(2);
 editSession.setUseSoftTabs(true);
 

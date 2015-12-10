@@ -30,8 +30,8 @@
 
 // FIXME: For some reason the generated file causes a breakage in the mouse/mouse_handler_test
 import Tokenizer from "../Tokenizer";
-import TextHighlightRules from "./text_highlight_rules";
-import Behaviour from "./behaviour";
+import TextHighlightRules from "./TextHighlightRules";
+import Behaviour from "./Behaviour";
 import {packages} from "../unicode";
 import {escapeRegExp} from "../lib/lang";
 import TokenIterator from "../TokenIterator";
