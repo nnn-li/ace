@@ -35,6 +35,7 @@ import Editor from "../Editor";
 import Range from "../Range";
 import {addListener} from "../lib/event";
 import {stringRepeat} from "../lib/lang";
+import EventEmitterClass from "../lib/event_emitter";
 import {addCssClass, createElement, importCssString, removeCssClass} from "../lib/dom";
 
 var noop = function() { };
@@ -281,7 +282,7 @@ export class ListViewPopup implements ListView {
     getData(row: number) {
         return this.data[row];
     }
-    on(eventName: string, callback, capturing?) {
+    on(eventName: string, callback: (event, ee: EventEmitterClass)=>any, capturing?: boolean) {
         return this.editor.on(eventName, callback, capturing);
     }
     getTextLeftOffset(): number {

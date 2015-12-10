@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/BackgroundTokenizer.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/BackgroundTokenizer.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+import {} from &quot;./lib/oop&quot;
+import EditorDocument from &#x27;./EditorDocument&#x27;
+import EventEmitterClass from &quot;./lib/event_emitter&quot;
+import Tokenizer from &#x27;./Tokenizer&#x27;
+
+/**
+ * Tokenizes the current [[EditorDocument &#x60;EditorDocument&#x60;]] in the background, and caches the tokenized rows for future use. 
+ * 
+ * If a certain row is changed, everything below that row is re-tokenized.
+ *
+ * @class BackgroundTokenizer
+ **/
+
+/**
+ * Creates a new &#x60;BackgroundTokenizer&#x60; object.
+ * @param {Tokenizer} tokenizer The tokenizer to use
+ * @param {Editor} editor The editor to associate with
+ *
+ * @constructor
+ **/
+export default class BackgroundTokenizer extends EventEmitterClass {
+    /**
+     * This is the value returned by setTimeout, so it&#x27;s really a timer handle.
+     * There are some conditionals looking for a falsey value, so we use zero where needed.
+     */
+    private running: number = 0;
+    private lines: { start: number; type: string; value: string }[][] = [];
+    private states: string[] = [];
+    private currentLine: number = 0;
+    private tokenizer: Tokenizer;
+    private doc: EditorDocument;
+    private $worker;
+    constructor(tokenizer: Tokenizer, editor?) {
+        super();
+        this.tokenizer = tokenizer;
+
+        var self = this;
+
+        this.$worker = function() {
+            if (!self.running) { return; }
+
+            var workerStart = new Date();
+            var currentLine = self.currentLine;
+            var endLine = -1;
+            var doc = self.doc;
+
+            while (self.lines[currentLine])
+                currentLine++;
+
+            var startLine = currentLine;
+
+            var len = doc.getLength();
+            var processedLines = 0;
+            self.running = 0;
+            while (currentLine &lt; len) {
+                self.$tokenizeRow(currentLine);
+                endLine = currentLine;
+                do {
+                    currentLine++;
+                } while (self.lines[currentLine]);
+    
+                // only check every 5 lines
+                processedLines++;
+                if ((processedLines % 5 === 0) &amp;&amp; (new Date().getTime() - workerStart.getTime()) &gt; 20) {
+                    self.running = setTimeout(self.$worker, 20);
+                    break;
+                }
+            }
+            self.currentLine = currentLine;
+
+            if (startLine &lt;= endLine)
+                self.fireUpdateEvent(startLine, endLine);
+        };
+    }
+    /**
+     * Sets a new tokenizer for this object.
+     *
+     * @param {Tokenizer} tokenizer The new tokenizer to use
+     *
+     **/
+    setTokenizer(tokenizer: Tokenizer) {
+        this.tokenizer = tokenizer;
+        this.lines = [];
+        this.states = [];
+
+        this.start(0);
+    }
+
+    /**
+     * Sets a new document to associate with this object.
+     * @param {EditorDocument} doc The new document to associate with
+     **/
+    setDocument(doc: EditorDocument) {
+        this.doc = doc;
+        this.lines = [];
+        this.states = [];
+
+        this.stop();
+    }
+
+    /**
+    * Fires whenever the background tokeniziers between a range of rows are going to be updated.
+    * 
+    * @event update
+    * @param {Object} e An object containing two properties, &#x60;first&#x60; and &#x60;last&#x60;, which indicate the rows of the region being updated.
+    *
+    **/
+    /**
+     * Emits the &#x60;&#x27;update&#x27;&#x60; event. &#x60;firstRow&#x60; and &#x60;lastRow&#x60; are used to define the boundaries of the region to be updated.
+     * @param {number} firstRow The starting row region
+     * @param {number} lastRow The final row region
+     *
+     **/
+    fireUpdateEvent(firstRow: number, lastRow: number) {
+        var data = {
+            first: firstRow,
+            last: lastRow
+        };
+        this._signal(&quot;update&quot;, { data: data });
+    }
+
+    /**
+     * Starts tokenizing at the row indicated.
+     *
+     * @param {number} startRow The row to start at
+     *
+     **/
+    start(startRow: number) {
+        this.currentLine = Math.min(startRow || 0, this.currentLine, this.doc.getLength());
+
+        // remove all cached items below this line
+        this.lines.splice(this.currentLine, this.lines.length);
+        this.states.splice(this.currentLine, this.states.length);
+
+        this.stop();
+        // pretty long delay to prevent the tokenizer from interfering with the user
+        this.running = setTimeout(this.$worker, 700);
+    }
+
+    scheduleStart() {
+        if (!this.running)
+            this.running = setTimeout(this.$worker, 700);
+    }
+
+    $updateOnChange(delta: { range: { start: { row }; end: { row } }; action: string }) {
+        var range = delta.range;
+        var startRow = range.start.row;
+        var len = range.end.row - startRow;
+
+        if (len === 0) {
+            this.lines[startRow] = null;
+        } else if (delta.action == &quot;removeText&quot; || delta.action == &quot;removeLines&quot;) {
+            this.lines.splice(startRow, len + 1, null);
+            this.states.splice(startRow, len + 1, null);
+        } else {
+            var args = Array(len + 1);
+            args.unshift(startRow, 1);
+            this.lines.splice.apply(this.lines, args);
+            this.states.splice.apply(this.states, args);
+        }
+
+        this.currentLine = Math.min(startRow, this.currentLine, this.doc.getLength());
+
+        this.stop();
+    }
+
+    /**
+     * Stops tokenizing.
+     *
+     **/
+    stop() {
+        if (this.running) {
+            clearTimeout(this.running);
+        }
+        this.running = 0;
+    }
+
+    /**
+     * Gives list of tokens of the row. (tokens are cached)
+     * 
+     * @param {number} row The row to get tokens at
+     *
+     * 
+     *
+     **/
+    getTokens(row: number): { start: number; type: string; value: string }[] {
+        return this.lines[row] || this.$tokenizeRow(row);
+    }
+
+    /**
+     * [Returns the state of tokenization at the end of a row.]{: #BackgroundTokenizer.getState}
+     *
+     * @param {number} row The row to get state at
+     **/
+    getState(row: number): string {
+        if (this.currentLine == row) {
+            this.$tokenizeRow(row);
+        }
+        return this.states[row] || &quot;start&quot;;
+    }
+
+    $tokenizeRow(row: number): { start: number; type: string; value: string }[] {
+        var line: string = this.doc.getLine(row);
+        var state = this.states[row - 1];
+        
+        // FIXME: There is no third argument in getLineTokens!
+        var data: { state: any; tokens: { start: number; type: string; value: string }[] } = this.tokenizer.getLineTokens(line, state/*, row*/);
+
+        if (this.states[row] + &quot;&quot; !== data.state + &quot;&quot;) {
+            this.states[row] = data.state;
+            this.lines[row + 1] = null;
+            if (this.currentLine &gt; row + 1)
+                this.currentLine = row + 1;
+        } else if (this.currentLine == row) {
+            this.currentLine = row + 1;
+        }
+
+        return this.lines[row] = data.tokens;
+    }
+}
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

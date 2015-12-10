@@ -1,0 +1,3140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/html/TreeBuilder.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/html/TreeBuilder.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+import {ForeignAttributeMap, MATHMLAttributeMap, SVGAttributeMap, SVGTagMap} from &#x27;./constants&#x27;;
+import CharacterBuffer from &#x27;./CharacterBuffer&#x27;;
+import ElementStack from &#x27;./ElementStack&#x27;;
+import formatMessage from &#x27;./formatMessage&#x27;;
+import getAttribute from &#x27;./getAttribute&#x27;;
+import isWhitespace from &#x27;./isWhitespace&#x27;;
+import isAllWhitespace from &#x27;./isAllWhitespace&#x27;;
+import isAllWhitespaceOrReplacementCharacters from &#x27;./isAllWhitespaceOrReplacementCharacters&#x27;;
+import messages from &#x27;./messages&#x27;;
+import Modes from &#x27;./Modes&#x27;;
+import StackItem from &#x27;./StackItem&#x27;;
+import Tokenizer from &#x27;./Tokenizer&#x27;;
+
+var Marker = {};
+
+/**
+ *
+ * @constructor
+ */
+export default class TreeBuilder {
+    activeFormattingElements;
+    compatMode: string;
+    context;
+    document;
+    errorHandler;
+    form;
+    framesetOk: boolean;
+    head;
+    inQuirksMode: boolean;
+    insertionMode;
+    insertionModeName;
+    insertionModes: Modes;
+    openElements;
+    originalInsertionMode;
+    pendingTableCharacters
+    redirectAttachToFosterParent: boolean;
+    tokenizer;
+    selfClosingFlagAcknowledged: boolean;
+    scriptingEnabled: boolean;
+    shouldSkipLeadingNewline;
+    constructor() {
+        this.tokenizer = null;
+        this.errorHandler = null;
+        this.scriptingEnabled = false;
+        this.document = null;
+        this.head = null;
+        this.form = null;
+        this.openElements = new ElementStack();
+        this.activeFormattingElements = [];
+        this.insertionMode = null;
+        this.insertionModeName = &quot;&quot;;
+        this.originalInsertionMode = &quot;&quot;;
+        this.inQuirksMode = false; // TODO quirks mode
+        this.compatMode = &quot;no quirks&quot;;
+        this.framesetOk = true;
+        this.redirectAttachToFosterParent = false;
+        this.selfClosingFlagAcknowledged = false;
+        this.context = &quot;&quot;;
+        this.pendingTableCharacters = [];
+        this.shouldSkipLeadingNewline = false;
+
+        var tree = this;
+        var modes: Modes = this.insertionModes = &lt;Modes&gt;{};
+        modes.base = {
+            end_tag_handlers: { &quot;-default&quot;: &#x27;endTagOther&#x27; },
+            start_tag_handlers: { &quot;-default&quot;: &#x27;startTagOther&#x27; },
+            processEOF: function() {
+                tree.generateImpliedEndTags();
+                if (tree.openElements.length &gt; 2) {
+                    tree.parseError(&#x27;expected-closing-tag-but-got-eof&#x27;);
+                } else if (tree.openElements.length == 2 &amp;&amp;
+                    tree.openElements.item(1).localName != &#x27;body&#x27;) {
+                    // This happens for framesets or something?
+                    tree.parseError(&#x27;expected-closing-tag-but-got-eof&#x27;);
+                } else if (tree.context &amp;&amp; tree.openElements.length &gt; 1) {
+                    // XXX This is not what the specification says. Not sure what to do here.
+                    //tree.parseError(&#x27;eof-in-innerhtml&#x27;);
+                }
+            },
+            processComment: function(data) {
+                // For most phases the following is forceQuirks. Where it&#x27;s not it will be
+                // overridden.
+                tree.insertComment(data, tree.currentStackItem().node);
+            },
+            processDoctype: function(name, publicId, systemId, forceQuirks) {
+                tree.parseError(&#x27;unexpected-doctype&#x27;);
+            },
+            processStartTag: function(name, attributes, selfClosing) {
+                if (this[this.start_tag_handlers[name]]) {
+                    this[this.start_tag_handlers[name]](name, attributes, selfClosing);
+                } else if (this[this.start_tag_handlers[&quot;-default&quot;]]) {
+                    this[this.start_tag_handlers[&quot;-default&quot;]](name, attributes, selfClosing);
+                } else {
+                    throw (new Error(&quot;No handler found for &quot; + name));
+                }
+            },
+            processEndTag: function(name) {
+                if (this[this.end_tag_handlers[name]]) {
+                    this[this.end_tag_handlers[name]](name);
+                } else if (this[this.end_tag_handlers[&quot;-default&quot;]]) {
+                    this[this.end_tag_handlers[&quot;-default&quot;]](name);
+                } else {
+                    throw (new Error(&quot;No handler found for &quot; + name));
+                }
+            },
+            startTagHtml: function(name, attributes) {
+                modes.inBody.startTagHtml(name, attributes);
+            }
+        };
+
+        modes.initial = Object.create(modes.base);
+
+        modes.initial.processEOF = function() {
+            tree.parseError(&quot;expected-doctype-but-got-eof&quot;);
+            this.anythingElse();
+            tree.insertionMode.processEOF();
+        };
+
+        modes.initial.processComment = function(data) {
+            tree.insertComment(data, tree.document);
+        };
+
+        modes.initial.processDoctype = function(name, publicId, systemId, forceQuirks) {
+            tree.insertDoctype(name || &#x27;&#x27;, publicId || &#x27;&#x27;, systemId || &#x27;&#x27;);
+
+            if (forceQuirks || name != &#x27;html&#x27; || (publicId != null &amp;&amp; ([
+                &quot;+//silmaril//dtd html pro v0r11 19970101//&quot;,
+                &quot;-//advasoft ltd//dtd html 3.0 aswedit + extensions//&quot;,
+                &quot;-//as//dtd html 3.0 aswedit + extensions//&quot;,
+                &quot;-//ietf//dtd html 2.0 level 1//&quot;,
+                &quot;-//ietf//dtd html 2.0 level 2//&quot;,
+                &quot;-//ietf//dtd html 2.0 strict level 1//&quot;,
+                &quot;-//ietf//dtd html 2.0 strict level 2//&quot;,
+                &quot;-//ietf//dtd html 2.0 strict//&quot;,
+                &quot;-//ietf//dtd html 2.0//&quot;,
+                &quot;-//ietf//dtd html 2.1e//&quot;,
+                &quot;-//ietf//dtd html 3.0//&quot;,
+                &quot;-//ietf//dtd html 3.0//&quot;,
+                &quot;-//ietf//dtd html 3.2 final//&quot;,
+                &quot;-//ietf//dtd html 3.2//&quot;,
+                &quot;-//ietf//dtd html 3//&quot;,
+                &quot;-//ietf//dtd html level 0//&quot;,
+                &quot;-//ietf//dtd html level 0//&quot;,
+                &quot;-//ietf//dtd html level 1//&quot;,
+                &quot;-//ietf//dtd html level 1//&quot;,
+                &quot;-//ietf//dtd html level 2//&quot;,
+                &quot;-//ietf//dtd html level 2//&quot;,
+                &quot;-//ietf//dtd html level 3//&quot;,
+                &quot;-//ietf//dtd html level 3//&quot;,
+                &quot;-//ietf//dtd html strict level 0//&quot;,
+                &quot;-//ietf//dtd html strict level 0//&quot;,
+                &quot;-//ietf//dtd html strict level 1//&quot;,
+                &quot;-//ietf//dtd html strict level 1//&quot;,
+                &quot;-//ietf//dtd html strict level 2//&quot;,
+                &quot;-//ietf//dtd html strict level 2//&quot;,
+                &quot;-//ietf//dtd html strict level 3//&quot;,
+                &quot;-//ietf//dtd html strict level 3//&quot;,
+                &quot;-//ietf//dtd html strict//&quot;,
+                &quot;-//ietf//dtd html strict//&quot;,
+                &quot;-//ietf//dtd html strict//&quot;,
+                &quot;-//ietf//dtd html//&quot;,
+                &quot;-//ietf//dtd html//&quot;,
+                &quot;-//ietf//dtd html//&quot;,
+                &quot;-//metrius//dtd metrius presentational//&quot;,
+                &quot;-//microsoft//dtd internet explorer 2.0 html strict//&quot;,
+                &quot;-//microsoft//dtd internet explorer 2.0 html//&quot;,
+                &quot;-//microsoft//dtd internet explorer 2.0 tables//&quot;,
+                &quot;-//microsoft//dtd internet explorer 3.0 html strict//&quot;,
+                &quot;-//microsoft//dtd internet explorer 3.0 html//&quot;,
+                &quot;-//microsoft//dtd internet explorer 3.0 tables//&quot;,
+                &quot;-//netscape comm. corp.//dtd html//&quot;,
+                &quot;-//netscape comm. corp.//dtd strict html//&quot;,
+                &quot;-//o&#x27;reilly and associates//dtd html 2.0//&quot;,
+                &quot;-//o&#x27;reilly and associates//dtd html extended 1.0//&quot;,
+                &quot;-//spyglass//dtd html 2.0 extended//&quot;,
+                &quot;-//sq//dtd html 2.0 hotmetal + extensions//&quot;,
+                &quot;-//sun microsystems corp.//dtd hotjava html//&quot;,
+                &quot;-//sun microsystems corp.//dtd hotjava strict html//&quot;,
+                &quot;-//w3c//dtd html 3 1995-03-24//&quot;,
+                &quot;-//w3c//dtd html 3.2 draft//&quot;,
+                &quot;-//w3c//dtd html 3.2 final//&quot;,
+                &quot;-//w3c//dtd html 3.2//&quot;,
+                &quot;-//w3c//dtd html 3.2s draft//&quot;,
+                &quot;-//w3c//dtd html 4.0 frameset//&quot;,
+                &quot;-//w3c//dtd html 4.0 transitional//&quot;,
+                &quot;-//w3c//dtd html experimental 19960712//&quot;,
+                &quot;-//w3c//dtd html experimental 970421//&quot;,
+                &quot;-//w3c//dtd w3 html//&quot;,
+                &quot;-//w3o//dtd w3 html 3.0//&quot;,
+                &quot;-//webtechs//dtd mozilla html 2.0//&quot;,
+                &quot;-//webtechs//dtd mozilla html//&quot;,
+                &quot;html&quot;
+            ].some(publicIdStartsWith)
+                || [
+                    &quot;-//w3o//dtd w3 html strict 3.0//en//&quot;,
+                    &quot;-/w3c/dtd html 4.0 transitional/en&quot;,
+                    &quot;html&quot;
+                ].indexOf(publicId.toLowerCase()) &gt; -1
+                || (systemId == null &amp;&amp; [
+                    &quot;-//w3c//dtd html 4.01 transitional//&quot;,
+                    &quot;-//w3c//dtd html 4.01 frameset//&quot;
+                ].some(publicIdStartsWith)))
+            )
+                || (systemId != null &amp;&amp; (systemId.toLowerCase() == &quot;http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd&quot;))
+            ) {
+                tree.compatMode = &quot;quirks&quot;;
+                tree.parseError(&quot;quirky-doctype&quot;);
+            } else if (publicId != null &amp;&amp; ([
+                &quot;-//w3c//dtd xhtml 1.0 transitional//&quot;,
+                &quot;-//w3c//dtd xhtml 1.0 frameset//&quot;
+            ].some(publicIdStartsWith)
+                || (systemId != null &amp;&amp; [
+                    &quot;-//w3c//dtd html 4.01 transitional//&quot;,
+                    &quot;-//w3c//dtd html 4.01 frameset//&quot;
+                ].indexOf(publicId.toLowerCase()) &gt; -1))
+            ) {
+                tree.compatMode = &quot;limited quirks&quot;;
+                tree.parseError(&quot;almost-standards-doctype&quot;);
+            } else {
+                if ((publicId == &quot;-//W3C//DTD HTML 4.0//EN&quot; &amp;&amp; (systemId == null || systemId == &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;))
+                    || (publicId == &quot;-//W3C//DTD HTML 4.01//EN&quot; &amp;&amp; (systemId == null || systemId == &quot;http://www.w3.org/TR/html4/strict.dtd&quot;))
+                    || (publicId == &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &amp;&amp; (systemId == &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;))
+                    || (publicId == &quot;-//W3C//DTD XHTML 1.1//EN&quot; &amp;&amp; (systemId == &quot;http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd&quot;))
+                ) {
+                    // warning
+                    //tree.warn(&quot;obsolete-doctype&quot;);
+                } else if (!((systemId == null || systemId == &quot;about:legacy-compat&quot;) &amp;&amp; publicId == null)) {
+                    tree.parseError(&quot;unknown-doctype&quot;);
+                }
+            }
+            tree.setInsertionMode(&#x27;beforeHTML&#x27;);
+            function publicIdStartsWith(string) {
+                return publicId.toLowerCase().indexOf(string) === 0;
+            }
+        };
+
+        modes.initial.processCharacters = function(buffer) {
+            buffer.skipLeadingWhitespace();
+            if (!buffer.length)
+                return;
+            tree.parseError(&#x27;expected-doctype-but-got-chars&#x27;);
+            this.anythingElse();
+            tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.initial.processStartTag = function(name, attributes, selfClosing) {
+            tree.parseError(&#x27;expected-doctype-but-got-start-tag&#x27;, { name: name });
+            this.anythingElse();
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.initial.processEndTag = function(name) {
+            tree.parseError(&#x27;expected-doctype-but-got-end-tag&#x27;, { name: name });
+            this.anythingElse();
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.initial.anythingElse = function() {
+            tree.compatMode = &#x27;quirks&#x27;;
+            tree.setInsertionMode(&#x27;beforeHTML&#x27;);
+        };
+
+        modes.beforeHTML = Object.create(modes.base);
+
+        modes.beforeHTML.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.beforeHTML.processEOF = function() {
+            this.anythingElse();
+            tree.insertionMode.processEOF();
+        };
+
+        modes.beforeHTML.processComment = function(data) {
+            tree.insertComment(data, tree.document);
+        };
+
+        modes.beforeHTML.processCharacters = function(buffer) {
+            buffer.skipLeadingWhitespace();
+            if (!buffer.length)
+                return;
+            this.anythingElse();
+            tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.beforeHTML.startTagHtml = function(name, attributes, selfClosing) {
+            tree.insertHtmlElement(attributes);
+            tree.setInsertionMode(&#x27;beforeHead&#x27;);
+        };
+
+        modes.beforeHTML.startTagOther = function(name, attributes, selfClosing) {
+            this.anythingElse();
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.beforeHTML.processEndTag = function(name) {
+            this.anythingElse();
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.beforeHTML.anythingElse = function() {
+            tree.insertHtmlElement();
+            tree.setInsertionMode(&#x27;beforeHead&#x27;);
+        };
+
+        modes.afterAfterBody = Object.create(modes.base);
+
+        modes.afterAfterBody.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.afterAfterBody.processComment = function(data) {
+            tree.insertComment(data, tree.document);
+        };
+
+        modes.afterAfterBody.processDoctype = function(data) {
+            modes.inBody.processDoctype(data);
+        };
+
+        modes.afterAfterBody.startTagHtml = function(data, attributes) {
+            modes.inBody.startTagHtml(data, attributes);
+        };
+
+        modes.afterAfterBody.startTagOther = function(name, attributes, selfClosing) {
+            tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+            tree.setInsertionMode(&#x27;inBody&#x27;);
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.afterAfterBody.endTagOther = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            tree.setInsertionMode(&#x27;inBody&#x27;);
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.afterAfterBody.processCharacters = function(data) {
+            if (!isAllWhitespace(data.characters)) {
+                tree.parseError(&#x27;unexpected-char-after-body&#x27;);
+                tree.setInsertionMode(&#x27;inBody&#x27;);
+                return tree.insertionMode.processCharacters(data);
+            }
+            modes.inBody.processCharacters(data);
+        };
+
+        modes.afterBody = Object.create(modes.base);
+
+        modes.afterBody.end_tag_handlers = {
+            html: &#x27;endTagHtml&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.afterBody.processComment = function(data) {
+            // This is needed because data is to be appended to the html element here
+            // and not to whatever is currently open.
+            tree.insertComment(data, tree.openElements.rootNode);
+        };
+
+        modes.afterBody.processCharacters = function(data) {
+            if (!isAllWhitespace(data.characters)) {
+                tree.parseError(&#x27;unexpected-char-after-body&#x27;);
+                tree.setInsertionMode(&#x27;inBody&#x27;);
+                return tree.insertionMode.processCharacters(data);
+            }
+            modes.inBody.processCharacters(data);
+        };
+
+        modes.afterBody.processStartTag = function(name, attributes, selfClosing) {
+            tree.parseError(&#x27;unexpected-start-tag-after-body&#x27;, { name: name });
+            tree.setInsertionMode(&#x27;inBody&#x27;);
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.afterBody.endTagHtml = function(name) {
+            if (tree.context) {
+                tree.parseError(&#x27;end-html-in-innerhtml&#x27;);
+            } else {
+                // XXX This may need to be done, not sure
+                // Don&#x27;t set last_phase to the current phase but to the inBody phase
+                // instead. No need for extra parseErrors if there&#x27;s something after
+                // &lt;/html&gt;.
+                // Try &lt;!doctype html&gt;X&lt;/html&gt;X for instance
+                tree.setInsertionMode(&#x27;afterAfterBody&#x27;);
+            }
+        };
+
+        modes.afterBody.endTagOther = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag-after-body&#x27;, { name: name });
+            tree.setInsertionMode(&#x27;inBody&#x27;);
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.afterFrameset = Object.create(modes.base);
+
+        modes.afterFrameset.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            noframes: &#x27;startTagNoframes&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.afterFrameset.end_tag_handlers = {
+            html: &#x27;endTagHtml&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.afterFrameset.processCharacters = function(buffer) {
+            var characters = buffer.takeRemaining();
+            var whitespace = &quot;&quot;;
+            for (var i = 0; i &lt; characters.length; i++) {
+                var ch = characters[i];
+                if (isWhitespace(ch))
+                    whitespace += ch;
+            }
+            if (whitespace) {
+                tree.insertText(whitespace);
+            }
+            if (whitespace.length &lt; characters.length)
+                tree.parseError(&#x27;expected-eof-but-got-char&#x27;);
+        };
+
+        modes.afterFrameset.startTagNoframes = function(name, attributes) {
+            modes.inHead.processStartTag(name, attributes);
+        };
+
+        modes.afterFrameset.startTagOther = function(name, attributes) {
+            tree.parseError(&quot;unexpected-start-tag-after-frameset&quot;, { name: name });
+        };
+
+        modes.afterFrameset.endTagHtml = function(name) {
+            tree.setInsertionMode(&#x27;afterAfterFrameset&#x27;);
+        };
+
+        modes.afterFrameset.endTagOther = function(name) {
+            tree.parseError(&quot;unexpected-end-tag-after-frameset&quot;, { name: name });
+        };
+
+        modes.beforeHead = Object.create(modes.base);
+
+        modes.beforeHead.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            head: &#x27;startTagHead&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.beforeHead.end_tag_handlers = {
+            html: &#x27;endTagImplyHead&#x27;,
+            head: &#x27;endTagImplyHead&#x27;,
+            body: &#x27;endTagImplyHead&#x27;,
+            br: &#x27;endTagImplyHead&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.beforeHead.processEOF = function() {
+            this.startTagHead(&#x27;head&#x27;, []);
+            tree.insertionMode.processEOF();
+        };
+
+        modes.beforeHead.processCharacters = function(buffer) {
+            buffer.skipLeadingWhitespace();
+            if (!buffer.length)
+                return;
+            this.startTagHead(&#x27;head&#x27;, []);
+            tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.beforeHead.startTagHead = function(name, attributes) {
+            tree.insertHeadElement(attributes);
+            tree.setInsertionMode(&#x27;inHead&#x27;);
+        };
+
+        modes.beforeHead.startTagOther = function(name, attributes, selfClosing) {
+            this.startTagHead(&#x27;head&#x27;, []);
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.beforeHead.endTagImplyHead = function(name) {
+            this.startTagHead(&#x27;head&#x27;, []);
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.beforeHead.endTagOther = function(name) {
+            tree.parseError(&#x27;end-tag-after-implied-root&#x27;, { name: name });
+        };
+
+        modes.inHead = Object.create(modes.base);
+
+        modes.inHead.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            head: &#x27;startTagHead&#x27;,
+            title: &#x27;startTagTitle&#x27;,
+            script: &#x27;startTagScript&#x27;,
+            style: &#x27;startTagNoFramesStyle&#x27;,
+            noscript: &#x27;startTagNoScript&#x27;,
+            noframes: &#x27;startTagNoFramesStyle&#x27;,
+            base: &#x27;startTagBaseBasefontBgsoundLink&#x27;,
+            basefont: &#x27;startTagBaseBasefontBgsoundLink&#x27;,
+            bgsound: &#x27;startTagBaseBasefontBgsoundLink&#x27;,
+            link: &#x27;startTagBaseBasefontBgsoundLink&#x27;,
+            meta: &#x27;startTagMeta&#x27;,
+            &quot;-default&quot;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inHead.end_tag_handlers = {
+            head: &#x27;endTagHead&#x27;,
+            html: &#x27;endTagHtmlBodyBr&#x27;,
+            body: &#x27;endTagHtmlBodyBr&#x27;,
+            br: &#x27;endTagHtmlBodyBr&#x27;,
+            &quot;-default&quot;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inHead.processEOF = function() {
+            var name = tree.currentStackItem().localName;
+            if ([&#x27;title&#x27;, &#x27;style&#x27;, &#x27;script&#x27;].indexOf(name) != -1) {
+                tree.parseError(&quot;expected-named-closing-tag-but-got-eof&quot;, { name: name });
+                tree.popElement();
+            }
+
+            this.anythingElse();
+
+            tree.insertionMode.processEOF();
+        };
+
+        modes.inHead.processCharacters = function(buffer) {
+            var leadingWhitespace = buffer.takeLeadingWhitespace();
+            if (leadingWhitespace)
+                tree.insertText(leadingWhitespace);
+            if (!buffer.length)
+                return;
+            this.anythingElse();
+            tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.inHead.startTagHtml = function(name, attributes) {
+            modes.inBody.processStartTag(name, attributes);
+        };
+
+        modes.inHead.startTagHead = function(name, attributes) {
+            tree.parseError(&#x27;two-heads-are-not-better-than-one&#x27;);
+        };
+
+        modes.inHead.startTagTitle = function(name, attributes) {
+            tree.processGenericRCDATAStartTag(name, attributes);
+        };
+
+        modes.inHead.startTagNoScript = function(name, attributes) {
+            if (tree.scriptingEnabled)
+                return tree.processGenericRawTextStartTag(name, attributes);
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inHeadNoscript&#x27;);
+        };
+
+        modes.inHead.startTagNoFramesStyle = function(name, attributes) {
+            // XXX Need to decide whether to implement the scripting disabled case
+            tree.processGenericRawTextStartTag(name, attributes);
+        };
+
+        modes.inHead.startTagScript = function(name, attributes) {
+            tree.insertElement(name, attributes);
+            tree.tokenizer.setState(Tokenizer.SCRIPT_DATA);
+            tree.originalInsertionMode = tree.insertionModeName;
+            tree.setInsertionMode(&#x27;text&#x27;);
+        };
+
+        modes.inHead.startTagBaseBasefontBgsoundLink = function(name, attributes) {
+            tree.insertSelfClosingElement(name, attributes);
+        };
+
+        modes.inHead.startTagMeta = function(name, attributes) {
+            tree.insertSelfClosingElement(name, attributes);
+            // @todo process charset attributes
+        };
+
+        modes.inHead.startTagOther = function(name, attributes, selfClosing) {
+            this.anythingElse();
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inHead.endTagHead = function(name) {
+            if (tree.openElements.item(tree.openElements.length - 1).localName == &#x27;head&#x27;) {
+                tree.openElements.pop();
+            } else {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: &#x27;head&#x27; });
+            }
+            tree.setInsertionMode(&#x27;afterHead&#x27;);
+        };
+
+        modes.inHead.endTagHtmlBodyBr = function(name) {
+            this.anythingElse();
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.inHead.endTagOther = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+        };
+
+        modes.inHead.anythingElse = function() {
+            this.endTagHead(&#x27;head&#x27;);
+        };
+
+        modes.afterHead = Object.create(modes.base);
+
+        modes.afterHead.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            head: &#x27;startTagHead&#x27;,
+            body: &#x27;startTagBody&#x27;,
+            frameset: &#x27;startTagFrameset&#x27;,
+            base: &#x27;startTagFromHead&#x27;,
+            link: &#x27;startTagFromHead&#x27;,
+            meta: &#x27;startTagFromHead&#x27;,
+            script: &#x27;startTagFromHead&#x27;,
+            // XXX noframes: &#x27;startTagFromHead&#x27; ?
+            style: &#x27;startTagFromHead&#x27;,
+            title: &#x27;startTagFromHead&#x27;,
+            &quot;-default&quot;: &#x27;startTagOther&#x27;
+        };
+
+        modes.afterHead.end_tag_handlers = {
+            body: &#x27;endTagBodyHtmlBr&#x27;,
+            html: &#x27;endTagBodyHtmlBr&#x27;,
+            br: &#x27;endTagBodyHtmlBr&#x27;,
+            &quot;-default&quot;: &#x27;endTagOther&#x27;
+        };
+
+        modes.afterHead.processEOF = function() {
+            this.anythingElse();
+            tree.insertionMode.processEOF();
+        };
+
+        modes.afterHead.processCharacters = function(buffer) {
+            var leadingWhitespace = buffer.takeLeadingWhitespace();
+            if (leadingWhitespace)
+                tree.insertText(leadingWhitespace);
+            if (!buffer.length)
+                return;
+            this.anythingElse();
+            tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.afterHead.startTagHtml = function(name, attributes) {
+            modes.inBody.processStartTag(name, attributes);
+        };
+
+        modes.afterHead.startTagBody = function(name, attributes) {
+            tree.framesetOk = false;
+            tree.insertBodyElement(attributes);
+            tree.setInsertionMode(&#x27;inBody&#x27;);
+        };
+
+        modes.afterHead.startTagFrameset = function(name, attributes) {
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inFrameset&#x27;);
+        };
+
+        modes.afterHead.startTagFromHead = function(name, attributes, selfClosing) {
+            tree.parseError(&quot;unexpected-start-tag-out-of-my-head&quot;, { name: name });
+            // FIXME head pointer
+            tree.openElements.push(tree.head);
+            modes.inHead.processStartTag(name, attributes, selfClosing);
+            tree.openElements.remove(tree.head);
+        };
+
+        modes.afterHead.startTagHead = function(name, attributes, selfClosing) {
+            tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+        };
+
+        modes.afterHead.startTagOther = function(name, attributes, selfClosing) {
+            this.anythingElse();
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.afterHead.endTagBodyHtmlBr = function(name) {
+            this.anythingElse();
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.afterHead.endTagOther = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+        };
+
+        modes.afterHead.anythingElse = function() {
+            tree.insertBodyElement([]);
+            tree.setInsertionMode(&#x27;inBody&#x27;);
+            tree.framesetOk = true;
+        }
+
+        modes.inBody = Object.create(modes.base);
+
+        modes.inBody.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            head: &#x27;startTagMisplaced&#x27;,
+            base: &#x27;startTagProcessInHead&#x27;,
+            basefont: &#x27;startTagProcessInHead&#x27;,
+            bgsound: &#x27;startTagProcessInHead&#x27;,
+            link: &#x27;startTagProcessInHead&#x27;,
+            meta: &#x27;startTagProcessInHead&#x27;,
+            noframes: &#x27;startTagProcessInHead&#x27;,
+            script: &#x27;startTagProcessInHead&#x27;,
+            style: &#x27;startTagProcessInHead&#x27;,
+            title: &#x27;startTagProcessInHead&#x27;,
+            body: &#x27;startTagBody&#x27;,
+            form: &#x27;startTagForm&#x27;,
+            plaintext: &#x27;startTagPlaintext&#x27;,
+            a: &#x27;startTagA&#x27;,
+            button: &#x27;startTagButton&#x27;,
+            xmp: &#x27;startTagXmp&#x27;,
+            table: &#x27;startTagTable&#x27;,
+            hr: &#x27;startTagHr&#x27;,
+            image: &#x27;startTagImage&#x27;,
+            input: &#x27;startTagInput&#x27;,
+            textarea: &#x27;startTagTextarea&#x27;,
+            select: &#x27;startTagSelect&#x27;,
+            isindex: &#x27;startTagIsindex&#x27;,
+            applet: &#x27;startTagAppletMarqueeObject&#x27;,
+            marquee: &#x27;startTagAppletMarqueeObject&#x27;,
+            object: &#x27;startTagAppletMarqueeObject&#x27;,
+            li: &#x27;startTagListItem&#x27;,
+            dd: &#x27;startTagListItem&#x27;,
+            dt: &#x27;startTagListItem&#x27;,
+            address: &#x27;startTagCloseP&#x27;,
+            article: &#x27;startTagCloseP&#x27;,
+            aside: &#x27;startTagCloseP&#x27;,
+            blockquote: &#x27;startTagCloseP&#x27;,
+            center: &#x27;startTagCloseP&#x27;,
+            details: &#x27;startTagCloseP&#x27;,
+            dir: &#x27;startTagCloseP&#x27;,
+            div: &#x27;startTagCloseP&#x27;,
+            dl: &#x27;startTagCloseP&#x27;,
+            fieldset: &#x27;startTagCloseP&#x27;,
+            figcaption: &#x27;startTagCloseP&#x27;,
+            figure: &#x27;startTagCloseP&#x27;,
+            footer: &#x27;startTagCloseP&#x27;,
+            header: &#x27;startTagCloseP&#x27;,
+            hgroup: &#x27;startTagCloseP&#x27;,
+            main: &#x27;startTagCloseP&#x27;,
+            menu: &#x27;startTagCloseP&#x27;,
+            nav: &#x27;startTagCloseP&#x27;,
+            ol: &#x27;startTagCloseP&#x27;,
+            p: &#x27;startTagCloseP&#x27;,
+            section: &#x27;startTagCloseP&#x27;,
+            summary: &#x27;startTagCloseP&#x27;,
+            ul: &#x27;startTagCloseP&#x27;,
+            listing: &#x27;startTagPreListing&#x27;,
+            pre: &#x27;startTagPreListing&#x27;,
+            b: &#x27;startTagFormatting&#x27;,
+            big: &#x27;startTagFormatting&#x27;,
+            code: &#x27;startTagFormatting&#x27;,
+            em: &#x27;startTagFormatting&#x27;,
+            font: &#x27;startTagFormatting&#x27;,
+            i: &#x27;startTagFormatting&#x27;,
+            s: &#x27;startTagFormatting&#x27;,
+            small: &#x27;startTagFormatting&#x27;,
+            strike: &#x27;startTagFormatting&#x27;,
+            strong: &#x27;startTagFormatting&#x27;,
+            tt: &#x27;startTagFormatting&#x27;,
+            u: &#x27;startTagFormatting&#x27;,
+            nobr: &#x27;startTagNobr&#x27;,
+            area: &#x27;startTagVoidFormatting&#x27;,
+            br: &#x27;startTagVoidFormatting&#x27;,
+            embed: &#x27;startTagVoidFormatting&#x27;,
+            img: &#x27;startTagVoidFormatting&#x27;,
+            keygen: &#x27;startTagVoidFormatting&#x27;,
+            wbr: &#x27;startTagVoidFormatting&#x27;,
+            param: &#x27;startTagParamSourceTrack&#x27;,
+            source: &#x27;startTagParamSourceTrack&#x27;,
+            track: &#x27;startTagParamSourceTrack&#x27;,
+            iframe: &#x27;startTagIFrame&#x27;,
+            noembed: &#x27;startTagRawText&#x27;,
+            noscript: &#x27;startTagRawText&#x27;,
+            h1: &#x27;startTagHeading&#x27;,
+            h2: &#x27;startTagHeading&#x27;,
+            h3: &#x27;startTagHeading&#x27;,
+            h4: &#x27;startTagHeading&#x27;,
+            h5: &#x27;startTagHeading&#x27;,
+            h6: &#x27;startTagHeading&#x27;,
+            caption: &#x27;startTagMisplaced&#x27;,
+            col: &#x27;startTagMisplaced&#x27;,
+            colgroup: &#x27;startTagMisplaced&#x27;,
+            frame: &#x27;startTagMisplaced&#x27;,
+            frameset: &#x27;startTagFrameset&#x27;,
+            tbody: &#x27;startTagMisplaced&#x27;,
+            td: &#x27;startTagMisplaced&#x27;,
+            tfoot: &#x27;startTagMisplaced&#x27;,
+            th: &#x27;startTagMisplaced&#x27;,
+            thead: &#x27;startTagMisplaced&#x27;,
+            tr: &#x27;startTagMisplaced&#x27;,
+            option: &#x27;startTagOptionOptgroup&#x27;,
+            optgroup: &#x27;startTagOptionOptgroup&#x27;,
+            math: &#x27;startTagMath&#x27;,
+            svg: &#x27;startTagSVG&#x27;,
+            rt: &#x27;startTagRpRt&#x27;,
+            rp: &#x27;startTagRpRt&#x27;,
+            &quot;-default&quot;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inBody.end_tag_handlers = {
+            p: &#x27;endTagP&#x27;,
+            body: &#x27;endTagBody&#x27;,
+            html: &#x27;endTagHtml&#x27;,
+            address: &#x27;endTagBlock&#x27;,
+            article: &#x27;endTagBlock&#x27;,
+            aside: &#x27;endTagBlock&#x27;,
+            blockquote: &#x27;endTagBlock&#x27;,
+            button: &#x27;endTagBlock&#x27;,
+            center: &#x27;endTagBlock&#x27;,
+            details: &#x27;endTagBlock&#x27;,
+            dir: &#x27;endTagBlock&#x27;,
+            div: &#x27;endTagBlock&#x27;,
+            dl: &#x27;endTagBlock&#x27;,
+            fieldset: &#x27;endTagBlock&#x27;,
+            figcaption: &#x27;endTagBlock&#x27;,
+            figure: &#x27;endTagBlock&#x27;,
+            footer: &#x27;endTagBlock&#x27;,
+            header: &#x27;endTagBlock&#x27;,
+            hgroup: &#x27;endTagBlock&#x27;,
+            listing: &#x27;endTagBlock&#x27;,
+            main: &#x27;endTagBlock&#x27;,
+            menu: &#x27;endTagBlock&#x27;,
+            nav: &#x27;endTagBlock&#x27;,
+            ol: &#x27;endTagBlock&#x27;,
+            pre: &#x27;endTagBlock&#x27;,
+            section: &#x27;endTagBlock&#x27;,
+            summary: &#x27;endTagBlock&#x27;,
+            ul: &#x27;endTagBlock&#x27;,
+            form: &#x27;endTagForm&#x27;,
+            applet: &#x27;endTagAppletMarqueeObject&#x27;,
+            marquee: &#x27;endTagAppletMarqueeObject&#x27;,
+            object: &#x27;endTagAppletMarqueeObject&#x27;,
+            dd: &#x27;endTagListItem&#x27;,
+            dt: &#x27;endTagListItem&#x27;,
+            li: &#x27;endTagListItem&#x27;,
+            h1: &#x27;endTagHeading&#x27;,
+            h2: &#x27;endTagHeading&#x27;,
+            h3: &#x27;endTagHeading&#x27;,
+            h4: &#x27;endTagHeading&#x27;,
+            h5: &#x27;endTagHeading&#x27;,
+            h6: &#x27;endTagHeading&#x27;,
+            a: &#x27;endTagFormatting&#x27;,
+            b: &#x27;endTagFormatting&#x27;,
+            big: &#x27;endTagFormatting&#x27;,
+            code: &#x27;endTagFormatting&#x27;,
+            em: &#x27;endTagFormatting&#x27;,
+            font: &#x27;endTagFormatting&#x27;,
+            i: &#x27;endTagFormatting&#x27;,
+            nobr: &#x27;endTagFormatting&#x27;,
+            s: &#x27;endTagFormatting&#x27;,
+            small: &#x27;endTagFormatting&#x27;,
+            strike: &#x27;endTagFormatting&#x27;,
+            strong: &#x27;endTagFormatting&#x27;,
+            tt: &#x27;endTagFormatting&#x27;,
+            u: &#x27;endTagFormatting&#x27;,
+            br: &#x27;endTagBr&#x27;,
+            &quot;-default&quot;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inBody.processCharacters = function(buffer) {
+            if (tree.shouldSkipLeadingNewline) {
+                tree.shouldSkipLeadingNewline = false;
+                buffer.skipAtMostOneLeadingNewline();
+            }
+            tree.reconstructActiveFormattingElements();
+            var characters = buffer.takeRemaining();
+            characters = characters.replace(/\u0000/g, function(match, index) {
+                // @todo position
+                tree.parseError(&quot;invalid-codepoint&quot;);
+                return &#x27;&#x27;;
+            });
+            if (!characters)
+                return;
+            tree.insertText(characters);
+            if (tree.framesetOk &amp;&amp; !isAllWhitespaceOrReplacementCharacters(characters))
+                tree.framesetOk = false;
+        };
+
+        modes.inBody.startTagHtml = function(name, attributes) {
+            tree.parseError(&#x27;non-html-root&#x27;);
+            tree.addAttributesToElement(tree.openElements.rootNode, attributes);
+        };
+
+        modes.inBody.startTagProcessInHead = function(name, attributes) {
+            modes.inHead.processStartTag(name, attributes);
+        };
+
+        modes.inBody.startTagBody = function(name, attributes) {
+            tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: &#x27;body&#x27; });
+            if (tree.openElements.length == 1 ||
+                tree.openElements.item(1).localName != &#x27;body&#x27;) {
+                // TODO: assert.ok(tree.context);
+            }
+            else {
+                tree.framesetOk = false;
+                tree.addAttributesToElement(tree.openElements.bodyElement, attributes);
+            }
+        };
+
+        modes.inBody.startTagFrameset = function(name, attributes) {
+            tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: &#x27;frameset&#x27; });
+            if (tree.openElements.length == 1 ||
+                tree.openElements.item(1).localName != &#x27;body&#x27;) {
+                // TODO: assert.ok(tree.context);
+            }
+            else if (tree.framesetOk) {
+                tree.detachFromParent(tree.openElements.bodyElement);
+                while (tree.openElements.length &gt; 1)
+                    tree.openElements.pop();
+                tree.insertElement(name, attributes);
+                tree.setInsertionMode(&#x27;inFrameset&#x27;);
+            }
+        };
+
+        modes.inBody.startTagCloseP = function(name, attributes) {
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.endTagP(&#x27;p&#x27;);
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inBody.startTagPreListing = function(name, attributes) {
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.endTagP(&#x27;p&#x27;);
+            tree.insertElement(name, attributes);
+            tree.framesetOk = false;
+            tree.shouldSkipLeadingNewline = true;
+        };
+
+        modes.inBody.startTagForm = function(name, attributes) {
+            if (tree.form) {
+                tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+            } else {
+                if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                    this.endTagP(&#x27;p&#x27;);
+                tree.insertElement(name, attributes);
+                tree.form = tree.currentStackItem();
+            }
+        };
+
+        modes.inBody.startTagRpRt = function(name, attributes) {
+            if (tree.openElements.inScope(&#x27;ruby&#x27;)) {
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem().localName != &#x27;ruby&#x27;) {
+                    tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+                }
+            }
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inBody.startTagListItem = function(name, attributes) {
+            /// @todo: Fix according to current spec. http://www.w3.org/TR/html5/tree-construction.html#parsing-main-inbody
+            var stopNames = { li: [&#x27;li&#x27;], dd: [&#x27;dd&#x27;, &#x27;dt&#x27;], dt: [&#x27;dd&#x27;, &#x27;dt&#x27;] };
+            var stopName = stopNames[name];
+
+            var els = tree.openElements;
+            for (var i = els.length - 1; i &gt;= 0; i--) {
+                var node = els.item(i);
+                if (stopName.indexOf(node.localName) != -1) {
+                    tree.insertionMode.processEndTag(node.localName);
+                    break;
+                }
+
+                // todo isScoping()
+                if (node.isSpecial() &amp;&amp; node.localName !== &#x27;p&#x27; &amp;&amp; node.localName !== &#x27;address&#x27; &amp;&amp; node.localName !== &#x27;div&#x27;)
+                    break;
+            }
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.endTagP(&#x27;p&#x27;);
+
+            // Always insert an &lt;li&gt; element
+            tree.insertElement(name, attributes);
+            tree.framesetOk = false;
+        };
+
+        modes.inBody.startTagPlaintext = function(name, attributes) {
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.endTagP(&#x27;p&#x27;);
+            tree.insertElement(name, attributes);
+            tree.tokenizer.setState(Tokenizer.PLAINTEXT);
+        };
+
+        modes.inBody.startTagHeading = function(name, attributes) {
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.endTagP(&#x27;p&#x27;);
+            if (tree.currentStackItem().isNumberedHeader()) {
+                tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+                tree.popElement();
+            }
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inBody.startTagA = function(name, attributes) {
+            var activeA = tree.elementInActiveFormattingElements(&#x27;a&#x27;);
+            if (activeA) {
+                tree.parseError(&quot;unexpected-start-tag-implies-end-tag&quot;, { startName: &quot;a&quot;, endName: &quot;a&quot; });
+                tree.adoptionAgencyEndTag(&#x27;a&#x27;);
+                if (tree.openElements.contains(activeA))
+                    tree.openElements.remove(activeA);
+                tree.removeElementFromActiveFormattingElements(activeA);
+            }
+            tree.reconstructActiveFormattingElements();
+            tree.insertFormattingElement(name, attributes);
+        };
+
+        modes.inBody.startTagFormatting = function(name, attributes) {
+            tree.reconstructActiveFormattingElements();
+            tree.insertFormattingElement(name, attributes);
+        };
+
+        modes.inBody.startTagNobr = function(name, attributes) {
+            tree.reconstructActiveFormattingElements();
+            if (tree.openElements.inScope(&#x27;nobr&#x27;)) {
+                tree.parseError(&quot;unexpected-start-tag-implies-end-tag&quot;, { startName: &#x27;nobr&#x27;, endName: &#x27;nobr&#x27; });
+                this.processEndTag(&#x27;nobr&#x27;);
+                // XXX Need tests that trigger the following
+                tree.reconstructActiveFormattingElements();
+            }
+            tree.insertFormattingElement(name, attributes);
+        };
+
+        modes.inBody.startTagButton = function(name, attributes) {
+            if (tree.openElements.inScope(&#x27;button&#x27;)) {
+                tree.parseError(&#x27;unexpected-start-tag-implies-end-tag&#x27;, { startName: &#x27;button&#x27;, endName: &#x27;button&#x27; });
+                this.processEndTag(&#x27;button&#x27;);
+                tree.insertionMode.processStartTag(name, attributes);
+            } else {
+                tree.framesetOk = false;
+                tree.reconstructActiveFormattingElements();
+                tree.insertElement(name, attributes);
+            }
+        };
+
+        modes.inBody.startTagAppletMarqueeObject = function(name, attributes) {
+            tree.reconstructActiveFormattingElements();
+            tree.insertElement(name, attributes);
+            tree.activeFormattingElements.push(Marker);
+            tree.framesetOk = false;
+        };
+
+        modes.inBody.endTagAppletMarqueeObject = function(name) {
+            if (!tree.openElements.inScope(name)) {
+                tree.parseError(&quot;unexpected-end-tag&quot;, { name: name });
+            } else {
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem().localName != name) {
+                    tree.parseError(&#x27;end-tag-too-early&#x27;, { name: name });
+                }
+                tree.openElements.popUntilPopped(name);
+                tree.clearActiveFormattingElements();
+            }
+        };
+
+        modes.inBody.startTagXmp = function(name, attributes) {
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.processEndTag(&#x27;p&#x27;);
+            tree.reconstructActiveFormattingElements();
+            tree.processGenericRawTextStartTag(name, attributes);
+            tree.framesetOk = false;
+        };
+
+        modes.inBody.startTagTable = function(name, attributes) {
+            if (tree.compatMode !== &quot;quirks&quot;)
+                if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                    this.processEndTag(&#x27;p&#x27;);
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inTable&#x27;);
+            tree.framesetOk = false;
+        };
+
+        modes.inBody.startTagVoidFormatting = function(name, attributes) {
+            tree.reconstructActiveFormattingElements();
+            tree.insertSelfClosingElement(name, attributes);
+            tree.framesetOk = false;
+        };
+
+        modes.inBody.startTagParamSourceTrack = function(name, attributes) {
+            tree.insertSelfClosingElement(name, attributes);
+        };
+
+        modes.inBody.startTagHr = function(name, attributes) {
+            if (tree.openElements.inButtonScope(&#x27;p&#x27;))
+                this.endTagP(&#x27;p&#x27;);
+            tree.insertSelfClosingElement(name, attributes);
+            tree.framesetOk = false;
+        };
+
+        modes.inBody.startTagImage = function(name, attributes) {
+            // No, really...
+            tree.parseError(&#x27;unexpected-start-tag-treated-as&#x27;, { originalName: &#x27;image&#x27;, newName: &#x27;img&#x27; });
+            this.processStartTag(&#x27;img&#x27;, attributes);
+        };
+
+        modes.inBody.startTagInput = function(name, attributes) {
+            var currentFramesetOk = tree.framesetOk;
+            this.startTagVoidFormatting(name, attributes);
+            for (var key in attributes) {
+                // input type=hidden doesn&#x27;t change framesetOk
+                if (attributes[key].nodeName == &#x27;type&#x27;) {
+                    if (attributes[key].nodeValue.toLowerCase() == &#x27;hidden&#x27;)
+                        tree.framesetOk = currentFramesetOk;
+                    break;
+                }
+            }
+        };
+
+        modes.inBody.startTagIsindex = function(name, attributes) {
+            tree.parseError(&#x27;deprecated-tag&#x27;, { name: &#x27;isindex&#x27; });
+            tree.selfClosingFlagAcknowledged = true;
+            if (tree.form)
+                return;
+            var formAttributes = [];
+            var inputAttributes = [];
+            var prompt = &quot;This is a searchable index. Enter search keywords: &quot;;
+            for (var key in attributes) {
+                switch (attributes[key].nodeName) {
+                    case &#x27;action&#x27;:
+                        formAttributes.push({
+                            nodeName: &#x27;action&#x27;,
+                            nodeValue: attributes[key].nodeValue
+                        });
+                        break;
+                    case &#x27;prompt&#x27;:
+                        prompt = attributes[key].nodeValue;
+                        break;
+                    case &#x27;name&#x27;:
+                        break;
+                    default:
+                        inputAttributes.push({
+                            nodeName: attributes[key].nodeName,
+                            nodeValue: attributes[key].nodeValue
+                        });
+                }
+            }
+            inputAttributes.push({ nodeName: &#x27;name&#x27;, nodeValue: &#x27;isindex&#x27; });
+            this.processStartTag(&#x27;form&#x27;, formAttributes);
+            this.processStartTag(&#x27;hr&#x27;);
+            this.processStartTag(&#x27;label&#x27;);
+            this.processCharacters(new CharacterBuffer(prompt));
+            this.processStartTag(&#x27;input&#x27;, inputAttributes);
+            this.processEndTag(&#x27;label&#x27;);
+            this.processStartTag(&#x27;hr&#x27;);
+            this.processEndTag(&#x27;form&#x27;);
+        };
+
+        modes.inBody.startTagTextarea = function(name, attributes) {
+            // XXX Form element pointer checking here as well...
+            tree.insertElement(name, attributes);
+            tree.tokenizer.setState(Tokenizer.RCDATA);
+            tree.originalInsertionMode = tree.insertionModeName;
+            tree.shouldSkipLeadingNewline = true;
+            tree.framesetOk = false;
+            tree.setInsertionMode(&#x27;text&#x27;);
+        };
+
+        modes.inBody.startTagIFrame = function(name, attributes) {
+            tree.framesetOk = false;
+            this.startTagRawText(name, attributes);
+        };
+
+        modes.inBody.startTagRawText = function(name, attributes) {
+            tree.processGenericRawTextStartTag(name, attributes);
+        };
+
+        modes.inBody.startTagSelect = function(name, attributes) {
+            tree.reconstructActiveFormattingElements();
+            tree.insertElement(name, attributes);
+            tree.framesetOk = false;
+            var insertionModeName = tree.insertionModeName;
+            if (insertionModeName == &#x27;inTable&#x27; ||
+                insertionModeName == &#x27;inCaption&#x27; ||
+                insertionModeName == &#x27;inColumnGroup&#x27; ||
+                insertionModeName == &#x27;inTableBody&#x27; ||
+                insertionModeName == &#x27;inRow&#x27; ||
+                insertionModeName == &#x27;inCell&#x27;) {
+                tree.setInsertionMode(&#x27;inSelectInTable&#x27;);
+            } else {
+                tree.setInsertionMode(&#x27;inSelect&#x27;);
+            }
+        };
+
+        modes.inBody.startTagMisplaced = function(name, attributes) {
+            tree.parseError(&#x27;unexpected-start-tag-ignored&#x27;, { name: name });
+        };
+
+        modes.inBody.endTagMisplaced = function(name) {
+            // This handles elements with end tags in other insertion modes.
+            tree.parseError(&quot;unexpected-end-tag&quot;, { name: name });
+        };
+
+        modes.inBody.endTagBr = function(name) {
+            tree.parseError(&quot;unexpected-end-tag-treated-as&quot;, { originalName: &quot;br&quot;, newName: &quot;br element&quot; });
+            tree.reconstructActiveFormattingElements();
+            tree.insertElement(name, []);
+            tree.popElement();
+        };
+
+        modes.inBody.startTagOptionOptgroup = function(name, attributes) {
+            if (tree.currentStackItem().localName == &#x27;option&#x27;)
+                tree.popElement();
+            tree.reconstructActiveFormattingElements();
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inBody.startTagOther = function(name, attributes) {
+            tree.reconstructActiveFormattingElements();
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inBody.endTagOther = function(name) {
+            var node;
+            for (var i = tree.openElements.length - 1; i &gt; 0; i--) {
+                node = tree.openElements.item(i);
+                if (node.localName == name) {
+                    tree.generateImpliedEndTags(name);
+                    if (tree.currentStackItem().localName != name)
+                        tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+                    // todo optimize
+                    tree.openElements.remove_openElements_until(function(x) { return x === node; });
+                    break;
+                }
+                if (node.isSpecial()) {
+                    tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+                    break;
+                }
+            }
+        };
+
+        modes.inBody.startTagMath = function(name, attributes, selfClosing) {
+            tree.reconstructActiveFormattingElements();
+            attributes = tree.adjustMathMLAttributes(attributes);
+            attributes = tree.adjustForeignAttributes(attributes);
+            tree.insertForeignElement(name, attributes, &quot;http://www.w3.org/1998/Math/MathML&quot;, selfClosing);
+            // Need to get the parse error right for the case where the token
+            // has a namespace not equal to the xmlns attribute
+        };
+
+        modes.inBody.startTagSVG = function(name, attributes, selfClosing) {
+            tree.reconstructActiveFormattingElements();
+            attributes = tree.adjustSVGAttributes(attributes);
+            attributes = tree.adjustForeignAttributes(attributes);
+            tree.insertForeignElement(name, attributes, &quot;http://www.w3.org/2000/svg&quot;, selfClosing);
+            // Need to get the parse error right for the case where the token
+            // has a namespace not equal to the xmlns attribute
+        };
+
+        modes.inBody.endTagP = function(name) {
+            if (!tree.openElements.inButtonScope(&#x27;p&#x27;)) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: &#x27;p&#x27; });
+                this.startTagCloseP(&#x27;p&#x27;, []);
+                this.endTagP(&#x27;p&#x27;);
+            } else {
+                tree.generateImpliedEndTags(&#x27;p&#x27;);
+                if (tree.currentStackItem().localName != &#x27;p&#x27;)
+                    tree.parseError(&#x27;unexpected-implied-end-tag&#x27;, { name: &#x27;p&#x27; });
+                tree.openElements.popUntilPopped(name);
+            }
+        };
+
+        modes.inBody.endTagBody = function(name) {
+            if (!tree.openElements.inScope(&#x27;body&#x27;)) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+                return;
+            }
+
+            /// @todo Emit parse error on end tags other than the ones listed in http://www.w3.org/TR/html5/tree-construction.html#parsing-main-inbody
+            // [&#x27;dd&#x27;, &#x27;dt&#x27;, &#x27;li&#x27;, &#x27;optgroup&#x27;, &#x27;option&#x27;, &#x27;p&#x27;, &#x27;rp&#x27;, &#x27;rt&#x27;, &#x27;tbody&#x27;, &#x27;td&#x27;, &#x27;tfoot&#x27;, &#x27;th&#x27;, &#x27;thead&#x27;, &#x27;tr&#x27;, &#x27;body&#x27;, &#x27;html&#x27;]
+            if (tree.currentStackItem().localName != &#x27;body&#x27;) {
+                tree.parseError(&#x27;expected-one-end-tag-but-got-another&#x27;, {
+                    expectedName: tree.currentStackItem().localName,
+                    gotName: name
+                });
+            }
+            tree.setInsertionMode(&#x27;afterBody&#x27;);
+        };
+
+        modes.inBody.endTagHtml = function(name) {
+            if (!tree.openElements.inScope(&#x27;body&#x27;)) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+                return;
+            }
+
+            /// @todo Emit parse error on end tags other than the ones listed in http://www.w3.org/TR/html5/tree-construction.html#parsing-main-inbody
+            // [&#x27;dd&#x27;, &#x27;dt&#x27;, &#x27;li&#x27;, &#x27;optgroup&#x27;, &#x27;option&#x27;, &#x27;p&#x27;, &#x27;rp&#x27;, &#x27;rt&#x27;, &#x27;tbody&#x27;, &#x27;td&#x27;, &#x27;tfoot&#x27;, &#x27;th&#x27;, &#x27;thead&#x27;, &#x27;tr&#x27;, &#x27;body&#x27;, &#x27;html&#x27;]
+            if (tree.currentStackItem().localName != &#x27;body&#x27;) {
+                tree.parseError(&#x27;expected-one-end-tag-but-got-another&#x27;, {
+                    expectedName: tree.currentStackItem().localName,
+                    gotName: name
+                });
+            }
+            tree.setInsertionMode(&#x27;afterBody&#x27;);
+            tree.insertionMode.processEndTag(name);
+        };
+
+        modes.inBody.endTagBlock = function(name) {
+            if (!tree.openElements.inScope(name)) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            } else {
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem().localName != name) {
+                    tree.parseError(&#x27;end-tag-too-early&#x27;, { name: name });
+                }
+                tree.openElements.popUntilPopped(name);
+            }
+        };
+
+        modes.inBody.endTagForm = function(name) {
+            var node = tree.form;
+            tree.form = null;
+            if (!node || !tree.openElements.inScope(name)) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            } else {
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem() != node) {
+                    tree.parseError(&#x27;end-tag-too-early-ignored&#x27;, { name: &#x27;form&#x27; });
+                }
+                tree.openElements.remove(node);
+            }
+        };
+
+        modes.inBody.endTagListItem = function(name) {
+            if (!tree.openElements.inListItemScope(name)) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            } else {
+                tree.generateImpliedEndTags(name);
+                if (tree.currentStackItem().localName != name)
+                    tree.parseError(&#x27;end-tag-too-early&#x27;, { name: name });
+                tree.openElements.popUntilPopped(name);
+            }
+        };
+
+        modes.inBody.endTagHeading = function(name) {
+            if (!tree.openElements.hasNumberedHeaderElementInScope()) {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+                return;
+            }
+            tree.generateImpliedEndTags();
+            if (tree.currentStackItem().localName != name)
+                tree.parseError(&#x27;end-tag-too-early&#x27;, { name: name });
+
+            tree.openElements.remove_openElements_until(function(e) {
+                return e.isNumberedHeader();
+            });
+        };
+
+        modes.inBody.endTagFormatting = function(name, attributes) {
+            if (!tree.adoptionAgencyEndTag(name))
+                this.endTagOther(name, attributes);
+        };
+
+        modes.inCaption = Object.create(modes.base);
+
+        modes.inCaption.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            caption: &#x27;startTagTableElement&#x27;,
+            col: &#x27;startTagTableElement&#x27;,
+            colgroup: &#x27;startTagTableElement&#x27;,
+            tbody: &#x27;startTagTableElement&#x27;,
+            td: &#x27;startTagTableElement&#x27;,
+            tfoot: &#x27;startTagTableElement&#x27;,
+            thead: &#x27;startTagTableElement&#x27;,
+            tr: &#x27;startTagTableElement&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inCaption.end_tag_handlers = {
+            caption: &#x27;endTagCaption&#x27;,
+            table: &#x27;endTagTable&#x27;,
+            body: &#x27;endTagIgnore&#x27;,
+            col: &#x27;endTagIgnore&#x27;,
+            colgroup: &#x27;endTagIgnore&#x27;,
+            html: &#x27;endTagIgnore&#x27;,
+            tbody: &#x27;endTagIgnore&#x27;,
+            td: &#x27;endTagIgnore&#x27;,
+            tfood: &#x27;endTagIgnore&#x27;,
+            thead: &#x27;endTagIgnore&#x27;,
+            tr: &#x27;endTagIgnore&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inCaption.processCharacters = function(data) {
+            modes.inBody.processCharacters(data);
+        };
+
+        modes.inCaption.startTagTableElement = function(name, attributes) {
+            tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            var ignoreEndTag = !tree.openElements.inTableScope(&#x27;caption&#x27;);
+            tree.insertionMode.processEndTag(&#x27;caption&#x27;);
+            if (!ignoreEndTag) tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inCaption.startTagOther = function(name, attributes, selfClosing) {
+            modes.inBody.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inCaption.endTagCaption = function(name) {
+            if (!tree.openElements.inTableScope(&#x27;caption&#x27;)) {
+                // context case
+                // TODO assert.ok(tree.context);
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+            else {
+                // AT this code is quite similar to endTagTable in inTable
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem().localName != &#x27;caption&#x27;) {
+                    // @todo this is confusing for implied end tag
+                    tree.parseError(&#x27;expected-one-end-tag-but-got-another&#x27;, {
+                        gotName: &quot;caption&quot;,
+                        expectedName: tree.currentStackItem().localName
+                    });
+                }
+                tree.openElements.popUntilPopped(&#x27;caption&#x27;);
+                tree.clearActiveFormattingElements();
+                tree.setInsertionMode(&#x27;inTable&#x27;);
+            }
+        };
+
+        modes.inCaption.endTagTable = function(name) {
+            tree.parseError(&quot;unexpected-end-table-in-caption&quot;);
+            var ignoreEndTag = !tree.openElements.inTableScope(&#x27;caption&#x27;);
+            tree.insertionMode.processEndTag(&#x27;caption&#x27;);
+            if (!ignoreEndTag) tree.insertionMode.processEndTag(name);
+        };
+
+        modes.inCaption.endTagIgnore = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+        };
+
+        modes.inCaption.endTagOther = function(name) {
+            modes.inBody.processEndTag(name);
+        };
+
+        modes.inCell = Object.create(modes.base);
+
+        modes.inCell.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            caption: &#x27;startTagTableOther&#x27;,
+            col: &#x27;startTagTableOther&#x27;,
+            colgroup: &#x27;startTagTableOther&#x27;,
+            tbody: &#x27;startTagTableOther&#x27;,
+            td: &#x27;startTagTableOther&#x27;,
+            tfoot: &#x27;startTagTableOther&#x27;,
+            th: &#x27;startTagTableOther&#x27;,
+            thead: &#x27;startTagTableOther&#x27;,
+            tr: &#x27;startTagTableOther&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inCell.end_tag_handlers = {
+            td: &#x27;endTagTableCell&#x27;,
+            th: &#x27;endTagTableCell&#x27;,
+            body: &#x27;endTagIgnore&#x27;,
+            caption: &#x27;endTagIgnore&#x27;,
+            col: &#x27;endTagIgnore&#x27;,
+            colgroup: &#x27;endTagIgnore&#x27;,
+            html: &#x27;endTagIgnore&#x27;,
+            table: &#x27;endTagImply&#x27;,
+            tbody: &#x27;endTagImply&#x27;,
+            tfoot: &#x27;endTagImply&#x27;,
+            thead: &#x27;endTagImply&#x27;,
+            tr: &#x27;endTagImply&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inCell.processCharacters = function(data) {
+            modes.inBody.processCharacters(data);
+        };
+
+        modes.inCell.startTagTableOther = function(name, attributes, selfClosing) {
+            if (tree.openElements.inTableScope(&#x27;td&#x27;) || tree.openElements.inTableScope(&#x27;th&#x27;)) {
+                this.closeCell();
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+            } else {
+                // context case
+                tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inCell.startTagOther = function(name, attributes, selfClosing) {
+            modes.inBody.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inCell.endTagTableCell = function(name) {
+            if (tree.openElements.inTableScope(name)) {
+                tree.generateImpliedEndTags(name);
+                if (tree.currentStackItem().localName != name.toLowerCase()) {
+                    tree.parseError(&#x27;unexpected-cell-end-tag&#x27;, { name: name });
+                    tree.openElements.popUntilPopped(name);
+                } else {
+                    tree.popElement();
+                }
+                tree.clearActiveFormattingElements();
+                tree.setInsertionMode(&#x27;inRow&#x27;);
+            } else {
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inCell.endTagIgnore = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+        };
+
+        modes.inCell.endTagImply = function(name) {
+            if (tree.openElements.inTableScope(name)) {
+                this.closeCell();
+                tree.insertionMode.processEndTag(name);
+            } else {
+                // sometimes context case
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inCell.endTagOther = function(name) {
+            modes.inBody.processEndTag(name);
+        };
+
+        modes.inCell.closeCell = function() {
+            if (tree.openElements.inTableScope(&#x27;td&#x27;)) {
+                this.endTagTableCell(&#x27;td&#x27;);
+            } else if (tree.openElements.inTableScope(&#x27;th&#x27;)) {
+                this.endTagTableCell(&#x27;th&#x27;);
+            }
+        };
+
+
+        modes.inColumnGroup = Object.create(modes.base);
+
+        modes.inColumnGroup.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            col: &#x27;startTagCol&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inColumnGroup.end_tag_handlers = {
+            colgroup: &#x27;endTagColgroup&#x27;,
+            col: &#x27;endTagCol&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inColumnGroup.ignoreEndTagColgroup = function() {
+            return tree.currentStackItem().localName == &#x27;html&#x27;;
+        };
+
+        modes.inColumnGroup.processCharacters = function(buffer) {
+            var leadingWhitespace = buffer.takeLeadingWhitespace();
+            if (leadingWhitespace)
+                tree.insertText(leadingWhitespace);
+            if (!buffer.length)
+                return;
+            var ignoreEndTag = this.ignoreEndTagColgroup();
+            this.endTagColgroup(&#x27;colgroup&#x27;);
+            if (!ignoreEndTag) tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.inColumnGroup.startTagCol = function(name, attributes) {
+            tree.insertSelfClosingElement(name, attributes);
+        };
+
+        modes.inColumnGroup.startTagOther = function(name, attributes, selfClosing) {
+            var ignoreEndTag = this.ignoreEndTagColgroup();
+            this.endTagColgroup(&#x27;colgroup&#x27;);
+            if (!ignoreEndTag) tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inColumnGroup.endTagColgroup = function(name) {
+            if (this.ignoreEndTagColgroup()) {
+                // context case
+                // TODO: assert.ok(tree.context);
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            } else {
+                tree.popElement();
+                tree.setInsertionMode(&#x27;inTable&#x27;);
+            }
+        };
+
+        modes.inColumnGroup.endTagCol = function(name) {
+            tree.parseError(&quot;no-end-tag&quot;, { name: &#x27;col&#x27; });
+        };
+
+        modes.inColumnGroup.endTagOther = function(name) {
+            var ignoreEndTag = this.ignoreEndTagColgroup();
+            this.endTagColgroup(&#x27;colgroup&#x27;);
+            if (!ignoreEndTag) tree.insertionMode.processEndTag(name);
+        };
+
+        modes.inForeignContent = Object.create(modes.base);
+
+        modes.inForeignContent.processStartTag = function(name, attributes, selfClosing) {
+            if ([&#x27;b&#x27;, &#x27;big&#x27;, &#x27;blockquote&#x27;, &#x27;body&#x27;, &#x27;br&#x27;, &#x27;center&#x27;, &#x27;code&#x27;, &#x27;dd&#x27;, &#x27;div&#x27;, &#x27;dl&#x27;, &#x27;dt&#x27;, &#x27;em&#x27;, &#x27;embed&#x27;, &#x27;h1&#x27;, &#x27;h2&#x27;, &#x27;h3&#x27;, &#x27;h4&#x27;, &#x27;h5&#x27;, &#x27;h6&#x27;, &#x27;head&#x27;, &#x27;hr&#x27;, &#x27;i&#x27;, &#x27;img&#x27;, &#x27;li&#x27;, &#x27;listing&#x27;, &#x27;menu&#x27;, &#x27;meta&#x27;, &#x27;nobr&#x27;, &#x27;ol&#x27;, &#x27;p&#x27;, &#x27;pre&#x27;, &#x27;ruby&#x27;, &#x27;s&#x27;, &#x27;small&#x27;, &#x27;span&#x27;, &#x27;strong&#x27;, &#x27;strike&#x27;, &#x27;sub&#x27;, &#x27;sup&#x27;, &#x27;table&#x27;, &#x27;tt&#x27;, &#x27;u&#x27;, &#x27;ul&#x27;, &#x27;var&#x27;].indexOf(name) != -1
+                || (name == &#x27;font&#x27; &amp;&amp; attributes.some(function(attr) { return [&#x27;color&#x27;, &#x27;face&#x27;, &#x27;size&#x27;].indexOf(attr.nodeName) &gt;= 0 }))) {
+                tree.parseError(&#x27;unexpected-html-element-in-foreign-content&#x27;, { name: name });
+                while (tree.currentStackItem().isForeign()
+                    &amp;&amp; !tree.currentStackItem().isHtmlIntegrationPoint()
+                    &amp;&amp; !tree.currentStackItem().isMathMLTextIntegrationPoint()) {
+                    tree.openElements.pop();
+                }
+                tree.insertionMode.processStartTag(name, attributes, selfClosing);
+                return;
+            }
+            if (tree.currentStackItem().namespaceURI == &quot;http://www.w3.org/1998/Math/MathML&quot;) {
+                attributes = tree.adjustMathMLAttributes(attributes);
+            }
+            if (tree.currentStackItem().namespaceURI == &quot;http://www.w3.org/2000/svg&quot;) {
+                name = tree.adjustSVGTagNameCase(name);
+                attributes = tree.adjustSVGAttributes(attributes);
+            }
+            attributes = tree.adjustForeignAttributes(attributes);
+            tree.insertForeignElement(name, attributes, tree.currentStackItem().namespaceURI, selfClosing);
+        };
+
+        modes.inForeignContent.processEndTag = function(name) {
+            var node = tree.currentStackItem();
+            var index = tree.openElements.length - 1;
+            if (node.localName.toLowerCase() != name)
+                tree.parseError(&quot;unexpected-end-tag&quot;, { name: name });
+
+            while (true) {
+                if (index === 0)
+                    break;
+                if (node.localName.toLowerCase() == name) {
+                    while (tree.openElements.pop() != node);
+                    break;
+                }
+                index -= 1;
+                node = tree.openElements.item(index);
+                if (node.isForeign()) {
+                    continue;
+                } else {
+                    tree.insertionMode.processEndTag(name);
+                    break;
+                }
+            }
+        };
+
+        modes.inForeignContent.processCharacters = function(buffer) {
+            var characters = buffer.takeRemaining();
+            characters = characters.replace(/\u0000/g, function(match, index) {
+                // @todo position
+                tree.parseError(&#x27;invalid-codepoint&#x27;);
+                return &#x27;\uFFFD&#x27;;
+            });
+            if (tree.framesetOk &amp;&amp; !isAllWhitespaceOrReplacementCharacters(characters))
+                tree.framesetOk = false;
+            tree.insertText(characters);
+        };
+
+        modes.inHeadNoscript = Object.create(modes.base);
+
+        modes.inHeadNoscript.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            basefont: &#x27;startTagBasefontBgsoundLinkMetaNoframesStyle&#x27;,
+            bgsound: &#x27;startTagBasefontBgsoundLinkMetaNoframesStyle&#x27;,
+            link: &#x27;startTagBasefontBgsoundLinkMetaNoframesStyle&#x27;,
+            meta: &#x27;startTagBasefontBgsoundLinkMetaNoframesStyle&#x27;,
+            noframes: &#x27;startTagBasefontBgsoundLinkMetaNoframesStyle&#x27;,
+            style: &#x27;startTagBasefontBgsoundLinkMetaNoframesStyle&#x27;,
+            head: &#x27;startTagHeadNoscript&#x27;,
+            noscript: &#x27;startTagHeadNoscript&#x27;,
+            &quot;-default&quot;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inHeadNoscript.end_tag_handlers = {
+            noscript: &#x27;endTagNoscript&#x27;,
+            br: &#x27;endTagBr&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inHeadNoscript.processCharacters = function(buffer) {
+            var leadingWhitespace = buffer.takeLeadingWhitespace();
+            if (leadingWhitespace)
+                tree.insertText(leadingWhitespace);
+            if (!buffer.length)
+                return;
+            // FIXME error message
+            tree.parseError(&quot;unexpected-char-in-frameset&quot;);
+            this.anythingElse();
+            tree.insertionMode.processCharacters(buffer);
+        };
+
+        modes.inHeadNoscript.processComment = function(data) {
+            modes.inHead.processComment(data);
+        };
+
+        modes.inHeadNoscript.startTagBasefontBgsoundLinkMetaNoframesStyle = function(name, attributes) {
+            modes.inHead.processStartTag(name, attributes);
+        };
+
+        modes.inHeadNoscript.startTagHeadNoscript = function(name, attributes) {
+            // FIXME error message
+            tree.parseError(&quot;unexpected-start-tag-in-frameset&quot;, { name: name });
+        };
+
+        modes.inHeadNoscript.startTagOther = function(name, attributes) {
+            // FIXME error message
+            tree.parseError(&quot;unexpected-start-tag-in-frameset&quot;, { name: name });
+            this.anythingElse();
+            tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inHeadNoscript.endTagBr = function(name, attributes) {
+            // FIXME error message
+            tree.parseError(&quot;unexpected-end-tag-in-frameset&quot;, { name: name });
+            this.anythingElse();
+            tree.insertionMode.processEndTag(name, attributes);
+        };
+
+        modes.inHeadNoscript.endTagNoscript = function(name, attributes) {
+            tree.popElement();
+            tree.setInsertionMode(&#x27;inHead&#x27;);
+        };
+
+        modes.inHeadNoscript.endTagOther = function(name, attributes) {
+            // FIXME error message
+            tree.parseError(&quot;unexpected-end-tag-in-frameset&quot;, { name: name });
+        };
+
+        modes.inHeadNoscript.anythingElse = function() {
+            tree.popElement();
+            tree.setInsertionMode(&#x27;inHead&#x27;);
+        };
+
+
+        modes.inFrameset = Object.create(modes.base);
+
+        modes.inFrameset.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            frameset: &#x27;startTagFrameset&#x27;,
+            frame: &#x27;startTagFrame&#x27;,
+            noframes: &#x27;startTagNoframes&#x27;,
+            &quot;-default&quot;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inFrameset.end_tag_handlers = {
+            frameset: &#x27;endTagFrameset&#x27;,
+            noframes: &#x27;endTagNoframes&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inFrameset.processCharacters = function(data) {
+            tree.parseError(&quot;unexpected-char-in-frameset&quot;);
+        };
+
+        modes.inFrameset.startTagFrameset = function(name, attributes) {
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inFrameset.startTagFrame = function(name, attributes) {
+            tree.insertSelfClosingElement(name, attributes);
+        };
+
+        modes.inFrameset.startTagNoframes = function(name, attributes) {
+            modes.inBody.processStartTag(name, attributes);
+        };
+
+        modes.inFrameset.startTagOther = function(name, attributes) {
+            tree.parseError(&quot;unexpected-start-tag-in-frameset&quot;, { name: name });
+        };
+
+        modes.inFrameset.endTagFrameset = function(name, attributes) {
+            if (tree.currentStackItem().localName == &#x27;html&#x27;) {
+                // context case
+                tree.parseError(&quot;unexpected-frameset-in-frameset-innerhtml&quot;);
+            } else {
+                tree.popElement();
+            }
+
+            if (!tree.context &amp;&amp; tree.currentStackItem().localName != &#x27;frameset&#x27;) {
+                // If we&#x27;re not in context mode an the current node is not a &quot;frameset&quot; element (anymore) then switch
+                tree.setInsertionMode(&#x27;afterFrameset&#x27;);
+            }
+        };
+
+        modes.inFrameset.endTagNoframes = function(name) {
+            modes.inBody.processEndTag(name);
+        };
+
+        modes.inFrameset.endTagOther = function(name) {
+            tree.parseError(&quot;unexpected-end-tag-in-frameset&quot;, { name: name });
+        };
+
+        modes.inTable = Object.create(modes.base);
+
+        modes.inTable.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            caption: &#x27;startTagCaption&#x27;,
+            colgroup: &#x27;startTagColgroup&#x27;,
+            col: &#x27;startTagCol&#x27;,
+            table: &#x27;startTagTable&#x27;,
+            tbody: &#x27;startTagRowGroup&#x27;,
+            tfoot: &#x27;startTagRowGroup&#x27;,
+            thead: &#x27;startTagRowGroup&#x27;,
+            td: &#x27;startTagImplyTbody&#x27;,
+            th: &#x27;startTagImplyTbody&#x27;,
+            tr: &#x27;startTagImplyTbody&#x27;,
+            style: &#x27;startTagStyleScript&#x27;,
+            script: &#x27;startTagStyleScript&#x27;,
+            input: &#x27;startTagInput&#x27;,
+            form: &#x27;startTagForm&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inTable.end_tag_handlers = {
+            table: &#x27;endTagTable&#x27;,
+            body: &#x27;endTagIgnore&#x27;,
+            caption: &#x27;endTagIgnore&#x27;,
+            col: &#x27;endTagIgnore&#x27;,
+            colgroup: &#x27;endTagIgnore&#x27;,
+            html: &#x27;endTagIgnore&#x27;,
+            tbody: &#x27;endTagIgnore&#x27;,
+            td: &#x27;endTagIgnore&#x27;,
+            tfoot: &#x27;endTagIgnore&#x27;,
+            th: &#x27;endTagIgnore&#x27;,
+            thead: &#x27;endTagIgnore&#x27;,
+            tr: &#x27;endTagIgnore&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inTable.processCharacters = function(data) {
+            if (tree.currentStackItem().isFosterParenting()) {
+                var originalInsertionMode = tree.insertionModeName;
+                tree.setInsertionMode(&#x27;inTableText&#x27;);
+                tree.originalInsertionMode = originalInsertionMode;
+                tree.insertionMode.processCharacters(data);
+            } else {
+                tree.redirectAttachToFosterParent = true;
+                modes.inBody.processCharacters(data);
+                tree.redirectAttachToFosterParent = false;
+            }
+        };
+
+        modes.inTable.startTagCaption = function(name, attributes) {
+            tree.openElements.popUntilTableScopeMarker();
+            tree.activeFormattingElements.push(Marker);
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inCaption&#x27;);
+        };
+
+        modes.inTable.startTagColgroup = function(name, attributes) {
+            tree.openElements.popUntilTableScopeMarker();
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inColumnGroup&#x27;);
+        };
+
+        modes.inTable.startTagCol = function(name, attributes) {
+            this.startTagColgroup(&#x27;colgroup&#x27;, []);
+            tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inTable.startTagRowGroup = function(name, attributes) {
+            tree.openElements.popUntilTableScopeMarker();
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inTableBody&#x27;);
+        };
+
+        modes.inTable.startTagImplyTbody = function(name, attributes) {
+            this.startTagRowGroup(&#x27;tbody&#x27;, []);
+            tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inTable.startTagTable = function(name, attributes) {
+            tree.parseError(&quot;unexpected-start-tag-implies-end-tag&quot;,
+                { startName: &quot;table&quot;, endName: &quot;table&quot; });
+            tree.insertionMode.processEndTag(&#x27;table&#x27;);
+            if (!tree.context) tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inTable.startTagStyleScript = function(name, attributes) {
+            modes.inHead.processStartTag(name, attributes);
+        };
+
+        modes.inTable.startTagInput = function(name, attributes) {
+            for (var key in attributes) {
+                if (attributes[key].nodeName.toLowerCase() == &#x27;type&#x27;) {
+                    if (attributes[key].nodeValue.toLowerCase() == &#x27;hidden&#x27;) {
+                        tree.parseError(&quot;unexpected-hidden-input-in-table&quot;);
+                        tree.insertElement(name, attributes);
+                        // XXX associate with form
+                        tree.openElements.pop();
+                        return;
+                    }
+                    break;
+                }
+            }
+            this.startTagOther(name, attributes);
+        };
+
+        modes.inTable.startTagForm = function(name, attributes) {
+            tree.parseError(&quot;unexpected-form-in-table&quot;);
+            if (!tree.form) {
+                tree.insertElement(name, attributes);
+                tree.form = tree.currentStackItem();
+                tree.openElements.pop();
+            }
+        };
+
+        modes.inTable.startTagOther = function(name, attributes, selfClosing) {
+            tree.parseError(&quot;unexpected-start-tag-implies-table-voodoo&quot;, { name: name });
+            tree.redirectAttachToFosterParent = true;
+            modes.inBody.processStartTag(name, attributes, selfClosing);
+            tree.redirectAttachToFosterParent = false;
+        };
+
+        modes.inTable.endTagTable = function(name) {
+            if (tree.openElements.inTableScope(name)) {
+                tree.generateImpliedEndTags();
+                if (tree.currentStackItem().localName != name) {
+                    tree.parseError(&quot;end-tag-too-early-named&quot;, { gotName: &#x27;table&#x27;, expectedName: tree.currentStackItem().localName });
+                }
+
+                tree.openElements.popUntilPopped(&#x27;table&#x27;);
+                tree.resetInsertionMode();
+            }
+            else {
+                // TODO assert.ok(tree.context);
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inTable.endTagIgnore = function(name) {
+            tree.parseError(&quot;unexpected-end-tag&quot;, { name: name });
+        };
+
+        modes.inTable.endTagOther = function(name) {
+            tree.parseError(&quot;unexpected-end-tag-implies-table-voodoo&quot;, { name: name });
+            // Make all the special element rearranging voodoo kick in
+            tree.redirectAttachToFosterParent = true;
+            // Process the end tag in the &quot;in body&quot; mode
+            modes.inBody.processEndTag(name);
+            tree.redirectAttachToFosterParent = false;
+        };
+
+        modes.inTableText = Object.create(modes.base);
+
+        modes.inTableText.flushCharacters = function() {
+            var characters = tree.pendingTableCharacters.join(&#x27;&#x27;);
+            if (!isAllWhitespace(characters)) {
+                tree.redirectAttachToFosterParent = true;
+                tree.reconstructActiveFormattingElements();
+                tree.insertText(characters);
+                tree.framesetOk = false;
+                tree.redirectAttachToFosterParent = false;
+            } else {
+                tree.insertText(characters);
+            }
+            tree.pendingTableCharacters = [];
+        };
+
+        modes.inTableText.processComment = function(data) {
+            this.flushCharacters();
+            tree.setInsertionMode(tree.originalInsertionMode);
+            tree.insertionMode.processComment(data);
+        };
+
+        modes.inTableText.processEOF = function(data) {
+            this.flushCharacters();
+            tree.setInsertionMode(tree.originalInsertionMode);
+            tree.insertionMode.processEOF();
+        };
+
+        modes.inTableText.processCharacters = function(buffer) {
+            var characters = buffer.takeRemaining();
+            characters = characters.replace(/\u0000/g, function(match, index) {
+                // @todo position
+                tree.parseError(&quot;invalid-codepoint&quot;);
+                return &#x27;&#x27;;
+            });
+            if (!characters)
+                return;
+            tree.pendingTableCharacters.push(characters);
+        };
+
+        modes.inTableText.processStartTag = function(name, attributes, selfClosing) {
+            this.flushCharacters();
+            tree.setInsertionMode(tree.originalInsertionMode);
+            tree.insertionMode.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inTableText.processEndTag = function(name, attributes) {
+            this.flushCharacters();
+            tree.setInsertionMode(tree.originalInsertionMode);
+            tree.insertionMode.processEndTag(name, attributes);
+        };
+
+        modes.inTableBody = Object.create(modes.base);
+
+        modes.inTableBody.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            tr: &#x27;startTagTr&#x27;,
+            td: &#x27;startTagTableCell&#x27;,
+            th: &#x27;startTagTableCell&#x27;,
+            caption: &#x27;startTagTableOther&#x27;,
+            col: &#x27;startTagTableOther&#x27;,
+            colgroup: &#x27;startTagTableOther&#x27;,
+            tbody: &#x27;startTagTableOther&#x27;,
+            tfoot: &#x27;startTagTableOther&#x27;,
+            thead: &#x27;startTagTableOther&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inTableBody.end_tag_handlers = {
+            table: &#x27;endTagTable&#x27;,
+            tbody: &#x27;endTagTableRowGroup&#x27;,
+            tfoot: &#x27;endTagTableRowGroup&#x27;,
+            thead: &#x27;endTagTableRowGroup&#x27;,
+            body: &#x27;endTagIgnore&#x27;,
+            caption: &#x27;endTagIgnore&#x27;,
+            col: &#x27;endTagIgnore&#x27;,
+            colgroup: &#x27;endTagIgnore&#x27;,
+            html: &#x27;endTagIgnore&#x27;,
+            td: &#x27;endTagIgnore&#x27;,
+            th: &#x27;endTagIgnore&#x27;,
+            tr: &#x27;endTagIgnore&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inTableBody.processCharacters = function(data) {
+            modes.inTable.processCharacters(data);
+        };
+
+        modes.inTableBody.startTagTr = function(name, attributes) {
+            tree.openElements.popUntilTableBodyScopeMarker();
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inRow&#x27;);
+        };
+
+        modes.inTableBody.startTagTableCell = function(name, attributes) {
+            tree.parseError(&quot;unexpected-cell-in-table-body&quot;, { name: name });
+            this.startTagTr(&#x27;tr&#x27;, []);
+            tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inTableBody.startTagTableOther = function(name, attributes) {
+            // XXX any ideas on how to share this with endTagTable
+            if (tree.openElements.inTableScope(&#x27;tbody&#x27;) || tree.openElements.inTableScope(&#x27;thead&#x27;) || tree.openElements.inTableScope(&#x27;tfoot&#x27;)) {
+                tree.openElements.popUntilTableBodyScopeMarker();
+                this.endTagTableRowGroup(tree.currentStackItem().localName);
+                tree.insertionMode.processStartTag(name, attributes);
+            } else {
+                // context case
+                tree.parseError(&#x27;unexpected-start-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inTableBody.startTagOther = function(name, attributes) {
+            modes.inTable.processStartTag(name, attributes);
+        };
+
+        modes.inTableBody.endTagTableRowGroup = function(name) {
+            if (tree.openElements.inTableScope(name)) {
+                tree.openElements.popUntilTableBodyScopeMarker();
+                tree.popElement();
+                tree.setInsertionMode(&#x27;inTable&#x27;);
+            } else {
+                tree.parseError(&#x27;unexpected-end-tag-in-table-body&#x27;, { name: name });
+            }
+        };
+
+        modes.inTableBody.endTagTable = function(name) {
+            if (tree.openElements.inTableScope(&#x27;tbody&#x27;) || tree.openElements.inTableScope(&#x27;thead&#x27;) || tree.openElements.inTableScope(&#x27;tfoot&#x27;)) {
+                tree.openElements.popUntilTableBodyScopeMarker();
+                this.endTagTableRowGroup(tree.currentStackItem().localName);
+                tree.insertionMode.processEndTag(name);
+            } else {
+                // context case
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inTableBody.endTagIgnore = function(name) {
+            tree.parseError(&quot;unexpected-end-tag-in-table-body&quot;, { name: name });
+        };
+
+        modes.inTableBody.endTagOther = function(name) {
+            modes.inTable.processEndTag(name);
+        };
+
+        modes.inSelect = Object.create(modes.base);
+
+        modes.inSelect.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            option: &#x27;startTagOption&#x27;,
+            optgroup: &#x27;startTagOptgroup&#x27;,
+            select: &#x27;startTagSelect&#x27;,
+            input: &#x27;startTagInput&#x27;,
+            keygen: &#x27;startTagInput&#x27;,
+            textarea: &#x27;startTagInput&#x27;,
+            script: &#x27;startTagScript&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inSelect.end_tag_handlers = {
+            option: &#x27;endTagOption&#x27;,
+            optgroup: &#x27;endTagOptgroup&#x27;,
+            select: &#x27;endTagSelect&#x27;,
+            caption: &#x27;endTagTableElements&#x27;,
+            table: &#x27;endTagTableElements&#x27;,
+            tbody: &#x27;endTagTableElements&#x27;,
+            tfoot: &#x27;endTagTableElements&#x27;,
+            thead: &#x27;endTagTableElements&#x27;,
+            tr: &#x27;endTagTableElements&#x27;,
+            td: &#x27;endTagTableElements&#x27;,
+            th: &#x27;endTagTableElements&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inSelect.processCharacters = function(buffer) {
+            var data = buffer.takeRemaining();
+            data = data.replace(/\u0000/g, function(match, index) {
+                // @todo position
+                tree.parseError(&quot;invalid-codepoint&quot;);
+                return &#x27;&#x27;;
+            });
+            if (!data)
+                return;
+            tree.insertText(data);
+        };
+
+        modes.inSelect.startTagOption = function(name, attributes) {
+            // we need to imply &lt;/option&gt; if &lt;option&gt; is the current node
+            if (tree.currentStackItem().localName == &#x27;option&#x27;)
+                tree.popElement();
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inSelect.startTagOptgroup = function(name, attributes) {
+            if (tree.currentStackItem().localName == &#x27;option&#x27;)
+                tree.popElement();
+            if (tree.currentStackItem().localName == &#x27;optgroup&#x27;)
+                tree.popElement();
+            tree.insertElement(name, attributes);
+        };
+
+        modes.inSelect.endTagOption = function(name) {
+            if (tree.currentStackItem().localName !== &#x27;option&#x27;) {
+                tree.parseError(&#x27;unexpected-end-tag-in-select&#x27;, { name: name });
+                return;
+            }
+            tree.popElement();
+        };
+
+        modes.inSelect.endTagOptgroup = function(name) {
+            // &lt;/optgroup&gt; implicitly closes &lt;option&gt;
+            if (tree.currentStackItem().localName == &#x27;option&#x27; &amp;&amp; tree.openElements.item(tree.openElements.length - 2).localName == &#x27;optgroup&#x27;) {
+                tree.popElement();
+            }
+
+            // it also closes &lt;/optgroup&gt;
+            if (tree.currentStackItem().localName == &#x27;optgroup&#x27;) {
+                tree.popElement();
+            } else {
+                // But nothing else
+                tree.parseError(&#x27;unexpected-end-tag-in-select&#x27;, { name: &#x27;optgroup&#x27; });
+            }
+        };
+
+        modes.inSelect.startTagSelect = function(name) {
+            tree.parseError(&quot;unexpected-select-in-select&quot;);
+            this.endTagSelect(&#x27;select&#x27;);
+        };
+
+        modes.inSelect.endTagSelect = function(name) {
+            if (tree.openElements.inTableScope(&#x27;select&#x27;)) {
+                tree.openElements.popUntilPopped(&#x27;select&#x27;);
+                tree.resetInsertionMode();
+            } else {
+                // context case
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inSelect.startTagInput = function(name, attributes) {
+            tree.parseError(&quot;unexpected-input-in-select&quot;);
+            if (tree.openElements.inSelectScope(&#x27;select&#x27;)) {
+                this.endTagSelect(&#x27;select&#x27;);
+                tree.insertionMode.processStartTag(name, attributes);
+            }
+        };
+
+        modes.inSelect.startTagScript = function(name, attributes) {
+            modes.inHead.processStartTag(name, attributes);
+        };
+
+        modes.inSelect.endTagTableElements = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag-in-select&#x27;, { name: name });
+            if (tree.openElements.inTableScope(name)) {
+                this.endTagSelect(&#x27;select&#x27;);
+                tree.insertionMode.processEndTag(name);
+            }
+        };
+
+        modes.inSelect.startTagOther = function(name, attributes) {
+            tree.parseError(&quot;unexpected-start-tag-in-select&quot;, { name: name });
+        };
+
+        modes.inSelect.endTagOther = function(name) {
+            tree.parseError(&#x27;unexpected-end-tag-in-select&#x27;, { name: name });
+        };
+
+        modes.inSelectInTable = Object.create(modes.base);
+
+        modes.inSelectInTable.start_tag_handlers = {
+            caption: &#x27;startTagTable&#x27;,
+            table: &#x27;startTagTable&#x27;,
+            tbody: &#x27;startTagTable&#x27;,
+            tfoot: &#x27;startTagTable&#x27;,
+            thead: &#x27;startTagTable&#x27;,
+            tr: &#x27;startTagTable&#x27;,
+            td: &#x27;startTagTable&#x27;,
+            th: &#x27;startTagTable&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inSelectInTable.end_tag_handlers = {
+            caption: &#x27;endTagTable&#x27;,
+            table: &#x27;endTagTable&#x27;,
+            tbody: &#x27;endTagTable&#x27;,
+            tfoot: &#x27;endTagTable&#x27;,
+            thead: &#x27;endTagTable&#x27;,
+            tr: &#x27;endTagTable&#x27;,
+            td: &#x27;endTagTable&#x27;,
+            th: &#x27;endTagTable&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inSelectInTable.processCharacters = function(data) {
+            modes.inSelect.processCharacters(data);
+        };
+
+        modes.inSelectInTable.startTagTable = function(name, attributes) {
+            tree.parseError(&quot;unexpected-table-element-start-tag-in-select-in-table&quot;, { name: name });
+            this.endTagOther(&quot;select&quot;);
+            tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inSelectInTable.startTagOther = function(name, attributes, selfClosing) {
+            modes.inSelect.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inSelectInTable.endTagTable = function(name) {
+            tree.parseError(&quot;unexpected-table-element-end-tag-in-select-in-table&quot;, { name: name });
+            if (tree.openElements.inTableScope(name)) {
+                this.endTagOther(&quot;select&quot;);
+                tree.insertionMode.processEndTag(name);
+            }
+        };
+
+        modes.inSelectInTable.endTagOther = function(name) {
+            modes.inSelect.processEndTag(name);
+        };
+
+        modes.inRow = Object.create(modes.base);
+
+        modes.inRow.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            td: &#x27;startTagTableCell&#x27;,
+            th: &#x27;startTagTableCell&#x27;,
+            caption: &#x27;startTagTableOther&#x27;,
+            col: &#x27;startTagTableOther&#x27;,
+            colgroup: &#x27;startTagTableOther&#x27;,
+            tbody: &#x27;startTagTableOther&#x27;,
+            tfoot: &#x27;startTagTableOther&#x27;,
+            thead: &#x27;startTagTableOther&#x27;,
+            tr: &#x27;startTagTableOther&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.inRow.end_tag_handlers = {
+            tr: &#x27;endTagTr&#x27;,
+            table: &#x27;endTagTable&#x27;,
+            tbody: &#x27;endTagTableRowGroup&#x27;,
+            tfoot: &#x27;endTagTableRowGroup&#x27;,
+            thead: &#x27;endTagTableRowGroup&#x27;,
+            body: &#x27;endTagIgnore&#x27;,
+            caption: &#x27;endTagIgnore&#x27;,
+            col: &#x27;endTagIgnore&#x27;,
+            colgroup: &#x27;endTagIgnore&#x27;,
+            html: &#x27;endTagIgnore&#x27;,
+            td: &#x27;endTagIgnore&#x27;,
+            th: &#x27;endTagIgnore&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.inRow.processCharacters = function(data) {
+            modes.inTable.processCharacters(data);
+        };
+
+        modes.inRow.startTagTableCell = function(name, attributes) {
+            tree.openElements.popUntilTableRowScopeMarker();
+            tree.insertElement(name, attributes);
+            tree.setInsertionMode(&#x27;inCell&#x27;);
+            tree.activeFormattingElements.push(Marker);
+        };
+
+        modes.inRow.startTagTableOther = function(name, attributes) {
+            var ignoreEndTag = this.ignoreEndTagTr();
+            this.endTagTr(&#x27;tr&#x27;);
+            // XXX how are we sure it&#x27;s always ignored in the context case?
+            if (!ignoreEndTag) tree.insertionMode.processStartTag(name, attributes);
+        };
+
+        modes.inRow.startTagOther = function(name, attributes, selfClosing) {
+            modes.inTable.processStartTag(name, attributes, selfClosing);
+        };
+
+        modes.inRow.endTagTr = function(name) {
+            if (this.ignoreEndTagTr()) {
+                // TODO: assert.ok(tree.context);
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            } else {
+                tree.openElements.popUntilTableRowScopeMarker();
+                tree.popElement();
+                tree.setInsertionMode(&#x27;inTableBody&#x27;);
+            }
+        };
+
+        modes.inRow.endTagTable = function(name) {
+            var ignoreEndTag = this.ignoreEndTagTr();
+            this.endTagTr(&#x27;tr&#x27;);
+            // Reprocess the current tag if the tr end tag was not ignored
+            // XXX how are we sure it&#x27;s always ignored in the context case?
+            if (!ignoreEndTag) tree.insertionMode.processEndTag(name);
+        };
+
+        modes.inRow.endTagTableRowGroup = function(name) {
+            if (tree.openElements.inTableScope(name)) {
+                this.endTagTr(&#x27;tr&#x27;);
+                tree.insertionMode.processEndTag(name);
+            } else {
+                // context case
+                tree.parseError(&#x27;unexpected-end-tag&#x27;, { name: name });
+            }
+        };
+
+        modes.inRow.endTagIgnore = function(name) {
+            tree.parseError(&quot;unexpected-end-tag-in-table-row&quot;, { name: name });
+        };
+
+        modes.inRow.endTagOther = function(name) {
+            modes.inTable.processEndTag(name);
+        };
+
+        modes.inRow.ignoreEndTagTr = function() {
+            return !tree.openElements.inTableScope(&#x27;tr&#x27;);
+        };
+
+        modes.afterAfterFrameset = Object.create(modes.base);
+
+        modes.afterAfterFrameset.start_tag_handlers = {
+            html: &#x27;startTagHtml&#x27;,
+            noframes: &#x27;startTagNoFrames&#x27;,
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.afterAfterFrameset.processEOF = function() { };
+
+        modes.afterAfterFrameset.processComment = function(data) {
+            tree.insertComment(data, tree.document);
+        };
+
+        modes.afterAfterFrameset.processCharacters = function(buffer) {
+            var characters = buffer.takeRemaining();
+            var whitespace = &quot;&quot;;
+            for (var i = 0; i &lt; characters.length; i++) {
+                var ch = characters[i];
+                if (isWhitespace(ch))
+                    whitespace += ch;
+            }
+            if (whitespace) {
+                tree.reconstructActiveFormattingElements();
+                tree.insertText(whitespace);
+            }
+            if (whitespace.length &lt; characters.length)
+                tree.parseError(&#x27;expected-eof-but-got-char&#x27;);
+        };
+
+        modes.afterAfterFrameset.startTagNoFrames = function(name, attributes) {
+            modes.inHead.processStartTag(name, attributes);
+        };
+
+        modes.afterAfterFrameset.startTagOther = function(name, attributes, selfClosing) {
+            tree.parseError(&#x27;expected-eof-but-got-start-tag&#x27;, { name: name });
+        };
+
+        modes.afterAfterFrameset.processEndTag = function(name, attributes) {
+            tree.parseError(&#x27;expected-eof-but-got-end-tag&#x27;, { name: name });
+        };
+
+        modes.text = Object.create(modes.base);
+
+        modes.text.start_tag_handlers = {
+            &#x27;-default&#x27;: &#x27;startTagOther&#x27;
+        };
+
+        modes.text.end_tag_handlers = {
+            script: &#x27;endTagScript&#x27;,
+            &#x27;-default&#x27;: &#x27;endTagOther&#x27;
+        };
+
+        modes.text.processCharacters = function(buffer) {
+            if (tree.shouldSkipLeadingNewline) {
+                tree.shouldSkipLeadingNewline = false;
+                buffer.skipAtMostOneLeadingNewline();
+            }
+            var data = buffer.takeRemaining();
+            if (!data)
+                return;
+            tree.insertText(data);
+        };
+
+        modes.text.processEOF = function() {
+            tree.parseError(&quot;expected-named-closing-tag-but-got-eof&quot;,
+                { name: tree.currentStackItem().localName });
+            tree.openElements.pop();
+            tree.setInsertionMode(tree.originalInsertionMode);
+            tree.insertionMode.processEOF();
+        };
+
+        modes.text.startTagOther = function(name) {
+            throw &quot;Tried to process start tag &quot; + name + &quot; in RCDATA/RAWTEXT mode&quot;;
+        };
+
+        modes.text.endTagScript = function(name) {
+            var node = tree.openElements.pop();
+            // TODO assert.ok(node.localName == &#x27;script&#x27;);
+            tree.setInsertionMode(tree.originalInsertionMode);
+        };
+
+        modes.text.endTagOther = function(name) {
+            tree.openElements.pop();
+            tree.setInsertionMode(tree.originalInsertionMode);
+        };
+    }
+
+
+    setInsertionMode(name) {
+        this.insertionMode = this.insertionModes[name];
+        this.insertionModeName = name;
+    }
+
+    /**
+     * Adoption agency algorithm (http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#adoption-agency-algorithm)
+     * @param {String} name A tag name subject for which the algorithm is being run
+     * @return {Boolean} Returns false if the algorithm was aborted
+     */
+    adoptionAgencyEndTag(name) {
+        var outerIterationLimit = 8;
+        var innerIterationLimit = 3;
+        var formattingElement;
+
+        function isActiveFormattingElement(el) {
+            return el === formattingElement;
+        }
+
+        var outerLoopCounter = 0;
+
+        while (outerLoopCounter++ &lt; outerIterationLimit) {
+            // 4.
+            formattingElement = this.elementInActiveFormattingElements(name);
+
+            if (!formattingElement || (this.openElements.contains(formattingElement) &amp;&amp; !this.openElements.inScope(formattingElement.localName))) {
+                this.parseError(&#x27;adoption-agency-1.1&#x27;, { name: name });
+                return false;
+            }
+            if (!this.openElements.contains(formattingElement)) {
+                this.parseError(&#x27;adoption-agency-1.2&#x27;, { name: name });
+                this.removeElementFromActiveFormattingElements(formattingElement);
+                return true;
+            }
+            if (!this.openElements.inScope(formattingElement.localName)) {
+                this.parseError(&#x27;adoption-agency-4.4&#x27;, { name: name });
+            }
+
+            if (formattingElement != this.currentStackItem()) {
+                this.parseError(&#x27;adoption-agency-1.3&#x27;, { name: name });
+            }
+
+            // Start of the adoption agency algorithm proper
+            // todo ElementStack
+            var furthestBlock = this.openElements.furthestBlockForFormattingElement(formattingElement.node);
+
+            if (!furthestBlock) {
+                this.openElements.remove_openElements_until(isActiveFormattingElement);
+                this.removeElementFromActiveFormattingElements(formattingElement);
+                return true;
+            }
+
+            var afeIndex = this.openElements.elements.indexOf(formattingElement);
+            var commonAncestor = this.openElements.item(afeIndex - 1);
+
+            var bookmark = this.activeFormattingElements.indexOf(formattingElement);
+
+            var node = furthestBlock;
+            var lastNode = furthestBlock;
+            var index = this.openElements.elements.indexOf(node);
+
+            var innerLoopCounter = 0;
+            while (innerLoopCounter++ &lt; innerIterationLimit) {
+                index -= 1;
+                node = this.openElements.item(index);
+                if (this.activeFormattingElements.indexOf(node) &lt; 0) {
+                    this.openElements.elements.splice(index, 1);
+                    continue;
+                }
+                if (node == formattingElement)
+                    break;
+
+                if (lastNode == furthestBlock)
+                    bookmark = this.activeFormattingElements.indexOf(node) + 1;
+
+                var clone = this.createElement(node.namespaceURI, node.localName, node.attributes);
+                var newNode = new StackItem(node.namespaceURI, node.localName, node.attributes, clone);
+
+                this.activeFormattingElements[this.activeFormattingElements.indexOf(node)] = newNode;
+                this.openElements.elements[this.openElements.elements.indexOf(node)] = newNode;
+
+                node = newNode;
+                this.detachFromParent(lastNode.node);
+                this.attachNode(lastNode.node, node.node);
+                lastNode = node;
+            }
+
+            this.detachFromParent(lastNode.node);
+            if (commonAncestor.isFosterParenting()) {
+                this.insertIntoFosterParent(lastNode.node);
+            } else {
+                this.attachNode(lastNode.node, commonAncestor.node);
+            }
+
+            var clone = this.createElement(&quot;http://www.w3.org/1999/xhtml&quot;, formattingElement.localName, formattingElement.attributes);
+            var formattingClone = new StackItem(formattingElement.namespaceURI, formattingElement.localName, formattingElement.attributes, clone);
+
+            this.reparentChildren(furthestBlock.node, clone);
+            this.attachNode(clone, furthestBlock.node);
+
+            this.removeElementFromActiveFormattingElements(formattingElement);
+            this.activeFormattingElements.splice(Math.min(bookmark, this.activeFormattingElements.length), 0, formattingClone);
+
+            this.openElements.remove(formattingElement);
+            this.openElements.elements.splice(this.openElements.elements.indexOf(furthestBlock) + 1, 0, formattingClone);
+        }
+
+        return true;
+    }
+
+    start(tokenizer) {
+        throw &quot;Not implemented&quot;;
+    }
+
+    startTokenization(tokenizer) {
+        this.tokenizer = tokenizer;
+        this.compatMode = &quot;no quirks&quot;;
+        this.originalInsertionMode = &quot;initial&quot;;
+        this.framesetOk = true;
+        this.openElements = new ElementStack();
+        this.activeFormattingElements = [];
+        this.start(tokenizer);
+        if (this.context) {
+            switch (this.context) {
+                case &#x27;title&#x27;:
+                case &#x27;textarea&#x27;:
+                    this.tokenizer.setState(Tokenizer.RCDATA);
+                    break;
+                case &#x27;style&#x27;:
+                case &#x27;xmp&#x27;:
+                case &#x27;iframe&#x27;:
+                case &#x27;noembed&#x27;:
+                case &#x27;noframes&#x27;:
+                    this.tokenizer.setState(Tokenizer.RAWTEXT);
+                    break;
+                case &#x27;script&#x27;:
+                    this.tokenizer.setState(Tokenizer.SCRIPT_DATA);
+                    break;
+                case &#x27;noscript&#x27;:
+                    if (this.scriptingEnabled)
+                        this.tokenizer.setState(Tokenizer.RAWTEXT);
+                    break;
+                case &#x27;plaintext&#x27;:
+                    this.tokenizer.setState(Tokenizer.PLAINTEXT);
+                    break;
+            }
+            this.insertHtmlElement();
+            this.resetInsertionMode();
+            // todo form pointer
+        } else {
+            this.setInsertionMode(&#x27;initial&#x27;);
+        }
+    }
+
+    processToken(token) {
+        this.selfClosingFlagAcknowledged = false;
+
+        var currentNode = this.openElements.top || null;
+        var insertionMode;
+        if (!currentNode || !currentNode.isForeign() ||
+            (currentNode.isMathMLTextIntegrationPoint() &amp;&amp;
+                ((token.type == &#x27;StartTag&#x27; &amp;&amp;
+                    !(token.name in { mglyph: 0, malignmark: 0 })) ||
+                    (token.type === &#x27;Characters&#x27;))
+            ) ||
+            (currentNode.namespaceURI == &quot;http://www.w3.org/1998/Math/MathML&quot; &amp;&amp;
+                currentNode.localName == &#x27;annotation-xml&#x27; &amp;&amp;
+                token.type == &#x27;StartTag&#x27; &amp;&amp; token.name == &#x27;svg&#x27;
+            ) ||
+            (currentNode.isHtmlIntegrationPoint() &amp;&amp;
+                token.type in { StartTag: 0, Characters: 0 }
+            ) ||
+            token.type == &#x27;EOF&#x27;
+        ) {
+            insertionMode = this.insertionMode;
+        } else {
+            insertionMode = this.insertionModes.inForeignContent;
+        }
+        switch (token.type) {
+            case &#x27;Characters&#x27;:
+                var buffer = new CharacterBuffer(token.data);
+                insertionMode.processCharacters(buffer);
+                break;
+            case &#x27;Comment&#x27;:
+                insertionMode.processComment(token.data);
+                break;
+            case &#x27;StartTag&#x27;:
+                insertionMode.processStartTag(token.name, token.data, token.selfClosing);
+                break;
+            case &#x27;EndTag&#x27;:
+                insertionMode.processEndTag(token.name);
+                break;
+            case &#x27;Doctype&#x27;:
+                insertionMode.processDoctype(token.name, token.publicId, token.systemId, token.forceQuirks);
+                break;
+            case &#x27;EOF&#x27;:
+                insertionMode.processEOF();
+                break;
+        }
+    }
+
+    /**
+     *
+     * @return {Boolean}
+     */
+    isCdataSectionAllowed() {
+        return this.openElements.length &gt; 0 &amp;&amp; this.currentStackItem().isForeign();
+    }
+
+    /**
+     *
+     * @return {Boolean}
+     */
+    isSelfClosingFlagAcknowledged() {
+        return this.selfClosingFlagAcknowledged;
+    }
+
+    createElement(namespaceURI, localName, attributes) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    attachNode(child, parent) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    attachNodeToFosterParent(child, table, stackParent) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    detachFromParent(node) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    addAttributesToElement(element, attributes) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    insertHtmlElement(attributes?) {
+        var root = this.createElement(&quot;http://www.w3.org/1999/xhtml&quot;, &#x27;html&#x27;, attributes);
+        this.attachNode(root, this.document);
+        this.openElements.pushHtmlElement(new StackItem(&quot;http://www.w3.org/1999/xhtml&quot;, &#x27;html&#x27;, attributes, root));
+        return root;
+    }
+
+    insertHeadElement(attributes) {
+        var element = this.createElement(&quot;http://www.w3.org/1999/xhtml&quot;, &quot;head&quot;, attributes);
+        this.head = new StackItem(&quot;http://www.w3.org/1999/xhtml&quot;, &quot;head&quot;, attributes, element);
+        this.attachNode(element, this.openElements.top.node);
+        this.openElements.pushHeadElement(this.head);
+        return element;
+    }
+
+    insertBodyElement(attributes) {
+        var element = this.createElement(&quot;http://www.w3.org/1999/xhtml&quot;, &quot;body&quot;, attributes);
+        this.attachNode(element, this.openElements.top.node);
+        this.openElements.pushBodyElement(new StackItem(&quot;http://www.w3.org/1999/xhtml&quot;, &quot;body&quot;, attributes, element));
+        return element;
+    }
+
+    insertIntoFosterParent(node) {
+        var tableIndex = this.openElements.findIndex(&#x27;table&#x27;);
+        var tableElement = this.openElements.item(tableIndex).node;
+        if (tableIndex === 0)
+            return this.attachNode(node, tableElement);
+        this.attachNodeToFosterParent(node, tableElement, this.openElements.item(tableIndex - 1).node);
+    }
+
+    insertElement(name, attributes, namespaceURI?, selfClosing?) {
+        if (!namespaceURI)
+            namespaceURI = &quot;http://www.w3.org/1999/xhtml&quot;;
+        var element = this.createElement(namespaceURI, name, attributes);
+        if (this.shouldFosterParent())
+            this.insertIntoFosterParent(element);
+        else
+            this.attachNode(element, this.openElements.top.node);
+        if (!selfClosing)
+            this.openElements.push(new StackItem(namespaceURI, name, attributes, element));
+    }
+
+    insertFormattingElement(name, attributes) {
+        this.insertElement(name, attributes, &quot;http://www.w3.org/1999/xhtml&quot;);
+        this.appendElementToActiveFormattingElements(this.currentStackItem());
+    }
+
+    insertSelfClosingElement(name, attributes) {
+        this.selfClosingFlagAcknowledged = true;
+        this.insertElement(name, attributes, &quot;http://www.w3.org/1999/xhtml&quot;, true);
+    }
+
+    insertForeignElement(name, attributes, namespaceURI, selfClosing) {
+        if (selfClosing)
+            this.selfClosingFlagAcknowledged = true;
+        this.insertElement(name, attributes, namespaceURI, selfClosing);
+    }
+
+    insertComment(data, parent) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    insertDoctype(name, publicId, systemId) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    insertText(data) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    /**
+     * Returns topmost open element
+     * @return {StackItem}
+     */
+    currentStackItem() {
+        return this.openElements.top;
+    }
+
+    /**
+     * Populates current open element
+     * @return {StackItem}
+     */
+    popElement() {
+        return this.openElements.pop();
+    }
+
+    /**
+     * Returns true if redirect is required and current open element causes foster parenting
+     * @return {Boolean}
+     */
+    shouldFosterParent() {
+        return this.redirectAttachToFosterParent &amp;&amp; this.currentStackItem().isFosterParenting();
+    }
+
+    /**
+     * Implements http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#closing-elements-that-have-implied-end-tags
+     * @param {String} [exclude] Ignore specific tag name
+     */
+    generateImpliedEndTags(exclude?) {
+        // FIXME get rid of the recursion
+        var name = this.openElements.top.localName;
+        if ([&#x27;dd&#x27;, &#x27;dt&#x27;, &#x27;li&#x27;, &#x27;option&#x27;, &#x27;optgroup&#x27;, &#x27;p&#x27;, &#x27;rp&#x27;, &#x27;rt&#x27;].indexOf(name) != -1 &amp;&amp; name != exclude) {
+            this.popElement();
+            this.generateImpliedEndTags(exclude);
+        }
+    }
+
+    /**
+     * Performs http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reconstruct-the-active-formatting-elements
+     */
+    reconstructActiveFormattingElements() {
+        // Within this algorithm the order of steps decribed in the specification
+        // is not quite the same as the order of steps in the code. It should still
+        // do the same though.
+
+        // Step 1: stop if there&#x27;s nothing to do
+        if (this.activeFormattingElements.length === 0)
+            return;
+
+        // Step 2 and 3: start with the last element
+        var i = this.activeFormattingElements.length - 1;
+        var entry = this.activeFormattingElements[i];
+        if (entry == Marker || this.openElements.contains(entry))
+            return;
+
+        while (entry != Marker &amp;&amp; !this.openElements.contains(entry)) {
+            i -= 1;
+            entry = this.activeFormattingElements[i];
+            if (!entry)
+                break;
+        }
+
+        while (true) {
+            i += 1;
+            entry = this.activeFormattingElements[i];
+            this.insertElement(entry.localName, entry.attributes);
+            var element = this.currentStackItem();
+            this.activeFormattingElements[i] = element;
+            if (element == this.activeFormattingElements[this.activeFormattingElements.length - 1])
+                break;
+        }
+
+    }
+
+    /**
+     *
+     * @param {StackItem} item
+     */
+    ensureNoahsArkCondition(item) {
+        var kNoahsArkCapacity = 3;
+        if (this.activeFormattingElements.length &lt; kNoahsArkCapacity)
+            return;
+        var candidates = [];
+        var newItemAttributeCount = item.attributes.length;
+        for (var i = this.activeFormattingElements.length - 1; i &gt;= 0; i--) {
+            var candidate = this.activeFormattingElements[i];
+            if (candidate === Marker)
+                break;
+            if (item.localName !== candidate.localName || item.namespaceURI !== candidate.namespaceURI)
+                continue;
+            if (candidate.attributes.length != newItemAttributeCount)
+                continue;
+            candidates.push(candidate);
+        }
+        if (candidates.length &lt; kNoahsArkCapacity)
+            return;
+
+        var remainingCandidates = [];
+        var attributes = item.attributes;
+        for (var i = 0; i &lt; attributes.length; i++) {
+            var attribute = attributes[i];
+
+            for (var j = 0; j &lt; candidates.length; j++) {
+                var candidate = candidates[j];
+                var candidateAttribute = getAttribute(candidate, attribute.nodeName);
+                if (candidateAttribute &amp;&amp; candidateAttribute.nodeValue === attribute.nodeValue)
+                    remainingCandidates.push(candidate);
+            }
+            if (remainingCandidates.length &lt; kNoahsArkCapacity)
+                return;
+            candidates = remainingCandidates;
+            remainingCandidates = [];
+        }
+        // Inductively, we shouldn&#x27;t spin this loop very many times. It&#x27;s possible,
+        // however, that we wil spin the loop more than once because of how the
+        // formatting element list gets permuted.
+        for (var i = kNoahsArkCapacity - 1; i &lt; candidates.length; i++)
+            this.removeElementFromActiveFormattingElements(candidates[i]);
+    }
+
+    /**
+     *
+     * @param {StackItem} item
+     */
+    appendElementToActiveFormattingElements(item) {
+        this.ensureNoahsArkCondition(item);
+        this.activeFormattingElements.push(item);
+    }
+
+    /**
+     *
+     * @param {StackItem} item
+     */
+    removeElementFromActiveFormattingElements(item) {
+        var index = this.activeFormattingElements.indexOf(item);
+        if (index &gt;= 0)
+            this.activeFormattingElements.splice(index, 1);
+    }
+
+    elementInActiveFormattingElements(name) {
+        var els = this.activeFormattingElements;
+        for (var i = els.length - 1; i &gt;= 0; i--) {
+            if (els[i] == Marker) break;
+            if (els[i].localName == name) return els[i];
+        }
+        return false;
+    }
+
+    clearActiveFormattingElements() {
+        while (!(this.activeFormattingElements.length === 0 || this.activeFormattingElements.pop() == Marker));
+    }
+
+    reparentChildren(oldParent, newParent) {
+        throw new Error(&quot;Not implemented&quot;);
+    }
+
+    /**
+     *
+     * @param {String} context A context element name for fragment parsing
+     */
+    setFragmentContext(context) {
+        // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
+        // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
+        // For efficiency, we skip step 4.2 (&quot;Let root be a new html element with no attributes&quot;)
+        // and instead use the DocumentFragment as a root node.
+        //m_tree.openElements()-&gt;pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
+        this.context = context;
+    }
+
+    /**
+     *
+     * @param {String} code
+     * @param {Object} [args]
+     */
+    parseError(code, args?) {
+        // FIXME: this.errors.push([this.tokenizer.position, code, data]);
+        if (!this.errorHandler)
+            return;
+        var message = formatMessage(messages[code], args);
+        this.errorHandler.error(message, this.tokenizer._inputStream.location(), code);
+    }
+
+    /**
+     * Resets the insertion mode (http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reset-the-insertion-mode-appropriately)
+     */
+    resetInsertionMode() {
+        var last = false;
+        var node = null;
+        for (var i = this.openElements.length - 1; i &gt;= 0; i--) {
+            node = this.openElements.item(i);
+            if (i === 0) {
+                // TODO assert.ok(this.context);
+                last = true;
+                node = new StackItem(&quot;http://www.w3.org/1999/xhtml&quot;, this.context, [], null);
+            }
+
+            if (node.namespaceURI === &quot;http://www.w3.org/1999/xhtml&quot;) {
+                // TODO template tag
+                if (node.localName === &#x27;select&#x27;)
+                    // FIXME handle inSelectInTable
+                    return this.setInsertionMode(&#x27;inSelect&#x27;);
+                if (node.localName === &#x27;td&#x27; || node.localName === &#x27;th&#x27;)
+                    return this.setInsertionMode(&#x27;inCell&#x27;);
+                if (node.localName === &#x27;tr&#x27;)
+                    return this.setInsertionMode(&#x27;inRow&#x27;);
+                if (node.localName === &#x27;tbody&#x27; || node.localName === &#x27;thead&#x27; || node.localName === &#x27;tfoot&#x27;)
+                    return this.setInsertionMode(&#x27;inTableBody&#x27;);
+                if (node.localName === &#x27;caption&#x27;)
+                    return this.setInsertionMode(&#x27;inCaption&#x27;);
+                if (node.localName === &#x27;colgroup&#x27;)
+                    return this.setInsertionMode(&#x27;inColumnGroup&#x27;);
+                if (node.localName === &#x27;table&#x27;)
+                    return this.setInsertionMode(&#x27;inTable&#x27;);
+                if (node.localName === &#x27;head&#x27; &amp;&amp; !last)
+                    return this.setInsertionMode(&#x27;inHead&#x27;);
+                if (node.localName === &#x27;body&#x27;)
+                    return this.setInsertionMode(&#x27;inBody&#x27;);
+                if (node.localName === &#x27;frameset&#x27;)
+                    return this.setInsertionMode(&#x27;inFrameset&#x27;);
+                if (node.localName === &#x27;html&#x27;)
+                    if (!this.openElements.headElement)
+                        return this.setInsertionMode(&#x27;beforeHead&#x27;);
+                    else
+                        return this.setInsertionMode(&#x27;afterHead&#x27;);
+            }
+
+            if (last)
+                return this.setInsertionMode(&#x27;inBody&#x27;);
+        }
+    }
+
+    processGenericRCDATAStartTag(name, attributes) {
+        this.insertElement(name, attributes);
+        this.tokenizer.setState(Tokenizer.RCDATA);
+        this.originalInsertionMode = this.insertionModeName;
+        this.setInsertionMode(&#x27;text&#x27;);
+    }
+
+    processGenericRawTextStartTag(name, attributes) {
+        this.insertElement(name, attributes);
+        this.tokenizer.setState(Tokenizer.RAWTEXT);
+        this.originalInsertionMode = this.insertionModeName;
+        this.setInsertionMode(&#x27;text&#x27;);
+    }
+
+    adjustMathMLAttributes(attributes) {
+        attributes.forEach(function(a) {
+            a.namespaceURI = &quot;http://www.w3.org/1998/Math/MathML&quot;;
+            if (MATHMLAttributeMap[a.nodeName])
+                a.nodeName = MATHMLAttributeMap[a.nodeName];
+        });
+        return attributes;
+    }
+
+    adjustSVGTagNameCase(name) {
+        return SVGTagMap[name] || name;
+    }
+
+    adjustSVGAttributes(attributes) {
+        attributes.forEach(function(a) {
+            a.namespaceURI = &quot;http://www.w3.org/2000/svg&quot;;
+            if (SVGAttributeMap[a.nodeName])
+                a.nodeName = SVGAttributeMap[a.nodeName];
+        });
+        return attributes;
+    }
+
+    adjustForeignAttributes(attributes) {
+        for (var i = 0; i &lt; attributes.length; i++) {
+            var attribute = attributes[i];
+            var adjusted = ForeignAttributeMap[attribute.nodeName];
+            if (adjusted) {
+                attribute.nodeName = adjusted.localName;
+                attribute.prefix = adjusted.prefix;
+                attribute.namespaceURI = adjusted.namespaceURI;
+            }
+        }
+        return attributes;
+    }
+}
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

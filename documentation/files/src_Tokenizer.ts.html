@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/Tokenizer.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/Tokenizer.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+// tokenizing lines longer than this makes editor very slow
+var MAX_TOKEN_COUNT = 1000;
+/**
+ * This class takes a set of highlighting rules, and creates a tokenizer out of them. For more information, see [the wiki on extending highlighters](https://github.com/ajaxorg/ace/wiki/Creating-or-Extending-an-Edit-Mode#wiki-extendingTheHighlighter).
+ * @class Tokenizer
+ **/
+
+/**
+ * Constructs a new tokenizer based on the given rules and flags.
+ * @param {Object} rules The highlighting rules
+ *
+ * @constructor
+ **/
+export default class Tokenizer {
+    // Mode wants access to the states (rules)
+    public states: { caseInsensitive; defaultToken; onMatch; regex; splitRegex; token; tokenArray }[][];
+    private regExps: { [state: string]: RegExp };
+    private matchMappings;
+    private tokenArray;
+    private splitRegex: RegExp;
+    private token;
+    constructor(rules) {
+        this.states = rules;
+
+        this.regExps = {};
+        this.matchMappings = {};
+        for (var key in this.states) {
+            var state = this.states[key];
+            var ruleRegExps = [];
+            var matchTotal = 0;
+            var mapping = this.matchMappings[key] = { defaultToken: &quot;text&quot; };
+            var flag = &quot;g&quot;;
+
+            var splitterRules = [];
+            for (var i = 0; i &lt; state.length; i++) {
+                var rule = state[i];
+                if (rule.defaultToken)
+                    mapping.defaultToken = rule.defaultToken;
+                if (rule.caseInsensitive)
+                    flag = &quot;gi&quot;;
+                if (rule.regex == null)
+                    continue;
+
+                if (rule.regex instanceof RegExp)
+                    rule.regex = rule.regex.toString().slice(1, -1);
+
+                // Count number of matching groups. 2 extra groups from the full match
+                // And the catch-all on the end (used to force a match);
+                var adjustedregex = rule.regex;
+                var matchcount = new RegExp(&quot;(?:(&quot; + adjustedregex + &quot;)|(.))&quot;).exec(&quot;a&quot;).length - 2;
+                if (Array.isArray(rule.token)) {
+                    if (rule.token.length == 1 || matchcount == 1) {
+                        rule.token = rule.token[0];
+                    }
+                    else if (matchcount - 1 != rule.token.length) {
+                        throw new Error(&quot;number of classes and regexp groups in &#x27;&quot; +
+                            rule.token + &quot;&#x27;\n&#x27;&quot; + rule.regex + &quot;&#x27; doesn&#x27;t match\n&quot;
+                            + (matchcount - 1) + &quot;!=&quot; + rule.token.length);
+                    }
+                    else {
+                        rule.tokenArray = rule.token;
+                        rule.token = null;
+                        rule.onMatch = this.$arrayTokens;
+                    }
+                }
+                else if (typeof rule.token === &quot;function&quot; &amp;&amp; !rule.onMatch) {
+                    if (matchcount &gt; 1)
+                        rule.onMatch = this.$applyToken;
+                    else
+                        rule.onMatch = rule.token;
+                }
+
+                if (matchcount &gt; 1) {
+                    if (/\\\d/.test(rule.regex)) {
+                        // Replace any backreferences and offset appropriately.
+                        adjustedregex = rule.regex.replace(/\\([0-9]+)/g, function(match, digit) {
+                            return &quot;\\&quot; + (parseInt(digit, 10) + matchTotal + 1);
+                        });
+                    }
+                    else {
+                        matchcount = 1;
+                        adjustedregex = this.removeCapturingGroups(rule.regex);
+                    }
+                    if (!rule.splitRegex &amp;&amp; typeof rule.token != &quot;string&quot;)
+                        splitterRules.push(rule); // flag will be known only at the very end
+                }
+
+                mapping[matchTotal] = i;
+                matchTotal += matchcount;
+
+                ruleRegExps.push(adjustedregex);
+
+                // makes property access faster
+                if (!rule.onMatch)
+                    rule.onMatch = null;
+            }
+
+            if (!ruleRegExps.length) {
+                mapping[0] = 0;
+                ruleRegExps.push(&quot;$&quot;);
+            }
+
+            splitterRules.forEach(function(rule) {
+                rule.splitRegex = this.createSplitterRegexp(rule.regex, flag);
+            }, this);
+
+            this.regExps[key] = new RegExp(&quot;(&quot; + ruleRegExps.join(&quot;)|(&quot;) + &quot;)|($)&quot;, flag);
+        }
+    }
+    private $setMaxTokenCount(m) {
+        MAX_TOKEN_COUNT = m | 0;
+    }
+
+    private $applyToken(str) {
+        var values = this.splitRegex.exec(str).slice(1);
+        var types = this.token.apply(this, values);
+
+        // required for compatibility with old modes
+        if (typeof types === &quot;string&quot;)
+            return [{ type: types, value: str }];
+
+        var tokens = [];
+        for (var i = 0, l = types.length; i &lt; l; i++) {
+            if (values[i])
+                tokens[tokens.length] = {
+                    type: types[i],
+                    value: values[i]
+                };
+        }
+        return tokens;
+    }
+
+    private $arrayTokens(str: string): any {
+        if (!str) {
+            return [];
+        }
+        var values = this.splitRegex.exec(str);
+        if (!values)
+            return &quot;text&quot;;
+        var tokens = [];
+        var types = this.tokenArray;
+        for (var i = 0, l = types.length; i &lt; l; i++) {
+            if (values[i + 1])
+                tokens[tokens.length] = {
+                    type: types[i],
+                    value: values[i + 1]
+                };
+        }
+        return tokens;
+    }
+
+    private removeCapturingGroups(src: string): string {
+        var r = src.replace(
+            /\[(?:\\.|[^\]])*?\]|\\.|\(\?[:=!]|(\()/g,
+            function(x, y) { return y ? &quot;(?:&quot; : x; }
+        );
+        return r;
+    }
+
+    private createSplitterRegexp(src: string, flag) {
+        if (src.indexOf(&quot;(?=&quot;) != -1) {
+            var stack = 0;
+            var inChClass = false;
+            var lastCapture: any = {};
+            src.replace(/(\\.)|(\((?:\?[=!])?)|(\))|([\[\]])/g, function(
+                m, esc, parenOpen, parenClose, square, index
+            ) {
+                if (inChClass) {
+                    inChClass = square != &quot;]&quot;;
+                } else if (square) {
+                    inChClass = true;
+                } else if (parenClose) {
+                    if (stack == lastCapture.stack) {
+                        lastCapture.end = index + 1;
+                        lastCapture.stack = -1;
+                    }
+                    stack--;
+                } else if (parenOpen) {
+                    stack++;
+                    if (parenOpen.length != 1) {
+                        lastCapture.stack = stack
+                        lastCapture.start = index;
+                    }
+                }
+                return m;
+            });
+
+            if (lastCapture.end != null &amp;&amp; /^\)*$/.test(src.substr(lastCapture.end)))
+                src = src.substring(0, lastCapture.start) + src.substr(lastCapture.end);
+        }
+        return new RegExp(src, (flag || &quot;&quot;).replace(&quot;g&quot;, &quot;&quot;));
+    }
+
+    /**
+    * Returns an object containing two properties: &#x60;tokens&#x60;, which contains all the tokens; and &#x60;state&#x60;, the current state.
+    * @returns {Object}
+    **/
+    public getLineTokens(line: string, startState) {
+        var stack;
+        if (startState &amp;&amp; typeof startState !== &#x27;string&#x27;) {
+            stack = startState.slice(0);
+            startState = stack[0];
+            if (startState === &#x27;#tmp&#x27;) {
+                stack.shift()
+                startState = stack.shift()
+            }
+        }
+        else {
+            stack = [];
+        }
+
+        var currentState = startState || &quot;start&quot;;
+        var state = this.states[currentState];
+        if (!state) {
+            currentState = &quot;start&quot;;
+            state = this.states[currentState];
+        }
+        var mapping = this.matchMappings[currentState];
+        var re = this.regExps[currentState];
+        re.lastIndex = 0;
+
+        var match, tokens = [];
+        var lastIndex = 0;
+
+        var token = { type: null, value: &quot;&quot; };
+
+        while (match = re.exec(line)) {
+            var type = mapping.defaultToken;
+            var rule = null;
+            var value = match[0];
+            var index = re.lastIndex;
+
+            if (index - value.length &gt; lastIndex) {
+                var skipped = line.substring(lastIndex, index - value.length);
+                if (token.type == type) {
+                    token.value += skipped;
+                } else {
+                    if (token.type)
+                        tokens.push(token);
+                    token = { type: type, value: skipped };
+                }
+            }
+
+            for (var i = 0; i &lt; match.length - 2; i++) {
+                if (match[i + 1] === undefined)
+                    continue;
+
+                rule = state[mapping[i]];
+
+                if (rule.onMatch)
+                    type = rule.onMatch(value, currentState, stack);
+                else
+                    type = rule.token;
+
+                if (rule.next) {
+                    if (typeof rule.next === &#x27;string&#x27;) {
+                        currentState = rule.next;
+                    }
+                    else {
+                        currentState = rule.next(currentState, stack);
+                    }
+
+                    state = this.states[currentState];
+                    if (!state) {
+                        window.console &amp;&amp; console.error &amp;&amp; console.error(currentState, &quot;doesn&#x27;t exist&quot;);
+                        currentState = &quot;start&quot;;
+                        state = this.states[currentState];
+                    }
+                    mapping = this.matchMappings[currentState];
+                    lastIndex = index;
+                    re = this.regExps[currentState];
+                    re.lastIndex = index;
+                }
+                break;
+            }
+
+            if (value) {
+                if (typeof type == &quot;string&quot;) {
+                    if ((!rule || rule.merge !== false) &amp;&amp; token.type === type) {
+                        token.value += value;
+                    }
+                    else {
+                        if (token.type)
+                            tokens.push(token);
+                        token = { type: type, value: value };
+                    }
+                }
+                else if (type) {
+                    if (token.type)
+                        tokens.push(token);
+                    token = { type: null, value: &quot;&quot; };
+                    for (var i = 0; i &lt; type.length; i++)
+                        tokens.push(type[i]);
+                }
+            }
+
+            if (lastIndex == line.length)
+                break;
+
+            lastIndex = index;
+
+            if (tokens.length &gt; MAX_TOKEN_COUNT) {
+                // chrome doens&#x27;t show contents of text nodes with very long text
+                while (lastIndex &lt; line.length) {
+                    if (token.type)
+                        tokens.push(token);
+                    token = {
+                        value: line.substring(lastIndex, lastIndex += 2000),
+                        type: &quot;overflow&quot;
+                    };
+                }
+                currentState = &quot;start&quot;;
+                stack = [];
+                break;
+            }
+        }
+
+        if (token.type)
+            tokens.push(token);
+
+        if (stack.length &gt; 1) {
+            if (stack[0] !== currentState) {
+                stack.unshift(&#x27;#tmp&#x27;, currentState);
+            }
+        }
+
+        return {
+            tokens: tokens,
+            state: stack.length ? stack : currentState
+        };
+    }
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

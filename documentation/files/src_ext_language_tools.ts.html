@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/ext/language_tools.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/ext/language_tools.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2012, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+import Command from &#x27;../commands/Command&#x27;;
+import {snippetManager} from &quot;../snippets&quot;;
+import {Completer, getCompleter, setCompleter, CompleterAggregate, Autocomplete} from &quot;../autocomplete&quot;;
+import {defineOptions, loadModule} from &quot;../config&quot;;
+import {retrievePrecedingIdentifier} from &quot;../autocomplete/util&quot;;
+import Editor from &quot;../Editor&quot;;
+import EditSession from &#x27;../EditSession&#x27;;
+import {getCompletions} from &#x27;../autocomplete/text_completer&#x27;;
+import Mode from &#x27;../mode/Mode&#x27;;
+
+// Exports existing completer so that user can construct his own set of completers.
+// export var textCompleter: acm.Completer = tcm;
+
+export var keyWordCompleter: Completer = {
+    getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
+        var state = editor.session.getState(pos.row);
+        var completions = session.$mode.getCompletions(state, session, pos, prefix);
+        callback(null, completions);
+    }
+};
+
+export var snippetCompleter: Completer = {
+    getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
+        var snippetMap = snippetManager.snippetMap;
+        var completions = [];
+        snippetManager.getActiveScopes(editor).forEach(function(scope) {
+            var snippets = snippetMap[scope] || [];
+            for (var i = snippets.length; i--;) {
+                var s = snippets[i];
+                var caption = s.name || s.tabTrigger;
+                if (!caption)
+                    continue;
+                completions.push({
+                    caption: caption,
+                    snippet: s.content,
+                    meta: s.tabTrigger &amp;&amp; !s.name ? s.tabTrigger + &quot;\u21E5 &quot; : &quot;snippet&quot;
+                });
+            }
+        }, this);
+        callback(null, completions);
+    }
+};
+
+var completers: Completer[] = [snippetCompleter/*, textCompleter*/, keyWordCompleter];
+
+export function addCompleter(completer: Completer) {
+    completers.push(completer);
+};
+
+var expandSnippet: Command = {
+    name: &#x27;expandSnippet&#x27;,
+    exec: function(editor: Editor) {
+        var success = snippetManager.expandWithTab(editor);
+        if (!success) {
+            editor.execCommand(&#x27;indent&#x27;);
+        }
+    },
+    bindKey: &#x27;Tab&#x27;
+};
+
+var onChangeMode = function(e, editor: Editor) {
+    loadSnippetsForMode(editor.session.$mode);
+};
+
+var loadSnippetsForMode = function(mode: Mode) {
+    var id = mode.$id;
+    if (!snippetManager[&#x27;files&#x27;]) {
+        snippetManager[&#x27;files&#x27;] = {};
+    }
+    loadSnippetFile(id);
+    if (mode.modes) {
+        mode.modes.forEach(loadSnippetsForMode);
+    }
+};
+
+var loadSnippetFile = function(id: string) {
+    if (!id || snippetManager[&#x27;files&#x27;][id])
+        return;
+    var snippetFilePath = id.replace(&quot;mode&quot;, &quot;snippets&quot;);
+    snippetManager[&#x27;files&#x27;][id] = {};
+    loadModule(snippetFilePath, function(m) {
+        if (m) {
+            snippetManager[&#x27;files&#x27;][id] = m;
+            if (!m.snippets &amp;&amp; m.snippetText)
+                m.snippets = snippetManager.parseSnippetFile(m.snippetText);
+            snippetManager.register(m.snippets || [], m.scope);
+            if (m.includeScopes) {
+                snippetManager.snippetMap[m.scope].includeScopes = m.includeScopes;
+                m.includeScopes.forEach(function(x) {
+                    loadSnippetFile(&quot;ace/mode/&quot; + x);
+                });
+            }
+        }
+    });
+};
+
+function getCompletionPrefix(editor: Editor) {
+    var pos = editor.getCursorPosition();
+    var line = editor.session.getLine(pos.row);
+    var prefix = retrievePrecedingIdentifier(line, pos.column);
+    // Try to find custom prefixes on the completers
+    editor.completers.forEach(function(completer) {
+        if (completer[&#x27;identifierRegexps&#x27;]) {
+            completer[&#x27;identifierRegexps&#x27;].forEach(function(identifierRegex) {
+                if (!prefix &amp;&amp; identifierRegex) {
+                    prefix = retrievePrecedingIdentifier(line, pos.column, identifierRegex);
+                }
+            });
+        }
+    });
+    return prefix;
+}
+
+var doLiveAutocomplete = function(e: { editor: Editor; command: { name: string }; args }) {
+    var editor = e.editor;
+    var text = e.args || &quot;&quot;;
+    var hasCompleter = getCompleter(editor) &amp;&amp; getCompleter(editor).activated;
+
+    // We don&#x27;t want to autocomplete with no prefix
+    if (e.command.name === &quot;backspace&quot;) {
+        if (hasCompleter &amp;&amp; !getCompletionPrefix(editor))
+            getCompleter(editor).detach();
+    }
+    else if (e.command.name === &quot;insertstring&quot;) {
+        var prefix = getCompletionPrefix(editor);
+        // Only autocomplete if there&#x27;s a prefix that can be matched
+        if (prefix &amp;&amp; !hasCompleter) {
+            if (!getCompleter(editor)) {
+                setCompleter(editor, new CompleterAggregate(editor));
+            }
+            // Disable autoInsert
+            getCompleter(editor).autoSelect = false;
+            getCompleter(editor).autoInsert = false;
+            getCompleter(editor).showPopup(editor);
+        }
+    }
+};
+
+defineOptions(Editor.prototype, &#x27;editor&#x27;, {
+    enableBasicAutocompletion: {
+        set: function(val) {
+            var editor: Editor = this;
+            if (val) {
+                if (!editor.completers) {
+                    editor.completers = Array.isArray(val) ? val : completers;
+                }
+                editor.commands.addCommand(Autocomplete.startCommand);
+            }
+            else {
+                editor.commands.removeCommand(Autocomplete.startCommand.name);
+            }
+        },
+        value: false
+    },
+    /**
+     * Enable live autocomplete. If the value is an array, it is assumed to be an array of completers
+     * and will use them instead of the default completers.
+     */
+    enableLiveAutocompletion: {
+        set: function(val) {
+            var editor: Editor = this;
+            if (val) {
+                if (!editor.completers) {
+                    editor.completers = Array.isArray(val) ? val : completers;
+                }
+                // On each change automatically trigger the autocomplete
+                editor.commands.on(&#x27;afterExec&#x27;, doLiveAutocomplete);
+            }
+            else {
+                editor.commands.off(&#x27;afterExec&#x27;, doLiveAutocomplete);
+            }
+        },
+        value: false
+    },
+    enableSnippets: {
+        set: function(val) {
+            var editor: Editor = this;
+            if (val) {
+                editor.commands.addCommand(expandSnippet);
+                editor.on(&quot;changeMode&quot;, onChangeMode);
+                onChangeMode(null, editor);
+            }
+            else {
+                editor.commands.removeCommand(expandSnippet.name);
+                editor.off(&quot;changeMode&quot;, onChangeMode);
+            }
+        },
+        value: false
+    }
+});
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

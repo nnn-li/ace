@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/Range.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/Range.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+/**
+ * This object is used in various places to indicate a region within the editor.
+ * To better visualize how this works, imagine a rectangle.
+ * Each quadrant of the rectangle is analogus to a range, as ranges contain a starting row and starting column, and an ending row, and ending column.
+ * @class Range
+ */
+
+/**
+ * Creates a new &#x60;EditorRange&#x60; object with the given starting and ending row and column points.
+ * @param {Number} startRow The starting row
+ * @param {Number} startColumn The starting column
+ * @param {Number} endRow The ending row
+ * @param {Number} endColumn The ending column
+ *
+ * @constructor
+ **/
+export default class Range {
+    public start: { row: number; column: number };
+    public end: { row: number; column: number };
+    /**
+     * A marker id that is being sneaked onto the Range.
+     */
+    public markerId: number;
+    public collapseChildren: number;
+    //  public cursor: Range;
+    //  public isBackwards: boolean;
+    /**
+     * @class Range
+     * @constructor
+     */
+    constructor(startRow: number, startColumn: number, endRow: number, endColumn: number) {
+        this.start = {
+            row: startRow,
+            column: startColumn
+        };
+
+        this.end = {
+            row: endRow,
+            column: endColumn
+        };
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if and only if the starting row and column, and ending row and column, are equivalent to those given by &#x60;range&#x60;.
+     * @param {EditorRange} range A range to check against
+     *
+     * @return {Boolean}
+     **/
+    isEqual(range: { start: { row: number; column: number }; end: { row: number; column: number } }) {
+        return this.start.row === range.start.row &amp;&amp;
+            this.end.row === range.end.row &amp;&amp;
+            this.start.column === range.start.column &amp;&amp;
+            this.end.column === range.end.column;
+    }
+
+    /**
+     *
+     * Returns a string containing the range&#x27;s row and column information, given like this:
+     * &#x60;&#x60;&#x60;
+     *    [start.row/start.column] -&gt; [end.row/end.column]
+     * &#x60;&#x60;&#x60;
+     * @return {String}
+     **/
+    toString() {
+        return (&quot;Range: [&quot; + this.start.row + &quot;/&quot; + this.start.column +
+            &quot;] -&gt; [&quot; + this.end.row + &quot;/&quot; + this.end.column + &quot;]&quot;);
+    }
+
+    /**
+     *
+     * Returns &#x60;true&#x60; if the &#x60;row&#x60; and &#x60;column&#x60; provided are within the given range. This can better be expressed as returning &#x60;true&#x60; if:
+     * &#x60;&#x60;&#x60;javascript
+     *    this.start.row &lt;= row &lt;= this.end.row &amp;&amp;
+     *    this.start.column &lt;= column &lt;= this.end.column
+     * &#x60;&#x60;&#x60;
+     * @param {Number} row A row to check for
+     * @param {Number} column A column to check for
+     * @returns {Boolean}
+     * @related EditorRange.compare
+     **/
+
+    contains(row: number, column: number): boolean {
+        return this.compare(row, column) === 0;
+    }
+
+    /**
+     * Compares &#x60;this&#x60; range (A) with another range (B).
+     * @param {EditorRange} range A range to compare with
+     *
+     * @related EditorRange.compare
+     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * &lt;br/&gt;
+     * * &#x60;-2&#x60;: (B) is in front of (A), and doesn&#x27;t intersect with (A)&lt;br/&gt;
+     * * &#x60;-1&#x60;: (B) begins before (A) but ends inside of (A)&lt;br/&gt;
+     * * &#x60;0&#x60;: (B) is completely inside of (A) OR (A) is completely inside of (B)&lt;br/&gt;
+     * * &#x60;+1&#x60;: (B) begins inside of (A) but ends outside of (A)&lt;br/&gt;
+     * * &#x60;+2&#x60;: (B) is after (A) and doesn&#x27;t intersect with (A)&lt;br/&gt;
+     * * &#x60;42&#x60;: FTW state: (B) ends in (A) but starts outside of (A)
+     **/
+    compareRange(range: Range): number {
+        var cmp: number
+        var end = range.end;
+        var start = range.start;
+
+        cmp = this.compare(end.row, end.column);
+        if (cmp === 1) {
+            cmp = this.compare(start.row, start.column);
+            if (cmp === 1) {
+                return 2;
+            }
+            else if (cmp === 0) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        }
+        else if (cmp === -1) {
+            return -2;
+        }
+        else {
+            cmp = this.compare(start.row, start.column);
+            if (cmp === -1) {
+                return -1;
+            }
+            else if (cmp === 1) {
+                return 42;
+            }
+            else {
+                return 0;
+            }
+        }
+    }
+
+    /**
+     * Checks the row and column points of &#x60;p&#x60; with the row and column points of the calling range.
+     *
+     * @param {EditorRange} p A point to compare with
+     *
+     * @related EditorRange.compare
+     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * * &#x60;0&#x60; if the two points are exactly equal&lt;br/&gt;
+     * * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range&lt;br/&gt;
+     * * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range&lt;br/&gt;
+     * &lt;br/&gt;
+     * If the starting row of the calling range is equal to &#x60;p.row&#x60;, and:&lt;br/&gt;
+     * * &#x60;p.column&#x60; is greater than or equal to the calling range&#x27;s starting column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * * Otherwise, it returns -1&lt;br/&gt;
+     *&lt;br/&gt;
+     * If the ending row of the calling range is equal to &#x60;p.row&#x60;, and:&lt;br/&gt;
+     * * &#x60;p.column&#x60; is less than or equal to the calling range&#x27;s ending column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * * Otherwise, it returns 1&lt;br/&gt;
+     **/
+    comparePoint(p: { row: number; column: number }): number {
+        return this.compare(p.row, p.column);
+    }
+
+    /**
+     * Checks the start and end points of &#x60;range&#x60; and compares them to the calling range. Returns &#x60;true&#x60; if the &#x60;range&#x60; is contained within the caller&#x27;s range.
+     * @param {EditorRange} range A range to compare with
+     *
+     * @returns {Boolean}
+     * @related EditorRange.comparePoint
+     **/
+    containsRange(range: { start: { row: number; column: number }; end: { row: number; column: number } }) {
+        return this.comparePoint(range.start) === 0 &amp;&amp; this.comparePoint(range.end) === 0;
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if passed in &#x60;range&#x60; intersects with the one calling this method.
+     * @param {EditorRange} range A range to compare with
+     *
+     * @returns {Boolean}
+     **/
+    intersects(range: Range) {
+        var cmp = this.compareRange(range);
+        return (cmp === -1 || cmp === 0 || cmp === 1);
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if the caller&#x27;s ending row point is the same as &#x60;row&#x60;, and if the caller&#x27;s ending column is the same as &#x60;column&#x60;.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     * @returns {Boolean}
+     **/
+    isEnd(row: number, column: number): boolean {
+        return this.end.row === row &amp;&amp; this.end.column === column;
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if the caller&#x27;s starting row point is the same as &#x60;row&#x60;, and if the caller&#x27;s starting column is the same as &#x60;column&#x60;.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     * @returns {Boolean}
+     **/
+    isStart(row: number, column: number): boolean {
+        return this.start.row === row &amp;&amp; this.start.column === column;
+    }
+
+    /**
+     * Sets the starting row and column for the range.
+     * @param row {number} A row point to set
+     * @param column {number} A column point to set
+     *
+     **/
+    setStart(row: number, column: number): void {
+        if (typeof row === &quot;object&quot;) {
+            // Fallback until code is completely typed.
+            this.start.column = row[&#x27;column&#x27;];
+            this.start.row = row[&#x27;row&#x27;];
+        }
+        else {
+            this.start.row = row;
+            this.start.column = column;
+        }
+    }
+
+    /**
+     * Sets the starting row and column for the range.
+     * @param row {number} A row point to set
+     * @param column {number} A column point to set
+     *
+     **/
+    setEnd(row: number, column: number): void {
+        if (typeof row === &quot;object&quot;) {
+            // Fallback until code is completely typed.
+            this.end.column = row[&#x27;column&#x27;];
+            this.end.row = row[&#x27;row&#x27;];
+        }
+        else {
+            this.end.row = row;
+            this.end.column = column;
+        }
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if the &#x60;row&#x60; and &#x60;column&#x60; are within the given range.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     *
+     * @returns {Boolean}
+     * @related EditorRange.compare
+     **/
+    inside(row: number, column: number): boolean {
+        if (this.compare(row, column) === 0) {
+            if (this.isEnd(row, column) || this.isStart(row, column)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if the &#x60;row&#x60; and &#x60;column&#x60; are within the given range&#x27;s starting points.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     * @returns {Boolean}
+     * @related EditorRange.compare
+     **/
+    insideStart(row: number, column: number): boolean {
+        if (this.compare(row, column) === 0) {
+            if (this.isEnd(row, column)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if the &#x60;row&#x60; and &#x60;column&#x60; are within the given range&#x27;s ending points.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     * @returns {Boolean}
+     * @related EditorRange.compare
+     *
+     **/
+    insideEnd(row: number, column: number): boolean {
+        if (this.compare(row, column) === 0) {
+            if (this.isStart(row, column)) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks the row and column points with the row and column points of the calling range.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     *
+     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * &#x60;0&#x60; if the two points are exactly equal &lt;br/&gt;
+     * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range &lt;br/&gt;
+     * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range &lt;br/&gt;
+     *  &lt;br/&gt;
+     * If the starting row of the calling range is equal to &#x60;p.row&#x60;, and: &lt;br/&gt;
+     * &#x60;p.column&#x60; is greater than or equal to the calling range&#x27;s starting column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * Otherwise, it returns -1&lt;br/&gt;
+     * &lt;br/&gt;
+     * If the ending row of the calling range is equal to &#x60;p.row&#x60;, and: &lt;br/&gt;
+     * &#x60;p.column&#x60; is less than or equal to the calling range&#x27;s ending column, this returns &#x60;0&#x60; &lt;br/&gt;
+     * Otherwise, it returns 1
+     **/
+    compare(row: number, column: number): number {
+        if (!this.isMultiLine()) {
+            if (row === this.start.row) {
+                return column &lt; this.start.column ? -1 : (column &gt; this.end.column ? 1 : 0);
+            }
+        }
+
+        if (row &lt; this.start.row)
+            return -1;
+
+        if (row &gt; this.end.row)
+            return 1;
+
+        if (this.start.row === row)
+            return column &gt;= this.start.column ? 0 : -1;
+
+        if (this.end.row === row)
+            return column &lt;= this.end.column ? 0 : 1;
+
+        return 0;
+    }
+
+    /**
+     * Checks the row and column points with the row and column points of the calling range.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * &lt;br/&gt;
+     * &#x60;0&#x60; if the two points are exactly equal&lt;br/&gt;
+     * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range&lt;br/&gt;
+     * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range, or if &#x60;isStart&#x60; is &#x60;true&#x60;.&lt;br/&gt;
+     * &lt;br/&gt;
+     * If the starting row of the calling range is equal to &#x60;p.row&#x60;, and:&lt;br/&gt;
+     * &#x60;p.column&#x60; is greater than or equal to the calling range&#x27;s starting column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * Otherwise, it returns -1&lt;br/&gt;
+     * &lt;br/&gt;
+     * If the ending row of the calling range is equal to &#x60;p.row&#x60;, and:&lt;br/&gt;
+     * &#x60;p.column&#x60; is less than or equal to the calling range&#x27;s ending column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * Otherwise, it returns 1
+     *
+     **/
+    compareStart(row: number, column: number): number {
+        if (this.start.row === row &amp;&amp; this.start.column === column) {
+            return -1;
+        }
+        else {
+            return this.compare(row, column);
+        }
+    }
+
+    /**
+     * Checks the row and column points with the row and column points of the calling range.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     *
+     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * &#x60;0&#x60; if the two points are exactly equal&lt;br/&gt;
+     * &#x60;-1&#x60; if &#x60;p.row&#x60; is less then the calling range&lt;br/&gt;
+     * &#x60;1&#x60; if &#x60;p.row&#x60; is greater than the calling range, or if &#x60;isEnd&#x60; is &#x60;true.&lt;br/&gt;
+     * &lt;br/&gt;
+     * If the starting row of the calling range is equal to &#x60;p.row&#x60;, and:&lt;br/&gt;
+     * &#x60;p.column&#x60; is greater than or equal to the calling range&#x27;s starting column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * Otherwise, it returns -1&lt;br/&gt;
+     *&lt;br/&gt;
+     * If the ending row of the calling range is equal to &#x60;p.row&#x60;, and:&lt;br/&gt;
+     * &#x60;p.column&#x60; is less than or equal to the calling range&#x27;s ending column, this returns &#x60;0&#x60;&lt;br/&gt;
+     * Otherwise, it returns 1
+     */
+    compareEnd(row: number, column: number): number {
+        if (this.end.row === row &amp;&amp; this.end.column === column) {
+            return 1;
+        }
+        else {
+            return this.compare(row, column);
+        }
+    }
+
+    /**
+     * Checks the row and column points with the row and column points of the calling range.
+     * @param {Number} row A row point to compare with
+     * @param {Number} column A column point to compare with
+     *
+     *
+     * @returns {Number} This method returns one of the following numbers:&lt;br/&gt;
+     * * &#x60;1&#x60; if the ending row of the calling range is equal to &#x60;row&#x60;, and the ending column of the calling range is equal to &#x60;column&#x60;&lt;br/&gt;
+     * * &#x60;-1&#x60; if the starting row of the calling range is equal to &#x60;row&#x60;, and the starting column of the calling range is equal to &#x60;column&#x60;&lt;br/&gt;
+     * &lt;br/&gt;
+     * Otherwise, it returns the value after calling [[EditorRange.compare &#x60;compare()&#x60;]].
+     *
+     **/
+    compareInside(row: number, column: number): number {
+        if (this.end.row === row &amp;&amp; this.end.column === column) {
+            return 1;
+        }
+        else if (this.start.row === row &amp;&amp; this.start.column === column) {
+            return -1;
+        }
+        else {
+            return this.compare(row, column);
+        }
+    }
+
+    /**
+     * Returns the part of the current &#x60;EditorRange&#x60; that occurs within the boundaries of &#x60;firstRow&#x60; and &#x60;lastRow&#x60; as a new &#x60;EditorRange&#x60; object.
+     * @param {Number} firstRow The starting row
+     * @param {Number} lastRow The ending row
+     * @returns {EditorRange}
+    **/
+    clipRows(firstRow: number, lastRow: number): Range {
+        var start: { row: number; column: number };
+        var end: { row: number; column: number };
+        if (this.end.row &gt; lastRow)
+            end = { row: lastRow + 1, column: 0 };
+        else if (this.end.row &lt; firstRow)
+            end = { row: firstRow, column: 0 };
+
+        if (this.start.row &gt; lastRow)
+            start = { row: lastRow + 1, column: 0 };
+        else if (this.start.row &lt; firstRow)
+            start = { row: firstRow, column: 0 };
+
+        return Range.fromPoints(start || this.start, end || this.end);
+    }
+
+    /**
+     * Changes the row and column points for the calling range for both the starting and ending points.
+     * @param {Number} row A new row to extend to
+     * @param {Number} column A new column to extend to
+     * @returns {EditorRange} The original range with the new row
+    **/
+    extend(row: number, column: number): Range {
+        var cmp = this.compare(row, column);
+
+        if (cmp === 0) {
+            return this;
+        }
+        else if (cmp === -1) {
+            var start = { row: row, column: column };
+        }
+        else {
+            var end = { row: row, column: column };
+        }
+        return Range.fromPoints(start || this.start, end || this.end);
+    }
+
+    isEmpty(): boolean {
+        return (this.start.row === this.end.row &amp;&amp; this.start.column === this.end.column);
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if the range spans across multiple lines.
+     * @returns {Boolean}
+     */
+    isMultiLine(): boolean {
+        return (this.start.row !== this.end.row);
+    }
+
+    /**
+     *
+     * Returns a duplicate of the calling range.
+     * @returns {EditorRange}
+    **/
+    clone() {
+        return Range.fromPoints(this.start, this.end);
+    }
+
+    /**
+     *
+     * Returns a range containing the starting and ending rows of the original range, but with a column value of &#x60;0&#x60;.
+     * @returns {EditorRange}
+    **/
+    collapseRows() {
+        if (this.end.column === 0)
+            return new Range(this.start.row, 0, Math.max(this.start.row, this.end.row - 1), 0)
+        else
+            return new Range(this.start.row, 0, this.end.row, 0)
+    }
+
+    /* experimental */
+    moveBy(row: number, column: number) {
+        this.start.row += row;
+        this.start.column += column;
+        this.end.row += row;
+        this.end.column += column;
+    }
+
+    /**
+     * Creates and returns a new &#x60;EditorRange&#x60; based on the row and column of the given parameters.
+     * @param {EditorRange} start A starting point to use
+     * @param {EditorRange} end An ending point to use
+     *
+     * @returns {EditorRange}
+    **/
+    public static fromPoints(start: { row: number; column: number }, end: { row: number; column: number }) {
+        return new Range(start.row, start.column, end.row, end.column);
+    }
+
+    public static comparePoints(p1: { row: number; column: number }, p2: { row: number; column: number }) {
+        return p1.row - p2.row || p1.column - p2.column;
+    }
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

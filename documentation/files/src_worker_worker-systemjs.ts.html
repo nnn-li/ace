@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/worker/worker-systemjs.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/worker/worker-systemjs.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/// &lt;reference path=&quot;../../typings/systemjs.d.ts&quot; /&gt;
+&quot;no use strict&quot;;
+;
+(function(window/*: Window*/) {
+  if (typeof window.window !== &#x27;undefined&#x27; &amp;&amp; window.document) {
+    return;
+  }
+
+  window.console = function() {
+    var msgs = Array.prototype.slice.call(arguments, 0);
+    window.postMessage({ type: &quot;log&quot;, data: msgs });  // FIXME: targetOrigin
+  };
+  window.console.error =
+    window.console.warn =
+    window.console.log =
+    window.console.trace = window.console;
+
+  //  importScripts(&#x27;/jspm_packages/system.js&#x27;, &#x27;/config.js&#x27;);
+  importScripts(&#x27;../../jspm_packages/system.js&#x27;, &#x27;../../config.js&#x27;);
+
+  window.window = window;
+
+  // Called when a runtime error occurs in a worker.
+  window.onerror = function(message, file, line, col, err) {
+    console.error(&quot;Worker &quot; + (err ? err.stack : message));
+  };
+
+  // FIXME: We have an issue with relative dependencies; the parentId is null.
+  window.normalizeModule = function(parentId: string, moduleName: string): string {
+    // normalize plugin dependencies.
+    if (moduleName.indexOf(&quot;!&quot;) !== -1) {
+      var chunks = moduleName.split(&quot;!&quot;);
+      return window.normalizeModule(parentId, chunks[0]) + &quot;!&quot; + window.normalizeModule(parentId, chunks[1]);
+    }
+    // normalize relative dependencies.
+    if (moduleName.charAt(0) == &quot;.&quot;) {
+      var base = parentId ? parentId.split(&quot;/&quot;).slice(0, -1).join(&quot;/&quot;) : void 0;
+      moduleName = (base ? base + &quot;/&quot; : &quot;&quot;) + moduleName;
+
+      while (moduleName.indexOf(&quot;.&quot;) !== -1 &amp;&amp; previous != moduleName) {
+        var previous = moduleName;
+        moduleName = moduleName.replace(/^\.\//, &quot;&quot;).replace(/\/\.\//, &quot;/&quot;).replace(/[^\/]+\/\.\.\//, &quot;&quot;);
+      }
+    }
+
+    return moduleName;
+  };
+
+  function initDelegate(name: string): void {
+
+    System.import(&#x27;lib/lib/Sender&#x27;)
+      .then(function(s) {
+        sender = new s.default(window)
+        System.import(name)
+          .then(function(m) {
+            main = window.main = new m.default(sender)
+          })
+          .catch(function(error) {
+            console.error(error);
+          });
+      })
+      .catch(function(error) {
+        console.error(error);
+      });
+  };
+
+  /**
+   * main is the instance that we are creating?
+   */
+  var main = window.main = null;
+  /**
+   * sender allows us to communicate back to the WorkerClient?
+   */
+  var sender = null;
+
+  window.onmessage = function(event: MessageEvent) {
+    // The type here is probably a union of all possible message types!
+    var data = event.data;  // The object passed from the other window.
+    var msg: { args; classname: string; command?; data; event; init?: boolean; module: string; tlns: { [ns: string]: string } } = data;
+    var origin: string = event.origin;  // The origin of the window that sent the message.
+    // We can do some security checks by checking the origin and source here.
+    // Failure to do so enables cross-site scripting attacks.
+    // See Mozilla Window.postMessage() article.
+    var source: Window = event.source; // A reference to the window object that sent the message.
+    if (msg.command) {
+      if (main) {
+        if (main[msg.command]) {
+          main[msg.command].apply(main, msg.args);
+        }
+        else {
+          throw new Error(&quot;Unknown command:&quot; + msg.command + &quot;(&quot; + JSON.stringify(msg.args) + &quot;)&quot;);
+        }
+      }
+      else {
+        // Initialization must have failed.
+        console.warn(&quot;Not initialized. Unable to process command &quot; + msg.command + &quot;(&quot; + JSON.stringify(msg.args) + &quot;)&quot;);
+      }
+    }
+    else if (msg.init) {
+      initDelegate(msg.module);
+    }
+    else if (msg.event &amp;&amp; sender) {
+      // Expect &quot;change&quot; events as the user edits the document.
+      sender._signal(msg.event, msg.data);
+    }
+    else {
+      console.warn(&#x27;worker-system.onMessage() DROPPED &#x27; + JSON.stringify(msg));
+    }
+  };
+})(this);
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/worker/WorkerClient.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/worker/WorkerClient.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+import {qualifyURL} from &#x27;../lib/net&#x27;;
+import EditorDocument from &quot;../EditorDocument&quot;;
+import EventEmitterClass from &#x27;../lib/event_emitter&#x27;;
+import {get, moduleUrl} from &quot;../config&quot;;
+
+/**
+ * WorkerClient manages the communication with a Web Worker.
+ */
+export default class WorkerClient extends EventEmitterClass {
+    private $worker: Worker;
+    private deltaQueue: any[];
+    private callbacks: { [id: number]: (data: any) =&gt; any } = {};
+    private callbackId: number = 1;
+    private $doc: EditorDocument;
+    constructor(workerUrl: string) {
+        super();
+        this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
+        this.changeListener = this.changeListener.bind(this);
+        this.onMessage = this.onMessage.bind(this);
+
+        var workerUrl = qualifyURL(workerUrl);
+
+        try {
+            this.$worker = new Worker(workerUrl);
+        }
+        catch (e) {
+            if (e instanceof window[&#x27;DOMException&#x27;]) {
+                // Likely same origin problem. Use importScripts from a shim Worker.
+                var blob: Blob = this.$workerBlob(workerUrl);
+                var URL: URL = window[&#x27;URL&#x27;] || window[&#x27;webkitURL&#x27;];
+                var blobURL: string = URL.createObjectURL(blob);
+
+                this.$worker = new Worker(blobURL);
+                URL.revokeObjectURL(blobURL);
+            }
+            else {
+                throw e;
+            }
+        }
+
+        // Add an EventListener for data the worker returns.
+        this.$worker.onmessage = this.onMessage;
+    }
+
+    init(moduleName: string, className: string): void {
+        var tlns: { [ns: string]: string } = {};
+        // Sending a postMessage starts the worker.
+        this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName, classname: className });
+    }
+
+    onMessage(event: MessageEvent) {
+        var origin: string = event.origin;
+        var source: Window = event.source;
+        var msg = event.data;
+        switch (msg.type) {
+            case &quot;log&quot;:
+                window.console &amp;&amp; console.log &amp;&amp; console.log.apply(console, msg.data);
+                break;
+
+            case &quot;event&quot;:
+                this._signal(msg.name, { data: msg.data });
+                break;
+
+            case &quot;call&quot;:
+                var callback = this.callbacks[msg.id];
+                if (callback) {
+                    callback(msg.data);
+                    delete this.callbacks[msg.id];
+                }
+                break;
+        }
+    }
+
+    private $normalizePath(path: string): string {
+        return qualifyURL(path);
+    }
+
+    terminate() {
+        this._signal(&quot;terminate&quot;, {});
+        this.deltaQueue = null;
+        this.$worker.terminate();
+        this.$worker = null;
+        this.detachFromDocument();
+    }
+
+    send(cmd, args) {
+        this.$worker.postMessage({ command: cmd, args: args });
+    }
+
+    call(cmd, args, callback?: (data: any) =&gt; any) {
+        if (callback) {
+            var id = this.callbackId++;
+            this.callbacks[id] = callback;
+            args.push(id);
+        }
+        this.send(cmd, args);
+    }
+
+    emit(event: string, data) {
+        try {
+            // firefox refuses to clone objects which have function properties
+            // TODO: cleanup event
+            this.$worker.postMessage({ event: event, data: { data: data.data } });
+        }
+        catch (e) {
+            console.error(e.stack);
+        }
+    }
+
+    attachToDocument(doc: EditorDocument) {
+        if (this.$doc) {
+            this.terminate();
+        }
+        this.$doc = doc;
+        this.call(&quot;setValue&quot;, [doc.getValue()]);
+        doc.on(&#x27;change&#x27;, this.changeListener);
+    }
+
+    detachFromDocument() {
+        this.$doc.off(&#x27;change&#x27;, this.changeListener);
+        this.$doc = null;
+    }
+
+    /**
+     * This function is used as the basis for a function where this is bound safely.
+     * It handles changes to the document by placing the messages in a queue
+     */
+    private changeListener(e: { data }, doc: EditorDocument) {
+        if (!this.deltaQueue) {
+            this.deltaQueue = [e.data];
+            setTimeout(this.$sendDeltaQueue, 0);
+        }
+        else {
+            this.deltaQueue.push(e.data);
+        }
+    }
+
+    private $sendDeltaQueue() {
+        var doc = this.$doc;
+        var q = this.deltaQueue;
+        if (!q) return;
+        this.deltaQueue = null;
+        if (q.length &gt; 20 &amp;&amp; q.length &gt; doc.getLength() &gt;&gt; 1) {
+            this.call(&quot;setValue&quot;, [doc.getValue()]);
+        }
+        else
+            this.emit(&quot;change&quot;, { data: q });
+    }
+
+    $workerBlob(workerUrl: string): Blob {
+        // workerUrl can be protocol relative
+        // importScripts only takes fully qualified urls
+        var script = &quot;importScripts(&#x27;&quot; + qualifyURL(workerUrl) + &quot;&#x27;);&quot;;
+        try {
+            return new Blob([script], { &quot;type&quot;: &quot;application/javascript&quot; });
+        }
+        catch (e) { // Backwards-compatibility
+            var BlobBuilder = window[&#x27;BlobBuilder&#x27;] || window[&#x27;WebKitBlobBuilder&#x27;] || window[&#x27;MozBlobBuilder&#x27;];
+            var blobBuilder = new BlobBuilder();
+            blobBuilder.append(script);
+            return blobBuilder.getBlob(&quot;application/javascript&quot;);
+        }
+    }
+}
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

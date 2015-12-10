@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/EditorDocument.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/EditorDocument.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+import EventEmitterClass from &#x27;./lib/event_emitter&#x27;;
+import Range from &#x27;./Range&#x27;;
+import Anchor from &#x27;./Anchor&#x27;;
+
+var $split: (text: string) =&gt; string[] = (function() {
+    function foo(text: string): string[] {
+        return text.replace(/\r\n|\r/g, &quot;\n&quot;).split(&quot;\n&quot;);
+    }
+    function bar(text: string): string[] {
+        return text.split(/\r\n|\r|\n/);
+    }
+    if (&quot;aaa&quot;.split(/a/).length === 0) {
+        return foo;
+    }
+    else {
+        return bar;
+    }
+})();
+
+function $clipPosition(doc: EditorDocument, position: { row: number; column: number }) {
+    var length = doc.getLength();
+    if (position.row &gt;= length) {
+        position.row = Math.max(0, length - 1);
+        position.column = doc.getLine(length - 1).length;
+    } else if (position.row &lt; 0) {
+        position.row = 0;
+    }
+    return position;
+}
+
+export default class EditorDocument extends EventEmitterClass {
+    private $lines: string[] = [];
+    private $autoNewLine: string = &quot;&quot;;
+    private $newLineMode: string = &quot;auto&quot;;
+    constructor(text: string | Array&lt;string&gt;) {
+        super();
+
+        // There has to be one line at least in the document. If you pass an empty
+        // string to the insert function, nothing will happen. Workaround.
+        if (text.length === 0) {
+            this.$lines = [&quot;&quot;];
+        }
+        else if (Array.isArray(text)) {
+            this._insertLines(0, text);
+        }
+        else {
+            this.insert({ row: 0, column: 0 }, text);
+        }
+    }
+
+    /**
+     * Replaces all the lines in the current &#x60;EditorDocument&#x60; with the value of &#x60;text&#x60;.
+     * @method setValue
+     * @param {string} text The text to use
+     * @return {void}
+     */
+    setValue(text: string): void {
+        var len = this.getLength();
+        this.remove(new Range(0, 0, len, this.getLine(len - 1).length));
+        this.insert({ row: 0, column: 0 }, text);
+    }
+
+    /**
+     * Returns all the lines in the document as a single string, joined by the new line character.
+     * @method getValue
+     * @return {string}
+     */
+    getValue(): string {
+        return this.getAllLines().join(this.getNewLineCharacter());
+    }
+
+    /** 
+     * Creates a new &#x60;Anchor&#x60; to define a floating point in the document.
+     * @method createAnchor
+     * @param {number} row The row number to use
+     * @param {number} column The column number to use
+     * @return {Anchor}
+     *
+     */
+    createAnchor(row: number, column: number): Anchor {
+        return new Anchor(this, row, column);
+    }
+
+    /** 
+     * Splits a string of text on any newline (&#x60;\n&#x60;) or carriage-return (&#x27;\r&#x27;) characters.
+     *
+     * @method $split
+     * @param {string} text The text to work with
+     */
+    private $detectNewLine(text: string): void {
+        var match = text.match(/^.*?(\r\n|\r|\n)/m);
+        this.$autoNewLine = match ? match[1] : &quot;\n&quot;;
+        this._signal(&quot;changeNewLineMode&quot;);
+    }
+
+    /**
+    * Returns the newline character that&#x27;s being used, depending on the value of &#x60;newLineMode&#x60;. 
+    * @method getNewLineCharacter
+    * @returns {String}
+    *  If &#x60;newLineMode == windows&#x60;, &#x60;\r\n&#x60; is returned.  
+    *  If &#x60;newLineMode == unix&#x60;, &#x60;\n&#x60; is returned.  
+    *  If &#x60;newLineMode == auto&#x60;, the value of &#x60;autoNewLine&#x60; is returned.
+    *
+    **/
+    getNewLineCharacter(): string {
+        switch (this.$newLineMode) {
+            case &quot;windows&quot;:
+                return &quot;\r\n&quot;;
+            case &quot;unix&quot;:
+                return &quot;\n&quot;;
+            default:
+                return this.$autoNewLine || &quot;\n&quot;;
+        }
+    }
+
+    /**
+     * Sets the new line mode.
+     * @method setNewLineMode
+     * @param {String} newLineMode [The newline mode to use; can be either &#x60;windows&#x60;, &#x60;unix&#x60;, or &#x60;auto&#x60;]{: #EditorDocument.setNewLineMode.param}
+     * @return {void}
+     */
+    setNewLineMode(newLineMode: string): void {
+        if (this.$newLineMode === newLineMode)
+            return;
+
+        this.$newLineMode = newLineMode;
+        this._signal(&quot;changeNewLineMode&quot;);
+    }
+
+    /**
+     * Returns the type of newlines being used; either &#x60;windows&#x60;, &#x60;unix&#x60;, or &#x60;auto&#x60;
+     * @method getNewLineMode
+     * @return {string}
+     */
+    getNewLineMode() {
+        return this.$newLineMode;
+    }
+
+    /**
+     * Returns &#x60;true&#x60; if &#x60;text&#x60; is a newline character (either &#x60;\r\n&#x60;, &#x60;\r&#x60;, or &#x60;\n&#x60;).
+     * @method isNewLine
+     * @param {string} text The text to check
+     * @return {boolean}
+     */
+    isNewLine(text: string): boolean {
+        return (text == &quot;\r\n&quot; || text == &quot;\r&quot; || text == &quot;\n&quot;);
+    }
+
+    /**
+     * Returns a verbatim copy of the given line as it is in the document
+     * @param {Number} row The row index to retrieve
+     * @return {string}
+     */
+    getLine(row: number): string {
+        return this.$lines[row] || &quot;&quot;;
+    }
+
+    /**
+    * Returns an array of strings of the rows between &#x60;firstRow&#x60; and &#x60;lastRow&#x60;. This function is inclusive of &#x60;lastRow&#x60;.
+    * @param {Number} firstRow The first row index to retrieve
+    * @param {Number} lastRow The final row index to retrieve
+    *
+    **/
+    getLines(firstRow?: number, lastRow?: number): string[] {
+        return this.$lines.slice(firstRow, lastRow + 1);
+    }
+
+    /**
+    * Returns all lines in the document as string array.
+    **/
+    getAllLines(): string[] {
+        return this.getLines(0, this.getLength());
+    }
+
+    /**
+    * Returns the number of rows in the document.
+    **/
+    getLength(): number {
+        return this.$lines.length;
+    }
+
+    /**
+     * Given a range within the document, returns all the text within that range as a single string.
+     * @param {Range} range The range to work with
+     *
+     */
+    getTextRange(range: Range): string {
+        if (range.start.row == range.end.row) {
+            return this.getLine(range.start.row).substring(range.start.column, range.end.column);
+        }
+        var lines = this.getLines(range.start.row, range.end.row);
+        lines[0] = (lines[0] || &quot;&quot;).substring(range.start.column);
+        var l = lines.length - 1;
+        if (range.end.row - range.start.row == l) {
+            lines[l] = lines[l].substring(0, range.end.column);
+        }
+        return lines.join(this.getNewLineCharacter());
+    }
+
+    /**
+    * Inserts a block of &#x60;text&#x60; at the indicated &#x60;position&#x60;.
+    * @param {Object} position The position to start inserting at; it&#x27;s an object that looks like &#x60;{ row: row, column: column}&#x60;
+    * @param {string} text A chunk of text to insert
+    * @returns {Object} The position ({row, column}) of the last line of &#x60;text&#x60;. If the length of &#x60;text&#x60; is 0, this function simply returns &#x60;position&#x60;. 
+    *
+    **/
+    insert(position: { row: number; column: number }, text: string) {
+        if (!text || text.length === 0)
+            return position;
+
+        position = $clipPosition(this, position);
+
+        // only detect new lines if the document has no line break yet
+        if (this.getLength() &lt;= 1) {
+            this.$detectNewLine(text);
+        }
+
+        var lines = $split(text);
+        var firstLine = lines.splice(0, 1)[0];
+        var lastLine = lines.length == 0 ? null : lines.splice(lines.length - 1, 1)[0];
+
+        position = this.insertInLine(position, firstLine);
+        if (lastLine !== null) {
+            position = this.insertNewLine(position); // terminate first line
+            position = this._insertLines(position.row, lines);
+            position = this.insertInLine(position, lastLine || &quot;&quot;);
+        }
+        return position;
+    }
+
+    /**
+     * Fires whenever the document changes.
+     *
+     * Several methods trigger different &#x60;&quot;change&quot;&#x60; events. Below is a list of each action type, followed by each property that&#x27;s also available:
+     *
+     *  * &#x60;&quot;insertLines&quot;&#x60; (emitted by [[EditorDocument.insertLines]])
+     *    * &#x60;range&#x60;: the [[Range]] of the change within the document
+     *    * &#x60;lines&#x60;: the lines in the document that are changing
+     *  * &#x60;&quot;insertText&quot;&#x60; (emitted by [[EditorDocument.insertNewLine]])
+     *    * &#x60;range&#x60;: the [[Range]] of the change within the document
+     *    * &#x60;text&#x60;: the text that&#x27;s being added
+     *  * &#x60;&quot;removeLines&quot;&#x60; (emitted by [[EditorDocument.insertLines]])
+     *    * &#x60;range&#x60;: the [[Range]] of the change within the document
+     *    * &#x60;lines&#x60;: the lines in the document that were removed
+     *    * &#x60;nl&#x60;: the new line character (as defined by [[EditorDocument.getNewLineCharacter]])
+     *  * &#x60;&quot;removeText&quot;&#x60; (emitted by [[EditorDocument.removeInLine]] and [[EditorDocument.removeNewLine]])
+     *    * &#x60;range&#x60;: the [[Range]] of the change within the document
+     *    * &#x60;text&#x60;: the text that&#x27;s being removed
+     *
+     * @event change
+     * @param {Object} e Contains at least one property called &#x60;&quot;action&quot;&#x60;. &#x60;&quot;action&quot;&#x60; indicates the action that triggered the change. Each action also has a set of additional properties.
+     *
+     **/
+    /**
+    * Inserts the elements in &#x60;lines&#x60; into the document, starting at the row index given by &#x60;row&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+    * @param {Number} row The index of the row to insert at
+    * @param {Array} lines An array of strings
+    * @returns {Object} Contains the final row and column, like this:  
+    *   &#x60;&#x60;&#x60;
+    *   {row: endRow, column: 0}
+    *   &#x60;&#x60;&#x60;  
+    *   If &#x60;lines&#x60; is empty, this function returns an object containing the current row, and column, like this:  
+    *   &#x60;&#x60;&#x60; 
+    *   {row: row, column: 0}
+    *   &#x60;&#x60;&#x60;
+    *
+    **/
+    insertLines(row: number, lines: string[]) {
+        if (row &gt;= this.getLength())
+            return this.insert({ row: row, column: 0 }, &quot;\n&quot; + lines.join(&quot;\n&quot;));
+        return this._insertLines(Math.max(row, 0), lines);
+    }
+
+    private _insertLines(row: number, lines: string[]) {
+        if (lines.length == 0)
+            return { row: row, column: 0 };
+
+        // apply doesn&#x27;t work for big arrays (smallest threshold is on safari 0xFFFF)
+        // to circumvent that we have to break huge inserts into smaller chunks here
+        while (lines.length &gt; 0xF000) {
+            var end = this._insertLines(row, lines.slice(0, 0xF000));
+            lines = lines.slice(0xF000);
+            row = end.row;
+        }
+
+        var args = [row, 0];
+        args.push.apply(args, lines);
+        this.$lines.splice.apply(this.$lines, args);
+
+        var range = new Range(row, 0, row + lines.length, 0);
+        var delta = {
+            action: &quot;insertLines&quot;,
+            range: range,
+            lines: lines
+        };
+        this._signal(&quot;change&quot;, { data: delta });
+        return range.end;
+    }
+
+    /**
+    * Inserts a new line into the document at the current row&#x27;s &#x60;position&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event. 
+    * @param {Object} position The position to insert at
+    * @returns {Object} Returns an object containing the final row and column, like this:&lt;br/&gt;
+    *    &#x60;&#x60;&#x60;
+    *    {row: endRow, column: 0}
+    *    &#x60;&#x60;&#x60;
+    *
+    **/
+    insertNewLine(position: { row: number; column: number }) {
+        position = $clipPosition(this, position);
+        var line = this.$lines[position.row] || &quot;&quot;;
+
+        this.$lines[position.row] = line.substring(0, position.column);
+        this.$lines.splice(position.row + 1, 0, line.substring(position.column, line.length));
+
+        var end = {
+            row: position.row + 1,
+            column: 0
+        };
+
+        var delta = {
+            action: &quot;insertText&quot;,
+            range: Range.fromPoints(position, end),
+            text: this.getNewLineCharacter()
+        };
+        this._signal(&quot;change&quot;, { data: delta });
+
+        return end;
+    }
+
+    /**
+    * Inserts &#x60;text&#x60; into the &#x60;position&#x60; at the current row. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+    * @param {Object} position The position to insert at.
+    * @param {String} text A chunk of text
+    * @returns {Object} Returns an object containing the final row and column.
+    **/
+    insertInLine(position: { row: number; column: number }, text: string): { row: number; column: number } {
+        if (text.length == 0)
+            return position;
+
+        var line = this.$lines[position.row] || &quot;&quot;;
+
+        this.$lines[position.row] = line.substring(0, position.column) + text + line.substring(position.column);
+
+        var end = {
+            row: position.row,
+            column: position.column + text.length
+        };
+
+        var delta = { action: &quot;insertText&quot;, range: Range.fromPoints(position, end), text: text };
+        this._signal(&quot;change&quot;, { data: delta });
+
+        return end;
+    }
+
+    /**
+    * Removes the &#x60;range&#x60; from the document.
+    * @param {Range} range A specified Range to remove
+    * @returns {Object} Returns the new &#x60;start&#x60; property of the range, which contains &#x60;startRow&#x60; and &#x60;startColumn&#x60;. If &#x60;range&#x60; is empty, this function returns the unmodified value of &#x60;range.start&#x60;.
+    *
+    **/
+    remove(range: { start; end; isEmpty; isMultiLine }) {
+        if (!(range instanceof Range))
+            range = Range.fromPoints(range.start, range.end);
+        // clip to document
+        range.start = $clipPosition(this, range.start);
+        range.end = $clipPosition(this, range.end);
+
+        if (range.isEmpty())
+            return range.start;
+
+        var firstRow = range.start.row;
+        var lastRow = range.end.row;
+
+        if (range.isMultiLine()) {
+            var firstFullRow = range.start.column == 0 ? firstRow : firstRow + 1;
+            var lastFullRow = lastRow - 1;
+
+            if (range.end.column &gt; 0)
+                this.removeInLine(lastRow, 0, range.end.column);
+
+            if (lastFullRow &gt;= firstFullRow)
+                this._removeLines(firstFullRow, lastFullRow);
+
+            if (firstFullRow != firstRow) {
+                this.removeInLine(firstRow, range.start.column, this.getLine(firstRow).length);
+                this.removeNewLine(range.start.row);
+            }
+        }
+        else {
+            this.removeInLine(firstRow, range.start.column, range.end.column);
+        }
+        return range.start;
+    }
+
+    /**
+    * Removes the specified columns from the &#x60;row&#x60;. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+    * @param {Number} row The row to remove from
+    * @param {Number} startColumn The column to start removing at 
+    * @param {Number} endColumn The column to stop removing at
+    * @returns {Object} Returns an object containing &#x60;startRow&#x60; and &#x60;startColumn&#x60;, indicating the new row and column values.&lt;br/&gt;If &#x60;startColumn&#x60; is equal to &#x60;endColumn&#x60;, this function returns nothing.
+    *
+    **/
+    removeInLine(row: number, startColumn: number, endColumn: number) {
+        if (startColumn === endColumn)
+            return;
+
+        var range = new Range(row, startColumn, row, endColumn);
+        var line = this.getLine(row);
+        var removed = line.substring(startColumn, endColumn);
+        var newLine = line.substring(0, startColumn) + line.substring(endColumn, line.length);
+        this.$lines.splice(row, 1, newLine);
+
+        var delta = {
+            action: &quot;removeText&quot;,
+            range: range,
+            text: removed
+        };
+        this._signal(&quot;change&quot;, { data: delta });
+        return range.start;
+    }
+
+    /**
+    * Removes a range of full lines. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+    * @param {Number} firstRow The first row to be removed
+    * @param {Number} lastRow The last row to be removed
+    * @returns {[String]} Returns all the removed lines.
+    *
+    **/
+    removeLines(firstRow: number, lastRow: number): string[] {
+        if (firstRow &lt; 0 || lastRow &gt;= this.getLength())
+            return this.remove(new Range(firstRow, 0, lastRow + 1, 0));
+        return this._removeLines(firstRow, lastRow);
+    }
+
+    private _removeLines(firstRow: number, lastRow: number): string[] {
+        var range = new Range(firstRow, 0, lastRow + 1, 0);
+        var removed = this.$lines.splice(firstRow, lastRow - firstRow + 1);
+
+        var delta = {
+            action: &quot;removeLines&quot;,
+            range: range,
+            nl: this.getNewLineCharacter(),
+            lines: removed
+        };
+        this._signal(&quot;change&quot;, { data: delta });
+        return removed;
+    }
+
+    /**
+    * Removes the new line between &#x60;row&#x60; and the row immediately following it. This method also triggers the &#x60;&#x27;change&#x27;&#x60; event.
+    * @param {Number} row The row to check
+    *
+    **/
+    removeNewLine(row: number): void {
+        var firstLine = this.getLine(row);
+        var secondLine = this.getLine(row + 1);
+
+        var range = new Range(row, firstLine.length, row + 1, 0);
+        var line = firstLine + secondLine;
+
+        this.$lines.splice(row, 2, line);
+
+        var delta = {
+            action: &quot;removeText&quot;,
+            range: range,
+            text: this.getNewLineCharacter()
+        };
+        this._signal(&quot;change&quot;, { data: delta });
+    }
+
+    /**
+    * Replaces a range in the document with the new &#x60;text&#x60;.
+    * @param {Range} range A specified Range to replace
+    * @param {String} text The new text to use as a replacement
+    * @returns {Object} Returns an object containing the final row and column, like this:
+    *     {row: endRow, column: 0}
+    * If the text and range are empty, this function returns an object containing the current &#x60;range.start&#x60; value.
+    * If the text is the exact same as what currently exists, this function returns an object containing the current &#x60;range.end&#x60; value.
+    *
+    **/
+    replace(range: Range, text: string) {
+        if (text.length == 0 &amp;&amp; range.isEmpty())
+            return range.start;
+
+        // Shortcut: If the text we want to insert is the same as it is already
+        // in the document, we don&#x27;t have to replace anything.
+        if (text == this.getTextRange(range))
+            return range.end;
+
+        this.remove(range);
+        if (text) {
+            var end = this.insert(range.start, text);
+        }
+        else {
+            end = range.start;
+        }
+
+        return end;
+    }
+
+    /**
+    * Applies all the changes previously accumulated. These can be either &#x60;&#x27;includeText&#x27;&#x60;, &#x60;&#x27;insertLines&#x27;&#x60;, &#x60;&#x27;removeText&#x27;&#x60;, and &#x60;&#x27;removeLines&#x27;&#x60;.
+    **/
+    applyDeltas(deltas: { action: string; lines: string[]; range: { start: { row: number; column: number }; end: { row: number; column: number } }; text: string }[]) {
+        for (var i = 0; i &lt; deltas.length; i++) {
+            var delta = deltas[i];
+            var range = Range.fromPoints(delta.range.start, delta.range.end);
+
+            if (delta.action == &quot;insertLines&quot;)
+                this.insertLines(range.start.row, delta.lines);
+            else if (delta.action == &quot;insertText&quot;)
+                this.insert(range.start, delta.text);
+            else if (delta.action == &quot;removeLines&quot;)
+                this._removeLines(range.start.row, range.end.row - 1);
+            else if (delta.action == &quot;removeText&quot;)
+                this.remove(range);
+        }
+    }
+
+    /**
+    * Reverts any changes previously applied. These can be either &#x60;&#x27;includeText&#x27;&#x60;, &#x60;&#x27;insertLines&#x27;&#x60;, &#x60;&#x27;removeText&#x27;&#x60;, and &#x60;&#x27;removeLines&#x27;&#x60;.
+    **/
+    revertDeltas(deltas: { action: string; range: Range; lines: string[]; text: string }[]) {
+        for (var i = deltas.length - 1; i &gt;= 0; i--) {
+            var delta = deltas[i];
+
+            var range = Range.fromPoints(delta.range.start, delta.range.end);
+
+            if (delta.action == &quot;insertLines&quot;)
+                this._removeLines(range.start.row, range.end.row - 1);
+            else if (delta.action == &quot;insertText&quot;)
+                this.remove(range);
+            else if (delta.action == &quot;removeLines&quot;)
+                this._insertLines(range.start.row, delta.lines);
+            else if (delta.action == &quot;removeText&quot;)
+                this.insert(range.start, delta.text);
+        }
+    }
+
+    /**
+     * Converts an index position in a document to a &#x60;{row, column}&#x60; object.
+     *
+     * Index refers to the &quot;absolute position&quot; of a character in the document. For example:
+     *
+     * &#x60;&#x60;&#x60;javascript
+     * var x = 0; // 10 characters, plus one for newline
+     * var y = -1;
+     * &#x60;&#x60;&#x60;
+     * 
+     * Here, &#x60;y&#x60; is an index 15: 11 characters for the first row, and 5 characters until &#x60;y&#x60; in the second.
+     *
+     * @param {Number} index An index to convert
+     * @param {Number} startRow=0 The row from which to start the conversion
+     * @returns {Object} A &#x60;{row, column}&#x60; object of the &#x60;index&#x60; position
+     */
+    indexToPosition(index: number, startRow: number) {
+        var lines = this.$lines || this.getAllLines();
+        var newlineLength = this.getNewLineCharacter().length;
+        for (var i = startRow || 0, l = lines.length; i &lt; l; i++) {
+            index -= lines[i].length + newlineLength;
+            if (index &lt; 0)
+                return { row: i, column: index + lines[i].length + newlineLength };
+        }
+        return { row: l - 1, column: lines[l - 1].length };
+    }
+
+    /**
+     * Converts the &#x60;{row, column}&#x60; position in a document to the character&#x27;s index.
+     *
+     * Index refers to the &quot;absolute position&quot; of a character in the document. For example:
+     *
+     * &#x60;&#x60;&#x60;javascript
+     * var x = 0; // 10 characters, plus one for newline
+     * var y = -1;
+     * &#x60;&#x60;&#x60;
+     * 
+     * Here, &#x60;y&#x60; is an index 15: 11 characters for the first row, and 5 characters until &#x60;y&#x60; in the second.
+     *
+     * @param {Object} pos The &#x60;{row, column}&#x60; to convert
+     * @param {Number} startRow=0 The row from which to start the conversion
+     * @returns {Number} The index position in the document
+     */
+    positionToIndex(pos: { row: number; column: number }, startRow: number): number {
+        var lines = this.$lines || this.getAllLines();
+        var newlineLength = this.getNewLineCharacter().length;
+        var index = 0;
+        var row = Math.min(pos.row, lines.length);
+        for (var i = startRow || 0; i &lt; row; ++i)
+            index += lines[i].length + newlineLength;
+
+        return index + pos.column;
+    }
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

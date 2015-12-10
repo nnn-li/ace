@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/autocomplete/popup.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/autocomplete/popup.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2012, Ajax.org B.V.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+import EditorDocument from &quot;../EditorDocument&quot;;
+import EditSession from &quot;../EditSession&quot;;
+import VirtualRenderer from &quot;../VirtualRenderer&quot;;
+import Editor from &quot;../Editor&quot;;
+import Range from &quot;../Range&quot;;
+import {addListener} from &quot;../lib/event&quot;;
+import {stringRepeat} from &quot;../lib/lang&quot;;
+import EventEmitterClass from &quot;../lib/event_emitter&quot;;
+import {addCssClass, createElement, importCssString, removeCssClass} from &quot;../lib/dom&quot;;
+
+var noop = function() { };
+
+export interface ListView {
+    isOpen: boolean;
+    focus;
+    container;
+    on(eventName: string, callback, capturing?: boolean);
+    getData(row: number);
+    setData(data: string[]);
+    getRow();
+    setRow(row: number);
+    getTextLeftOffset(): number;
+    show(pos, lineHeight, topdownOnly?): void;
+    hide();
+    setTheme(theme: string): void;
+    setFontSize(fontSize): void;
+    getLength(): number;
+}
+
+export class ListViewPopup implements ListView {
+    private editor: Editor;
+    private $borderSize = 1;
+    private $imageSize = 0;
+    private hoverMarker = new Range(-1, 0, -1, Infinity);
+    private hoverMarkerId: number;
+    private selectionMarker = new Range(-1, 0, -1, Infinity);
+    private selectionMarkerId: number;
+    public isOpen = false;
+    private isTopdown = false;
+    private lastMouseEvent: any;
+    private lastMouseEventScrollTop;
+    private data: any[] = [];
+    private screenWidth;
+    constructor(parentNode: Node) {
+        // Cache the &#x27;this&#x27; pointer for event handlers.
+        var self = this;
+
+        function createEditor(el: HTMLDivElement) {
+            var renderer = new VirtualRenderer(el);
+
+            renderer.content.style.cursor = &quot;default&quot;;
+            renderer.setStyle(&quot;ace_autocomplete&quot;);
+            renderer.$cursorLayer.restartTimer = noop;
+            renderer.$cursorLayer.element.style.opacity = &quot;0&quot;;
+            renderer.$maxLines = 8;
+            renderer.$keepTextAreaAtCursor = false;
+
+            var model = new EditorDocument(&quot;&quot;);
+            var editSession = new EditSession(model);
+            var editor = new Editor(renderer, editSession);
+
+            editor.setHighlightActiveLine(false);
+            editor.setShowPrintMargin(false);
+            editor.renderer.setShowGutter(false);
+            editor.renderer.setHighlightGutterLine(false);
+
+            editor.setOption(&quot;displayIndentGuides&quot;, false);
+            editor.setOption(&quot;dragDelay&quot;, 150);
+
+            editor.focus = noop;
+            editor.$isFocused = true;
+
+            editor.setHighlightActiveLine(false);
+            // FIXME: This must be a RegExp.
+            // editor.session.highlight(&quot;&quot;);
+            editor.session.$searchHighlight.clazz = &quot;ace_highlight-marker&quot;;
+
+            return editor;
+        }
+
+        var el: HTMLDivElement = &lt;HTMLDivElement&gt;createElement(&quot;div&quot;);
+        this.editor = createEditor(el);
+
+        if (parentNode) {
+            parentNode.appendChild(el);
+        }
+        el.style.display = &quot;none&quot;;
+
+        this.editor.on(&quot;mousedown&quot;, function(e) {
+            var pos = e.getDocumentPosition();
+            self.editor.selection.moveToPosition(pos);
+            self.selectionMarker.start.row = self.selectionMarker.end.row = pos.row;
+            e.stop();
+        });
+
+        this.selectionMarkerId = this.editor.session.addMarker(this.selectionMarker, &quot;ace_active-line&quot;, &quot;fullLine&quot;);
+
+        this.setSelectOnHover(false);
+
+        this.editor.on(&quot;mousemove&quot;, function(e: MouseEvent) {
+            if (!self.lastMouseEvent) {
+                self.lastMouseEvent = e;
+                return;
+            }
+            if (self.lastMouseEvent.x == e.x &amp;&amp; self.lastMouseEvent.y == e.y) {
+                return;
+            }
+            self.lastMouseEvent = e;
+            self.lastMouseEventScrollTop = self.editor.renderer.scrollTop;
+            var row = self.lastMouseEvent.getDocumentPosition().row;
+            if (self.hoverMarker.start.row != row) {
+                if (!self.hoverMarkerId) {
+                    self.setRow(row);
+                }
+                self.setHoverMarker(row);
+            }
+        });
+        this.editor.renderer.on(&quot;beforeRender&quot;, function() {
+            if (self.lastMouseEvent &amp;&amp; self.hoverMarker.start.row != -1) {
+                self.lastMouseEvent.$pos = null;
+                var row = self.lastMouseEvent.getDocumentPosition().row;
+                if (!self.hoverMarkerId) {
+                    self.setRow(row);
+                }
+                self.setHoverMarker(row, true);
+            }
+        });
+        this.editor.renderer.on(&quot;afterRender&quot;, function() {
+            var row = self.getRow();
+            var t = self.editor.renderer.$textLayer;
+            var selected = &lt;HTMLElement&gt;t.element.childNodes[row - t.config.firstRow];
+            // FIXME: DGH Don&#x27;t know why selectedNode is not found.
+            if (selected == t[&#x27;selectedNode&#x27;])
+                return;
+            if (t[&#x27;selectedNode&#x27;])
+                removeCssClass(t[&#x27;selectedNode&#x27;], &quot;ace_selected&quot;);
+            t[&#x27;selectedNode&#x27;] = selected;
+            if (selected)
+                addCssClass(selected, &quot;ace_selected&quot;);
+        });
+
+        function hideHoverMarker() { self.setHoverMarker(-1) }
+
+        addListener(this.editor.container, &quot;mouseout&quot;, hideHoverMarker);
+        this.editor.on(&quot;hide&quot;, hideHoverMarker);
+        this.editor.on(&quot;changeSelection&quot;, hideHoverMarker);
+
+        this.editor.session.doc.getLength = function() {
+            return self.data.length;
+        };
+        this.editor.session.doc.getLine = function(i) {
+            var data = self.data[i];
+            if (typeof data == &quot;string&quot;) {
+                return data;
+            }
+            return (data &amp;&amp; data.value) || &quot;&quot;;
+        };
+
+        var bgTokenizer = this.editor.session.bgTokenizer;
+        bgTokenizer.$tokenizeRow = function(dataIndex) {
+            var data = self.data[dataIndex];
+            var tokens = [];
+            if (!data)
+                return tokens;
+            if (typeof data == &quot;string&quot;)
+                data = { value: data };
+            if (!data.caption)
+                data.caption = data.value || data.name;
+
+            var last = -1;
+            var flag, c;
+            for (var cIndex = 0, length = data.caption.length; cIndex &lt; length; cIndex++) {
+                c = data.caption[cIndex];
+                flag = data.matchMask &amp; (1 &lt;&lt; cIndex) ? 1 : 0;
+                if (last !== flag) {
+                    tokens.push({ type: data.className || &quot;&quot; + (flag ? &quot;completion-highlight&quot; : &quot;&quot;), value: c });
+                    last = flag;
+                } else {
+                    tokens[tokens.length - 1].value += c;
+                }
+            }
+
+            if (data.meta) {
+                var maxW = self.editor.renderer.$size.scrollerWidth / self.editor.renderer.layerConfig.characterWidth;
+                if (data.meta.length + data.caption.length &lt; maxW - 2)
+                    tokens.push({ type: &quot;rightAlignedText&quot;, value: data.meta });
+            }
+            return tokens;
+        };
+        bgTokenizer.$updateOnChange = noop;
+        bgTokenizer.start = noop;
+
+        this.editor.session.$computeWidth = function() {
+            return self.screenWidth = 0;
+        };
+
+        this.editor.on(&quot;changeSelection&quot;, function() {
+            if (this.isOpen) {
+                this.setRow(this.popup.selection.lead.row);
+            }
+        });
+    }
+    /**
+     * @param {{top;left}} pos
+     * @param {number} lineHeight
+     * @param {boolean} topdownOnly
+     */
+    show(pos: { top: number; left: number }, lineHeight: number, topdownOnly?: boolean) {
+        var el = this.editor.container;
+        var screenHeight = window.innerHeight;
+        var screenWidth = window.innerWidth;
+        var renderer = this.editor.renderer;
+        // var maxLines = Math.min(renderer.$maxLines, this.session.getLength());
+        var maxH = renderer.$maxLines * lineHeight * 1.4;
+        var top = pos.top + this.$borderSize;
+        if (top + maxH &gt; screenHeight - lineHeight &amp;&amp; !topdownOnly) {
+            el.style.top = &quot;&quot;;
+            el.style.bottom = screenHeight - top + &quot;px&quot;;
+            this.isTopdown = false;
+        }
+        else {
+            top += lineHeight;
+            el.style.top = top + &quot;px&quot;;
+            el.style.bottom = &quot;&quot;;
+            this.isTopdown = true;
+        }
+
+        el.style.display = &quot;&quot;;
+        renderer.$textLayer.checkForSizeChanges();
+
+        var left = pos.left;
+        if (left + el.offsetWidth &gt; screenWidth) {
+            left = screenWidth - el.offsetWidth;
+        }
+
+        el.style.left = left + &quot;px&quot;;
+
+        this.editor._signal(&quot;show&quot;);
+        this.lastMouseEvent = null;
+        this.isOpen = true;
+    }
+    hide() {
+        this.editor.container.style.display = &quot;none&quot;;
+        this.editor._signal(&quot;hide&quot;);
+        this.isOpen = false;
+    }
+    setData(list) {
+        this.data = list || [];
+        this.editor.setValue(stringRepeat(&quot;\n&quot;, list.length), -1);
+        this.setRow(0);
+    }
+    getData(row: number) {
+        return this.data[row];
+    }
+    on(eventName: string, callback: (event, ee: EventEmitterClass)=&gt;any, capturing?: boolean) {
+        return this.editor.on(eventName, callback, capturing);
+    }
+    getTextLeftOffset(): number {
+        return this.$borderSize + this.editor.renderer.$padding + this.$imageSize;
+    }
+    setSelectOnHover(val) {
+        if (!val) {
+            this.hoverMarkerId = this.editor.session.addMarker(this.hoverMarker, &quot;ace_line-hover&quot;, &quot;fullLine&quot;);
+        }
+        else if (this.hoverMarkerId) {
+            this.editor.session.removeMarker(this.hoverMarkerId);
+            this.hoverMarkerId = null;
+        }
+    }
+    setHoverMarker(row: number, suppressRedraw?: boolean) {
+        if (row !== this.hoverMarker.start.row) {
+            this.hoverMarker.start.row = this.hoverMarker.end.row = row;
+            if (!suppressRedraw) {
+                this.editor.session._emit(&quot;changeBackMarker&quot;);
+            }
+            this.editor._emit(&quot;changeHoverMarker&quot;);
+        }
+    }
+    getHoveredRow() {
+        return this.hoverMarker.start.row;
+    }
+    getRow(): number {
+        return this.selectionMarker.start.row;
+    }
+    setRow(row: number) {
+        row = Math.max(-1, Math.min(this.data.length, row));
+        if (this.selectionMarker.start.row != row) {
+            this.editor.selection.clearSelection();
+            this.selectionMarker.start.row = this.selectionMarker.end.row = row || 0;
+            this.editor.session._emit(&quot;changeBackMarker&quot;);
+            this.editor.moveCursorTo(row || 0, 0);
+            if (this.isOpen) {
+                this.editor._signal(&quot;select&quot;);
+            }
+        }
+    }
+    setTheme(theme: string): void {
+        this.editor.setTheme(theme);
+    }
+    setFontSize(fontSize: string): void {
+        this.editor.setFontSize(fontSize);
+    }
+
+    get focus() {
+        return this.editor.focus;
+    }
+
+    getLength(): number {
+        return this.editor.session.getLength();
+    }
+
+    get container() {
+        return this.editor.container;
+    }
+}
+
+importCssString(&quot;\
+.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {\
+    background-color: #CAD6FA;\
+    z-index: 1;\
+}\
+.ace_editor.ace_autocomplete .ace_line-hover {\
+    border: 1px solid #abbffe;\
+    margin-top: -1px;\
+    background: rgba(233,233,253,0.4);\
+}\
+.ace_editor.ace_autocomplete .ace_line-hover {\
+    position: absolute;\
+    z-index: 2;\
+}\
+.ace_editor.ace_autocomplete .ace_scroller {\
+   background: none;\
+   border: none;\
+   box-shadow: none;\
+}\
+.ace_rightAlignedText {\
+    color: gray;\
+    display: inline-block;\
+    position: absolute;\
+    right: 4px;\
+    text-align: right;\
+    z-index: -1;\
+}\
+.ace_editor.ace_autocomplete .ace_completion-highlight{\
+    color: #000;\
+    text-shadow: 0 0 0.01em;\
+}\
+.ace_editor.ace_autocomplete {\
+    width: 280px;\
+    z-index: 200000;\
+    background: #fbfbfb;\
+    color: #444;\
+    border: 1px lightgray solid;\
+    position: fixed;\
+    box-shadow: 2px 3px 5px rgba(0,0,0,.2);\
+    line-height: 1.4;\
+}&quot;);
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

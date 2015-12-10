@@ -77,14 +77,14 @@ export default function autoComplete(editor: Editor, fileNameProvider: () => str
 
     _handler.attach = function() {
 
-        editor.addEventListener("change", onEditorChange);
+        editor.on("change", onEditorChange);
 
         _eventEmitter._emit("attach", { 'sender': that });
         _active = true;
     };
 
     _handler.detach = function() {
-        editor.removeEventListener("change", onEditorChange);
+        editor.off("change", onEditorChange);
         _view.hide();
         _eventEmitter._emit("detach", { 'sender': that });
         _active = false;
@@ -133,7 +133,7 @@ export default function autoComplete(editor: Editor, fileNameProvider: () => str
         moveprev: function(editor) { _view.focusPrev(); },
         cancel: function(editor) { deactivate(); },
         insert: function(editor: Editor) {
-            editor.removeEventListener("change", onEditorChange);
+            editor.off("change", onEditorChange);
 
             for (var i = 0; i < _inputText.length; i++) {
                 editor.remove("left");

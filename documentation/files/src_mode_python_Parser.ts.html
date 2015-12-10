@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/python/Parser.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/python/Parser.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+import asserts = require(&#x27;./asserts&#x27;);
+import base = require(&#x27;./base&#x27;);
+import tables = require(&#x27;./tables&#x27;);
+import Tokenizer = require(&#x27;./Tokenizer&#x27;);
+
+var OpMap = tables.OpMap;
+var ParseTables = tables.ParseTables;
+
+/**
+ * @param {string} message
+ * @param {string} fileName
+ * @param {Array.&lt;number&gt;=} begin
+ * @param {Array.&lt;number&gt;=} end
+ */
+function parseError(message: string, fileName: string, begin?, end?) {
+    var e = new SyntaxError(message);
+    e.name = &quot;ParseError&quot;;
+    e[&#x27;fileName&#x27;] = fileName;
+    if (base.isDef(begin)) {
+        e[&#x27;lineNumber&#x27;] = begin[0];
+        e[&#x27;columnNumber&#x27;] = begin[1];
+    }
+    return e;
+}
+
+/**
+ * Finds the specified
+ * @param a An array of arrays where each element is an array of two integers.
+ * @param obj An array containing two integers.
+ */
+function findInDfa(a: number[][], obj: number[]) {
+    var i = a.length;
+    while (i--) {
+        if (a[i][0] === obj[0] &amp;&amp; a[i][1] === obj[1]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export class Node {
+    public type: number;
+    public value: string;
+    public lineno: number;
+    public col_offset: number;
+    public children: Node[];
+    public used_names = {};
+    constructor(type: number, value: string, lineno: number, col_offset: number, children: Node[]) {
+        this.type = type;
+        this.value = value;
+        this.lineno = lineno;
+        this.col_offset = col_offset;
+        this.children = children;
+    }
+}
+
+class StackEntry {
+    public dfa;
+    public state: number;
+    public node: Node;
+    constructor(dfa, state: number, node: Node) {
+        this.dfa = dfa;
+        this.state = state;
+        this.node = node;
+    }
+}
+
+class Parser {
+    private fileName: string;
+    private grammar;
+    private stack: StackEntry[];
+    public rootnode: Node;
+    private used_names;
+
+    constructor(fileName: string, grammar) {
+        this.fileName = fileName;
+        this.grammar = grammar;
+    }
+
+    setup(start: number): void {
+        start = start || this.grammar.start;
+        var newnode = new Node(start, null, null, null, []);
+        this.stack = [new StackEntry(this.grammar.dfas[start], 0, newnode)];
+        this.used_names = {};
+    }
+
+    /**
+     * Add a token; return true if we&#x27;re done
+     */
+    addtoken(type: number, value: string, context: {}[]): boolean {
+        var iLabel = this.classify(type, value, context);
+
+        OUTERWHILE:
+        while (true) {
+            var tp = this.stack[this.stack.length - 1];
+            var states = tp.dfa[0];
+            var first = tp.dfa[1];
+            var arcs = states[tp.state];
+
+            // look for a state with this label
+            for (var a = 0; a &lt; arcs.length; ++a) {
+                var i = arcs[a][0];
+                var newstate = arcs[a][1];
+                var t = this.grammar.labels[i][0];
+                var v = this.grammar.labels[i][1];
+                if (iLabel === i) {
+                    // look it up in the list of labels
+                    asserts.assert(t &lt; 256);
+                    // shift a token; we&#x27;re done with it
+                    this.shift(type, value, newstate, context);
+                    // pop while we are in an accept-only state
+                    var state = newstate;
+                    while (states[state].length === 1
+                        &amp;&amp; states[state][0][0] === 0
+                        &amp;&amp; states[state][0][1] === state) {
+                        this.pop();
+                        if (this.stack.length === 0) {
+                            // done!
+                            return true;
+                        }
+                        tp = this.stack[this.stack.length - 1];
+                        state = tp.state;
+                        states = tp.dfa[0];
+                        first = tp.dfa[1];
+                    }
+                    // done with this token
+                    return false;
+                }
+                else if (t &gt;= 256) {
+                    var itsdfa = this.grammar.dfas[t];
+                    var itsfirst = itsdfa[1];
+                    if (itsfirst.hasOwnProperty(iLabel)) {
+                        // push a symbol
+                        this.push(t, this.grammar.dfas[t], newstate, context);
+                        continue OUTERWHILE;
+                    }
+                }
+            }
+
+            if (findInDfa(arcs, [0, tp.state])) {
+                // an accepting state, pop it and try something else
+                this.pop();
+                if (this.stack.length === 0) {
+                    throw parseError(&quot;too much input&quot;, this.fileName);
+                }
+            }
+            else {
+                // no transition
+                throw parseError(&quot;bad input&quot;, this.fileName, context[0], context[1]);
+            }
+        }
+    }
+
+    /**
+     * turn a token into a label
+     */
+    private classify(type: number, value: string, context: {}[]): number {
+        var iLabel: number;
+        if (type === Tokenizer.Tokens.T_NAME) {
+            this.used_names[value] = true;
+            iLabel = this.grammar.keywords.hasOwnProperty(value) &amp;&amp; this.grammar.keywords[value];
+            if (iLabel) {
+                return iLabel;
+            }
+        }
+        iLabel = this.grammar.tokens.hasOwnProperty(type) &amp;&amp; this.grammar.tokens[type];
+        if (!iLabel) {
+            throw parseError(&quot;bad token&quot;, this.fileName, context[0], context[1]);
+        }
+        return iLabel;
+    }
+
+    /**
+     * shift a token
+     */
+    private shift(type: number, value: string, newstate, context: {}[]) {
+        var dfa = this.stack[this.stack.length - 1].dfa;
+        var state = this.stack[this.stack.length - 1].state;
+        var node = this.stack[this.stack.length - 1].node;
+        var newnode = new Node(type, value, context[0][0], context[0][1], []);
+        if (newnode) {
+            node.children.push(newnode);
+        }
+        this.stack[this.stack.length - 1] = { dfa: dfa, state: newstate, node: node };
+    }
+
+    /**
+     * push a nonterminal
+     */
+    private push(type: number, newdfa, newstate, context: {}[]) {
+        var dfa = this.stack[this.stack.length - 1].dfa;
+        var node = this.stack[this.stack.length - 1].node;
+
+        this.stack[this.stack.length - 1] = { dfa: dfa, state: newstate, node: node };
+
+        var newnode = new Node(type, null, context[0][0], context[0][1], []);
+
+        this.stack.push({ dfa: newdfa, state: 0, node: newnode });
+    }
+
+    /**
+     * pop a nonterminal
+     */
+    private pop() {
+        var pop = this.stack.pop();
+        var newnode = pop.node;
+        if (newnode) {
+            if (this.stack.length !== 0) {
+                var node = this.stack[this.stack.length - 1].node;
+                node.children.push(newnode);
+            }
+            else {
+                this.rootnode = newnode;
+                this.rootnode.used_names = this.used_names;
+            }
+        }
+    }
+}
+
+/**
+ * parser for interactive input. returns a function that should be called with
+ * lines of input as they are entered. the function will return false
+ * until the input is complete, when it will return the rootnode of the parse.
+ *
+ * @param {string} fileName
+ * @param {string=} style root of parse tree (optional)
+ */
+function makeParser(fileName: string, style?) {
+    if (style === undefined) style = &quot;file_input&quot;;
+
+    var p = new Parser(fileName, ParseTables);
+    // for closure&#x27;s benefit
+    if (style === &quot;file_input&quot;) {
+        p.setup(ParseTables.sym.file_input);
+    }
+    else {
+        asserts.fail(&quot;todo;&quot;);
+    }
+    var curIndex = 0;
+    var lineno = 1;
+    var column = 0;
+    var prefix = &quot;&quot;;
+    var T_COMMENT = Tokenizer.Tokens.T_COMMENT;
+    var T_NL = Tokenizer.Tokens.T_NL;
+    var T_OP = Tokenizer.Tokens.T_OP;
+    var tokenizer = new Tokenizer(fileName, style === &quot;single_input&quot;, function(type, value, start, end, line) {
+        var s_lineno = start[0];
+        var s_column = start[1];
+        /*
+        if (s_lineno !== lineno &amp;&amp; s_column !== column)
+        {
+            // todo; update prefix and line/col
+        }
+        */
+        if (type === T_COMMENT || type === T_NL) {
+            prefix += value;
+            lineno = end[0];
+            column = end[1];
+            if (value[value.length - 1] === &quot;\n&quot;) {
+                lineno += 1;
+                column = 0;
+            }
+            return undefined;
+        }
+        if (type === T_OP) {
+            type = OpMap[value];
+        }
+        if (p.addtoken(type, value, [start, end, line])) {
+            return true;
+        }
+    });
+    return function(line): Node {
+        var ret = tokenizer.generateTokens(line);
+        if (ret) {
+            if (ret !== &quot;done&quot;) {
+                throw parseError(&quot;incomplete input&quot;, this.fileName);
+            }
+            return p.rootnode;
+        }
+        return null;
+    };
+}
+
+/**
+ * 
+ */
+export function parse(fileName: string, source: string): Node {
+    var parseFunc = makeParser(fileName);
+    if (source.substr(source.length - 1, 1) !== &quot;\n&quot;) source += &quot;\n&quot;;
+    var lines = source.split(&quot;\n&quot;);
+    var ret: Node;
+    for (var i = 0; i &lt; lines.length; ++i) {
+        ret = parseFunc(lines[i] + ((i === lines.length - 1) ? &quot;&quot; : &quot;\n&quot;));
+    }
+    return ret;
+}
+
+/**
+ * 
+ */
+export function parseTreeDump(node: Node): string {
+    var ret = &quot;&quot;;
+    if (node.type &gt;= 256) // non-term
+    {
+        ret += ParseTables.number2symbol[node.type] + &quot;\n&quot;;
+        for (var i = 0; i &lt; node.children.length; ++i) {
+            ret += parseTreeDump(node.children[i]);
+        }
+    }
+    else {
+        ret += Tokenizer.tokenNames[node.type] + &quot;: &quot; + node.value + &quot;\n&quot;;
+    }
+    return ret;
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

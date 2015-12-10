@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/python/Tokenizer.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/python/Tokenizer.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+import asserts = require(&#x27;./asserts&#x27;);
+import base = require(&#x27;./base&#x27;);
+import IndentationError = require(&#x27;./IndentationError&#x27;);
+import TokenError = require(&#x27;./TokenError&#x27;);
+
+    /** @param {...*} x */
+    function group(...x: any[])
+    {
+        var args = Array.prototype.slice.call(arguments);
+        return &#x27;(&#x27; + args.join(&#x27;|&#x27;) + &#x27;)&#x27;; 
+    }
+
+    /** @param {...*} x */
+    function any(x) { return group.apply(null, arguments) + &quot;*&quot;; }
+
+    /** @param {...*} x */
+    function maybe(x) { return group.apply(null, arguments) + &quot;?&quot;; }
+
+    /* we have to use string and ctor to be able to build patterns up. + on /.../
+     * does something strange. */
+    var Whitespace = &quot;[ \\f\\t]*&quot;;
+    var Comment_ = &quot;#[^\\r\\n]*&quot;;
+    var Ident = &quot;[a-zA-Z_]\\w*&quot;;
+
+    var Binnumber = &#x27;0[bB][01]*&#x27;;
+    var Hexnumber = &#x27;0[xX][\\da-fA-F]*[lL]?&#x27;;
+    var Octnumber = &#x27;0[oO]?[0-7]*[lL]?&#x27;;
+    var Decnumber = &#x27;[1-9]\\d*[lL]?&#x27;;
+    var Intnumber = group(Binnumber, Hexnumber, Octnumber, Decnumber);
+
+    var Exponent = &quot;[eE][-+]?\\d+&quot;;
+    var Pointfloat = group(&quot;\\d+\\.\\d*&quot;, &quot;\\.\\d+&quot;) + maybe(Exponent);
+    var Expfloat = &#x27;\\d+&#x27; + Exponent;
+    var Floatnumber = group(Pointfloat, Expfloat);
+    var Imagnumber = group(&quot;\\d+[jJ]&quot;, Floatnumber + &quot;[jJ]&quot;);
+    var Number_ = group(Imagnumber, Floatnumber, Intnumber);
+
+    // tail end of &#x27; string
+    var Single = &quot;^[^&#x27;\\\\]*(?:\\\\.[^&#x27;\\\\]*)*&#x27;&quot;;
+    // tail end of &quot; string
+    var Double_= &#x27;^[^&quot;\\\\]*(?:\\\\.[^&quot;\\\\]*)*&quot;&#x27;;
+    // tail end of &#x27;&#x27;&#x27; string
+    var Single3 = &quot;[^&#x27;\\\\]*(?:(?:\\\\.|&#x27;(?!&#x27;&#x27;))[^&#x27;\\\\]*)*&#x27;&#x27;&#x27;&quot;;
+    // tail end of &quot;&quot;&quot; string
+    var Double3 = &#x27;[^&quot;\\\\]*(?:(?:\\\\.|&quot;(?!&quot;&quot;))[^&quot;\\\\]*)*&quot;&quot;&quot;&#x27;;
+    var Triple = group(&quot;[ubUB]?[rR]?&#x27;&#x27;&#x27;&quot;, &#x27;[ubUB]?[rR]?&quot;&quot;&quot;&#x27;);
+    var String_ = group(&quot;[uU]?[rR]?&#x27;[^\\n&#x27;\\\\]*(?:\\\\.[^\\n&#x27;\\\\]*)*&#x27;&quot;,
+            &#x27;[uU]?[rR]?&quot;[^\\n&quot;\\\\]*(?:\\\\.[^\\n&quot;\\\\]*)*&quot;&#x27;);
+
+    // Because of leftmost-then-longest match semantics, be sure to put the
+    // longest operators first (e.g., if = came before ==, == would get
+    // recognized as two instances of =).
+    var Operator = group(&quot;\\*\\*=?&quot;, &quot;&gt;&gt;=?&quot;, &quot;&lt;&lt;=?&quot;, &quot;&lt;&gt;&quot;, &quot;!=&quot;,
+                     &quot;//=?&quot;, &quot;-&gt;&quot;,
+                     &quot;[+\\-*/%&amp;|^=&lt;&gt;]=?&quot;,
+                     &quot;~&quot;);
+
+    var Bracket = &#x27;[\\][(){}]&#x27;;
+    var Special = group(&#x27;\\r?\\n&#x27;, &#x27;[:;.,&#x60;@]&#x27;);
+    var Funny  = group(Operator, Bracket, Special);
+
+    var ContStr = group(&quot;[uUbB]?[rR]?&#x27;[^\\n&#x27;\\\\]*(?:\\\\.[^\\n&#x27;\\\\]*)*&quot; +
+                    group(&quot;&#x27;&quot;, &#x27;\\\\\\r?\\n&#x27;),
+                    &#x27;[uUbB]?[rR]?&quot;[^\\n&quot;\\\\]*(?:\\\\.[^\\n&quot;\\\\]*)*&#x27; +
+                    group(&#x27;&quot;&#x27;, &#x27;\\\\\\r?\\n&#x27;));
+    var PseudoExtras = group(&#x27;\\\\\\r?\\n&#x27;, Comment_, Triple);
+    // Need to prefix with &quot;^&quot; as we only want to match what&#x27;s next
+    var PseudoToken = &quot;^&quot; + group(PseudoExtras, Number_, Funny, ContStr, Ident);
+
+    var pseudoprog;
+    var single3prog;
+    var double3prog;
+    var endprogs = {};
+
+    var triple_quoted = {
+    &quot;&#x27;&#x27;&#x27;&quot;: true, &#x27;&quot;&quot;&quot;&#x27;: true,
+    &quot;r&#x27;&#x27;&#x27;&quot;: true, &#x27;r&quot;&quot;&quot;&#x27;: true, &quot;R&#x27;&#x27;&#x27;&quot;: true, &#x27;R&quot;&quot;&quot;&#x27;: true,
+    &quot;u&#x27;&#x27;&#x27;&quot;: true, &#x27;u&quot;&quot;&quot;&#x27;: true, &quot;U&#x27;&#x27;&#x27;&quot;: true, &#x27;U&quot;&quot;&quot;&#x27;: true,
+    &quot;b&#x27;&#x27;&#x27;&quot;: true, &#x27;b&quot;&quot;&quot;&#x27;: true, &quot;B&#x27;&#x27;&#x27;&quot;: true, &#x27;B&quot;&quot;&quot;&#x27;: true,
+    &quot;ur&#x27;&#x27;&#x27;&quot;: true, &#x27;ur&quot;&quot;&quot;&#x27;: true, &quot;Ur&#x27;&#x27;&#x27;&quot;: true, &#x27;Ur&quot;&quot;&quot;&#x27;: true,
+    &quot;uR&#x27;&#x27;&#x27;&quot;: true, &#x27;uR&quot;&quot;&quot;&#x27;: true, &quot;UR&#x27;&#x27;&#x27;&quot;: true, &#x27;UR&quot;&quot;&quot;&#x27;: true,
+    &quot;br&#x27;&#x27;&#x27;&quot;: true, &#x27;br&quot;&quot;&quot;&#x27;: true, &quot;Br&#x27;&#x27;&#x27;&quot;: true, &#x27;Br&quot;&quot;&quot;&#x27;: true,
+    &quot;bR&#x27;&#x27;&#x27;&quot;: true, &#x27;bR&quot;&quot;&quot;&#x27;: true, &quot;BR&#x27;&#x27;&#x27;&quot;: true, &#x27;BR&quot;&quot;&quot;&#x27;: true
+    };
+
+    var single_quoted = {
+    &quot;&#x27;&quot;: true, &#x27;&quot;&#x27;: true,
+    &quot;r&#x27;&quot;: true, &#x27;r&quot;&#x27;: true, &quot;R&#x27;&quot;: true, &#x27;R&quot;&#x27;: true,
+    &quot;u&#x27;&quot;: true, &#x27;u&quot;&#x27;: true, &quot;U&#x27;&quot;: true, &#x27;U&quot;&#x27;: true,
+    &quot;b&#x27;&quot;: true, &#x27;b&quot;&#x27;: true, &quot;B&#x27;&quot;: true, &#x27;B&quot;&#x27;: true,
+    &quot;ur&#x27;&quot;: true, &#x27;ur&quot;&#x27;: true, &quot;Ur&#x27;&quot;: true, &#x27;Ur&quot;&#x27;: true,
+    &quot;uR&#x27;&quot;: true, &#x27;uR&quot;&#x27;: true, &quot;UR&#x27;&quot;: true, &#x27;UR&quot;&#x27;: true,
+    &quot;br&#x27;&quot;: true, &#x27;br&quot;&#x27;: true, &quot;Br&#x27;&quot;: true, &#x27;Br&quot;&#x27;: true,
+    &quot;bR&#x27;&quot;: true, &#x27;bR&quot;&#x27;: true, &quot;BR&#x27;&quot;: true, &#x27;BR&quot;&#x27;: true
+    };
+
+    // hack to make closure keep those objects. not sure what a better way is.
+    (function() {
+     for (var k in triple_quoted) {}
+     for (var k in single_quoted) {}
+     }());
+
+
+    var tabsize = 8;
+
+    function contains(a, obj)
+    {
+        var i = a.length;
+        while (i--)
+        {
+            if (a[i] === obj)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function rstrip(input, what)
+    {
+        for (var i = input.length; i &gt; 0; --i)
+        {
+            if (what.indexOf(input.charAt(i - 1)) === -1) break;
+        }
+        return input.substring(0, i);
+    }
+
+/**
+ * This is a port of tokenize.py by Ka-Ping Yee.
+ *
+ * each call to readline should return one line of input as a string, or
+ * undefined if it&#x27;s finished.
+ *
+ * callback is called for each token with 5 args:
+ * 1. the token type
+ * 2. the token string
+ * 3. [ start_row, start_col ]
+ * 4. [ end_row, end_col ]
+ * 5. logical line where the token was found, including continuation lines
+ *
+ * callback can return true to abort.
+ */
+class Tokenizer
+{
+    private fileName: string;
+    private interactive: boolean;
+    private callback: (tokenType: number, token: string, start: number[], end: number[], line:string) =&gt; any;
+
+    private doneFunc: () =&gt; string;
+    
+    private lnum = 0;
+    private parenlev = 0;
+    private continued = false;
+    private namechars = &#x27;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_&#x27;;
+    private numchars = &#x27;0123456789&#x27;;
+    private contstr = &#x27;&#x27;;
+    private needcont = false;
+    private contline = undefined;
+    private indents = [0];
+    private endprog: RegExp = /.*/;
+    private strstart = [-1,-1];
+
+    constructor(fileName: string, interactive: boolean, callback: (tokenType: number, token: string, start: number[], end: number[], line:string) =&gt; any)
+    {
+        asserts.assert(base.isString(fileName), &quot;fileName must be a string&quot;);
+
+        this.fileName = fileName;
+        this.interactive = interactive;
+        this.callback = callback;
+
+        this.doneFunc = function()
+        {
+            for (var i = 1; i &lt; this.indents.length; ++i) // pop remaining indent levels
+            {
+                if (this.callback(Tokenizer.Tokens.T_DEDENT, &#x27;&#x27;, [this.lnum, 0], [this.lnum, 0], &#x27;&#x27;)) return &#x27;done&#x27;;
+            }
+            if (this.callback(Tokenizer.Tokens.T_ENDMARKER, &#x27;&#x27;, [this.lnum, 0], [this.lnum, 0], &#x27;&#x27;)) return &#x27;done&#x27;;
+
+            return &#x27;failed&#x27;;
+        };
+    }
+
+    /**
+     * Symbolic (numeric) constants for tokens.
+     */
+    static Tokens = {
+        T_ENDMARKER: 0,
+        T_NAME: 1,
+        T_NUMBER: 2,
+        T_STRING: 3,
+        T_NEWLINE: 4,
+        T_INDENT: 5,
+        T_DEDENT: 6,
+        T_LPAR: 7,
+        T_RPAR: 8,
+        T_LSQB: 9,
+        T_RSQB: 10,
+        T_COLON: 11,
+        T_COMMA: 12,
+        T_SEMI: 13,
+        T_PLUS: 14,
+        T_MINUS: 15,
+        T_STAR: 16,
+        T_SLASH: 17,
+        T_VBAR: 18,
+        T_AMPER: 19,
+        T_LESS: 20,
+        T_GREATER: 21,
+        T_EQUAL: 22,
+        T_DOT: 23,
+        T_PERCENT: 24,
+        T_BACKQUOTE: 25,
+        T_LBRACE: 26,
+        T_RBRACE: 27,
+        T_EQEQUAL: 28,
+        T_NOTEQUAL: 29,
+        T_LESSEQUAL: 30,
+        T_GREATEREQUAL: 31,
+        T_TILDE: 32,
+        T_CIRCUMFLEX: 33,
+        T_LEFTSHIFT: 34,
+        T_RIGHTSHIFT: 35,
+        T_DOUBLESTAR: 36,
+        T_PLUSEQUAL: 37,
+        T_MINEQUAL: 38,
+        T_STAREQUAL: 39,
+        T_SLASHEQUAL: 40,
+        T_PERCENTEQUAL: 41,
+        T_AMPEREQUAL: 42,
+        T_VBAREQUAL: 43,
+        T_CIRCUMFLEXEQUAL: 44,
+        T_LEFTSHIFTEQUAL: 45,
+        T_RIGHTSHIFTEQUAL: 46,
+        T_DOUBLESTAREQUAL: 47,
+        T_DOUBLESLASH: 48,
+        T_DOUBLESLASHEQUAL: 49,
+        T_AT: 50,
+        T_OP: 51,
+        T_COMMENT: 52,
+        T_NL: 53,
+        T_RARROW: 54,
+        T_ERRORTOKEN: 55,
+        T_N_TOKENS: 56,
+        T_NT_OFFSET: 256
+    };
+
+    /**
+     * Map from token symbolic (numeric) constant to (string) name. 
+     */
+    static tokenNames = {
+        0: &#x27;T_ENDMARKER&#x27;, 1: &#x27;T_NAME&#x27;, 2: &#x27;T_NUMBER&#x27;, 3: &#x27;T_STRING&#x27;, 4: &#x27;T_NEWLINE&#x27;,
+        5: &#x27;T_INDENT&#x27;, 6: &#x27;T_DEDENT&#x27;, 7: &#x27;T_LPAR&#x27;, 8: &#x27;T_RPAR&#x27;, 9: &#x27;T_LSQB&#x27;,
+        10: &#x27;T_RSQB&#x27;, 11: &#x27;T_COLON&#x27;, 12: &#x27;T_COMMA&#x27;, 13: &#x27;T_SEMI&#x27;, 14: &#x27;T_PLUS&#x27;,
+        15: &#x27;T_MINUS&#x27;, 16: &#x27;T_STAR&#x27;, 17: &#x27;T_SLASH&#x27;, 18: &#x27;T_VBAR&#x27;, 19: &#x27;T_AMPER&#x27;,
+        20: &#x27;T_LESS&#x27;, 21: &#x27;T_GREATER&#x27;, 22: &#x27;T_EQUAL&#x27;, 23: &#x27;T_DOT&#x27;, 24: &#x27;T_PERCENT&#x27;,
+        25: &#x27;T_BACKQUOTE&#x27;, 26: &#x27;T_LBRACE&#x27;, 27: &#x27;T_RBRACE&#x27;, 28: &#x27;T_EQEQUAL&#x27;, 29: &#x27;T_NOTEQUAL&#x27;,
+        30: &#x27;T_LESSEQUAL&#x27;, 31: &#x27;T_GREATEREQUAL&#x27;, 32: &#x27;T_TILDE&#x27;, 33: &#x27;T_CIRCUMFLEX&#x27;, 34: &#x27;T_LEFTSHIFT&#x27;,
+        35: &#x27;T_RIGHTSHIFT&#x27;, 36: &#x27;T_DOUBLESTAR&#x27;, 37: &#x27;T_PLUSEQUAL&#x27;, 38: &#x27;T_MINEQUAL&#x27;, 39: &#x27;T_STAREQUAL&#x27;,
+        40: &#x27;T_SLASHEQUAL&#x27;, 41: &#x27;T_PERCENTEQUAL&#x27;, 42: &#x27;T_AMPEREQUAL&#x27;, 43: &#x27;T_VBAREQUAL&#x27;, 44: &#x27;T_CIRCUMFLEXEQUAL&#x27;,
+        45: &#x27;T_LEFTSHIFTEQUAL&#x27;, 46: &#x27;T_RIGHTSHIFTEQUAL&#x27;, 47: &#x27;T_DOUBLESTAREQUAL&#x27;, 48: &#x27;T_DOUBLESLASH&#x27;, 49: &#x27;T_DOUBLESLASHEQUAL&#x27;,
+        50: &#x27;T_AT&#x27;, 51: &#x27;T_OP&#x27;, 52: &#x27;T_COMMENT&#x27;, 53: &#x27;T_NL&#x27;, 54: &#x27;T_RARROW&#x27;,
+        55: &#x27;T_ERRORTOKEN&#x27;, 56: &#x27;T_N_TOKENS&#x27;,
+        256: &#x27;T_NT_OFFSET&#x27;
+    };
+    
+    generateTokens(line: string): any
+    {
+        var endmatch: boolean;
+        var pos: number;
+        var column: number;
+        var end: number;
+        var max: number;
+
+
+        // bnm - Move these definitions in this function otherwise test state is preserved between
+        // calls on single3prog and double3prog causing weird errors with having multiple instances
+        // of triple quoted strings in the same program.
+
+        var pseudoprog = new RegExp(PseudoToken);
+        var single3prog = new RegExp(Single3, &quot;g&quot;);
+        var double3prog = new RegExp(Double3, &quot;g&quot;);
+
+        var endprogs = {     &quot;&#x27;&quot;: new RegExp(Single, &quot;g&quot;), &#x27;&quot;&#x27;: new RegExp(Double_, &quot;g&quot;),
+        &quot;&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;r&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;r&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;u&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;u&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;b&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;b&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;ur&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;ur&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;br&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;br&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;R&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;R&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;U&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;U&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;B&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;B&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;uR&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;uR&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;Ur&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;Ur&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;UR&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;UR&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;bR&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;bR&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;Br&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;Br&quot;&quot;&quot;&#x27;: double3prog,
+        &quot;BR&#x27;&#x27;&#x27;&quot;: single3prog, &#x27;BR&quot;&quot;&quot;&#x27;: double3prog,
+        &#x27;r&#x27;: null, &#x27;R&#x27;: null,
+        &#x27;u&#x27;: null, &#x27;U&#x27;: null,
+        &#x27;b&#x27;: null, &#x27;B&#x27;: null
+        };
+
+        if (!line) line = &#x27;&#x27;;
+
+        this.lnum += 1;
+        pos = 0;
+        max = line.length;
+
+        if (this.contstr.length &gt; 0)
+        {
+            if (!line)
+            {
+                throw new TokenError(&quot;EOF in multi-line string&quot;, this.fileName, this.strstart[0], this.strstart[1]);
+            }
+            this.endprog.lastIndex = 0;
+            endmatch = this.endprog.test(line);
+            if (endmatch)
+            {
+                pos = end = this.endprog.lastIndex;
+                if (this.callback(Tokenizer.Tokens.T_STRING, this.contstr + line.substring(0,end), this.strstart, [this.lnum, end], this.contline + line))
+                {
+                    return &#x27;done&#x27;;
+                }
+                this.contstr = &#x27;&#x27;;
+                this.needcont = false;
+                this.contline = undefined;
+            }
+            else if (this.needcont &amp;&amp; line.substring(line.length - 2) !== &quot;\\\n&quot; &amp;&amp; line.substring(line.length - 3) !== &quot;\\\r\n&quot;)
+            {
+                if (this.callback(Tokenizer.Tokens.T_ERRORTOKEN, this.contstr + line, this.strstart, [this.lnum, line.length], this.contline))
+                {
+                    return &#x27;done&#x27;;
+                }
+                this.contstr = &#x27;&#x27;;
+                this.contline = undefined;
+                return false;
+            }
+            else
+            {
+                this.contstr += line;
+                this.contline = this.contline + line;
+                return false;
+            }
+        }
+        else if (this.parenlev === 0 &amp;&amp; !this.continued)
+        {
+            if (!line) return this.doneFunc();
+            column = 0;
+            while (pos &lt; max)
+            {
+                if (line.charAt(pos) === &#x27; &#x27;) column += 1;
+                else if (line.charAt(pos) === &#x27;\t&#x27;) column = (column/tabsize + 1)*tabsize;
+                else if (line.charAt(pos) === &#x27;\f&#x27;) column = 0;
+                else break;
+                pos = pos + 1;
+            }
+            if (pos === max) return this.doneFunc();
+
+            if (&quot;#\r\n&quot;.indexOf(line.charAt(pos)) !== -1) // skip comments or blank lines
+            {
+                if (line.charAt(pos) === &#x27;#&#x27;)
+                {
+                    var comment_token = rstrip(line.substring(pos), &#x27;\r\n&#x27;);
+                    var nl_pos = pos + comment_token.length;
+                    if (this.callback(Tokenizer.Tokens.T_COMMENT, comment_token,
+                                [this.lnum, pos], [this.lnum, pos + comment_token.length], line))
+                        return &#x27;done&#x27;;
+                    if (this.callback(Tokenizer.Tokens.T_NL, line.substring(nl_pos),
+                                [this.lnum, nl_pos], [this.lnum, line.length], line))
+                        return &#x27;done&#x27;;
+                    return false;
+                }
+                else
+                {
+                    if (this.callback(Tokenizer.Tokens.T_NL, line.substring(pos),
+                                [this.lnum, pos], [this.lnum, line.length], line))
+                        return &#x27;done&#x27;;
+                    if (!this.interactive) return false;
+                }
+            }
+
+            if (column &gt; this.indents[this.indents.length - 1]) // count indents or dedents
+            {
+                this.indents.push(column);
+                if (this.callback(Tokenizer.Tokens.T_INDENT, line.substring(0, pos), [this.lnum, 0], [this.lnum, pos], line))
+                    return &#x27;done&#x27;;
+            }
+            while (column &lt; this.indents[this.indents.length - 1])
+            {
+                if (!contains(this.indents, column))
+                {
+                    throw new IndentationError(&quot;unindent does not match any outer indentation level&quot;, this.fileName, [this.lnum, 0], [this.lnum, pos], line);
+                }
+                this.indents.splice(this.indents.length - 1, 1);
+                if (this.callback(Tokenizer.Tokens.T_DEDENT, &#x27;&#x27;, [this.lnum, pos], [this.lnum, pos], line))
+                {
+                    return &#x27;done&#x27;;
+                }
+            }
+        }
+        else // continued statement
+        {
+            if (!line)
+            {
+                throw new TokenError(&quot;EOF in multi-line statement&quot;, this.fileName, this.lnum, 0);
+            }
+            this.continued = false;
+        }
+
+        while (pos &lt; max)
+        {
+            // js regexes don&#x27;t return any info about matches, other than the
+            // content. we&#x27;d like to put a \w+ before pseudomatch, but then we
+            // can&#x27;t get any data
+            var capos = line.charAt(pos);
+            while (capos === &#x27; &#x27; || capos === &#x27;\f&#x27; || capos === &#x27;\t&#x27;)
+            {
+                pos += 1;
+                capos = line.charAt(pos);
+            }
+            pseudoprog.lastIndex = 0;
+            var pseudomatch = pseudoprog.exec(line.substring(pos));
+            if (pseudomatch)
+            {
+                var start = pos;
+                end = start + pseudomatch[1].length;
+                var spos = [this.lnum, start];
+                var epos = [this.lnum, end];
+                pos = end;
+                var token = line.substring(start, end);
+                var initial = line.charAt(start);
+                if (this.numchars.indexOf(initial) !== -1 || (initial === &#x27;.&#x27; &amp;&amp; token !== &#x27;.&#x27;))
+                {
+                    if (this.callback(Tokenizer.Tokens.T_NUMBER, token, spos, epos, line)) return &#x27;done&#x27;;
+                }
+                else if (initial === &#x27;\r&#x27; || initial === &#x27;\n&#x27;)
+                {
+                    var newl = Tokenizer.Tokens.T_NEWLINE;
+                    if (this.parenlev &gt; 0) newl = Tokenizer.Tokens.T_NL;
+                    if (this.callback(newl, token, spos, epos, line)) return &#x27;done&#x27;;
+                }
+                else if (initial === &#x27;#&#x27;)
+                {
+                    if (this.callback(Tokenizer.Tokens.T_COMMENT, token, spos, epos, line)) return &#x27;done&#x27;;
+                }
+                else if (triple_quoted.hasOwnProperty(token))
+                {
+                    this.endprog = endprogs[token];
+                    this.endprog.lastIndex = 0;
+                    endmatch = this.endprog.test(line.substring(pos));
+                    if (endmatch)
+                    {
+                        pos = this.endprog.lastIndex + pos;
+                        token = line.substring(start, pos);
+                        if (this.callback(Tokenizer.Tokens.T_STRING, token, spos, [this.lnum, pos], line)) return &#x27;done&#x27;;
+                    }
+                    else
+                    {
+                        this.strstart = [this.lnum, start];
+                        this.contstr = line.substring(start);
+                        this.contline = line;
+                        return false;
+                    }
+                }
+                else if (single_quoted.hasOwnProperty(initial) ||
+                        single_quoted.hasOwnProperty(token.substring(0, 2)) ||
+                        single_quoted.hasOwnProperty(token.substring(0, 3)))
+                {
+                    if (token[token.length - 1] === &#x27;\n&#x27;)
+                    {
+                        this.strstart = [this.lnum, start];
+                        this.endprog = endprogs[initial] || endprogs[token[1]] || endprogs[token[2]];
+                        this.contstr = line.substring(start);
+                        this.needcont = true;
+                        this.contline = line;
+                        return false;
+                    }
+                    else
+                    {
+                        if (this.callback(Tokenizer.Tokens.T_STRING, token, spos, epos, line)) return &#x27;done&#x27;;
+                    }
+                }
+                else if (this.namechars.indexOf(initial) !== -1)
+                {
+                    if (this.callback(Tokenizer.Tokens.T_NAME, token, spos, epos, line)) return &#x27;done&#x27;;
+                }
+                else if (initial === &#x27;\\&#x27;)
+                {
+                    if (this.callback(Tokenizer.Tokens.T_NL, token, spos, [this.lnum, pos], line)) return &#x27;done&#x27;;
+                    this.continued = true;
+                }
+                else
+                {
+                    if (&#x27;([{&#x27;.indexOf(initial) !== -1) this.parenlev += 1;
+                    else if (&#x27;)]}&#x27;.indexOf(initial) !== -1) this.parenlev -= 1;
+                    if (this.callback(Tokenizer.Tokens.T_OP, token, spos, epos, line)) return &#x27;done&#x27;;
+                }
+            }
+            else
+            {
+                if (this.callback(Tokenizer.Tokens.T_ERRORTOKEN, line.charAt(pos), [this.lnum, pos], [this.lnum, pos+1], line))
+                {
+                    return &#x27;done&#x27;;
+                }
+                pos += 1;
+            }
+        }
+
+        return false;
+    }
+}
+
+export = Tokenizer;
+
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

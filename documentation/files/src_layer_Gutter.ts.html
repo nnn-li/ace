@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/layer/Gutter.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/layer/Gutter.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/* ***** BEGIN LICENSE BLOCK *****
+ * Distributed under the BSD license:
+ *
+ * Copyright (c) 2010, Ajax.org B.V.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Ajax.org B.V. nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL AJAX.ORG B.V. BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+import {
+addCssClass,
+computedStyle,
+createElement,
+removeCssClass} from &quot;../lib/dom&quot;;
+import {escapeHTML} from &quot;../lib/lang&quot;;
+import EventEmitterClass from &quot;../lib/event_emitter&quot;;
+import EditSession from &quot;../EditSession&quot;;
+
+export default class Gutter extends EventEmitterClass {
+    public element: HTMLDivElement;
+    public gutterWidth = 0;
+    public $annotations = [];
+    public $cells: { element; textNode; foldWidget }[] = [];
+    private $fixedWidth = false;
+    private $showLineNumbers = true;
+    private $renderer: any = &quot;&quot;;
+    private session: EditSession;
+    private $showFoldWidgets = true;
+    public $padding;
+    constructor(parentEl: HTMLElement) {
+        super();
+        this.element = &lt;HTMLDivElement&gt;createElement(&quot;div&quot;);
+        this.element.className = &quot;ace_layer ace_gutter-layer&quot;;
+        parentEl.appendChild(this.element);
+        this.setShowFoldWidgets(this.$showFoldWidgets);
+        this.$updateAnnotations = this.$updateAnnotations.bind(this);
+    }
+    setSession(session: EditSession) {
+        if (this.session) {
+            this.session.off(&quot;change&quot;, this.$updateAnnotations);
+        }
+        this.session = session;
+        session.on(&quot;change&quot;, this.$updateAnnotations);
+    }
+
+    // FIXME: The text and html appear to be optional.
+    setAnnotations(annotations: { html: string; row: number; text: string; type: string }[]) {
+        // iterate over sparse array
+        this.$annotations = [];
+        for (var i = 0; i &lt; annotations.length; i++) {
+            var annotation = annotations[i];
+            var row = annotation.row;
+            var rowInfo = this.$annotations[row];
+            if (!rowInfo)
+                rowInfo = this.$annotations[row] = { text: [] };
+
+            var annoText = annotation.text;
+            annoText = annoText ? escapeHTML(annoText) : annotation.html || &quot;&quot;;
+
+            if (rowInfo.text.indexOf(annoText) === -1)
+                rowInfo.text.push(annoText);
+
+            var type = annotation.type;
+            if (type === &quot;error&quot;)
+                rowInfo.className = &quot; ace_error&quot;;
+            else if (type === &quot;warning&quot; &amp;&amp; rowInfo.className != &quot; ace_error&quot;)
+                rowInfo.className = &quot; ace_warning&quot;;
+            else if (type === &quot;info&quot; &amp;&amp; (!rowInfo.className))
+                rowInfo.className = &quot; ace_info&quot;;
+        }
+    }
+
+    $updateAnnotations(e, session: EditSession) {
+        if (!this.$annotations.length)
+            return;
+        var delta = e.data;
+        var range = delta.range;
+        var firstRow = range.start.row;
+        var len = range.end.row - firstRow;
+        if (len === 0) {
+            // do nothing
+        }
+        else if (delta.action == &quot;removeText&quot; || delta.action == &quot;removeLines&quot;) {
+            this.$annotations.splice(firstRow, len + 1, null);
+        }
+        else {
+            var args = new Array(len + 1);
+            args.unshift(firstRow, 1);
+            this.$annotations.splice.apply(this.$annotations, args);
+        }
+    }
+
+    update(config) {
+        var session = this.session;
+        var firstRow = config.firstRow;
+        var lastRow = Math.min(config.lastRow + config.gutterOffset,  // needed to compensate for hor scollbar
+            session.getLength() - 1);
+        var fold = session.getNextFoldLine(firstRow);
+        var foldStart = fold ? fold.start.row : Infinity;
+        var foldWidgets = this.$showFoldWidgets &amp;&amp; session[&#x27;foldWidgets&#x27;];
+        var breakpoints = session.$breakpoints;
+        var decorations = session.$decorations;
+        var firstLineNumber = session[&#x27;$firstLineNumber&#x27;];
+        var lastLineNumber = 0;
+
+        var gutterRenderer = session[&#x27;gutterRenderer&#x27;] || this.$renderer;
+
+        var cell = null;
+        var index = -1;
+        var row: number = firstRow;
+        while (true) {
+            if (row &gt; foldStart) {
+                row = fold.end.row + 1;
+                fold = session.getNextFoldLine(row, fold);
+                foldStart = fold ? fold.start.row : Infinity;
+            }
+            if (row &gt; lastRow) {
+                while (this.$cells.length &gt; index + 1) {
+                    cell = this.$cells.pop();
+                    this.element.removeChild(cell.element);
+                }
+                break;
+            }
+
+            cell = this.$cells[++index];
+            if (!cell) {
+                cell = { element: null, textNode: null, foldWidget: null };
+                cell.element = createElement(&quot;div&quot;);
+                cell.textNode = document.createTextNode(&#x27;&#x27;);
+                cell.element.appendChild(cell.textNode);
+                this.element.appendChild(cell.element);
+                this.$cells[index] = cell;
+            }
+
+            var className = &quot;ace_gutter-cell &quot;;
+            if (breakpoints[row])
+                className += breakpoints[row];
+            if (decorations[row])
+                className += decorations[row];
+            if (this.$annotations[row])
+                className += this.$annotations[row].className;
+            if (cell.element.className != className)
+                cell.element.className = className;
+
+            var height = session.getRowLength(row) * config.lineHeight + &quot;px&quot;;
+            if (height != cell.element.style.height)
+                cell.element.style.height = height;
+
+            if (foldWidgets) {
+                var c = foldWidgets[row];
+                // check if cached value is invalidated and we need to recompute
+                if (c == null)
+                    c = foldWidgets[row] = session.getFoldWidget(row);
+            }
+
+            if (c) {
+                if (!cell.foldWidget) {
+                    cell.foldWidget = createElement(&quot;span&quot;);
+                    cell.element.appendChild(cell.foldWidget);
+                }
+                var className = &quot;ace_fold-widget ace_&quot; + c;
+                if (c == &quot;start&quot; &amp;&amp; row == foldStart &amp;&amp; row &lt; fold.end.row)
+                    className += &quot; ace_closed&quot;;
+                else
+                    className += &quot; ace_open&quot;;
+                if (cell.foldWidget.className != className)
+                    cell.foldWidget.className = className;
+
+                var height = config.lineHeight + &quot;px&quot;;
+                if (cell.foldWidget.style.height != height)
+                    cell.foldWidget.style.height = height;
+            } else {
+                if (cell.foldWidget) {
+                    cell.element.removeChild(cell.foldWidget);
+                    cell.foldWidget = null;
+                }
+            }
+
+            var text = lastLineNumber = gutterRenderer
+                ? gutterRenderer.getText(session, row)
+                : row + firstLineNumber;
+            if (text != cell.textNode.data)
+                cell.textNode.data = text;
+
+            row++;
+        }
+
+        this.element.style.height = config.minHeight + &quot;px&quot;;
+
+        if (this.$fixedWidth || session.$useWrapMode)
+            lastLineNumber = session.getLength() + firstLineNumber;
+
+        var gutterWidth = gutterRenderer
+            ? gutterRenderer.getWidth(session, lastLineNumber, config)
+            : lastLineNumber.toString().length * config.characterWidth;
+
+        var padding = this.$padding || this.$computePadding();
+        gutterWidth += padding.left + padding.right;
+        if (gutterWidth !== this.gutterWidth &amp;&amp; !isNaN(gutterWidth)) {
+            this.gutterWidth = gutterWidth;
+            this.element.style.width = Math.ceil(this.gutterWidth) + &quot;px&quot;;
+            this._emit(&quot;changeGutterWidth&quot;, gutterWidth);
+        }
+    }
+
+    setShowLineNumbers(show) {
+        this.$renderer = !show &amp;&amp; {
+            getWidth: function() { return &quot;&quot; },
+            getText: function() { return &quot;&quot; }
+        };
+    }
+
+    getShowLineNumbers(): boolean {
+        return this.$showLineNumbers;
+    }
+
+    setShowFoldWidgets(show: boolean): void {
+        if (show)
+            addCssClass(this.element, &quot;ace_folding-enabled&quot;);
+        else
+            removeCssClass(this.element, &quot;ace_folding-enabled&quot;);
+
+        this.$showFoldWidgets = show;
+        this.$padding = null;
+    }
+
+    getShowFoldWidgets() {
+        return this.$showFoldWidgets;
+    }
+
+    $computePadding() {
+        if (!this.element.firstChild) {
+            return { left: 0, right: 0 };
+        }
+        // FIXME: The firstChild may not be an HTMLElement.
+        var style = window.getComputedStyle(&lt;Element&gt;this.element.firstChild)
+        this.$padding = {};
+        this.$padding.left = parseInt(style.paddingLeft) + 1 || 0;
+        this.$padding.right = parseInt(style.paddingRight) || 0;
+        return this.$padding;
+    }
+
+    /**
+     * Returns either &quot;markers&quot;, &quot;foldWidgets&quot;, or undefined.
+     */
+    getRegion(point: { clientX: number }): string {
+        var padding = this.$padding || this.$computePadding();
+        var rect = this.element.getBoundingClientRect();
+        if (point.clientX &lt; padding.left + rect.left) {
+            return &quot;markers&quot;;
+        }
+        if (this.$showFoldWidgets &amp;&amp; point.clientX &gt; rect.right - padding.right) {
+            return &quot;foldWidgets&quot;;
+        }
+    }
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

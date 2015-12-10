@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/html/Tokenizer.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/html/Tokenizer.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+import {EntityParser} from &#x27;./EntityParser&#x27;;
+import InputStream from &#x27;./InputStream&#x27;;
+import isAlpha from &#x27;./isAlpha&#x27;;
+import isWhitespace from &#x27;./isWhitespace&#x27;;
+import SAXTreeBuilder from &#x27;./SAXTreeBuilder&#x27;;
+
+/**
+ *
+ * @param {Object} tokenHandler
+ * @constructor
+ */
+export default class Tokenizer {
+    _tokenHandler;
+    _state: (buffer) =&gt; boolean;
+    _inputStream: InputStream;
+    _currentToken;
+    _temporaryBuffer: string;
+    _additionalAllowedCharacter: string;
+    static DATA: (buffer) =&gt; boolean;
+    static RCDATA: (buffer) =&gt; boolean;
+    static RAWTEXT: (buffer) =&gt; boolean;
+    static SCRIPT_DATA: (buffer) =&gt; boolean;
+    static PLAINTEXT: (buffer) =&gt; boolean;
+    constructor(tokenHandler) {
+        this._tokenHandler = tokenHandler;
+        this._state = Tokenizer.DATA;
+        this._inputStream = new InputStream();
+        this._currentToken = null;
+        this._temporaryBuffer = &#x27;&#x27;;
+        this._additionalAllowedCharacter = &#x27;&#x27;;
+    }
+    get lineNumber() {
+        return this._inputStream.location().line;
+    }
+    get columnNumber() {
+        return this._inputStream.location().column;
+    }
+
+    _parseError(code, args?) {
+        this._tokenHandler.parseError(code, args);
+    }
+
+    _emitToken(token) {
+        if (token.type === &#x27;StartTag&#x27;) {
+            for (var i = 1; i &lt; token.data.length; i++) {
+                if (!token.data[i].nodeName)
+                    token.data.splice(i--, 1);
+            }
+        } else if (token.type === &#x27;EndTag&#x27;) {
+            if (token.selfClosing) {
+                this._parseError(&#x27;self-closing-flag-on-end-tag&#x27;);
+            }
+            if (token.data.length !== 0) {
+                this._parseError(&#x27;attributes-in-end-tag&#x27;);
+            }
+        }
+        this._tokenHandler.processToken(token);
+        if (token.type === &#x27;StartTag&#x27; &amp;&amp; token.selfClosing &amp;&amp; !this._tokenHandler.isSelfClosingFlagAcknowledged()) {
+            this._parseError(&#x27;non-void-element-with-trailing-solidus&#x27;, { name: token.name });
+        }
+    }
+
+    _emitCurrentToken = function() {
+        this._state = Tokenizer.DATA;
+        this._emitToken(this._currentToken);
+    }
+
+    _currentAttribute = function() {
+        return this._currentToken.data[this._currentToken.data.length - 1];
+    }
+
+    setState = function(state) {
+        this._state = state;
+    }
+
+    tokenize = function(source) {
+        // FIXME proper tokenizer states
+        Tokenizer.DATA = data_state;
+        Tokenizer.RCDATA = rcdata_state;
+        Tokenizer.RAWTEXT = rawtext_state;
+        Tokenizer.SCRIPT_DATA = script_data_state;
+        Tokenizer.PLAINTEXT = plaintext_state;
+
+
+        this._state = Tokenizer.DATA;
+
+        this._inputStream.append(source);
+
+        this._tokenHandler.startTokenization(this);
+
+        this._inputStream.eof = true;
+
+        var tokenizer = this;
+
+        while (this._state.call(this, this._inputStream));
+
+
+        function data_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._emitToken({ type: &#x27;EOF&#x27;, data: null });
+                return false;
+            } else if (data === &#x27;&amp;&#x27;) {
+                tokenizer.setState(character_reference_in_data_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(tag_open_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                buffer.commit();
+            } else {
+                var chars = buffer.matchUntil(&quot;&amp;|&lt;|\u0000&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data + chars });
+                buffer.commit();
+            }
+            return true;
+        }
+
+        function character_reference_in_data_state(buffer) {
+            var character = EntityParser.consumeEntity(buffer, tokenizer);
+            tokenizer.setState(data_state);
+            tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: character || &#x27;&amp;&#x27; });
+            return true;
+        }
+
+        function rcdata_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._emitToken({ type: &#x27;EOF&#x27;, data: null });
+                return false;
+            } else if (data === &#x27;&amp;&#x27;) {
+                tokenizer.setState(character_reference_in_rcdata_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(rcdata_less_than_sign_state);
+            } else if (data === &quot;\u0000&quot;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                buffer.commit();
+            } else {
+                var chars = buffer.matchUntil(&quot;&amp;|&lt;|\u0000&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data + chars });
+                buffer.commit();
+            }
+            return true;
+        }
+
+        function character_reference_in_rcdata_state(buffer) {
+            var character = EntityParser.consumeEntity(buffer, tokenizer);
+            tokenizer.setState(rcdata_state);
+            tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: character || &#x27;&amp;&#x27; });
+            return true;
+        }
+
+        function rawtext_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._emitToken({ type: &#x27;EOF&#x27;, data: null });
+                return false;
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(rawtext_less_than_sign_state);
+            } else if (data === &quot;\u0000&quot;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                buffer.commit();
+            } else {
+                var chars = buffer.matchUntil(&quot;&lt;|\u0000&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data + chars });
+            }
+            return true;
+        }
+
+        function plaintext_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._emitToken({ type: &#x27;EOF&#x27;, data: null });
+                return false;
+            } else if (data === &quot;\u0000&quot;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                buffer.commit();
+            } else {
+                var chars = buffer.matchUntil(&quot;\u0000&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data + chars });
+            }
+            return true;
+        }
+
+
+        function script_data_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._emitToken({ type: &#x27;EOF&#x27;, data: null });
+                return false;
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(script_data_less_than_sign_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                buffer.commit();
+            } else {
+                var chars = buffer.matchUntil(&quot;&lt;|\u0000&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data + chars });
+            }
+            return true;
+        }
+
+        function rcdata_less_than_sign_state(buffer) {
+            var data = buffer.char();
+            if (data === &quot;/&quot;) {
+                this._temporaryBuffer = &#x27;&#x27;;
+                tokenizer.setState(rcdata_end_tag_open_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(rcdata_state);
+            }
+            return true;
+        }
+
+        function rcdata_end_tag_open_state(buffer) {
+            var data = buffer.char();
+            if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                tokenizer.setState(rcdata_end_tag_name_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(rcdata_state);
+            }
+            return true;
+        }
+
+        function rcdata_end_tag_name_state(buffer) {
+            var appropriate = tokenizer._currentToken &amp;&amp; (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+            var data = buffer.char();
+            if (isWhitespace(data) &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: this._temporaryBuffer, data: [], selfClosing: false };
+                tokenizer.setState(before_attribute_name_state);
+            } else if (data === &#x27;/&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: this._temporaryBuffer, data: [], selfClosing: false };
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &#x27;&gt;&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: this._temporaryBuffer, data: [], selfClosing: false };
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                buffer.commit();
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; + this._temporaryBuffer });
+                buffer.unget(data);
+                tokenizer.setState(rcdata_state);
+            }
+            return true;
+        }
+
+        function rawtext_less_than_sign_state(buffer) {
+            var data = buffer.char();
+            if (data === &quot;/&quot;) {
+                this._temporaryBuffer = &#x27;&#x27;;
+                tokenizer.setState(rawtext_end_tag_open_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(rawtext_state);
+            }
+            return true;
+        }
+
+        function rawtext_end_tag_open_state(buffer) {
+            var data = buffer.char();
+            if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                tokenizer.setState(rawtext_end_tag_name_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(rawtext_state);
+            }
+            return true;
+        }
+
+        function rawtext_end_tag_name_state(buffer) {
+            var appropriate = tokenizer._currentToken &amp;&amp; (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+            var data = buffer.char();
+            if (isWhitespace(data) &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: this._temporaryBuffer, data: [], selfClosing: false };
+                tokenizer.setState(before_attribute_name_state);
+            } else if (data === &#x27;/&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: this._temporaryBuffer, data: [], selfClosing: false };
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &#x27;&gt;&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: this._temporaryBuffer, data: [], selfClosing: false };
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                buffer.commit();
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; + this._temporaryBuffer });
+                buffer.unget(data);
+                tokenizer.setState(rawtext_state);
+            }
+            return true;
+        }
+
+        function script_data_less_than_sign_state(buffer) {
+            var data = buffer.char();
+            if (data === &quot;/&quot;) {
+                this._temporaryBuffer = &#x27;&#x27;;
+                tokenizer.setState(script_data_end_tag_open_state);
+            } else if (data === &#x27;!&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;!&#x27; });
+                tokenizer.setState(script_data_escape_start_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(script_data_state);
+            }
+            return true;
+        }
+
+        function script_data_end_tag_open_state(buffer) {
+            var data = buffer.char();
+            if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                tokenizer.setState(script_data_end_tag_name_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(script_data_state);
+            }
+            return true;
+        }
+
+        function script_data_end_tag_name_state(buffer) {
+            var appropriate = tokenizer._currentToken &amp;&amp; (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+            var data = buffer.char();
+            if (isWhitespace(data) &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: &#x27;script&#x27;, data: [], selfClosing: false };
+                tokenizer.setState(before_attribute_name_state);
+            } else if (data === &#x27;/&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: &#x27;script&#x27;, data: [], selfClosing: false };
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &#x27;&gt;&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: &#x27;script&#x27;, data: [], selfClosing: false };
+                tokenizer._emitCurrentToken();
+            } else if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                buffer.commit();
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; + this._temporaryBuffer });
+                buffer.unget(data);
+                tokenizer.setState(script_data_state);
+            }
+            return true;
+        }
+
+        function script_data_escape_start_state(buffer) {
+            var data = buffer.char();
+            if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                tokenizer.setState(script_data_escape_start_dash_state);
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(script_data_state);
+            }
+            return true;
+        }
+
+        function script_data_escape_start_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                tokenizer.setState(script_data_escaped_dash_dash_state);
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(script_data_state);
+            }
+            return true;
+        }
+
+        function script_data_escaped_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                tokenizer.setState(script_data_escaped_dash_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(script_data_escaped_less_then_sign_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                buffer.commit();
+            } else {
+                var chars = buffer.matchUntil(&#x27;&lt;|-|\u0000&#x27;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data + chars });
+            }
+            return true;
+        }
+
+        function script_data_escaped_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                tokenizer.setState(script_data_escaped_dash_dash_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(script_data_escaped_less_then_sign_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                tokenizer.setState(script_data_escaped_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                tokenizer.setState(script_data_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_escaped_dash_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&#x27;eof-in-script&#x27;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer.setState(script_data_escaped_less_then_sign_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&gt;&#x27; });
+                tokenizer.setState(script_data_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                tokenizer.setState(script_data_escaped_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                tokenizer.setState(script_data_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_escaped_less_then_sign_state(buffer) {
+            var data = buffer.char();
+            if (data === &#x27;/&#x27;) {
+                this._temporaryBuffer = &#x27;&#x27;;
+                tokenizer.setState(script_data_escaped_end_tag_open_state);
+            } else if (isAlpha(data)) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; + data });
+                this._temporaryBuffer = data;
+                tokenizer.setState(script_data_double_escape_start_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(script_data_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_escaped_end_tag_open_state(buffer) {
+            var data = buffer.char();
+            if (isAlpha(data)) {
+                this._temporaryBuffer = data;
+                tokenizer.setState(script_data_escaped_end_tag_name_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(script_data_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_escaped_end_tag_name_state(buffer) {
+            var appropriate = tokenizer._currentToken &amp;&amp; (tokenizer._currentToken.name === this._temporaryBuffer.toLowerCase());
+            var data = buffer.char();
+            if (isWhitespace(data) &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: &#x27;script&#x27;, data: [], selfClosing: false };
+                tokenizer.setState(before_attribute_name_state);
+            } else if (data === &#x27;/&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: &#x27;script&#x27;, data: [], selfClosing: false };
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &#x27;&gt;&#x27; &amp;&amp; appropriate) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: &#x27;script&#x27;, data: [], selfClosing: false };
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isAlpha(data)) {
+                this._temporaryBuffer += data;
+                buffer.commit();
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; + this._temporaryBuffer });
+                buffer.unget(data);
+                tokenizer.setState(script_data_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_double_escape_start_state(buffer) {
+            var data = buffer.char();
+            if (isWhitespace(data) || data === &#x27;/&#x27; || data === &#x27;&gt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                if (this._temporaryBuffer.toLowerCase() === &#x27;script&#x27;)
+                    tokenizer.setState(script_data_double_escaped_state);
+                else
+                    tokenizer.setState(script_data_escaped_state);
+            } else if (isAlpha(data)) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                this._temporaryBuffer += data;
+                buffer.commit();
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(script_data_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_double_escaped_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&#x27;eof-in-script&#x27;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                tokenizer.setState(script_data_double_escaped_dash_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                tokenizer.setState(script_data_double_escaped_less_than_sign_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&#x27;invalid-codepoint&#x27;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                buffer.commit();
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                buffer.commit();
+            }
+            return true;
+        }
+
+        function script_data_double_escaped_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&#x27;eof-in-script&#x27;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                tokenizer.setState(script_data_double_escaped_dash_dash_state);
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                tokenizer.setState(script_data_double_escaped_less_than_sign_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&#x27;invalid-codepoint&#x27;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                tokenizer.setState(script_data_double_escaped_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                tokenizer.setState(script_data_double_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_double_escaped_dash_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&#x27;eof-in-script&#x27;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;-&#x27; });
+                buffer.commit();
+            } else if (data === &#x27;&lt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                tokenizer.setState(script_data_double_escaped_less_than_sign_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&gt;&#x27; });
+                tokenizer.setState(script_data_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&#x27;invalid-codepoint&#x27;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;\uFFFD&#x27; });
+                tokenizer.setState(script_data_double_escaped_state);
+            } else {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                tokenizer.setState(script_data_double_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_double_escaped_less_than_sign_state(buffer) {
+            var data = buffer.char();
+            if (data === &#x27;/&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;/&#x27; });
+                this._temporaryBuffer = &#x27;&#x27;;
+                tokenizer.setState(script_data_double_escape_end_state);
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(script_data_double_escaped_state);
+            }
+            return true;
+        }
+
+        function script_data_double_escape_end_state(buffer) {
+            var data = buffer.char();
+            if (isWhitespace(data) || data === &#x27;/&#x27; || data === &#x27;&gt;&#x27;) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                if (this._temporaryBuffer.toLowerCase() === &#x27;script&#x27;)
+                    tokenizer.setState(script_data_escaped_state);
+                else
+                    tokenizer.setState(script_data_double_escaped_state);
+            } else if (isAlpha(data)) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+                this._temporaryBuffer += data;
+                buffer.commit();
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(script_data_double_escaped_state);
+            }
+            return true;
+        }
+
+        function tag_open_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;bare-less-than-sign-at-eof&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isAlpha(data)) {
+                tokenizer._currentToken = { type: &#x27;StartTag&#x27;, name: data.toLowerCase(), data: [] };
+                tokenizer.setState(tag_name_state);
+            } else if (data === &#x27;!&#x27;) {
+                tokenizer.setState(markup_declaration_open_state);
+            } else if (data === &#x27;/&#x27;) {
+                tokenizer.setState(close_tag_open_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                // XXX In theory it could be something besides a tag name. But
+                // do we really care?
+                tokenizer._parseError(&quot;expected-tag-name-but-got-right-bracket&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &quot;&lt;&gt;&quot; });
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;?&#x27;) {
+                // XXX In theory it could be something besides a tag name. But
+                // do we really care?
+                tokenizer._parseError(&quot;expected-tag-name-but-got-question-mark&quot;);
+                buffer.unget(data);
+                tokenizer.setState(bogus_comment_state);
+            } else {
+                // XXX
+                tokenizer._parseError(&quot;expected-tag-name&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &quot;&lt;&quot; });
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            }
+            return true;
+        }
+
+        function close_tag_open_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;expected-closing-tag-but-got-eof&quot;);
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: &#x27;&lt;/&#x27; });
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isAlpha(data)) {
+                tokenizer._currentToken = { type: &#x27;EndTag&#x27;, name: data.toLowerCase(), data: [] };
+                tokenizer.setState(tag_name_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;expected-closing-tag-but-got-right-bracket&quot;);
+                tokenizer.setState(data_state);
+            } else {
+                tokenizer._parseError(&quot;expected-closing-tag-but-got-char&quot;, { data: data }); // param 1 is datavars:
+                buffer.unget(data);
+                tokenizer.setState(bogus_comment_state);
+            }
+            return true;
+        }
+
+        function tag_name_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&#x27;eof-in-tag-name&#x27;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(before_attribute_name_state);
+            } else if (isAlpha(data)) {
+                tokenizer._currentToken.name += data.toLowerCase();
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;/&#x27;) {
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.name += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentToken.name += data;
+            }
+            buffer.commit();
+
+            return true;
+        }
+
+        function before_attribute_name_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;expected-attribute-name-but-got-eof&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                return true;
+            } else if (isAlpha(data)) {
+                tokenizer._currentToken.data.push({ nodeName: data.toLowerCase(), nodeValue: &quot;&quot; });
+                tokenizer.setState(attribute_name_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;/&#x27;) {
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &quot;&#x27;&quot; || data === &#x27;&quot;&#x27; || data === &#x27;=&#x27; || data === &#x27;&lt;&#x27;) {
+                tokenizer._parseError(&quot;invalid-character-in-attribute-name&quot;);
+                tokenizer._currentToken.data.push({ nodeName: data, nodeValue: &quot;&quot; });
+                tokenizer.setState(attribute_name_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data.push({ nodeName: &quot;\uFFFD&quot;, nodeValue: &quot;&quot; });
+            } else {
+                tokenizer._currentToken.data.push({ nodeName: data, nodeValue: &quot;&quot; });
+                tokenizer.setState(attribute_name_state);
+            }
+            return true;
+        }
+
+        function attribute_name_state(buffer) {
+            var data = buffer.char();
+            var leavingThisState = true;
+            var shouldEmit = false;
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-attribute-name&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                shouldEmit = true;
+            } else if (data === &#x27;=&#x27;) {
+                tokenizer.setState(before_attribute_value_state);
+            } else if (isAlpha(data)) {
+                tokenizer._currentAttribute().nodeName += data.toLowerCase();
+                leavingThisState = false;
+            } else if (data === &#x27;&gt;&#x27;) {
+                // XXX If we emit here the attributes are converted to a dict
+                // without being checked and when the code below runs we error
+                // because data is a dict not a list
+                shouldEmit = true;
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(after_attribute_name_state);
+            } else if (data === &#x27;/&#x27;) {
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &quot;&#x27;&quot; || data === &#x27;&quot;&#x27;) {
+                tokenizer._parseError(&quot;invalid-character-in-attribute-name&quot;);
+                tokenizer._currentAttribute().nodeName += data;
+                leavingThisState = false;
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentAttribute().nodeName += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentAttribute().nodeName += data;
+                leavingThisState = false;
+            }
+
+            if (leavingThisState) {
+                // Attributes are not dropped at this stage. That happens when the
+                // start tag token is emitted so values can still be safely appended
+                // to attributes, but we do want to report the parse error in time.
+                var attributes = tokenizer._currentToken.data;
+                var currentAttribute = attributes[attributes.length - 1];
+                for (var i = attributes.length - 2; i &gt;= 0; i--) {
+                    if (currentAttribute.nodeName === attributes[i].nodeName) {
+                        tokenizer._parseError(&quot;duplicate-attribute&quot;, { name: currentAttribute.nodeName });
+                        currentAttribute.nodeName = null;
+                        break;
+                    }
+                }
+                if (shouldEmit)
+                    tokenizer._emitCurrentToken();
+            } else {
+                buffer.commit();
+            }
+            return true;
+        }
+
+        function after_attribute_name_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;expected-end-of-tag-but-got-eof&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                return true;
+            } else if (data === &#x27;=&#x27;) {
+                tokenizer.setState(before_attribute_value_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+            } else if (isAlpha(data)) {
+                tokenizer._currentToken.data.push({ nodeName: data, nodeValue: &quot;&quot; });
+                tokenizer.setState(attribute_name_state);
+            } else if (data === &#x27;/&#x27;) {
+                tokenizer.setState(self_closing_tag_state);
+            } else if (data === &quot;&#x27;&quot; || data === &#x27;&quot;&#x27; || data === &#x27;&lt;&#x27;) {
+                tokenizer._parseError(&quot;invalid-character-after-attribute-name&quot;);
+                tokenizer._currentToken.data.push({ nodeName: data, nodeValue: &quot;&quot; });
+                tokenizer.setState(attribute_name_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data.push({ nodeName: &quot;\uFFFD&quot;, nodeValue: &quot;&quot; });
+            } else {
+                tokenizer._currentToken.data.push({ nodeName: data, nodeValue: &quot;&quot; });
+                tokenizer.setState(attribute_name_state);
+            }
+            return true;
+        }
+
+        function before_attribute_value_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;expected-attribute-value-but-got-eof&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                return true;
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer.setState(attribute_value_double_quoted_state);
+            } else if (data === &#x27;&amp;&#x27;) {
+                tokenizer.setState(attribute_value_unquoted_state);
+                buffer.unget(data);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer.setState(attribute_value_single_quoted_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;expected-attribute-value-but-got-right-bracket&quot;);
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;=&#x27; || data === &#x27;&lt;&#x27; || data === &#x27;&#x60;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-character-in-unquoted-attribute-value&quot;);
+                tokenizer._currentAttribute().nodeValue += data;
+                tokenizer.setState(attribute_value_unquoted_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentAttribute().nodeValue += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentAttribute().nodeValue += data;
+                tokenizer.setState(attribute_value_unquoted_state);
+            }
+
+            return true;
+        }
+
+        function attribute_value_double_quoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-attribute-value-double-quote&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer.setState(after_attribute_value_state);
+            } else if (data === &#x27;&amp;&#x27;) {
+                this._additionalAllowedCharacter = &#x27;&quot;&#x27;;
+                tokenizer.setState(character_reference_in_attribute_value_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentAttribute().nodeValue += &quot;\uFFFD&quot;;
+            } else {
+                var s = buffer.matchUntil(&#x27;[\0&quot;&amp;]&#x27;);
+                data = data + s;
+                tokenizer._currentAttribute().nodeValue += data;
+            }
+            return true;
+        }
+
+        function attribute_value_single_quoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-attribute-value-single-quote&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer.setState(after_attribute_value_state);
+            } else if (data === &#x27;&amp;&#x27;) {
+                this._additionalAllowedCharacter = &quot;&#x27;&quot;;
+                tokenizer.setState(character_reference_in_attribute_value_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentAttribute().nodeValue += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentAttribute().nodeValue += data + buffer.matchUntil(&quot;\u0000|[&#x27;&amp;]&quot;);
+            }
+            return true;
+        }
+
+        function attribute_value_unquoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-after-attribute-value&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(before_attribute_name_state);
+            } else if (data === &#x27;&amp;&#x27;) {
+                this._additionalAllowedCharacter = &quot;&gt;&quot;;
+                tokenizer.setState(character_reference_in_attribute_value_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;&quot;&#x27; || data === &quot;&#x27;&quot; || data === &#x27;=&#x27; || data === &#x27;&#x60;&#x27; || data === &#x27;&lt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-character-in-unquoted-attribute-value&quot;);
+                tokenizer._currentAttribute().nodeValue += data;
+                buffer.commit();
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentAttribute().nodeValue += &quot;\uFFFD&quot;;
+            } else {
+                var o = buffer.matchUntil(&quot;\u0000|[&quot; + &quot;\t\n\v\f\x20\r&quot; + &quot;&amp;&lt;&gt;\&quot;&#x27;=&#x60;&quot; + &quot;]&quot;);
+                if (o === InputStream.EOF) {
+                    tokenizer._parseError(&quot;eof-in-attribute-value-no-quotes&quot;);
+                    tokenizer._emitCurrentToken();
+                }
+                // Commit here since this state is re-enterable and its outcome won&#x27;t change with more data.
+                buffer.commit();
+                tokenizer._currentAttribute().nodeValue += data + o;
+            }
+            return true;
+        }
+
+        function character_reference_in_attribute_value_state(buffer) {
+            var character = EntityParser.consumeEntity(buffer, tokenizer, this._additionalAllowedCharacter);
+            this._currentAttribute().nodeValue += character || &#x27;&amp;&#x27;;
+            // We&#x27;re supposed to switch back to the attribute value state that
+            // we were in when we were switched into this state. Rather than
+            // keeping track of this explictly, we observe that the previous
+            // state can be determined by additionalAllowedCharacter.
+            if (this._additionalAllowedCharacter === &#x27;&quot;&#x27;)
+                tokenizer.setState(attribute_value_double_quoted_state);
+            else if (this._additionalAllowedCharacter === &#x27;\&#x27;&#x27;)
+                tokenizer.setState(attribute_value_single_quoted_state);
+            else if (this._additionalAllowedCharacter === &#x27;&gt;&#x27;)
+                tokenizer.setState(attribute_value_unquoted_state);
+            return true;
+        }
+
+        function after_attribute_value_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-after-attribute-value&quot;);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(before_attribute_name_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;/&#x27;) {
+                tokenizer.setState(self_closing_tag_state);
+            } else {
+                tokenizer._parseError(&quot;unexpected-character-after-attribute-value&quot;);
+                buffer.unget(data);
+                tokenizer.setState(before_attribute_name_state);
+            }
+            return true;
+        }
+
+        function self_closing_tag_state(buffer) {
+            var c = buffer.char();
+            if (c === InputStream.EOF) {
+                tokenizer._parseError(&quot;unexpected-eof-after-solidus-in-tag&quot;);
+                buffer.unget(c);
+                tokenizer.setState(data_state);
+            } else if (c === &#x27;&gt;&#x27;) {
+                tokenizer._currentToken.selfClosing = true;
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                tokenizer._parseError(&quot;unexpected-character-after-solidus-in-tag&quot;);
+                buffer.unget(c);
+                tokenizer.setState(before_attribute_name_state);
+            }
+            return true;
+        }
+
+        function bogus_comment_state(buffer) {
+            var data = buffer.matchUntil(&#x27;&gt;&#x27;);
+            data = data.replace(/\u0000/g, &quot;\uFFFD&quot;);
+            buffer.char();
+            tokenizer._emitToken({ type: &#x27;Comment&#x27;, data: data });
+            tokenizer.setState(data_state);
+            return true;
+        }
+
+        function markup_declaration_open_state(buffer) {
+            var chars = buffer.shift(2);
+            if (chars === &#x27;--&#x27;) {
+                tokenizer._currentToken = { type: &#x27;Comment&#x27;, data: &#x27;&#x27; };
+                tokenizer.setState(comment_start_state);
+            } else {
+                var newchars = buffer.shift(5);
+                if (newchars === InputStream.EOF || chars === InputStream.EOF) {
+                    tokenizer._parseError(&quot;expected-dashes-or-doctype&quot;);
+                    tokenizer.setState(bogus_comment_state);
+                    buffer.unget(chars);
+                    return true;
+                }
+
+                chars += newchars;
+                if (chars.toUpperCase() === &#x27;DOCTYPE&#x27;) {
+                    tokenizer._currentToken = { type: &#x27;Doctype&#x27;, name: &#x27;&#x27;, publicId: null, systemId: null, forceQuirks: false };
+                    tokenizer.setState(doctype_state);
+                } else if (tokenizer._tokenHandler.isCdataSectionAllowed() &amp;&amp; chars === &#x27;[CDATA[&#x27;) {
+                    tokenizer.setState(cdata_section_state);
+                } else {
+                    tokenizer._parseError(&quot;expected-dashes-or-doctype&quot;);
+                    buffer.unget(chars);
+                    tokenizer.setState(bogus_comment_state);
+                }
+            }
+            return true;
+        }
+
+        function cdata_section_state(buffer) {
+            var data = buffer.matchUntil(&#x27;]]&gt;&#x27;);
+            // skip ]]&gt;
+            buffer.shift(3);
+            if (data) {
+                tokenizer._emitToken({ type: &#x27;Characters&#x27;, data: data });
+            }
+            tokenizer.setState(data_state);
+            return true;
+        }
+
+        function comment_start_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-comment&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer.setState(comment_start_dash_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;incorrect-comment&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentToken.data += data;
+                tokenizer.setState(comment_state);
+            }
+            return true;
+        }
+
+        function comment_start_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-comment&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer.setState(comment_end_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;incorrect-comment&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentToken.data += &#x27;-&#x27; + data;
+                tokenizer.setState(comment_state);
+            }
+            return true;
+        }
+
+        function comment_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-comment&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer.setState(comment_end_dash_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data += &quot;\uFFFD&quot;;
+            } else {
+                tokenizer._currentToken.data += data;
+                buffer.commit();
+            }
+            return true;
+        }
+
+        function comment_end_dash_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-comment-end-dash&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer.setState(comment_end_state);
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data += &quot;-\uFFFD&quot;;
+                tokenizer.setState(comment_state);
+            } else {
+                tokenizer._currentToken.data += &#x27;-&#x27; + data + buffer.matchUntil(&#x27;\u0000|-&#x27;);
+                // Consume the next character which is either a &quot;-&quot; or an :EOF as
+                // well so if there&#x27;s a &quot;-&quot; directly after the &quot;-&quot; we go nicely to
+                // the &quot;comment end state&quot; without emitting a tokenizer._parseError there.
+                buffer.char();
+            }
+            return true;
+        }
+
+        function comment_end_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-comment-double-dash&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitToken(tokenizer._currentToken);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;!&#x27;) {
+                tokenizer._parseError(&quot;unexpected-bang-after-double-dash-in-comment&quot;);
+                tokenizer.setState(comment_end_bang_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._parseError(&quot;unexpected-dash-after-double-dash-in-comment&quot;);
+                tokenizer._currentToken.data += data;
+            } else if (data === &#x27;\u0000&#x27;) {
+                tokenizer._parseError(&quot;invalid-codepoint&quot;);
+                tokenizer._currentToken.data += &quot;--\uFFFD&quot;;
+                tokenizer.setState(comment_state);
+            } else {
+                // XXX
+                tokenizer._parseError(&quot;unexpected-char-in-comment&quot;);
+                tokenizer._currentToken.data += &#x27;--&#x27; + data;
+                tokenizer.setState(comment_state);
+            }
+            return true;
+        }
+
+        function comment_end_bang_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-comment-end-bang-state&quot;);
+                tokenizer._emitToken(tokenizer._currentToken);
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitToken(tokenizer._currentToken);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;-&#x27;) {
+                tokenizer._currentToken.data += &#x27;--!&#x27;;
+                tokenizer.setState(comment_end_dash_state);
+            } else {
+                tokenizer._currentToken.data += &#x27;--!&#x27; + data;
+                tokenizer.setState(comment_state);
+            }
+            return true;
+        }
+
+        function doctype_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;expected-doctype-name-but-got-eof&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(before_doctype_name_state);
+            } else {
+                tokenizer._parseError(&quot;need-space-after-doctype&quot;);
+                buffer.unget(data);
+                tokenizer.setState(before_doctype_name_state);
+            }
+            return true;
+        }
+
+        function before_doctype_name_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;expected-doctype-name-but-got-eof&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isWhitespace(data)) {
+                // pass
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;expected-doctype-name-but-got-right-bracket&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                if (isAlpha(data))
+                    data = data.toLowerCase();
+                tokenizer._currentToken.name = data;
+                tokenizer.setState(doctype_name_state);
+            }
+            return true;
+        }
+
+        function doctype_name_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer._parseError(&quot;eof-in-doctype-name&quot;);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(after_doctype_name_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                if (isAlpha(data))
+                    data = data.toLowerCase();
+                tokenizer._currentToken.name += data;
+                buffer.commit();
+            }
+            return true;
+        }
+
+        function after_doctype_name_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isWhitespace(data)) {
+                // pass
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                if ([&#x27;p&#x27;, &#x27;P&#x27;].indexOf(data) &gt; -1) {
+                    var expected = [[&#x27;u&#x27;, &#x27;U&#x27;], [&#x27;b&#x27;, &#x27;B&#x27;], [&#x27;l&#x27;, &#x27;L&#x27;], [&#x27;i&#x27;, &#x27;I&#x27;], [&#x27;c&#x27;, &#x27;C&#x27;]];
+                    var matched = expected.every(function(expected) {
+                        data = buffer.char();
+                        return expected.indexOf(data) &gt; -1;
+                    });
+                    if (matched) {
+                        tokenizer.setState(after_doctype_public_keyword_state);
+                        return true;
+                    }
+                } else if ([&#x27;s&#x27;, &#x27;S&#x27;].indexOf(data) &gt; -1) {
+                    var expected = [[&#x27;y&#x27;, &#x27;Y&#x27;], [&#x27;s&#x27;, &#x27;S&#x27;], [&#x27;t&#x27;, &#x27;T&#x27;], [&#x27;e&#x27;, &#x27;E&#x27;], [&#x27;m&#x27;, &#x27;M&#x27;]];
+                    var matched = expected.every(function(expected) {
+                        data = buffer.char();
+                        return expected.indexOf(data) &gt; -1;
+                    });
+                    if (matched) {
+                        tokenizer.setState(after_doctype_system_keyword_state);
+                        return true;
+                    }
+                }
+
+                // All the characters read before the current &#x27;data&#x27; will be
+                // [a-zA-Z], so they&#x27;re garbage in the bogus doctype and can be
+                // discarded; only the latest character might be &#x27;&gt;&#x27; or EOF
+                // and needs to be ungetted
+                buffer.unget(data);
+                tokenizer._currentToken.forceQuirks = true;
+
+                if (data === InputStream.EOF) {
+                    tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                    buffer.unget(data);
+                    tokenizer.setState(data_state);
+                    tokenizer._emitCurrentToken();
+                } else {
+                    tokenizer._parseError(&quot;expected-space-or-right-bracket-in-doctype&quot;, { data: data });
+                    tokenizer.setState(bogus_doctype_state);
+                }
+            }
+            return true;
+        }
+
+        function after_doctype_public_keyword_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(before_doctype_public_identifier_state);
+            } else if (data === &quot;&#x27;&quot; || data === &#x27;&quot;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                buffer.unget(data);
+                tokenizer.setState(before_doctype_public_identifier_state);
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(before_doctype_public_identifier_state);
+            }
+            return true;
+        }
+
+        function before_doctype_public_identifier_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (isWhitespace(data)) {
+                // pass
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer._currentToken.publicId = &#x27;&#x27;;
+                tokenizer.setState(doctype_public_identifier_double_quoted_state);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer._currentToken.publicId = &#x27;&#x27;;
+                tokenizer.setState(doctype_public_identifier_single_quoted_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-end-of-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(bogus_doctype_state);
+            }
+            return true;
+        }
+
+        function doctype_public_identifier_double_quoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer.setState(after_doctype_public_identifier_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-end-of-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                tokenizer._currentToken.publicId += data;
+            }
+            return true;
+        }
+
+        function doctype_public_identifier_single_quoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer.setState(after_doctype_public_identifier_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-end-of-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else {
+                tokenizer._currentToken.publicId += data;
+            }
+            return true;
+        }
+
+        function after_doctype_public_identifier_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(between_doctype_public_and_system_identifiers_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer.setState(data_state);
+                tokenizer._emitCurrentToken();
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer._currentToken.systemId = &#x27;&#x27;;
+                tokenizer.setState(doctype_system_identifier_double_quoted_state);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer._currentToken.systemId = &#x27;&#x27;;
+                tokenizer.setState(doctype_system_identifier_single_quoted_state);
+            } else {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(bogus_doctype_state);
+            }
+            return true;
+        }
+
+        function between_doctype_public_and_system_identifiers_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                // pass
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer._currentToken.systemId = &#x27;&#x27;;
+                tokenizer.setState(doctype_system_identifier_double_quoted_state);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer._currentToken.systemId = &#x27;&#x27;;
+                tokenizer.setState(doctype_system_identifier_single_quoted_state);
+            } else {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(bogus_doctype_state);
+            }
+            return true;
+        }
+
+        function after_doctype_system_keyword_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                tokenizer.setState(before_doctype_system_identifier_state);
+            } else if (data === &quot;&#x27;&quot; || data === &#x27;&quot;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                buffer.unget(data);
+                tokenizer.setState(before_doctype_system_identifier_state);
+            } else {
+                buffer.unget(data);
+                tokenizer.setState(before_doctype_system_identifier_state);
+            }
+            return true;
+        }
+
+        function before_doctype_system_identifier_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                // pass
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer._currentToken.systemId = &#x27;&#x27;;
+                tokenizer.setState(doctype_system_identifier_double_quoted_state);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer._currentToken.systemId = &#x27;&#x27;;
+                tokenizer.setState(doctype_system_identifier_single_quoted_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-end-of-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer.setState(bogus_doctype_state);
+            }
+            return true;
+        }
+
+        function doctype_system_identifier_double_quoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&quot;&#x27;) {
+                tokenizer.setState(after_doctype_system_identifier_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-end-of-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else {
+                tokenizer._currentToken.systemId += data;
+            }
+            return true;
+        }
+
+        function doctype_system_identifier_single_quoted_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (data === &quot;&#x27;&quot;) {
+                tokenizer.setState(after_doctype_system_identifier_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._parseError(&quot;unexpected-end-of-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else {
+                tokenizer._currentToken.systemId += data;
+            }
+            return true;
+        }
+
+        function after_doctype_system_identifier_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                tokenizer._parseError(&quot;eof-in-doctype&quot;);
+                tokenizer._currentToken.forceQuirks = true;
+                tokenizer._emitCurrentToken();
+                buffer.unget(data);
+                tokenizer.setState(data_state);
+            } else if (isWhitespace(data)) {
+                // pass
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else {
+                tokenizer._parseError(&quot;unexpected-char-in-doctype&quot;);
+                tokenizer.setState(bogus_doctype_state);
+            }
+            return true;
+        }
+
+        function bogus_doctype_state(buffer) {
+            var data = buffer.char();
+            if (data === InputStream.EOF) {
+                buffer.unget(data);
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            } else if (data === &#x27;&gt;&#x27;) {
+                tokenizer._emitCurrentToken();
+                tokenizer.setState(data_state);
+            }
+            return true;
+        }
+    };
+}
+
+
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

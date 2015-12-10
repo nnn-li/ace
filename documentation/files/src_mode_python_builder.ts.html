@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/python/builder.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.13</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Ace.html">Ace</a></li>
+                                <li><a href="../classes/Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document..html">Anchor
+                 
+                 Creates a new &#x60;Anchor&#x60; and associates it with a document.</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]]..html">Search
+                
+                A class designed to handle all sorts of text searches within a [[Document &#x60;Document&#x60;]].</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/python/builder.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+import asserts = require(&#x27;./asserts&#x27;);
+import astnodes = require(&#x27;./astnodes&#x27;);
+import base = require(&#x27;./base&#x27;);
+import numericLiteral = require(&#x27;./numericLiteral&#x27;);
+import parser = require(&#x27;./Parser&#x27;);
+import tables = require(&#x27;./tables&#x27;);
+import Tokenizer = require(&#x27;./Tokenizer&#x27;);
+//
+// This is pretty much a straight port of ast.c from CPython 2.6.5.
+//
+// The previous version was easier to work with and more JS-ish, but having a
+// somewhat different ast structure than cpython makes testing more difficult.
+//
+// This way, we can use a dump from the ast module on any arbitrary python
+// code and know that we&#x27;re the same up to ast level, at least.
+//
+var ParseTables = tables.ParseTables;
+var SYM = ParseTables.sym;
+var TOK = Tokenizer.Tokens;
+
+/**
+ * @const
+ * @type {number}
+ */
+var LONG_THRESHOLD = Math.pow(2, 53);
+
+/**
+ * @param {string} message
+ * @param {string} fileName
+ * @param {number} lineNumber
+ */
+function syntaxError(message: string, fileName: string, lineNumber: number) {
+    asserts.assert(base.isString(message), &quot;message must be a string&quot;);
+    asserts.assert(base.isString(fileName), &quot;fileName must be a string&quot;);
+    asserts.assert(base.isNumber(lineNumber), &quot;lineNumber must be a number&quot;);
+    var e = new SyntaxError(message/*, fileName*/);
+    e[&#x27;fileName&#x27;] = fileName;
+    e[&#x27;lineNumber&#x27;] = lineNumber;
+    return e;
+}
+
+class Compiling {
+    public c_encoding: string;
+    public c_filename: string;
+    constructor(encoding: string, filename: string) {
+        this.c_encoding = encoding;
+        this.c_filename = filename;
+    }
+}
+
+/**
+ * @return {number}
+ */
+function NCH(n: parser.Node): number {
+    asserts.assert(n !== undefined);
+    if (n.children === null) return 0; return n.children.length;
+}
+
+function CHILD(n: parser.Node, i): parser.Node {
+    asserts.assert(n !== undefined);
+    asserts.assert(i !== undefined);
+    return n.children[i];
+}
+
+function REQ(n: parser.Node, type: number) {
+    asserts.assert(n.type === type, &quot;node wasn&#x27;t expected type&quot;);
+}
+
+function strobj(s: string): string {
+    asserts.assert(typeof s === &quot;string&quot;, &quot;expecting string, got &quot; + (typeof s));
+    // This previuosly constructed the runtime representation.
+    // That may have had an string intern side effect?
+    return s;
+}
+
+/** @return {number} */
+function numStmts(n: parser.Node) {
+    switch (n.type) {
+        case SYM.single_input:
+            if (CHILD(n, 0).type === TOK.T_NEWLINE)
+                return 0;
+            else
+                return numStmts(CHILD(n, 0));
+        case SYM.file_input:
+            var cnt = 0;
+            for (var i = 0; i &lt; NCH(n); ++i) {
+                var ch = CHILD(n, i);
+                if (ch.type === SYM.stmt)
+                    cnt += numStmts(ch);
+            }
+            return cnt;
+        case SYM.stmt:
+            return numStmts(CHILD(n, 0));
+        case SYM.compound_stmt:
+            return 1;
+        case SYM.simple_stmt:
+            return Math.floor(NCH(n) / 2); // div 2 is to remove count of ;s
+        case SYM.suite:
+            if (NCH(n) === 1)
+                return numStmts(CHILD(n, 0));
+            else {
+                var cnt = 0;
+                for (var i = 2; i &lt; NCH(n) - 1; ++i)
+                    cnt += numStmts(CHILD(n, i));
+                return cnt;
+            }
+        default:
+            asserts.fail(&quot;Non-statement found&quot;);
+    }
+    return 0;
+}
+
+function forbiddenCheck(c: Compiling, n: parser.Node, x, lineno: number) {
+    if (x === &quot;None&quot;) throw syntaxError(&quot;assignment to None&quot;, c.c_filename, lineno);
+    if (x === &quot;True&quot; || x === &quot;False&quot;) throw syntaxError(&quot;assignment to True or False is forbidden&quot;, c.c_filename, lineno);
+}
+
+/**
+ * Set the context ctx for e, recursively traversing e.
+ *
+ * Only sets context for expr kinds that can appear in assignment context as
+ * per the asdl file.
+ */
+function setContext(c: Compiling, e, ctx: astnodes.expr_context, n: parser.Node) {
+    asserts.assert(ctx !== astnodes.AugStore &amp;&amp; ctx !== astnodes.AugLoad);
+    var s = null;
+    var exprName = null;
+
+    switch (e.constructor) {
+        case astnodes.Attribute:
+        case astnodes.Name:
+            if (ctx === astnodes.Store) forbiddenCheck(c, n, e.attr, n.lineno);
+            e.ctx = ctx;
+            break;
+        case astnodes.Subscript:
+            e.ctx = ctx;
+            break;
+        case astnodes.List:
+            e.ctx = ctx;
+            s = e.elts;
+            break;
+        case astnodes.Tuple:
+            if (e.elts.length === 0)
+                throw syntaxError(&quot;can&#x27;t assign to ()&quot;, c.c_filename, n.lineno);
+            e.ctx = ctx;
+            s = e.elts;
+            break;
+        case astnodes.Lambda:
+            exprName = &quot;lambda&quot;;
+            break;
+        case astnodes.Call:
+            exprName = &quot;function call&quot;;
+            break;
+        case astnodes.BoolOp:
+        case astnodes.BinOp:
+        case astnodes.UnaryOp:
+            exprName = &quot;operator&quot;;
+            break;
+        case astnodes.GeneratorExp:
+            exprName = &quot;generator expression&quot;;
+            break;
+        case astnodes.Yield:
+            exprName = &quot;yield expression&quot;;
+            break;
+        case astnodes.ListComp:
+            exprName = &quot;list comprehension&quot;;
+            break;
+        case astnodes.Dict:
+        case astnodes.Num:
+        case astnodes.Str:
+            exprName = &quot;literal&quot;;
+            break;
+        case astnodes.Compare:
+            exprName = &quot;comparison expression&quot;;
+            break;
+        case astnodes.IfExp:
+            exprName = &quot;conditional expression&quot;;
+            break;
+        default:
+            asserts.fail(&quot;unhandled expression in assignment&quot;);
+    }
+    if (exprName) {
+        throw syntaxError(&quot;can&#x27;t &quot; + (ctx === astnodes.Store ? &quot;assign to&quot; : &quot;delete&quot;) + &quot; &quot; + exprName, c.c_filename, n.lineno);
+    }
+
+    if (s) {
+        for (var i = 0; i &lt; s.length; ++i) {
+            setContext(c, s[i], ctx, n);
+        }
+    }
+}
+
+var operatorMap = {};
+(function() {
+    operatorMap[TOK.T_VBAR] = astnodes.BitOr;
+    operatorMap[TOK.T_VBAR] = astnodes.BitOr;
+    operatorMap[TOK.T_CIRCUMFLEX] = astnodes.BitXor;
+    operatorMap[TOK.T_AMPER] = astnodes.BitAnd;
+    operatorMap[TOK.T_LEFTSHIFT] = astnodes.LShift;
+    operatorMap[TOK.T_RIGHTSHIFT] = astnodes.RShift;
+    operatorMap[TOK.T_PLUS] = astnodes.Add;
+    operatorMap[TOK.T_MINUS] = astnodes.Sub;
+    operatorMap[TOK.T_STAR] = astnodes.Mult;
+    operatorMap[TOK.T_SLASH] = astnodes.Div;
+    operatorMap[TOK.T_DOUBLESLASH] = astnodes.FloorDiv;
+    operatorMap[TOK.T_PERCENT] = astnodes.Mod;
+} ());
+
+function getOperator(n: parser.Node) {
+    asserts.assert(operatorMap[n.type] !== undefined);
+    return operatorMap[n.type];
+}
+
+function astForCompOp(c: Compiling, n: parser.Node) {
+    /* comp_op: &#x27;&lt;&#x27;|&#x27;&gt;&#x27;|&#x27;==&#x27;|&#x27;&gt;=&#x27;|&#x27;&lt;=&#x27;|&#x27;&lt;&gt;&#x27;|&#x27;!=&#x27;|&#x27;in&#x27;|&#x27;not&#x27; &#x27;in&#x27;|&#x27;is&#x27;
+               |&#x27;is&#x27; &#x27;not&#x27;
+    */
+    REQ(n, SYM.comp_op);
+    if (NCH(n) === 1) {
+        n = CHILD(n, 0);
+        switch (n.type) {
+            case TOK.T_LESS: return astnodes.Lt;
+            case TOK.T_GREATER: return astnodes.Gt;
+            case TOK.T_EQEQUAL: return astnodes.Eq;
+            case TOK.T_LESSEQUAL: return astnodes.LtE;
+            case TOK.T_GREATEREQUAL: return astnodes.GtE;
+            case TOK.T_NOTEQUAL: return astnodes.NotEq;
+            case TOK.T_NAME:
+                if (n.value === &quot;in&quot;) return astnodes.In_;
+                if (n.value === &quot;is&quot;) return astnodes.Is;
+        }
+    }
+    else if (NCH(n) === 2) {
+        if (CHILD(n, 0).type === TOK.T_NAME) {
+            if (CHILD(n, 1).value === &quot;in&quot;) return astnodes.NotIn;
+            if (CHILD(n, 0).value === &quot;is&quot;) return astnodes.IsNot;
+        }
+    }
+    asserts.fail(&quot;invalid comp_op&quot;);
+}
+
+function seqForTestlist(c: Compiling, n: parser.Node): astnodes.expr[] {
+    /* testlist: test (&#x27;,&#x27; test)* [&#x27;,&#x27;] */
+    asserts.assert(n.type === SYM.testlist ||
+        n.type === SYM.listmaker ||
+        n.type === SYM.testlist_gexp ||
+        n.type === SYM.testlist_safe ||
+        n.type === SYM.testlist1);
+    var seq: astnodes.expr[] = [];
+    for (var i = 0; i &lt; NCH(n); i += 2) {
+        asserts.assert(CHILD(n, i).type === SYM.IfExpr || CHILD(n, i).type === SYM.old_test);
+        seq[i / 2] = astForExpr(c, CHILD(n, i));
+    }
+    return seq;
+}
+
+function astForSuite(c: Compiling, n: parser.Node): astnodes.stmt[] {
+    /* suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT */
+    REQ(n, SYM.suite);
+    var seq: astnodes.stmt[] = [];
+    var pos = 0;
+    var ch;
+    if (CHILD(n, 0).type === SYM.simple_stmt) {
+        n = CHILD(n, 0);
+        /* simple_stmt always ends with an NEWLINE and may have a trailing
+         * SEMI. */
+        var end = NCH(n) - 1;
+        if (CHILD(n, end - 1).type === TOK.T_SEMI)
+            end -= 1;
+        for (var i = 0; i &lt; end; i += 2) // by 2 to skip ;
+            seq[pos++] = astForStmt(c, CHILD(n, i));
+    }
+    else {
+        for (var i = 2; i &lt; NCH(n) - 1; ++i) {
+            ch = CHILD(n, i);
+            REQ(ch, SYM.stmt);
+            var num = numStmts(ch);
+            if (num === 1) {
+                // small_stmt or compound_stmt w/ only 1 child
+                seq[pos++] = astForStmt(c, ch);
+            }
+            else {
+                ch = CHILD(ch, 0);
+                REQ(ch, SYM.simple_stmt);
+                for (var j = 0; j &lt; NCH(ch); j += 2) {
+                    if (NCH(CHILD(ch, j)) === 0) {
+                        asserts.assert(j + 1 === NCH(ch));
+                        break;
+                    }
+                    seq[pos++] = astForStmt(c, CHILD(ch, j));
+                }
+            }
+        }
+    }
+    asserts.assert(pos === numStmts(n));
+    return seq;
+}
+
+function astForExceptClause(c: Compiling, exc: parser.Node, body: parser.Node) {
+    /* except_clause: &#x27;except&#x27; [test [(&#x27;,&#x27; | &#x27;as&#x27;) test]] */
+    REQ(exc, SYM.except_clause);
+    REQ(body, SYM.suite);
+    if (NCH(exc) === 1)
+        return new astnodes.ExceptHandler(null, null, astForSuite(c, body), exc.lineno, exc.col_offset);
+    else if (NCH(exc) === 2)
+        return new astnodes.ExceptHandler(astForExpr(c, CHILD(exc, 1)), null, astForSuite(c, body), exc.lineno, exc.col_offset);
+    else if (NCH(exc) === 4) {
+        var e = astForExpr(c, CHILD(exc, 3));
+        setContext(c, e, astnodes.Store, CHILD(exc, 3));
+        return new astnodes.ExceptHandler(astForExpr(c, CHILD(exc, 1)), e, astForSuite(c, body), exc.lineno, exc.col_offset);
+    }
+    asserts.fail(&quot;wrong number of children for except clause&quot;);
+}
+
+function astForTryStmt(c: Compiling, n: parser.Node): any {
+    var nc = NCH(n);
+    var nexcept = (nc - 3) / 3;
+    var body, orelse = [], finally_ = null;
+
+    REQ(n, SYM.try_stmt);
+    body = astForSuite(c, CHILD(n, 2));
+    if (CHILD(n, nc - 3).type === TOK.T_NAME) {
+        if (CHILD(n, nc - 3).value === &quot;finally&quot;) {
+            if (nc &gt;= 9 &amp;&amp; CHILD(n, nc - 6).type === TOK.T_NAME) {
+                /* we can assume it&#x27;s an &quot;else&quot;,
+                   because nc &gt;= 9 for try-else-finally and
+                   it would otherwise have a type of except_clause */
+                orelse = astForSuite(c, CHILD(n, nc - 4));
+                nexcept--;
+            }
+
+            finally_ = astForSuite(c, CHILD(n, nc - 1));
+            nexcept--;
+        }
+        else {
+            /* we can assume it&#x27;s an &quot;else&quot;,
+               otherwise it would have a type of except_clause */
+            orelse = astForSuite(c, CHILD(n, nc - 1));
+            nexcept--;
+        }
+    }
+    else if (CHILD(n, nc - 3).type !== SYM.except_clause) {
+        throw syntaxError(&quot;malformed &#x27;try&#x27; statement&quot;, c.c_filename, n.lineno);
+    }
+
+    if (nexcept &gt; 0) {
+        var handlers = [];
+        for (var i = 0; i &lt; nexcept; ++i)
+            handlers[i] = astForExceptClause(c, CHILD(n, 3 + i * 3), CHILD(n, 5 + i * 3));
+        var exceptSt = new astnodes.TryExcept(body, handlers, orelse, n.lineno, n.col_offset);
+
+        if (!finally_)
+            return exceptSt;
+
+        /* if a &#x27;finally&#x27; is present too, we nest the TryExcept within a
+           TryFinally to emulate try ... except ... finally */
+        body = [exceptSt];
+    }
+
+    asserts.assert(finally_ !== null);
+    return new astnodes.TryFinally(body, finally_, n.lineno, n.col_offset);
+}
+
+
+function astForDottedName(c: Compiling, n: parser.Node): astnodes.expr {
+    REQ(n, SYM.dotted_name);
+    var lineno = n.lineno;
+    var col_offset = n.col_offset;
+    var id = strobj(CHILD(n, 0).value);
+    var e: any = new astnodes.Name(id, astnodes.Load, lineno, col_offset);
+    for (var i = 2; i &lt; NCH(n); i += 2) {
+        id = strobj(CHILD(n, i).value);
+        e = new astnodes.Attribute(e, id, astnodes.Load, lineno, col_offset);
+    }
+    return e;
+}
+
+function astForDecorator(c: Compiling, n: parser.Node) {
+    /* decorator: &#x27;@&#x27; dotted_name [ &#x27;(&#x27; [arglist] &#x27;)&#x27; ] NEWLINE */
+    REQ(n, SYM.decorator);
+    REQ(CHILD(n, 0), TOK.T_AT);
+    REQ(CHILD(n, NCH(n) - 1), TOK.T_NEWLINE);
+    var nameExpr = astForDottedName(c, CHILD(n, 1));
+    var d;
+    if (NCH(n) === 3) // no args
+        return nameExpr;
+    else if (NCH(n) === 5) // call with no args
+        return new astnodes.Call(nameExpr, [], [], null, null, n.lineno, n.col_offset);
+    else
+        return astForCall(c, CHILD(n, 3), nameExpr);
+}
+
+function astForDecorators(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.decorators);
+    var decoratorSeq: astnodes.expr[] = [];
+    for (var i = 0; i &lt; NCH(n); ++i)
+        decoratorSeq[i] = astForDecorator(c, CHILD(n, i));
+    return decoratorSeq;
+}
+
+function astForDecorated(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.decorated);
+    var decoratorSeq = astForDecorators(c, CHILD(n, 0));
+    asserts.assert(CHILD(n, 1).type === SYM.funcdef || CHILD(n, 1).type === SYM.classdef);
+
+    var thing = null;
+    if (CHILD(n, 1).type === SYM.funcdef)
+        thing = astForFuncdef(c, CHILD(n, 1), decoratorSeq);
+    else if (CHILD(n, 1).type === SYM.classdef)
+        thing = astForClassdef(c, CHILD(n, 1), decoratorSeq);
+    if (thing) {
+        thing.lineno = n.lineno;
+        thing.col_offset = n.col_offset;
+    }
+    return thing;
+}
+
+function astForWithVar(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.with_var);
+    return astForExpr(c, CHILD(n, 1));
+}
+
+function astForWithStmt(c: Compiling, n: parser.Node) {
+    /* with_stmt: &#x27;with&#x27; test [ with_var ] &#x27;:&#x27; suite */
+    var suiteIndex = 3; // skip with, test, :
+    asserts.assert(n.type === SYM.with_stmt);
+    var contextExpr = astForExpr(c, CHILD(n, 1));
+    if (CHILD(n, 2).type === SYM.with_var) {
+        var optionalVars = astForWithVar(c, CHILD(n, 2));
+        setContext(c, optionalVars, astnodes.Store, n);
+        suiteIndex = 4;
+    }
+    return new astnodes.With_(contextExpr, optionalVars, astForSuite(c, CHILD(n, suiteIndex)), n.lineno, n.col_offset);
+}
+
+function astForExecStmt(c: Compiling, n: parser.Node) {
+    var expr1: astnodes.expr;
+    var globals = null, locals = null;
+    var nchildren = NCH(n);
+    asserts.assert(nchildren === 2 || nchildren === 4 || nchildren === 6);
+
+    /* exec_stmt: &#x27;exec&#x27; expr [&#x27;in&#x27; test [&#x27;,&#x27; test]] */
+    REQ(n, SYM.exec_stmt);
+    var expr1 = astForExpr(c, CHILD(n, 1));
+    if (nchildren &gt;= 4)
+        globals = astForExpr(c, CHILD(n, 3));
+    if (nchildren === 6)
+        locals = astForExpr(c, CHILD(n, 5));
+    return new astnodes.Exec(expr1, globals, locals, n.lineno, n.col_offset);
+}
+
+function astForIfStmt(c: Compiling, n: parser.Node): astnodes.If_ {
+    /* if_stmt: &#x27;if&#x27; test &#x27;:&#x27; suite (&#x27;elif&#x27; test &#x27;:&#x27; suite)*
+       [&#x27;else&#x27; &#x27;:&#x27; suite]
+    */
+    REQ(n, SYM.if_stmt);
+    if (NCH(n) === 4)
+        return new astnodes.If_(
+            astForExpr(c, CHILD(n, 1)),
+            astForSuite(c, CHILD(n, 3)),
+            [], n.lineno, n.col_offset);
+
+    var s = CHILD(n, 4).value;
+    var decider = s.charAt(2); // elSe or elIf
+    if (decider === &#x27;s&#x27;) {
+        return new astnodes.If_(
+            astForExpr(c, CHILD(n, 1)),
+            astForSuite(c, CHILD(n, 3)),
+            astForSuite(c, CHILD(n, 6)),
+            n.lineno, n.col_offset);
+    }
+    else if (decider === &#x27;i&#x27;) {
+        var nElif = NCH(n) - 4;
+        var hasElse = false;
+        var orelse = [];
+        /* must reference the child nElif+1 since &#x27;else&#x27; token is third, not
+         * fourth child from the end. */
+        if (CHILD(n, nElif + 1).type === TOK.T_NAME &amp;&amp; CHILD(n, nElif + 1).value.charAt(2) === &#x27;s&#x27;) {
+            hasElse = true;
+            nElif -= 3;
+        }
+        nElif /= 4;
+
+        if (hasElse) {
+            orelse = [
+                new astnodes.If_(
+                    astForExpr(c, CHILD(n, NCH(n) - 6)),
+                    astForSuite(c, CHILD(n, NCH(n) - 4)),
+                    astForSuite(c, CHILD(n, NCH(n) - 1)),
+                    CHILD(n, NCH(n) - 6).lineno,
+                    CHILD(n, NCH(n) - 6).col_offset)];
+            nElif--;
+        }
+
+        for (var i = 0; i &lt; nElif; ++i) {
+            var off = 5 + (nElif - i - 1) * 4;
+            orelse = [
+                new astnodes.If_(
+                    astForExpr(c, CHILD(n, off)),
+                    astForSuite(c, CHILD(n, off + 2)),
+                    orelse,
+                    CHILD(n, off).lineno,
+                    CHILD(n, off).col_offset)];
+        }
+        return new astnodes.If_(
+            astForExpr(c, CHILD(n, 1)),
+            astForSuite(c, CHILD(n, 3)),
+            orelse, n.lineno, n.col_offset);
+    }
+    asserts.fail(&quot;unexpected token in &#x27;if&#x27; statement&quot;);
+}
+
+function astForExprlist(c: Compiling, n: parser.Node, context) {
+    REQ(n, SYM.ExprList);
+    var seq = [];
+    for (var i = 0; i &lt; NCH(n); i += 2) {
+        var e = astForExpr(c, CHILD(n, i));
+        seq[i / 2] = e;
+        if (context) setContext(c, e, context, CHILD(n, i));
+    }
+    return seq;
+}
+
+function astForDelStmt(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.del_stmt);
+    return new astnodes.Delete_(astForExprlist(c, CHILD(n, 1), astnodes.Del), n.lineno, n.col_offset);
+}
+
+function astForGlobalStmt(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.GlobalStmt);
+    var s = [];
+    for (var i = 1; i &lt; NCH(n); i += 2) {
+        s[(i - 1) / 2] = strobj(CHILD(n, i).value);
+    }
+    return new astnodes.Global(s, n.lineno, n.col_offset);
+}
+
+function astForNonLocalStmt(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.NonLocalStmt);
+    var s = [];
+    for (var i = 1; i &lt; NCH(n); i += 2) {
+        s[(i - 1) / 2] = strobj(CHILD(n, i).value);
+    }
+    return new astnodes.NonLocal(s, n.lineno, n.col_offset);
+}
+
+function astForAssertStmt(c: Compiling, n: parser.Node) {
+    /* assert_stmt: &#x27;assert&#x27; test [&#x27;,&#x27; test] */
+    REQ(n, SYM.assert_stmt);
+    if (NCH(n) === 2)
+        return new astnodes.Assert(astForExpr(c, CHILD(n, 1)), null, n.lineno, n.col_offset);
+    else if (NCH(n) === 4)
+        return new astnodes.Assert(astForExpr(c, CHILD(n, 1)), astForExpr(c, CHILD(n, 3)), n.lineno, n.col_offset);
+    asserts.fail(&quot;improper number of parts to assert stmt&quot;);
+}
+
+function aliasForImportName(c: Compiling, n: parser.Node) {
+    /*
+      import_as_name: NAME [&#x27;as&#x27; NAME]
+      dotted_as_name: dotted_name [&#x27;as&#x27; NAME]
+      dotted_name: NAME (&#x27;.&#x27; NAME)*
+    */
+
+    loop: while (true) {
+        switch (n.type) {
+            case SYM.import_as_name:
+                var str: string = null;
+                var name = strobj(CHILD(n, 0).value);
+                if (NCH(n) === 3)
+                    str = CHILD(n, 2).value;
+                return new astnodes.Alias(name, str == null ? null : strobj(str));
+            case SYM.dotted_as_name:
+                if (NCH(n) === 1) {
+                    n = CHILD(n, 0);
+                    continue loop;
+                }
+                else {
+                    var a = aliasForImportName(c, CHILD(n, 0));
+                    asserts.assert(!a.asname);
+                    a.asname = strobj(CHILD(n, 2).value);
+                    return a;
+                }
+            case SYM.dotted_name:
+                if (NCH(n) === 1)
+                    return new astnodes.Alias(strobj(CHILD(n, 0).value), null);
+                else {
+                    // create a string of the form a.b.c
+                    var str = &#x27;&#x27;;
+                    for (var i = 0; i &lt; NCH(n); i += 2)
+                        str += CHILD(n, i).value + &quot;.&quot;;
+                    return new astnodes.Alias(strobj(str.substr(0, str.length - 1)), null);
+                }
+            case TOK.T_STAR:
+                return new astnodes.Alias(strobj(&quot;*&quot;), null);
+            default:
+                throw syntaxError(&quot;unexpected import name&quot;, c.c_filename, n.lineno);
+        }
+        break;
+    }
+}
+
+function astForImportStmt(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.import_stmt);
+    var lineno = n.lineno;
+    var col_offset = n.col_offset;
+    n = CHILD(n, 0);
+    if (n.type === SYM.import_name) {
+        n = CHILD(n, 1);
+        REQ(n, SYM.dotted_as_names);
+        var aliases = [];
+        for (var i = 0; i &lt; NCH(n); i += 2)
+            aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
+        return new astnodes.Import_(aliases, lineno, col_offset);
+    }
+    else if (n.type === SYM.import_from) {
+        var mod = null;
+        var ndots = 0;
+        var nchildren;
+
+        for (var idx = 1; idx &lt; NCH(n); ++idx) {
+            if (CHILD(n, idx).type === SYM.dotted_name) {
+                mod = aliasForImportName(c, CHILD(n, idx));
+                idx++;
+                break;
+            }
+            else if (CHILD(n, idx).type !== TOK.T_DOT)
+                break;
+            ndots++;
+        }
+        ++idx; // skip the import keyword
+        switch (CHILD(n, idx).type) {
+            case TOK.T_STAR:
+                // from ... import
+                n = CHILD(n, idx);
+                nchildren = 1;
+                break;
+            case TOK.T_LPAR:
+                // from ... import (x, y, z)
+                n = CHILD(n, idx + 1);
+                nchildren = NCH(n);
+                break;
+            case SYM.import_as_names:
+                // from ... import x, y, z
+                n = CHILD(n, idx);
+                nchildren = NCH(n);
+                if (nchildren % 2 === 0)
+                    throw syntaxError(&quot;trailing comma not allowed without surrounding parentheses&quot;, c.c_filename, n.lineno);
+                break;
+            default:
+                throw syntaxError(&quot;Unexpected node-type in from-import&quot;, c.c_filename, n.lineno);
+        }
+        var aliases = [];
+        if (n.type === TOK.T_STAR)
+            aliases[0] = aliasForImportName(c, n);
+        else
+            for (var i = 0; i &lt; NCH(n); i += 2)
+                aliases[i / 2] = aliasForImportName(c, CHILD(n, i));
+        var modname = mod ? mod.name : &quot;&quot;;
+        return new astnodes.ImportFrom(strobj(modname), aliases, ndots, lineno, col_offset);
+    }
+    throw syntaxError(&quot;unknown import statement&quot;, c.c_filename, n.lineno);
+}
+
+function astForTestlistGexp(c: Compiling, n: parser.Node) {
+    asserts.assert(n.type === SYM.testlist_gexp || n.type === SYM.argument);
+    if (NCH(n) &gt; 1 &amp;&amp; CHILD(n, 1).type === SYM.gen_for)
+        return astForGenexp(c, n);
+    return astForTestlist(c, n);
+}
+
+function astForListcomp(c: Compiling, n: parser.Node) {
+    function countListFors(c, n: parser.Node) {
+        var nfors = 0;
+        var ch = CHILD(n, 1);
+        count_list_for: while (true) {
+            nfors++;
+            REQ(ch, SYM.list_for);
+            if (NCH(ch) === 5)
+                ch = CHILD(ch, 4);
+            else
+                return nfors;
+            count_list_iter: while (true) {
+                REQ(ch, SYM.list_iter);
+                ch = CHILD(ch, 0);
+                if (ch.type === SYM.list_for)
+                    continue count_list_for;
+                else if (ch.type === SYM.list_if) {
+                    if (NCH(ch) === 3) {
+                        ch = CHILD(ch, 2);
+                        continue count_list_iter;
+                    }
+                    else
+                        return nfors;
+                }
+                break;
+            }
+            break;
+        }
+    }
+
+    function countListIfs(c: Compiling, n: parser.Node) {
+        var nifs = 0;
+        while (true) {
+            REQ(n, SYM.list_iter);
+            if (CHILD(n, 0).type === SYM.list_for)
+                return nifs;
+            n = CHILD(n, 0);
+            REQ(n, SYM.list_if);
+            nifs++;
+            if (NCH(n) == 2)
+                return nifs;
+            n = CHILD(n, 2);
+        }
+    }
+
+    REQ(n, SYM.listmaker);
+    asserts.assert(NCH(n) &gt; 1);
+    var elt = astForExpr(c, CHILD(n, 0));
+    var nfors = countListFors(c, n);
+    var listcomps = [];
+    var ch = CHILD(n, 1);
+    for (var i = 0; i &lt; nfors; ++i) {
+        REQ(ch, SYM.list_for);
+        var forch = CHILD(ch, 1);
+        var t = astForExprlist(c, forch, astnodes.Store);
+        var expression = astForTestlist(c, CHILD(ch, 3));
+        var lc;
+        if (NCH(forch) === 1)
+            lc = new astnodes.Comprehension(t[0], expression, []);
+        else
+            lc = new astnodes.Comprehension(new astnodes.Tuple(t, astnodes.Store, ch.lineno, ch.col_offset), expression, []);
+
+        if (NCH(ch) === 5) {
+            ch = CHILD(ch, 4);
+            var nifs = countListIfs(c, ch);
+            var ifs = [];
+            for (var j = 0; j &lt; nifs; ++j) {
+                REQ(ch, SYM.list_iter);
+                ch = CHILD(ch, 0);
+                REQ(ch, SYM.list_if);
+                ifs[j] = astForExpr(c, CHILD(ch, 1));
+                if (NCH(ch) === 3)
+                    ch = CHILD(ch, 2);
+            }
+            if (ch.type === SYM.list_iter)
+                ch = CHILD(ch, 0);
+            lc.ifs = ifs;
+        }
+        listcomps[i] = lc;
+    }
+    return new astnodes.ListComp(elt, listcomps, n.lineno, n.col_offset);
+}
+
+function astForUnaryExpr(c: Compiling, n: parser.Node) {
+    if (CHILD(n, 0).type === TOK.T_MINUS &amp;&amp; NCH(n) === 2) {
+        var pfactor = CHILD(n, 1);
+        if (pfactor.type === SYM.UnaryExpr &amp;&amp; NCH(pfactor) === 1) {
+            var ppower = CHILD(pfactor, 0);
+            if (ppower.type === SYM.PowerExpr &amp;&amp; NCH(ppower) === 1) {
+                var patom = CHILD(ppower, 0);
+                if (patom.type === SYM.AtomExpr) {
+                    var pnum = CHILD(patom, 0);
+                    if (pnum.type === TOK.T_NUMBER) {
+                        pnum.value = &quot;-&quot; + pnum.value;
+                        return astForAtomExpr(c, patom);
+                    }
+                }
+            }
+        }
+    }
+
+    var expression = astForExpr(c, CHILD(n, 1));
+    switch (CHILD(n, 0).type) {
+        case TOK.T_PLUS: return new astnodes.UnaryOp(astnodes.UAdd, expression, n.lineno, n.col_offset);
+        case TOK.T_MINUS: return new astnodes.UnaryOp(astnodes.USub, expression, n.lineno, n.col_offset);
+        case TOK.T_TILDE: return new astnodes.UnaryOp(astnodes.Invert, expression, n.lineno, n.col_offset);
+    }
+
+    asserts.fail(&quot;unhandled UnaryExpr&quot;);
+}
+
+function astForForStmt(c: Compiling, n: parser.Node): astnodes.For_ {
+    var seq = [];
+    REQ(n, SYM.for_stmt);
+    if (NCH(n) === 9)
+        seq = astForSuite(c, CHILD(n, 8));
+    var nodeTarget = CHILD(n, 1);
+    var _target = astForExprlist(c, nodeTarget, astnodes.Store);
+    var target;
+    if (NCH(nodeTarget) === 1)
+        target = _target[0];
+    else
+        target = new astnodes.Tuple(_target, astnodes.Store, n.lineno, n.col_offset);
+
+    return new astnodes.For_(target,
+        astForTestlist(c, CHILD(n, 3)),
+        astForSuite(c, CHILD(n, 5)),
+        seq, n.lineno, n.col_offset);
+}
+
+function astForCall(c: Compiling, n: parser.Node, func: astnodes.expr) {
+    /*
+      arglist: (argument &#x27;,&#x27;)* (argument [&#x27;,&#x27;]| &#x27;*&#x27; test [&#x27;,&#x27; &#x27;**&#x27; test]
+               | &#x27;**&#x27; test)
+      argument: [test &#x27;=&#x27;] test [gen_for]        # Really [keyword &#x27;=&#x27;] test
+    */
+    REQ(n, SYM.arglist);
+    var nargs = 0;
+    var nkeywords = 0;
+    var ngens = 0;
+    for (var i = 0; i &lt; NCH(n); ++i) {
+        var ch = CHILD(n, i);
+        if (ch.type === SYM.argument) {
+            if (NCH(ch) === 1) nargs++;
+            else if (CHILD(ch, 1).type === SYM.gen_for) ngens++;
+            else nkeywords++;
+        }
+    }
+    if (ngens &gt; 1 || (ngens &amp;&amp; (nargs || nkeywords)))
+        throw syntaxError(&quot;Generator expression must be parenthesized if not sole argument&quot;, c.c_filename, n.lineno);
+    if (nargs + nkeywords + ngens &gt; 255)
+        throw syntaxError(&quot;more than 255 arguments&quot;, c.c_filename, n.lineno);
+    var args = [];
+    var keywords = [];
+    nargs = 0;
+    nkeywords = 0;
+    var vararg = null;
+    var kwarg = null;
+    for (var i = 0; i &lt; NCH(n); ++i) {
+        var ch = CHILD(n, i);
+        if (ch.type === SYM.argument) {
+            if (NCH(ch) === 1) {
+                if (nkeywords) throw syntaxError(&quot;non-keyword arg after keyword arg&quot;, c.c_filename, n.lineno);
+                if (vararg) throw syntaxError(&quot;only named arguments may follow *expression&quot;, c.c_filename, n.lineno);
+                args[nargs++] = astForExpr(c, CHILD(ch, 0));
+            }
+            else if (CHILD(ch, 1).type === SYM.gen_for)
+                args[nargs++] = astForGenexp(c, ch);
+            else {
+                var e = astForExpr(c, CHILD(ch, 0));
+                if (e.constructor === astnodes.Lambda) throw syntaxError(&quot;lambda cannot contain assignment&quot;, c.c_filename, n.lineno);
+                else if (e.constructor !== astnodes.Name) throw syntaxError(&quot;keyword can&#x27;t be an expression&quot;, c.c_filename, n.lineno);
+                var key = (&lt;astnodes.Name&gt;e).id;
+                forbiddenCheck(c, CHILD(ch, 0), key, n.lineno);
+                for (var k = 0; k &lt; nkeywords; ++k) {
+                    var tmp = keywords[k].arg;
+                    if (tmp === key) throw syntaxError(&quot;keyword argument repeated&quot;, c.c_filename, n.lineno);
+                }
+                keywords[nkeywords++] = new astnodes.Keyword(key, astForExpr(c, CHILD(ch, 2)));
+            }
+        }
+        else if (ch.type === TOK.T_STAR)
+            vararg = astForExpr(c, CHILD(n, ++i));
+        else if (ch.type === TOK.T_DOUBLESTAR)
+            kwarg = astForExpr(c, CHILD(n, ++i));
+    }
+    return new astnodes.Call(func, args, keywords, vararg, kwarg, func.lineno, func.col_offset);
+}
+
+function astForTrailer(c, n: parser.Node, leftExpr: astnodes.expr): astnodes.expr {
+    /* trailer: &#x27;(&#x27; [arglist] &#x27;)&#x27; | &#x27;[&#x27; subscriptlist &#x27;]&#x27; | &#x27;.&#x27; NAME
+       subscriptlist: subscript (&#x27;,&#x27; subscript)* [&#x27;,&#x27;]
+       subscript: &#x27;.&#x27; &#x27;.&#x27; &#x27;.&#x27; | test | [test] &#x27;:&#x27; [test] [sliceop]
+     */
+    REQ(n, SYM.trailer);
+    if (CHILD(n, 0).type === TOK.T_LPAR) {
+        if (NCH(n) === 2)
+            return new astnodes.Call(leftExpr, [], [], null, null, n.lineno, n.col_offset);
+        else
+            return astForCall(c, CHILD(n, 1), leftExpr);
+    }
+    else if (CHILD(n, 0).type === TOK.T_DOT)
+        return new astnodes.Attribute(leftExpr, strobj(CHILD(n, 1).value), astnodes.Load, n.lineno, n.col_offset);
+    else {
+        REQ(CHILD(n, 0), TOK.T_LSQB);
+        REQ(CHILD(n, 2), TOK.T_RSQB);
+        n = CHILD(n, 1);
+        if (NCH(n) === 1)
+            return new astnodes.Subscript(leftExpr, astForSlice(c, CHILD(n, 0)), astnodes.Load, n.lineno, n.col_offset);
+        else {
+            /* The grammar is ambiguous here. The ambiguity is resolved
+               by treating the sequence as a tuple literal if there are
+               no slice features.
+            */
+            var simple = true;
+            var slices: astnodes.slice[] = [];
+            for (var j = 0; j &lt; NCH(n); j += 2) {
+                var slc: astnodes.slice = astForSlice(c, CHILD(n, j));
+                if (slc.constructor !== astnodes.Index)
+                    simple = false;
+                slices[j / 2] = slc;
+            }
+            if (!simple) {
+                return new astnodes.Subscript(leftExpr, new astnodes.ExtSlice(slices), astnodes.Load, n.lineno, n.col_offset);
+            }
+            var elts: astnodes.expr[] = [];
+            for (var j = 0; j &lt; slices.length; ++j) {
+                var slc: astnodes.slice = slices[j];
+                asserts.assert(slc.constructor === astnodes.Index &amp;&amp; (&lt;astnodes.Index&gt;slc).value !== null &amp;&amp; (&lt;astnodes.Index&gt;slc).value !== undefined);
+                elts[j] = (&lt;astnodes.Index&gt;slc).value;
+            }
+            var e = new astnodes.Tuple(elts, astnodes.Load, n.lineno, n.col_offset);
+            return new astnodes.Subscript(leftExpr, new astnodes.Index(e), astnodes.Load, n.lineno, n.col_offset);
+        }
+    }
+}
+
+function astForFlowStmt(c: Compiling, n: parser.Node) {
+    var ch: parser.Node;
+    REQ(n, SYM.flow_stmt);
+    ch = CHILD(n, 0);
+    switch (ch.type) {
+        case SYM.break_stmt: return new astnodes.Break_(n.lineno, n.col_offset);
+        case SYM.continue_stmt: return new astnodes.Continue_(n.lineno, n.col_offset);
+        case SYM.yield_stmt:
+            return new astnodes.Expr(astForExpr(c, CHILD(ch, 0)), n.lineno, n.col_offset);
+        case SYM.return_stmt:
+            if (NCH(ch) === 1)
+                return new astnodes.Return_(null, n.lineno, n.col_offset);
+            else
+                return new astnodes.Return_(astForTestlist(c, CHILD(ch, 1)), n.lineno, n.col_offset);
+        case SYM.raise_stmt:
+            if (NCH(ch) === 1)
+                return new astnodes.Raise(null, null, null, n.lineno, n.col_offset);
+            else if (NCH(ch) === 2)
+                return new astnodes.Raise(astForExpr(c, CHILD(ch, 1)), null, null, n.lineno, n.col_offset);
+            else if (NCH(ch) === 4)
+                return new astnodes.Raise(
+                    astForExpr(c, CHILD(ch, 1)),
+                    astForExpr(c, CHILD(ch, 3)),
+                    null, n.lineno, n.col_offset);
+            else if (NCH(ch) === 6)
+                return new astnodes.Raise(
+                    astForExpr(c, CHILD(ch, 1)),
+                    astForExpr(c, CHILD(ch, 3)),
+                    astForExpr(c, CHILD(ch, 5)),
+                    n.lineno, n.col_offset);
+        default:
+            asserts.fail(&quot;unexpected flow_stmt&quot;);
+    }
+    asserts.fail(&quot;unhandled flow statement&quot;);
+}
+
+function astForArguments(c: Compiling, n: parser.Node) {
+    /* parameters: &#x27;(&#x27; [varargslist] &#x27;)&#x27;
+       varargslist: (fpdef [&#x27;=&#x27; test] &#x27;,&#x27;)* (&#x27;*&#x27; NAME [&#x27;,&#x27; &#x27;**&#x27; NAME]
+            | &#x27;**&#x27; NAME) | fpdef [&#x27;=&#x27; test] (&#x27;,&#x27; fpdef [&#x27;=&#x27; test])* [&#x27;,&#x27;]
+    */
+    var ch;
+    var vararg = null;
+    var kwarg = null;
+    if (n.type === SYM.parameters) {
+        if (NCH(n) === 2) // () as arglist
+            return new astnodes.Arguments([], null, null, []);
+        n = CHILD(n, 1);
+    }
+    REQ(n, SYM.varargslist);
+
+    var args = [];
+    var defaults = [];
+
+    /* fpdef: NAME | &#x27;(&#x27; fplist &#x27;)&#x27;
+       fplist: fpdef (&#x27;,&#x27; fpdef)* [&#x27;,&#x27;]
+    */
+    var foundDefault = false;
+    var i = 0;
+    var j = 0; // index for defaults
+    var k = 0; // index for args
+    while (i &lt; NCH(n)) {
+        ch = CHILD(n, i);
+        switch (ch.type) {
+            case SYM.fpdef:
+                var complexArgs = 0;
+                var parenthesized: boolean = false;
+                handle_fpdef: while (true) {
+                    if (i + 1 &lt; NCH(n) &amp;&amp; CHILD(n, i + 1).type === TOK.T_EQUAL) {
+                        defaults[j++] = astForExpr(c, CHILD(n, i + 2));
+                        i += 2;
+                        foundDefault = true;
+                    }
+                    else if (foundDefault) {
+                        /* def f((x)=4): pass should raise an error.
+                           def f((x, (y))): pass will just incur the tuple unpacking warning. */
+                        if (parenthesized &amp;&amp; !complexArgs)
+                            throw syntaxError(&quot;parenthesized arg with default&quot;, c.c_filename, n.lineno);
+                        throw syntaxError(&quot;non-default argument follows default argument&quot;, c.c_filename, n.lineno);
+                    }
+
+                    if (NCH(ch) === 3) {
+                        ch = CHILD(ch, 1);
+                        // def foo((x)): is not complex, special case.
+                        if (NCH(ch) !== 1) {
+                            throw syntaxError(&quot;tuple parameter unpacking has been removed&quot;, c.c_filename, n.lineno);
+                        }
+                        else {
+                            /* def foo((x)): setup for checking NAME below. */
+                            /* Loop because there can be many parens and tuple
+                               unpacking mixed in. */
+                            parenthesized = true;
+                            ch = CHILD(ch, 0);
+                            asserts.assert(ch.type === SYM.fpdef);
+                            continue handle_fpdef;
+                        }
+                    }
+                    if (CHILD(ch, 0).type === TOK.T_NAME) {
+                        forbiddenCheck(c, n, CHILD(ch, 0).value, n.lineno);
+                        var id = strobj(CHILD(ch, 0).value);
+                        args[k++] = new astnodes.Name(id, astnodes.Param, ch.lineno, ch.col_offset);
+                    }
+                    i += 2;
+                    if (parenthesized)
+                        throw syntaxError(&quot;parenthesized argument names are invalid&quot;, c.c_filename, n.lineno);
+                    break;
+                }
+                break;
+            case TOK.T_STAR:
+                forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value, n.lineno);
+                vararg = strobj(CHILD(n, i + 1).value);
+                i += 3;
+                break;
+            case TOK.T_DOUBLESTAR:
+                forbiddenCheck(c, CHILD(n, i + 1), CHILD(n, i + 1).value, n.lineno);
+                kwarg = strobj(CHILD(n, i + 1).value);
+                i += 3;
+                break;
+            default:
+                asserts.fail(&quot;unexpected node in varargslist&quot;);
+        }
+    }
+    return new astnodes.Arguments(args, vararg, kwarg, defaults);
+}
+
+function astForFuncdef(c: Compiling, n: parser.Node, decoratorSeq: astnodes.stmt[]) {
+    /* funcdef: &#x27;def&#x27; NAME parameters &#x27;:&#x27; suite */
+    REQ(n, SYM.funcdef);
+    var name = strobj(CHILD(n, 1).value);
+    forbiddenCheck(c, CHILD(n, 1), CHILD(n, 1).value, n.lineno);
+    var args = astForArguments(c, CHILD(n, 2));
+    var body = astForSuite(c, CHILD(n, 4));
+    return new astnodes.FunctionDef(name, args, body, decoratorSeq, n.lineno, n.col_offset);
+}
+
+function astForClassBases(c: Compiling, n: parser.Node): astnodes.expr[] {
+    asserts.assert(NCH(n) &gt; 0);
+    REQ(n, SYM.testlist);
+    if (NCH(n) === 1)
+        return [astForExpr(c, CHILD(n, 0))];
+    return seqForTestlist(c, n);
+}
+
+function astForClassdef(c: Compiling, n: parser.Node, decoratorSeq) {
+    REQ(n, SYM.classdef);
+    forbiddenCheck(c, n, CHILD(n, 1).value, n.lineno);
+    var classname: string = strobj(CHILD(n, 1).value);
+    if (NCH(n) === 4)
+        return new astnodes.ClassDef(classname, [], astForSuite(c, CHILD(n, 3)), decoratorSeq, n.lineno, n.col_offset);
+    if (CHILD(n, 3).type === TOK.T_RPAR)
+        return new astnodes.ClassDef(classname, [], astForSuite(c, CHILD(n, 5)), decoratorSeq, n.lineno, n.col_offset);
+
+    var bases = astForClassBases(c, CHILD(n, 3));
+    var s = astForSuite(c, CHILD(n, 6));
+    return new astnodes.ClassDef(classname, bases, s, decoratorSeq, n.lineno, n.col_offset);
+}
+
+function astForLambdef(c: Compiling, n: parser.Node): astnodes.Lambda {
+    var args;
+    var expression;
+    if (NCH(n) === 3) {
+        args = new astnodes.Arguments([], null, null, []);
+        expression = astForExpr(c, CHILD(n, 2));
+    }
+    else {
+        args = astForArguments(c, CHILD(n, 1));
+        expression = astForExpr(c, CHILD(n, 3));
+    }
+    return new astnodes.Lambda(args, expression, n.lineno, n.col_offset);
+}
+
+function astForGenexp(c: Compiling, n: parser.Node) {
+    /* testlist_gexp: test ( gen_for | (&#x27;,&#x27; test)* [&#x27;,&#x27;] )
+       argument: [test &#x27;=&#x27;] test [gen_for]       # Really [keyword &#x27;=&#x27;] test */
+    asserts.assert(n.type === SYM.testlist_gexp || n.type === SYM.argument);
+    asserts.assert(NCH(n) &gt; 1);
+
+    function countGenFors(c: Compiling, n: parser.Node) {
+        var nfors = 0;
+        var ch = CHILD(n, 1);
+        count_gen_for: while (true) {
+            nfors++;
+            REQ(ch, SYM.gen_for);
+            if (NCH(ch) === 5)
+                ch = CHILD(ch, 4);
+            else
+                return nfors;
+            count_gen_iter: while (true) {
+                REQ(ch, SYM.gen_iter);
+                ch = CHILD(ch, 0);
+                if (ch.type === SYM.gen_for)
+                    continue count_gen_for;
+                else if (ch.type === SYM.gen_if) {
+                    if (NCH(ch) === 3) {
+                        ch = CHILD(ch, 2);
+                        continue count_gen_iter;
+                    }
+                    else
+                        return nfors;
+                }
+                break;
+            }
+            break;
+        }
+        asserts.fail(&quot;logic error in countGenFors&quot;);
+    }
+
+    function countGenIfs(c: Compiling, n: parser.Node) {
+        var nifs = 0;
+        while (true) {
+            REQ(n, SYM.gen_iter);
+            if (CHILD(n, 0).type === SYM.gen_for)
+                return nifs;
+            n = CHILD(n, 0);
+            REQ(n, SYM.gen_if);
+            nifs++;
+            if (NCH(n) == 2)
+                return nifs;
+            n = CHILD(n, 2);
+        }
+    }
+
+    var elt = astForExpr(c, CHILD(n, 0));
+    var nfors = countGenFors(c, n);
+    var genexps = [];
+    var ch = CHILD(n, 1);
+    for (var i = 0; i &lt; nfors; ++i) {
+        REQ(ch, SYM.gen_for);
+        var forch = CHILD(ch, 1);
+        var t = astForExprlist(c, forch, astnodes.Store);
+        var expression = astForExpr(c, CHILD(ch, 3));
+        var ge;
+        if (NCH(forch) === 1)
+            ge = new astnodes.Comprehension(t[0], expression, []);
+        else
+            ge = new astnodes.Comprehension(new astnodes.Tuple(t, astnodes.Store, ch.lineno, ch.col_offset), expression, []);
+        if (NCH(ch) === 5) {
+            ch = CHILD(ch, 4);
+            var nifs = countGenIfs(c, ch);
+            var ifs = [];
+            for (var j = 0; j &lt; nifs; ++j) {
+                REQ(ch, SYM.gen_iter);
+                ch = CHILD(ch, 0);
+                REQ(ch, SYM.gen_if);
+                expression = astForExpr(c, CHILD(ch, 1));
+                ifs[j] = expression;
+                if (NCH(ch) === 3)
+                    ch = CHILD(ch, 2);
+            }
+            if (ch.type === SYM.gen_iter)
+                ch = CHILD(ch, 0);
+            ge.ifs = ifs;
+        }
+        genexps[i] = ge;
+    }
+    return new astnodes.GeneratorExp(elt, genexps, n.lineno, n.col_offset);
+}
+
+function astForWhileStmt(c: Compiling, n: parser.Node) {
+    /* while_stmt: &#x27;while&#x27; test &#x27;:&#x27; suite [&#x27;else&#x27; &#x27;:&#x27; suite] */
+    REQ(n, SYM.while_stmt);
+    if (NCH(n) === 4)
+        return new astnodes.While_(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), [], n.lineno, n.col_offset);
+    else if (NCH(n) === 7)
+        return new astnodes.While_(astForExpr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), astForSuite(c, CHILD(n, 6)), n.lineno, n.col_offset);
+    asserts.fail(&quot;wrong number of tokens for &#x27;while&#x27; stmt&quot;);
+}
+
+function astForAugassign(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.augassign);
+    n = CHILD(n, 0);
+    switch (n.value.charAt(0)) {
+        case &#x27;+&#x27;: return astnodes.Add;
+        case &#x27;-&#x27;: return astnodes.Sub;
+        case &#x27;/&#x27;: if (n.value.charAt(1) === &#x27;/&#x27;) return astnodes.FloorDiv;
+            return astnodes.Div;
+        case &#x27;%&#x27;: return astnodes.Mod;
+        case &#x27;&lt;&#x27;: return astnodes.LShift;
+        case &#x27;&gt;&#x27;: return astnodes.RShift;
+        case &#x27;&amp;&#x27;: return astnodes.BitAnd;
+        case &#x27;^&#x27;: return astnodes.BitXor;
+        case &#x27;|&#x27;: return astnodes.BitOr;
+        case &#x27;*&#x27;: if (n.value.charAt(1) === &#x27;*&#x27;) return astnodes.Pow;
+            return astnodes.Mult;
+        default: asserts.fail(&quot;invalid augassign&quot;);
+    }
+}
+
+function astForBinop(c: Compiling, n: parser.Node) {
+    /* Must account for a sequence of expressions.
+        How should A op B op C by represented?
+        BinOp(BinOp(A, op, B), op, C).
+    */
+    var result = new astnodes.BinOp(
+        astForExpr(c, CHILD(n, 0)),
+        getOperator(CHILD(n, 1)),
+        astForExpr(c, CHILD(n, 2)),
+        n.lineno, n.col_offset);
+    var nops = (NCH(n) - 1) / 2;
+    for (var i = 1; i &lt; nops; ++i) {
+        var nextOper = CHILD(n, i * 2 + 1);
+        var newoperator = getOperator(nextOper);
+        var tmp = astForExpr(c, CHILD(n, i * 2 + 2));
+        result = new astnodes.BinOp(result, newoperator, tmp, nextOper.lineno, nextOper.col_offset);
+    }
+    return result;
+
+}
+
+function astForTestlist(c: Compiling, n: parser.Node) {
+    /* testlist_gexp: test (&#x27;,&#x27; test)* [&#x27;,&#x27;] */
+    /* testlist: test (&#x27;,&#x27; test)* [&#x27;,&#x27;] */
+    /* testlist_safe: test (&#x27;,&#x27; test)+ [&#x27;,&#x27;] */
+    /* testlist1: test (&#x27;,&#x27; test)* */
+    asserts.assert(NCH(n) &gt; 0);
+    if (n.type === SYM.testlist_gexp) {
+        if (NCH(n) &gt; 1) {
+            asserts.assert(CHILD(n, 1).type !== SYM.gen_for);
+        }
+    }
+    else {
+        asserts.assert(n.type === SYM.testlist || n.type === SYM.testlist_safe || n.type === SYM.testlist1);
+    }
+
+    if (NCH(n) === 1) {
+        return astForExpr(c, CHILD(n, 0));
+    }
+    else {
+        return new astnodes.Tuple(seqForTestlist(c, n), astnodes.Load, n.lineno, n.col_offset);
+    }
+
+}
+
+function astForExprStmt(c: Compiling, n: parser.Node) {
+    REQ(n, SYM.ExprStmt);
+    if (NCH(n) === 1)
+        return new astnodes.Expr(astForTestlist(c, CHILD(n, 0)), n.lineno, n.col_offset);
+    else if (CHILD(n, 1).type === SYM.augassign) {
+        var ch = CHILD(n, 0);
+        var expr1 = astForTestlist(c, ch);
+        switch (expr1.constructor) {
+            case astnodes.GeneratorExp: throw syntaxError(&quot;augmented assignment to generator expression not possible&quot;, c.c_filename, n.lineno);
+            case astnodes.Yield: throw syntaxError(&quot;augmented assignment to yield expression not possible&quot;, c.c_filename, n.lineno);
+            case astnodes.Name:
+                var varName = (&lt;astnodes.Name&gt;expr1).id;
+                forbiddenCheck(c, ch, varName, n.lineno);
+                break;
+            case astnodes.Attribute:
+            case astnodes.Subscript:
+                break;
+            default:
+                throw syntaxError(&quot;illegal expression for augmented assignment&quot;, c.c_filename, n.lineno);
+        }
+        setContext(c, expr1, astnodes.Store, ch);
+
+        ch = CHILD(n, 2);
+        var expr2;
+        if (ch.type === SYM.testlist)
+            expr2 = astForTestlist(c, ch);
+        else
+            expr2 = astForExpr(c, ch);
+
+        return new astnodes.AugAssign(expr1, astForAugassign(c, CHILD(n, 1)), expr2, n.lineno, n.col_offset);
+    }
+    else {
+        // normal assignment
+        REQ(CHILD(n, 1), TOK.T_EQUAL);
+        var targets = [];
+        for (var i = 0; i &lt; NCH(n) - 2; i += 2) {
+            var ch = CHILD(n, i);
+            if (ch.type === SYM.YieldExpr) throw syntaxError(&quot;assignment to yield expression not possible&quot;, c.c_filename, n.lineno);
+            var e = astForTestlist(c, ch);
+            setContext(c, e, astnodes.Store, CHILD(n, i));
+            targets[i / 2] = e;
+        }
+        var value = CHILD(n, NCH(n) - 1);
+        var expression;
+        if (value.type === SYM.testlist)
+            expression = astForTestlist(c, value);
+        else
+            expression = astForExpr(c, value);
+        return new astnodes.Assign(targets, expression, n.lineno, n.col_offset);
+    }
+}
+
+function astForIfexpr(c: Compiling, n: parser.Node) {
+    asserts.assert(NCH(n) === 5);
+    return new astnodes.IfExp(
+        astForExpr(c, CHILD(n, 2)),
+        astForExpr(c, CHILD(n, 0)),
+        astForExpr(c, CHILD(n, 4)),
+        n.lineno, n.col_offset);
+}
+
+/**
+ * s is a python-style string literal, including quote characters and u/r/b
+ * prefixes. Returns decoded string object.
+ */
+function parsestr(c: Compiling, s: string) {
+    // unescape and escape are deprecated since ECMAScript v3. 
+    //  var encodeUtf8 = function(s) { return unescape(encodeURIComponent(s)); };
+    //  var decodeUtf8 = function(s) { return decodeURIComponent(escape(s)); };
+    var decodeUtf8 = function(s) { return decodeURI(s) };
+    var decodeEscape = function(s, quote) {
+        var len = s.length;
+        var ret = &#x27;&#x27;;
+        for (var i = 0; i &lt; len; ++i) {
+            var c = s.charAt(i);
+            if (c === &#x27;\\&#x27;) {
+                ++i;
+                c = s.charAt(i);
+                if (c === &#x27;n&#x27;) ret += &quot;\n&quot;;
+                else if (c === &#x27;\\&#x27;) ret += &quot;\\&quot;;
+                else if (c === &#x27;t&#x27;) ret += &quot;\t&quot;;
+                else if (c === &#x27;r&#x27;) ret += &quot;\r&quot;;
+                else if (c === &#x27;b&#x27;) ret += &quot;\b&quot;;
+                else if (c === &#x27;f&#x27;) ret += &quot;\f&quot;;
+                else if (c === &#x27;v&#x27;) ret += &quot;\v&quot;;
+                else if (c === &#x27;0&#x27;) ret += &quot;\0&quot;;
+                else if (c === &#x27;&quot;&#x27;) ret += &#x27;&quot;&#x27;;
+                else if (c === &#x27;\&#x27;&#x27;) ret += &#x27;\&#x27;&#x27;;
+                else if (c === &#x27;\n&#x27;) /* escaped newline, join lines */ { }
+                else if (c === &#x27;x&#x27;) {
+                    var d0 = s.charAt(++i);
+                    var d1 = s.charAt(++i);
+                    ret += String.fromCharCode(parseInt(d0 + d1, 16));
+                }
+                else if (c === &#x27;u&#x27; || c === &#x27;U&#x27;) {
+                    var d0 = s.charAt(++i);
+                    var d1 = s.charAt(++i);
+                    var d2 = s.charAt(++i);
+                    var d3 = s.charAt(++i);
+                    ret += String.fromCharCode(parseInt(d0 + d1, 16), parseInt(d2 + d3, 16));
+                }
+                else {
+                    // Leave it alone
+                    ret += &quot;\\&quot; + c;
+                }
+            }
+            else {
+                ret += c;
+            }
+        }
+        return ret;
+    };
+
+    var quote = s.charAt(0);
+    var rawmode = false;
+
+    if (quote === &#x27;u&#x27; || quote === &#x27;U&#x27;) {
+        s = s.substr(1);
+        quote = s.charAt(0);
+    }
+    else if (quote === &#x27;r&#x27; || quote === &#x27;R&#x27;) {
+        s = s.substr(1);
+        quote = s.charAt(0);
+        rawmode = true;
+    }
+    asserts.assert(quote !== &#x27;b&#x27; &amp;&amp; quote !== &#x27;B&#x27;, &quot;todo; haven&#x27;t done b&#x27;&#x27; strings yet&quot;);
+
+    asserts.assert(quote === &quot;&#x27;&quot; || quote === &#x27;&quot;&#x27; &amp;&amp; s.charAt(s.length - 1) === quote);
+    s = s.substr(1, s.length - 2);
+
+    if (s.length &gt;= 4 &amp;&amp; s.charAt(0) === quote &amp;&amp; s.charAt(1) === quote) {
+        asserts.assert(s.charAt(s.length - 1) === quote &amp;&amp; s.charAt(s.length - 2) === quote);
+        s = s.substr(2, s.length - 4);
+    }
+
+    if (rawmode || s.indexOf(&#x27;\\&#x27;) === -1) {
+        return strobj(decodeUtf8(s));
+    }
+    return strobj(decodeEscape(s, quote));
+}
+
+/**
+ * @return {string}
+ */
+function parsestrplus(c: Compiling, n: parser.Node) {
+    REQ(CHILD(n, 0), TOK.T_STRING);
+    var ret = &quot;&quot;;
+    for (var i = 0; i &lt; NCH(n); ++i) {
+        var child = CHILD(n, i);
+        try {
+            ret = ret + parsestr(c, child.value);
+        }
+        catch (x) {
+            throw syntaxError(&quot;invalid string (possibly contains a unicode character)&quot;, c.c_filename, child.lineno);
+        }
+    }
+    return ret;
+}
+
+function parsenumber(c: Compiling, s, lineno: number): any {
+    var end = s.charAt(s.length - 1);
+
+    if (end === &#x27;j&#x27; || end === &#x27;J&#x27;) {
+        throw syntaxError(&quot;complex numbers are currently unsupported&quot;, c.c_filename, lineno);
+    }
+
+    if (s.indexOf(&#x27;.&#x27;) !== -1) {
+        return numericLiteral.floatAST(s);
+    }
+
+    // Handle integers of various bases
+    var tmp = s;
+    var value;
+    var radix = 10;
+    var neg = false;
+    if (s.charAt(0) === &#x27;-&#x27;) {
+        tmp = s.substr(1);
+        neg = true;
+    }
+
+    if (tmp.charAt(0) === &#x27;0&#x27; &amp;&amp; (tmp.charAt(1) === &#x27;x&#x27; || tmp.charAt(1) === &#x27;X&#x27;)) {
+        // Hex
+        tmp = tmp.substring(2);
+        value = parseInt(tmp, 16);
+        radix = 16;
+    }
+    else if ((s.indexOf(&#x27;e&#x27;) !== -1) || (s.indexOf(&#x27;E&#x27;) !== -1)) {
+        // Float with exponent (needed to make sure e/E wasn&#x27;t hex first)
+        return numericLiteral.floatAST(s);
+    }
+    else if (tmp.charAt(0) === &#x27;0&#x27; &amp;&amp; (tmp.charAt(1) === &#x27;b&#x27; || tmp.charAt(1) === &#x27;B&#x27;)) {
+        // Binary
+        tmp = tmp.substring(2);
+        value = parseInt(tmp, 2);
+        radix = 2;
+    }
+    else if (tmp.charAt(0) === &#x27;0&#x27;) {
+        if (tmp === &quot;0&quot;) {
+            // Zero
+            value = 0;
+        }
+        else {
+            // Octal (Leading zero, but not actually zero)
+            if (end === &#x27;l&#x27; || end === &#x27;L&#x27;) {
+                return numericLiteral.longAST(s.substr(0, s.length - 1), 8);
+            }
+            else {
+                radix = 8;
+                tmp = tmp.substring(1);
+                if ((tmp.charAt(0) === &#x27;o&#x27;) || (tmp.charAt(0) === &#x27;O&#x27;)) {
+                    tmp = tmp.substring(1);
+                }
+                value = parseInt(tmp, 8);
+            }
+        }
+    }
+    else {
+        // Decimal
+        if (end === &#x27;l&#x27; || end === &#x27;L&#x27;) {
+            return numericLiteral.longAST(s.substr(0, s.length - 1), radix);
+        }
+        else {
+            value = parseInt(tmp, radix);
+        }
+    }
+
+    // Convert to long
+    if (value &gt; LONG_THRESHOLD &amp;&amp; Math.floor(value) === value &amp;&amp; (s.indexOf(&#x27;e&#x27;) === -1 &amp;&amp; s.indexOf(&#x27;E&#x27;) === -1)) {
+        // TODO: Does radix zero make sense?
+        return numericLiteral.longAST(s, 0);
+    }
+
+    if (end === &#x27;l&#x27; || end === &#x27;L&#x27;) {
+        return numericLiteral.longAST(s.substr(0, s.length - 1), radix);
+    }
+    else {
+        if (neg) {
+            return numericLiteral.intAST(-value);
+        }
+        else {
+            return numericLiteral.intAST(value);
+        }
+    }
+}
+
+function astForSlice(c: Compiling, n: parser.Node): astnodes.slice {
+    REQ(n, SYM.subscript);
+
+    var ch = CHILD(n, 0);
+    var lower = null;
+    var upper = null;
+    var step = null;
+    if (ch.type === TOK.T_DOT)
+        return new astnodes.Ellipsis();
+    if (NCH(n) === 1 &amp;&amp; ch.type === SYM.IfExpr)
+        return new astnodes.Index(astForExpr(c, ch));
+    if (ch.type === SYM.IfExpr)
+        lower = astForExpr(c, ch);
+    if (ch.type === TOK.T_COLON) {
+        if (NCH(n) &gt; 1) {
+            var n2 = CHILD(n, 1);
+            if (n2.type === SYM.IfExpr)
+                upper = astForExpr(c, n2);
+        }
+    }
+    else if (NCH(n) &gt; 2) {
+        var n2 = CHILD(n, 2);
+        if (n2.type === SYM.IfExpr)
+            upper = astForExpr(c, n2);
+    }
+
+    ch = CHILD(n, NCH(n) - 1);
+    if (ch.type === SYM.sliceop) {
+        if (NCH(ch) === 1) {
+            ch = CHILD(ch, 0);
+            step = new astnodes.Name(strobj(&quot;None&quot;), astnodes.Load, ch.lineno, ch.col_offset);
+        }
+        else {
+            ch = CHILD(ch, 1);
+            if (ch.type === SYM.IfExpr)
+                step = astForExpr(c, ch);
+        }
+    }
+    return new astnodes.Slice(lower, upper, step);
+}
+
+function astForAtomExpr(c: Compiling, n: parser.Node): astnodes.expr {
+    var ch = CHILD(n, 0);
+    switch (ch.type) {
+        case TOK.T_NAME:
+            // All names start in astnodes.Load context, but may be changed later
+            return new astnodes.Name(strobj(ch.value), astnodes.Load, n.lineno, n.col_offset);
+        case TOK.T_STRING:
+            return new astnodes.Str(parsestrplus(c, n), n.lineno, n.col_offset);
+        case TOK.T_NUMBER:
+            return new astnodes.Num(parsenumber(c, ch.value, n.lineno), n.lineno, n.col_offset);
+        case TOK.T_LPAR: // various uses for parens
+            ch = CHILD(n, 1);
+            if (ch.type === TOK.T_RPAR)
+                return new astnodes.Tuple([], astnodes.Load, n.lineno, n.col_offset);
+            if (ch.type === SYM.YieldExpr)
+                return astForExpr(c, ch);
+            if (NCH(ch) &gt; 1 &amp;&amp; CHILD(ch, 1).type === SYM.gen_for)
+                return astForGenexp(c, ch);
+            return astForTestlistGexp(c, ch);
+        case TOK.T_LSQB: // list or listcomp
+            ch = CHILD(n, 1);
+            if (ch.type === TOK.T_RSQB)
+                return new astnodes.List([], astnodes.Load, n.lineno, n.col_offset);
+            REQ(ch, SYM.listmaker);
+            if (NCH(ch) === 1 || CHILD(ch, 1).type === TOK.T_COMMA)
+                return new astnodes.List(seqForTestlist(c, ch), astnodes.Load, n.lineno, n.col_offset);
+            else
+                return astForListcomp(c, ch);
+        case TOK.T_LBRACE:
+            /* dictmaker: test &#x27;:&#x27; test (&#x27;,&#x27; test &#x27;:&#x27; test)* [&#x27;,&#x27;] */
+            ch = CHILD(n, 1);
+            var size = Math.floor((NCH(ch) + 1) / 4); // + 1 for no trailing comma case
+            var keys = [];
+            var values = [];
+            for (var i = 0; i &lt; NCH(ch); i += 4) {
+                keys[i / 4] = astForExpr(c, CHILD(ch, i));
+                values[i / 4] = astForExpr(c, CHILD(ch, i + 2));
+            }
+            return new astnodes.Dict(keys, values, n.lineno, n.col_offset);
+        case TOK.T_BACKQUOTE:
+            throw syntaxError(&quot;backquote not supported, use repr()&quot;, c.c_filename, n.lineno);
+        default:
+            asserts.fail(&quot;unhandled atom&quot;, ch.type);
+    }
+}
+
+function astForPowerExpr(c: Compiling, n: parser.Node): astnodes.expr {
+    REQ(n, SYM.PowerExpr);
+    var e = astForAtomExpr(c, CHILD(n, 0));
+    if (NCH(n) === 1) return e;
+    for (var i = 1; i &lt; NCH(n); ++i) {
+        var ch = CHILD(n, i);
+        if (ch.type !== SYM.trailer)
+            break;
+        var tmp = astForTrailer(c, ch, e);
+        tmp.lineno = e.lineno;
+        tmp.col_offset = e.col_offset;
+        e = tmp;
+    }
+    if (CHILD(n, NCH(n) - 1).type === SYM.UnaryExpr) {
+        var f = astForExpr(c, CHILD(n, NCH(n) - 1));
+        e = new astnodes.BinOp(e, astnodes.Pow, f, n.lineno, n.col_offset);
+    }
+    return e;
+}
+
+function astForExpr(c: Compiling, n: parser.Node): astnodes.expr {
+    LOOP: while (true) {
+        switch (n.type) {
+            case SYM.IfExpr:
+            case SYM.old_test:
+                if (CHILD(n, 0).type === SYM.LambdaExpr || CHILD(n, 0).type === SYM.old_LambdaExpr)
+                    return astForLambdef(c, CHILD(n, 0));
+                else if (NCH(n) &gt; 1)
+                    return astForIfexpr(c, n);
+            // fallthrough
+            case SYM.OrExpr:
+            case SYM.AndExpr:
+                if (NCH(n) === 1) {
+                    n = CHILD(n, 0);
+                    continue LOOP;
+                }
+                var seq = [];
+                for (var i = 0; i &lt; NCH(n); i += 2)
+                    seq[i / 2] = astForExpr(c, CHILD(n, i));
+                if (CHILD(n, 1).value === &quot;and&quot;)
+                    return new astnodes.BoolOp(astnodes.And, seq, n.lineno, n.col_offset);
+                asserts.assert(CHILD(n, 1).value === &quot;or&quot;);
+                return new astnodes.BoolOp(astnodes.Or, seq, n.lineno, n.col_offset);
+            case SYM.NotExpr:
+                if (NCH(n) === 1) {
+                    n = CHILD(n, 0);
+                    continue LOOP;
+                }
+                else {
+                    return new astnodes.UnaryOp(astnodes.Not, astForExpr(c, CHILD(n, 1)), n.lineno, n.col_offset);
+                }
+            case SYM.ComparisonExpr:
+                if (NCH(n) === 1) {
+                    n = CHILD(n, 0);
+                    continue LOOP;
+                }
+                else {
+                    var ops = [];
+                    var cmps = [];
+                    for (var i = 1; i &lt; NCH(n); i += 2) {
+                        ops[(i - 1) / 2] = astForCompOp(c, CHILD(n, i));
+                        cmps[(i - 1) / 2] = astForExpr(c, CHILD(n, i + 1));
+                    }
+                    return new astnodes.Compare(astForExpr(c, CHILD(n, 0)), ops, cmps, n.lineno, n.col_offset);
+                }
+            case SYM.ArithmeticExpr:
+            case SYM.GeometricExpr:
+            case SYM.ShiftExpr:
+            case SYM.BitwiseOrExpr:
+            case SYM.BitwiseXorExpr:
+            case SYM.BitwiseAndExpr:
+                if (NCH(n) === 1) {
+                    n = CHILD(n, 0);
+                    continue LOOP;
+                }
+                return astForBinop(c, n);
+            case SYM.YieldExpr:
+                var exp = null;
+                if (NCH(n) === 2) {
+                    exp = astForTestlist(c, CHILD(n, 1));
+                }
+                return new astnodes.Yield(exp, n.lineno, n.col_offset);
+            case SYM.UnaryExpr:
+                if (NCH(n) === 1) {
+                    n = CHILD(n, 0);
+                    continue LOOP;
+                }
+                return astForUnaryExpr(c, n);
+            case SYM.PowerExpr:
+                return astForPowerExpr(c, n);
+            default:
+                asserts.fail(&quot;unhandled expr&quot;, &quot;n.type: %d&quot;, n.type);
+        }
+        break;
+    }
+}
+
+function astForPrintStmt(c: Compiling, n: parser.Node): astnodes.Print {
+    var start = 1;
+    var dest = null;
+    REQ(n, SYM.print_stmt);
+    if (NCH(n) &gt;= 2 &amp;&amp; CHILD(n, 1).type === TOK.T_RIGHTSHIFT) {
+        dest = astForExpr(c, CHILD(n, 2));
+        start = 4;
+    }
+    var seq = [];
+    for (var i = start, j = 0; i &lt; NCH(n); i += 2, ++j) {
+        seq[j] = astForExpr(c, CHILD(n, i));
+    }
+    var nl = (CHILD(n, NCH(n) - 1)).type === TOK.T_COMMA ? false : true;
+    return new astnodes.Print(dest, seq, nl, n.lineno, n.col_offset);
+}
+
+function astForStmt(c: Compiling, n: parser.Node): astnodes.stmt {
+    if (n.type === SYM.stmt) {
+        asserts.assert(NCH(n) === 1);
+        n = CHILD(n, 0);
+    }
+    if (n.type === SYM.simple_stmt) {
+        asserts.assert(numStmts(n) === 1);
+        n = CHILD(n, 0);
+    }
+    if (n.type === SYM.small_stmt) {
+        REQ(n, SYM.small_stmt);
+        n = CHILD(n, 0);
+        switch (n.type) {
+            case SYM.ExprStmt: return astForExprStmt(c, n);
+            case SYM.print_stmt: return astForPrintStmt(c, n);
+            case SYM.del_stmt: return astForDelStmt(c, n);
+            case SYM.pass_stmt: return new astnodes.Pass(n.lineno, n.col_offset);
+            case SYM.flow_stmt: return astForFlowStmt(c, n);
+            case SYM.import_stmt: return astForImportStmt(c, n);
+            case SYM.GlobalStmt: return astForGlobalStmt(c, n);
+            case SYM.NonLocalStmt: return astForNonLocalStmt(c, n);
+            case SYM.exec_stmt: return astForExecStmt(c, n);
+            case SYM.assert_stmt: return astForAssertStmt(c, n);
+            default: asserts.fail(&quot;unhandled small_stmt&quot;);
+        }
+    }
+    else {
+        var ch = CHILD(n, 0);
+        REQ(n, SYM.compound_stmt);
+        switch (ch.type) {
+            case SYM.if_stmt: return astForIfStmt(c, ch);
+            case SYM.while_stmt: return astForWhileStmt(c, ch);
+            case SYM.for_stmt: return astForForStmt(c, ch);
+            case SYM.try_stmt: return astForTryStmt(c, ch);
+            case SYM.with_stmt: return astForWithStmt(c, ch);
+            case SYM.funcdef: return astForFuncdef(c, ch, []);
+            case SYM.classdef: return astForClassdef(c, ch, []);
+            case SYM.decorated: return astForDecorated(c, ch);
+            default: asserts.assert(&quot;unhandled compound_stmt&quot;);
+        }
+    }
+}
+
+export function astFromParse(n: parser.Node, filename: string) {
+    var c = new Compiling(&quot;utf-8&quot;, filename);
+
+    var stmts = [];
+    var ch: parser.Node;
+    var k = 0;
+    switch (n.type) {
+        case SYM.file_input:
+            for (var i = 0; i &lt; NCH(n) - 1; ++i) {
+                var ch = CHILD(n, i);
+                if (n.type === TOK.T_NEWLINE)
+                    continue;
+                REQ(ch, SYM.stmt);
+                var num = numStmts(ch);
+                if (num === 1) {
+                    stmts[k++] = astForStmt(c, ch);
+                }
+                else {
+                    ch = CHILD(ch, 0);
+                    REQ(ch, SYM.simple_stmt);
+                    for (var j = 0; j &lt; num; ++j) {
+                        stmts[k++] = astForStmt(c, CHILD(ch, j * 2));
+                    }
+                }
+            }
+            return new astnodes.Module(stmts);
+        case SYM.eval_input:
+            asserts.fail(&quot;todo;&quot;);
+        case SYM.single_input:
+            asserts.fail(&quot;todo;&quot;);
+        default:
+            asserts.fail(&quot;todo;&quot;);
+    }
+}
+
+/**
+ * TODO: We&#x27;re not generating _astname, _isenum, _fields anymore.
+ */
+export function astDump(node) {
+    var _format = function(node) {
+        if (node === null) {
+            return &quot;None&quot;;
+        }
+        else if (node.prototype &amp;&amp; node.prototype._astname !== undefined &amp;&amp; node.prototype._isenum) {
+            return node.prototype._astname + &quot;()&quot;;
+        }
+        else if (node._astname !== undefined) {
+            var fields = [];
+            for (var i = 0; i &lt; node._fields.length; i += 2) // iter_fields
+            {
+                var a = node._fields[i]; // field name
+                var b = node._fields[i + 1](node); // field getter func
+                fields.push([a, _format(b)]);
+            }
+            var attrs = [];
+            for (var i = 0; i &lt; fields.length; ++i) {
+                var field = fields[i];
+                attrs.push(field[0] + &quot;=&quot; + field[1].replace(/^\s+/, &#x27;&#x27;));
+            }
+            var fieldstr = attrs.join(&#x27;,&#x27;);
+            return node._astname + &quot;(&quot; + fieldstr + &quot;)&quot;;
+        }
+        else if (base.isArrayLike(node)) {
+            var elems = [];
+            for (var i = 0; i &lt; node.length; ++i) {
+                var x = node[i];
+                elems.push(_format(x));
+            }
+            var elemsstr = elems.join(&#x27;,&#x27;);
+            return &quot;[&quot; + elemsstr.replace(/^\s+/, &#x27;&#x27;) + &quot;]&quot;;
+        }
+        else {
+            var ret;
+            if (node === true) ret = &quot;True&quot;;
+            else if (node === false) ret = &quot;False&quot;;
+            //          else if (Sk.ffi.isLong(node)) ret = Sk.ffi.remapToJs(node.tp$str());
+            //          else if (Sk.builtin.isStringPy(node)) ret = Sk.builtin.stringToJs(node.tp$repr());
+            else ret = &quot;&quot; + node;
+            return ret;
+        }
+    };
+
+    var visitNode = function(node) {
+        switch (node.constructor) {
+            case astnodes.Module: {
+                var module: astnodes.Module = node;
+                return &quot;Module(body=&quot; + visitStmts(module.body) + &quot;)&quot;;
+            }
+                break;
+            default: {
+            }
+        }
+    };
+
+    var visitStmts = function(stmts: astnodes.stmt[]): string {
+        return &quot;[&quot; + stmts.map(function(stmt) { return visitStmt(stmt); }).join(&#x27;, &#x27;) + &quot;]&quot;;
+    };
+
+    var visitStmt = function(stmt: astnodes.stmt): string {
+        switch (stmt.constructor) {
+            case astnodes.FunctionDef: {
+                var functionDef: astnodes.FunctionDef = &lt;astnodes.FunctionDef&gt;stmt;
+                return &quot;FunctionDef(name=&quot; + functionDef.name + &quot;, lineno=&quot; + functionDef.lineno + &quot;, col_offset=&quot; + functionDef.col_offset + &quot;, body=&quot; + visitStmts(functionDef.body) + &quot;)&quot;;
+            }
+                break;
+            case astnodes.Assign: {
+                var assign: astnodes.Assign = &lt;astnodes.Assign&gt;stmt;
+                return &quot;Assign(targets=&quot; + visitExprs(assign.targets) + &quot;, value=&quot; + visitExpr(assign.value) + &quot;, lineno=&quot; + assign.lineno + &quot;, col_offset=&quot; + assign.col_offset + &quot;)&quot;;
+            }
+            case astnodes.Pass: {
+                var pass: astnodes.Pass = &lt;astnodes.Pass&gt;stmt;
+                return &quot;Pass()&quot;;
+            }
+                break;
+            default: {
+            }
+        }
+    };
+
+    var visitExprs = function(exprs: astnodes.expr[]): string {
+        return &quot;[&quot; + exprs.map(function(expr) { return visitExpr(expr); }).join(&#x27;, &#x27;) + &quot;]&quot;;
+    };
+
+    var visitExpr = function(expr: astnodes.expr): string {
+        switch (expr.constructor) {
+            case astnodes.Name: {
+                var name: astnodes.Name = &lt;astnodes.Name&gt;expr;
+                return &quot;Name(id=&quot; + name.id + &quot;, lineno=&quot; + name.lineno + &quot;, col_offset=&quot; + name.col_offset + &quot;)&quot;;
+            }
+                break;
+            case astnodes.Num: {
+                var num: astnodes.Num = &lt;astnodes.Num&gt;expr;
+                return &quot;Num()&quot;;
+            }
+                break;
+            default: {
+            }
+        }
+    };
+
+    return visitNode(node);
+}
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
