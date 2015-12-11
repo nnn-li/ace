@@ -2,7 +2,18 @@ System.config({
   baseURL: "/",
   defaultJSExtensions: true,
   transpiler: "babel",
-  "packages": {
+  babelOptions: {
+    "optional": [
+      "runtime",
+      "optimisation.modules.system"
+    ]
+  },
+  paths: {
+    "github:*": "jspm_packages/github/*",
+    "npm:*": "jspm_packages/npm/*"
+  },
+
+  packages: {
     "app": {
       "defaultExtension": "ts",
       "meta": {
@@ -14,16 +25,6 @@ System.config({
         }
       }
     }
-  },
-  babelOptions: {
-    "optional": [
-      "runtime",
-      "optimisation.modules.system"
-    ]
-  },
-  paths: {
-    "github:*": "jspm_packages/github/*",
-    "npm:*": "jspm_packages/npm/*"
   },
 
   map: {

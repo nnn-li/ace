@@ -1,6 +1,7 @@
 *.log
 amd/
 dist/
+documentation/
 jspm_packages/
 lib/
 node_modules/
