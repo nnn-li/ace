@@ -40,6 +40,8 @@ import VirtualRenderer from "./VirtualRenderer";
 // The following require()s are for inclusion in the built ace file
 import HtmlMode from "./mode/HtmlMode";
 import HtmlWorker from "./mode/HtmlWorker";
+import JavaScriptMode from "./mode/JavaScriptMode";
+import JavaScriptWorker from "./mode/JavaScriptWorker";
 
 export function edit(source: any) {
     var element: HTMLElement;
@@ -70,7 +72,7 @@ export function edit(source: any) {
         element.innerHTML = '';
     }
 
-    var editSession = createEditSession(new EditorDocument(value), new HtmlMode());
+    var editSession = createEditSession(new EditorDocument(value), new JavaScriptMode());
 
     var editor = new Editor(new VirtualRenderer(element), editSession);
 

@@ -245,6 +245,41 @@
             "fors": {},
             "namespaces": {}
         },
+        "src/mode/javascript/jshint.ts": {
+            "name": "src/mode/javascript/jshint.ts",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src/mode/javascript/name-stack.ts": {
+            "name": "src/mode/javascript/name-stack.ts",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src/mode/javascript/options.ts": {
+            "name": "src/mode/javascript/options.ts",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src/mode/javascript/scope-manager.ts": {
+            "name": "src/mode/javascript/scope-manager.ts",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src/mode/javascript/state.ts": {
+            "name": "src/mode/javascript/state.ts",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
         "src/mode/python/Parser.ts": {
             "name": "src/mode/python/Parser.ts",
             "modules": {},
@@ -3261,6 +3296,1063 @@
             "file": "src/mode/html/TreeBuilder.ts",
             "line": 2922,
             "description": "Resets the insertion mode (http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reset-the-insertion-mode-appropriately)",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 190,
+            "description": "TODO: Remove in JSHint 3",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 211,
+            "description": "Use `in` to check for the presence of any explicitly-specified value for\n`globalstrict` because both `true` and `false` should trigger an error.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 223,
+            "description": "TODO: Extend this restriction to *all* ES6-specific options.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 545,
+            "description": "TODO: Remove in JSHint 3",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 668,
+            "description": "TODO: Extend this restriction to *all* \"environmental\" options.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 676,
+            "description": "TODO: Remove in JSHint 3",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 1357,
+            "description": "Checks the left hand side of an assignment for issues, returns if ok",
+            "params": [
+                {
+                    "name": "left",
+                    "description": "- the left hand side of the assignment",
+                    "type": "Token"
+                },
+                {
+                    "name": "assignToken",
+                    "description": "- the token for the assignment, used for reporting",
+                    "type": "Token="
+                },
+                {
+                    "name": "options",
+                    "description": "- optional object",
+                    "type": "Object=",
+                    "props": [
+                        {
+                            "name": "allowDestructuring",
+                            "description": "- whether to allow destructuting binding",
+                            "type": "Boolean"
+                        }
+                    ]
+                }
+            ],
+            "return": {
+                "description": "Whether the left hand side is OK",
+                "type": "Boolean"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 2832,
+            "params": [
+                {
+                    "name": "options",
+                    "description": "",
+                    "type": "Object",
+                    "optional": true,
+                    "props": [
+                        {
+                            "name": "loneArg",
+                            "description": "The argument to the function in cases\n                                 where it was defined using the\n                                 single-argument shorthand.",
+                            "type": "Token",
+                            "optional": true
+                        },
+                        {
+                            "name": "parsedOpening",
+                            "description": "Whether the opening parenthesis has\n                                      already been parsed.",
+                            "type": "Bool",
+                            "optional": true
+                        }
+                    ]
+                }
+            ],
+            "return": {
+                "description": "}",
+                "type": "{ arity: number, params: Array.<string>"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 2975,
+            "description": "Determine if the parser has begun parsing executable code.",
+            "params": [
+                {
+                    "name": "funct",
+                    "description": "- The current \"functor\" token",
+                    "type": "Token"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 3020,
+            "params": [
+                {
+                    "name": "options",
+                    "description": "",
+                    "type": "Object",
+                    "optional": true,
+                    "props": [
+                        {
+                            "name": "name",
+                            "description": "The identifier belonging to the function (if\n                              any)",
+                            "type": "Token",
+                            "optional": true
+                        },
+                        {
+                            "name": "statement",
+                            "description": "The statement that triggered creation\n                                     of the current function.",
+                            "type": "Boolean",
+                            "optional": true
+                        },
+                        {
+                            "name": "type",
+                            "description": "If specified, either \"generator\" or \"arrow\"",
+                            "type": "String",
+                            "optional": true
+                        },
+                        {
+                            "name": "loneArg",
+                            "description": "The argument to the function in cases\n                                 where it was defined using the\n                                 single-argument shorthand",
+                            "type": "Token",
+                            "optional": true
+                        },
+                        {
+                            "name": "parsedOpening",
+                            "description": "Whether the opening parenthesis has\n                                      already been parsed",
+                            "type": "Bool",
+                            "optional": true
+                        },
+                        {
+                            "name": "classExprBinding",
+                            "description": "Define a function with this\n                                          identifier in the new function's\n                                          scope, mimicking the bahavior of\n                                          class expression names within\n                                          the body of member functions.",
+                            "type": "Token",
+                            "optional": true
+                        }
+                    ]
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 3210,
+            "params": [
+                {
+                    "name": "props",
+                    "description": "Collection of property descriptors for a given\n                      object.",
+                    "type": "Object"
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 4839,
+            "params": [
+                {
+                    "name": "accessorType",
+                    "description": "- Either \"get\" or \"set\"",
+                    "type": "String"
+                },
+                {
+                    "name": "props",
+                    "description": "- a collection of all properties of the object to\n                        which the current accessor is being assigned",
+                    "type": "Object"
+                },
+                {
+                    "name": "tkn",
+                    "description": "- the identifier token representing the accessor name",
+                    "type": "Object"
+                },
+                {
+                    "name": "isClass",
+                    "description": "- whether the accessor is part of an ES6 Class\n                           definition",
+                    "type": "Boolean"
+                },
+                {
+                    "name": "isStatic",
+                    "description": "- whether the accessor is a static method",
+                    "type": "Boolean"
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 4885,
+            "description": "Test whether a given token is a punctuator matching one of the specified values",
+            "params": [
+                {
+                    "name": "token",
+                    "description": "",
+                    "type": "Token"
+                },
+                {
+                    "name": "values",
+                    "description": "",
+                    "type": "Array.<string>"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/jshint.ts",
+            "line": 4898,
+            "description": "Test whether a given token is a punctuator matching the specified value",
+            "params": [
+                {
+                    "name": "token",
+                    "description": "",
+                    "type": "Token"
+                },
+                {
+                    "name": "value",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/name-stack.ts",
+            "line": 13,
+            "description": "Create a new entry in the stack. Useful for tracking names across\nexpressions.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/name-stack.ts",
+            "line": 21,
+            "description": "Discard the most recently-created name on the stack.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/name-stack.ts",
+            "line": 28,
+            "description": "Update the most recent name on the top of the stack.",
+            "params": [
+                {
+                    "name": "token",
+                    "description": "The token to consider as the source for the most\n                      recent name.",
+                    "type": "Object"
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/name-stack.ts",
+            "line": 38,
+            "description": "Generate a string representation of the most recent name.",
+            "return": {
+                "description": "",
+                "type": "String"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 7,
+            "description": "This option prohibits the use of bitwise operators such as `^` (XOR),\n`|` (OR) and others. Bitwise operators are very rare in JavaScript\nprograms and quite often `&` is simply a mistyped `&&`.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 14,
+            "description": "This options prohibits overwriting prototypes of native objects such as\n `Array`, `Date` and so on.\n    // jshint freeze:true\n     Array.prototype.count = function (value) { return 4; };\n     // -> Warning: Extending prototype of native object: 'Array'.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 25,
+            "description": "This option allows you to force all variable names to use either\ncamelCase style or UPPER_CASE with underscores.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 36,
+            "description": "This option requires you to always put curly braces around blocks in\nloops and conditionals. JavaScript allows you to omit curly braces when\nthe block consists of only one statement, for example:\n\n    while (day)\n      shuffle();\n\nHowever, in some circumstances, it can lead to bugs (you'd think that\n`sleep()` is a part of the loop while in reality it is not):\n\n    while (day)\n      shuffle();\n      sleep();",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 53,
+            "description": "This options prohibits the use of `==` and `!=` in favor of `===` and\n`!==`. The former try to coerce values before comparing them which can\nlead to some unexpected results. The latter don't do any coercion so\nthey are generally safer. If you would like to learn more about type\ncoercion in JavaScript, we recommend [Truth, Equality and\nJavaScript](http://javascriptweblog.wordpress.com/2011/02/07/truth-equality-and-javascript/)\nby Angus Croll.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 64,
+            "description": "This option enables warnings about the use of identifiers which are\ndefined in future versions of JavaScript. Although overwriting them has\nno effect in contexts where they are not implemented, this practice can\ncause issues when migrating codebases to newer versions of the language.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 72,
+            "description": "This option suppresses warnings about invalid `typeof` operator values.\nThis operator has only [a limited set of possible return\nvalues](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof).\nBy default, JSHint warns when you compare its result with an invalid\nvalue which often can be a typo.\n\n    // 'fuction' instead of 'function'\n    if (typeof a == \"fuction\") { // Invalid typeof value 'fuction'\n      // ...\n    }\n\nDo not use this option unless you're absolutely sure you don't want\nthese checks.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 89,
+            "description": "This option tells JSHint that your code needs to adhere to ECMAScript 3\nspecification. Use this option if you need your program to be executable\nin older browsers—such as Internet Explorer 6/7/8/9—and other legacy\nJavaScript environments.",
+            "deprecated": true,
+            "deprecationMessage": "Use `esversion: 3` instead.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 99,
+            "description": "This option enables syntax first defined in [the ECMAScript 5.1\nspecification](http://es5.github.io/). This includes allowing reserved\nkeywords as object properties.",
+            "deprecated": true,
+            "deprecationMessage": "Use `esversion: 5` instead.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 108,
+            "description": "This option requires all `for in` loops to filter object's items. The\nfor in statement allows for looping through the names of all of the\nproperties of an object including those inherited through the prototype\nchain. This behavior can lead to unexpected items in your object so it\nis generally safer to always filter inherited properties out as shown in\nthe example:\n\n    for (key in obj) {\n      if (obj.hasOwnProperty(key)) {\n        // We are sure that obj[key] belongs to the object and was not inherited.\n      }\n    }\n\nFor more in-depth understanding of `for in` loops in JavaScript, read\n[Exploring JavaScript for-in\nloops](http://javascriptweblog.wordpress.com/2011/01/04/exploring-javascript-for-in-loops/)\nby Angus Croll.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 129,
+            "description": "This option suppresses warnings about declaring variables inside of\ncontrol\nstructures while accessing them later from the outside. Even though\nJavaScript has only two real scopes—global and function—such practice\nleads to confusion among people new to the language and hard-to-debug\nbugs. This is why, by default, JSHint warns about variables that are\nused outside of their intended scope.\n\n    function test() {\n      if (true) {\n        var x = 0;\n      }\n\n      x += 1; // Default: 'x' used out of scope.\n                // No warning when funcscope:true\n    }",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 149,
+            "description": "This option prohibits the use of immediate function invocations without\nwrapping them in parentheses. Wrapping parentheses assists readers of\nyour code in understanding that the expression is the result of a\nfunction, and not the function itself.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 162,
+            "description": "This option suppresses warnings about the `__iterator__` property. This\nproperty is not supported by all browsers so use it carefully.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 168,
+            "description": "This option requires you to capitalize names of constructor functions.\nCapitalizing functions that are intended to be used with `new` operator\nis just a convention that helps programmers to visually distinguish\nconstructor functions from other types of functions to help spot\nmistakes when using `this`.\n\nNot doing so won't break your code in any browsers or environments but\nit will be a bit harder to figure out—by reading the code—if the\nfunction was supposed to be used with or without new. And this is\nimportant because when the function that was intended to be used with\n`new` is used without it, `this` will point to the global object instead\nof a new object.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 189,
+            "description": "This option prohibits the use of `arguments.caller` and\n`arguments.callee`.  Both `.caller` and `.callee` make quite a few\noptimizations impossible so they were deprecated in future versions of\nJavaScript. In fact, ECMAScript 5 forbids the use of `arguments.callee`\nin strict mode.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 198,
+            "description": "This option prohibits the use of the comma operator. When misused, the\ncomma operator can obscure the value of a statement and promote\nincorrect code.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 205,
+            "description": "This option warns when you have an empty block in your code. JSLint was\noriginally warning for all empty blocks and we simply made it optional.\nThere were no studies reporting that empty blocks in JavaScript break\nyour code in any way.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 218,
+            "description": "This option warns about \"non-breaking whitespace\" characters. These\ncharacters can be entered with option-space on Mac computers and have a\npotential of breaking non-UTF8 web pages.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 225,
+            "description": "This option prohibits the use of constructor functions for side-effects.\nSome people like to call constructor functions without assigning its\nresult to any variable:\n\n    new MyConstructor();\n\nThere is no advantage in this approach over simply calling\n`MyConstructor` since the object that the operator `new` creates isn't\nused anywhere so you should generally avoid constructors like this one.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 238,
+            "description": "This option prohibits the use of explicitly undeclared variables. This\noption is very useful for spotting leaking and mistyped variables.\n\n    // jshint undef:true\n\n    function test() {\n      var myVar = 'Hello, World';\n      console.log(myvar); // Oops, typoed here. JSHint with undef will complain\n    }\n\nIf your variable is defined in another file, you can use the `global`\ndirective to tell JSHint about it.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 254,
+            "description": "This option prohibits the use of the grouping operator when it is not\nstrictly required. Such usage commonly reflects a misunderstanding of\nunary operators, for example:\n\n    // jshint singleGroups: true\n\n    delete(obj.attr); // Warning: Unnecessary grouping operator.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 265,
+            "description": "When set to true, the use of VariableStatements are forbidden.\nFor example:\n\n    // jshint varstmt: true\n\n    var a; // Warning: `var` declarations are forbidden. Use `let` or `const` instead.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 275,
+            "description": "This option is a short hand for the most strict JSHint configuration as\navailable in JSHint version 2.6.3. It enables all enforcing options and\ndisables all relaxing options that were defined in that release.",
+            "deprecated": true,
+            "deprecationMessage": "The option cannot be maintained without automatically opting\n            users in to new features. This can lead to unexpected\n            warnings/errors in when upgrading between minor versions of\n            JSHint.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 289,
+            "description": "This option suppresses warnings about missing semicolons. There is a lot\nof FUD about semicolon spread by quite a few people in the community.\nThe common myths are that semicolons are required all the time (they are\nnot) and that they are unreliable. JavaScript has rules about semicolons\nwhich are followed by *all* browsers so it is up to you to decide\nwhether you should or should not use semicolons in your code.\n\nFor more information about semicolons in JavaScript read [An Open Letter\nto JavaScript Leaders Regarding\nSemicolons](http://blog.izs.me/post/2353458699/an-open-letter-to-javascript-leaders-regarding)\nby Isaac Schlueter and [JavaScript Semicolon\nInsertion](http://inimino.org/~inimino/blog/javascript_semicolons).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 305,
+            "description": "This option suppresses warnings about multi-line strings. Multi-line\nstrings can be dangerous in JavaScript because all hell breaks loose if\nyou accidentally put a whitespace in between the escape character (`\\`)\nand a new line.\n\nNote that even though this option allows correct multi-line strings, it\nstill warns about multi-line strings without escape characters or with\nanything in between the escape character and a whitespace.\n\n    // jshint multistr:true\n\n    var text = \"Hello\\\n    World\"; // All good.\n\n    text = \"Hello\n    World\"; // Warning, no escape character.\n\n    text = \"Hello\\\n    World\"; // Warning, there is a space after \\",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 333,
+            "description": "This option suppresses warnings about the `debugger` statements in your\ncode.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 339,
+            "description": "This option suppresses warnings about the use of assignments in cases\nwhere comparisons are expected. More often than not, code like `if (a =\n10) {}` is a typo. However, it can be useful in cases like this one:\n\n    for (var i = 0, person; person = people[i]; i++) {}\n\nYou can silence this error on a per-use basis by surrounding the assignment\nwith parenthesis, such as:\n\n    for (var i = 0, person; (person = people[i]); i++) {}",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 353,
+            "description": "This option suppresses warnings about the use of `eval`. The use of\n`eval` is discouraged because it can make your code vulnerable to\nvarious injection attacks and it makes it hard for JavaScript\ninterpreter to do certain optimizations.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 361,
+            "description": "This option suppresses warnings about the use of global strict mode.\nGlobal strict mode can break third-party widgets so it is not\nrecommended.\n\nFor more info about strict mode see the `strict` option.",
+            "deprecated": true,
+            "deprecationMessage": "Use `strict: \"global\"`.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 372,
+            "description": "This option prohibits the use of unary increment and decrement\noperators.  Some people think that `++` and `--` reduces the quality of\ntheir coding styles and there are programming languages—such as\nPython—that go completely without these operators.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 380,
+            "description": "This option suppresses warnings about the `__proto__` property.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 385,
+            "description": "This option suppresses warnings about the use of script-targeted\nURLs—such as `javascript:...`.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 391,
+            "description": "This option suppresses warnings about using `[]` notation when it can be\nexpressed in dot notation: `person['name']` vs. `person.name`.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 402,
+            "description": "This option suppresses warnings about \"weird\" constructions like\n`new function () { ... }` and `new Object;`. Such constructions are\nsometimes used to produce singletons in JavaScript:\n\n    var singleton = new function() {\n      var privateVar;\n\n      this.publicMethod  = function () {}\n      this.publicMethod2 = function () {}\n    };",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 416,
+            "description": "This option suppresses most of the warnings about possibly unsafe line\nbreakings in your code. It doesn't suppress warnings about comma-first\ncoding style. To suppress those you have to use `laxcomma` (see below).",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 428,
+            "description": "This option suppresses warnings about comma-first coding style:\n\n    var obj = {\n        name: 'Anton'\n      , handle: 'valueof'\n      , role: 'SW Engineer'\n    };",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness.\n            If you would like to enforce rules relating to code style,\n            check out [the JSCS\n            project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 444,
+            "description": "This option suppresses warnings about possible strict violations when\nthe code is running in strict mode and you use `this` in a\nnon-constructor function. You should use this option—in a function scope\nonly—when you are positive that your use of `this` is valid in the\nstrict mode (for example, if you call your function using\n`Function.call`).\n\n**Note:** This option can be used only inside of a function scope.\nJSHint will fail with an error if you will try to set this option\nglobally.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 458,
+            "description": "This option suppresses warnings about the use of the `with` statement.\nThe semantics of the `with` statement can cause confusion among\ndevelopers and accidental definition of global variables.\n\nMore info:\n\n* [with Statement Considered\n  Harmful](http://yuiblog.com/blog/2006/04/11/with-statement-considered-harmful/)",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 470,
+            "description": "This options tells JSHint that your code uses Mozilla JavaScript\nextensions. Unless you develop specifically for the Firefox web browser\nyou don't need this option.\n\nMore info:\n\n* [New in JavaScript\n  1.7](https://developer.mozilla.org/en-US/docs/JavaScript/New_in_JavaScript/1.7)",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 482,
+            "description": "This option suppresses warnings about generator functions with no\n`yield` statement in them.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 488,
+            "description": "This option suppresses warnings about `== null` comparisons. Such\ncomparisons are often useful when you want to check if a variable is\n`null` or `undefined`.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 495,
+            "description": "This option suppresses warnings about missing semicolons, but only when\nthe semicolon is omitted for the last statement in a one-line block:\n\n    var name = (function() { return 'Anton' }());\n\nThis is a very niche use case that is useful only when you use automatic\nJavaScript code generators.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 506,
+            "description": "This option suppresses warnings about functions inside of loops.\nDefining functions inside of loops can lead to bugs such as this one:\n\n    var nums = [];\n\n    for (var i = 0; i < 10; i++) {\n      nums[i] = function (j) {\n        return i + j;\n      };\n    }\n\n    nums[0](2); // Prints 12 instead of 2\n\nTo fix the code above you need to copy the value of `i`:\n\n    var nums = [];\n\n    for (var i = 0; i < 10; i++) {\n      (function (i) {\n        nums[i] = function (j) {\n            return i + j;\n        };\n      }(i));\n    }",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 534,
+            "description": "This option suppresses warnings about the use of expressions where\nnormally you would expect to see assignments or function calls. Most of\nthe time, such code is a typo. However, it is not forbidden by the spec\nand that's why this warning is optional.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 542,
+            "description": "This option tells JSHint that your code uses ECMAScript 6 specific\nsyntax. Note that not all browsers implement these features.\n\nMore info:\n\n* [Specification for ECMAScript\n  6](http://www.ecma-international.org/ecma-262/6.0/index.html)",
+            "deprecated": true,
+            "deprecationMessage": "Use `esversion: 6` instead.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 555,
+            "description": "This option tells JSHint that your code uses ES3 array elision elements,\nor empty elements (for example, `[1, , , 4, , , 7]`).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 565,
+            "description": "This option defines globals exposed by the\n[MooTools](http://mootools.net/) JavaScript framework.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 571,
+            "description": "This option defines globals exposed by\n[CouchDB](http://couchdb.apache.org/). CouchDB is a document-oriented\ndatabase that can be queried and indexed in a MapReduce fashion using\nJavaScript.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 579,
+            "description": "This option defines globals exposed by [the Jasmine unit testing\nframework](https://jasmine.github.io/).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 585,
+            "description": "This option defines globals exposed by the [jQuery](http://jquery.com/)\nJavaScript library.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 591,
+            "description": "This option defines globals available when your code is running inside\nof the Node runtime environment. [Node.js](http://nodejs.org/) is a\nserver-side JavaScript environment that uses an asynchronous\nevent-driven model. This option also skips some warnings that make sense\nin the browser environments but don't make sense in Node such as\nfile-level `use strict` pragmas and `console.log` statements.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 601,
+            "description": "This option defines globals exposed by [the QUnit unit testing\nframework](http://qunitjs.com/).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 607,
+            "description": "This option defines globals available when your code is running inside\nof the Rhino runtime environment. [Rhino](http://www.mozilla.org/rhino/)\nis an open-source implementation of JavaScript written entirely in Java.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 614,
+            "description": "This option defines globals exposed by [the ShellJS\nlibrary](http://documentup.com/arturadib/shelljs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 620,
+            "description": "This option defines globals exposed by the\n[Prototype](http://www.prototypejs.org/) JavaScript framework.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 626,
+            "description": "This option defines globals exposed by the [YUI](http://yuilibrary.com/)\nJavaScript framework.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 632,
+            "description": "This option defines globals exposed by the \"BDD\" and \"TDD\" UIs of the\n[Mocha unit testing framework](http://mochajs.org/).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 638,
+            "description": "This option informs JSHint that the input code describes an ECMAScript 6\nmodule. All module code is interpreted as strict mode code.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 644,
+            "description": "This option defines globals available when your code is running as a\nscript for the [Windows Script\nHost](http://en.wikipedia.org/wiki/Windows_Script_Host).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 651,
+            "description": "This option defines globals available when your code is running inside\nof a Web Worker. [Web\nWorkers](https://developer.mozilla.org/en/Using_web_workers) provide a\nsimple means for web content to run scripts in background threads.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 659,
+            "description": "This option defines non-standard but widely adopted globals such as\n`escape` and `unescape`.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 665,
+            "description": "This option defines globals exposed by modern browsers: all the way from\ngood old `document` and `navigator` to the HTML5 `FileReader` and other\nnew developments in the browser world.\n\n**Note:** This option doesn't expose variables like `alert` or\n`console`. See option `devel` for more information.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 675,
+            "description": "This option defines globals available when using [the Browserify\ntool](http://browserify.org/) to build a project.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 681,
+            "description": "This option defines globals that are usually used for logging poor-man's\ndebugging: `console`, `alert`, etc. It is usually a good idea to not\nship them in production because, for example, `console.log` breaks in\nlegacy versions of Internet Explorer.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 689,
+            "description": "This option defines globals exposed by the [Dojo\nToolkit](http://dojotoolkit.org/).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 695,
+            "description": "This option defines globals for typed array constructors.\n\nMore info:\n\n* [JavaScript typed\n  arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 705,
+            "description": "This option defines globals available when your core is running inside\nof the PhantomJS runtime environment. [PhantomJS](http://phantomjs.org/)\nis a headless WebKit scriptable with a JavaScript API. It has fast and\nnative support for various web standards: DOM handling, CSS selector,\nJSON, Canvas, and SVG.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 728,
+            "description": "This option lets you set the maximum length of a line.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness. If\n            you would like to enforce rules relating to code style, check\n            out [the JSCS project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 737,
+            "description": "This option sets a specific tab width for your code.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness. If\n            you would like to enforce rules relating to code style, check\n            out [the JSCS project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 746,
+            "description": "This options allows you to set the maximum amount of warnings JSHint will\nproduce before giving up. Default is 50.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 752,
+            "description": "This option allows you to control which variables JSHint considers to be\nimplicitly defined in the environment. Configure it with an array of\nstring values. Prefixing a variable name with a hyphen (-) character will\nremove that name from the collection of predefined variables.\n\nJSHint will consider variables declared in this way to be read-only.\n\nThis option cannot be specified in-line; it may only be used via the\nJavaScript API or from an external configuration file.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 765,
+            "description": "This option can be used to specify a white list of global variables that\nare not formally defined in the source code. This is most useful when\ncombined with the `undef` option in order to suppress warnings for\nproject-specific global variables.\n\nSetting an entry to `true` enables reading and writing to that variable.\nSetting it to `false` will trigger JSHint to consider that variable\nread-only.\n\nSee also the \"environment\" options: a set of options to be used as short\nhand for enabling global variables defined in common JavaScript\nenvironments.\n\nTo configure `globals` within an individual file, see [Inline\nConfiguration](http://jshint.com/docs/#inline-configuration).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 784,
+            "description": "This option enforces the consistency of quotation marks used throughout\nyour code. It accepts three values: `true` if you don't want to enforce\none particular style but want some consistency, `\"single\"` if you want to\nallow only single quotes and `\"double\"` if you want to allow only double\nquotes.",
+            "deprecated": true,
+            "deprecationMessage": "JSHint is limiting its scope to issues of code correctness. If\n            you would like to enforce rules relating to code style, check\n            out [the JSCS project](https://github.com/jscs-dev/node-jscs).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 799,
+            "description": "This option lets you set the max number of statements allowed per function:\n\n    // jshint maxstatements:4\n\n    function main() {\n      var i = 0;\n      var j = 0;\n\n      // Function declarations count as one statement. Their bodies\n      // don't get taken into account for the outer function.\n      function inner() {\n        var i2 = 1;\n        var j2 = 1;\n\n        return i2 + j2;\n      }\n\n      j = i + j;\n      return j; // JSHint: Too many statements per function. (5)\n    }",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 823,
+            "description": "This option lets you control how nested do you want your blocks to be:\n\n    // jshint maxdepth:2\n\n    function main(meaning) {\n      var day = true;\n\n      if (meaning === 42) {\n        while (day) {\n          shuffle();\n\n          if (tired) { // JSHint: Blocks are nested too deeply (3).\n              sleep();\n          }\n        }\n      }\n    }",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 844,
+            "description": "This option lets you set the max number of formal parameters allowed per\nfunction:\n\n    // jshint maxparams:3\n\n    function login(request, onSuccess) {\n      // ...\n    }\n\n    // JSHint: Too many parameters per function (4).\n    function logout(request, isManual, whereAmI, onSuccess) {\n      // ...\n    }",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 861,
+            "description": "This option lets you control cyclomatic complexity throughout your code.\nCyclomatic complexity measures the number of linearly independent paths\nthrough a program's source code. Read more about [cyclomatic complexity on\nWikipedia](http://en.wikipedia.org/wiki/Cyclomatic_complexity).",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 869,
+            "description": "This option suppresses warnings about variable shadowing i.e. declaring a\nvariable that had been already declared somewhere in the outer scope.\n\n- \"inner\"  - check for variables defined in the same scope only\n- \"outer\"  - check for variables defined in outer scopes as well\n- false    - same as inner\n- true     - allow variable shadowing",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 880,
+            "description": "This option requires the code to run in ECMAScript 5's strict mode.\n[Strict mode](https://developer.mozilla.org/en/JavaScript/Strict_mode)\nis a way to opt in to a restricted variant of JavaScript. Strict mode\neliminates some JavaScript pitfalls that didn't cause errors by changing\nthem to produce errors.  It also fixes mistakes that made it difficult\nfor the JavaScript engines to perform certain optimizations.\n\n- \"func\"    - there must be a `\"use strict\";` directive at function level\n- \"global\"  - there must be a `\"use strict\";` directive at global level\n- \"implied\" - lint the code as if there is the `\"use strict\";` directive\n- false     - disable warnings about strict mode\n- true      - same as `\"func\"`, but environment options have precedence over\n              this (e.g. `node`, `module`, `browserify` and `phantomjs` can\n              set `strict: global`)",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 898,
+            "description": "This option warns when you define and never use your variables. It is very\nuseful for general code cleanup, especially when used in addition to\n`undef`.\n\n    // jshint unused:true\n\n    function test(a, b) {\n      var c, d = 2;\n\n      return a + d;\n    }\n\n    test(1, 2);\n\n    // Line 3: 'b' was defined but never used.\n    // Line 4: 'c' was defined but never used.\n\nIn addition to that, this option will warn you about unused global\nvariables declared via the `global` directive.\n\nThis can be set to `vars` to only check for variables, not function\nparameters, or `strict` to check all variables and parameters.  The\ndefault (true) behavior is to allow unused parameters that are followed by\na used parameter.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 926,
+            "description": "This option prohibits the use of a variable before it was defined.\nJavaScript has function scope only and, in addition to that, all variables\nare always moved—or hoisted— to the top of the function. This behavior can\nlead to some very nasty bugs and that's why it is safer to always use\nvariable only after they have been explicitly defined.\n\nSetting this option to \"nofunc\" will allow function declarations to be\nignored.\n\nFor more in-depth understanding of scoping and hoisting in JavaScript,\nread [JavaScript Scoping and\nHoisting](http://www.adequatelygood.com/2010/2/JavaScript-Scoping-and-Hoisting)\nby Ben Cherry.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/options.ts",
+            "line": 952,
+            "description": "This option is used to specify the ECMAScript version to which the code\nmust adhere. It can assume one of the following values:\n - `3` - If you need your program to be executable\n   in older browsers—such as Internet Explorer 6/7/8/9—and other legacy\n   JavaScript environments\n - `5` - To enable syntax first defined in [the ECMAScript 5.1\n   specification](http://www.ecma-international.org/ecma-262/5.1/index.html).\n   This includes allowing reserved keywords as object properties.\n - `6` - To tell JSHint that your code uses [ECMAScript\n   6](http://www.ecma-international.org/ecma-262/6.0/index.html) specific\n   syntax. Note that not all browsers implement them.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 28,
+            "description": "Creates a scope manager that handles variables and labels, storing usages\nand resolving when variables are used and undefined",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 126,
+            "description": "Checks the current scope for unused identifiers",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 147,
+            "description": "Checks the current scope for unused parameters\nMust be called in a function parameter scope",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 181,
+            "description": "Finds the relevant label's scope, searching from nearest outwards",
+            "return": {
+                "description": "the scope the label was found in",
+                "type": "Object"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 257,
+            "description": "Tell the manager we are entering a new block of code",
+            "params": [
+                {
+                    "name": "type",
+                    "description": "- The type of the block. Valid values are\n                         \"functionparams\", \"catchparams\" and\n                         \"functionouter\"",
+                    "type": "String",
+                    "optional": true
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 461,
+            "description": "Add a param to the current scope",
+            "params": [
+                {
+                    "name": "labelName",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "token",
+                    "description": "",
+                    "type": "Token"
+                },
+                {
+                    "name": "type",
+                    "description": "param type",
+                    "type": "String",
+                    "optional": true,
+                    "optdefault": "\"param\""
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 552,
+            "description": "Gets an array of implied globals",
+            "return": {
+                "description": ">}",
+                "type": "Array.<{ name: string, line: Array.<number>"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 577,
+            "description": "Returns a list of unused variables",
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 598,
+            "description": "for the exported options, indicating a variable is used outside the file",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 626,
+            "description": "Mark an indentifier as es6 module exported",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 633,
+            "description": "adds an indentifier to the relevant current scope and creates warnings/errors as necessary",
+            "params": [
+                {
+                    "name": "labelName",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "opts",
+                    "description": "",
+                    "type": "Object",
+                    "props": [
+                        {
+                            "name": "type",
+                            "description": "- the type of the label e.g. \"param\", \"var\", \"let, \"const\", \"function\"",
+                            "type": "String"
+                        },
+                        {
+                            "name": "token",
+                            "description": "- the token pointing at the declaration",
+                            "type": "Token"
+                        }
+                    ]
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 722,
+            "description": "Returns the label type given certain options",
+            "params": [
+                {
+                    "name": "labelName",
+                    "description": ""
+                },
+                {
+                    "name": "options",
+                    "description": "",
+                    "type": "Object=",
+                    "props": [
+                        {
+                            "name": "onlyBlockscoped",
+                            "description": "- only include block scoped labels",
+                            "type": "Boolean="
+                        },
+                        {
+                            "name": "excludeParams",
+                            "description": "- exclude the param scope",
+                            "type": "Boolean="
+                        },
+                        {
+                            "name": "excludeCurrent",
+                            "description": "- exclude the current scope",
+                            "type": "Boolean="
+                        }
+                    ]
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "String"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 748,
+            "description": "Returns if a break label exists in the function scope",
+            "params": [
+                {
+                    "name": "labelName",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 766,
+            "description": "Returns if the label is in the current function scope\nSee scopeManager.funct.labelType for options",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 774,
+            "description": "Adds a new function scoped variable\nsee block.add for block scoped",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 791,
+            "description": "is the current block global?",
+            "return": {
+                "description": "Boolean"
+            },
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/scope-manager.ts",
+            "line": 844,
+            "description": "Adds a new variable",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/state.ts",
+            "line": 36,
+            "description": "Determine if the code currently being linted is strict mode code.",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/state.ts",
+            "line": 50,
+            "params": [
+                {
+                    "name": "strict",
+                    "description": "- When `true`, only consider ES6 when in\n                          \"esversion: 6\" code.",
+                    "type": "Boolean"
+                }
+            ],
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/state.ts",
+            "line": 61,
+            "params": [
+                {
+                    "name": "strict",
+                    "description": "- When `true`, return `true` only when\n                          esversion is exactly 5",
+                    "type": "Boolean"
+                }
+            ],
             "class": "HtmlMode"
         },
         {
@@ -10824,6 +11916,54 @@
             "line": " src/mode/html/Node.ts:7"
         },
         {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/jshint.ts:1357"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/jshint.ts:2832"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/jshint.ts:2975"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/jshint.ts:4885"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/jshint.ts:4898"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/name-stack.ts:38"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/scope-manager.ts:181"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/scope-manager.ts:552"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/scope-manager.ts:577"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/scope-manager.ts:722"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/scope-manager.ts:748"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src/mode/javascript/scope-manager.ts:791"
+        },
+        {
             "message": "unknown tag: alias",
             "line": " src/EditSession.ts:356"
         },
@@ -11770,6 +12910,486 @@
         {
             "message": "Missing item type\nResets the insertion mode (http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#reset-the-insertion-mode-appropriately)",
             "line": " src/mode/html/TreeBuilder.ts:2922"
+        },
+        {
+            "message": "Missing item type\nTODO: Remove in JSHint 3",
+            "line": " src/mode/javascript/jshint.ts:190"
+        },
+        {
+            "message": "Missing item type\nUse `in` to check for the presence of any explicitly-specified value for\n`globalstrict` because both `true` and `false` should trigger an error.",
+            "line": " src/mode/javascript/jshint.ts:211"
+        },
+        {
+            "message": "Missing item type\nTODO: Extend this restriction to *all* ES6-specific options.",
+            "line": " src/mode/javascript/jshint.ts:223"
+        },
+        {
+            "message": "Missing item type\nTODO: Remove in JSHint 3",
+            "line": " src/mode/javascript/jshint.ts:545"
+        },
+        {
+            "message": "Missing item type\nTODO: Extend this restriction to *all* \"environmental\" options.",
+            "line": " src/mode/javascript/jshint.ts:668"
+        },
+        {
+            "message": "Missing item type\nTODO: Remove in JSHint 3",
+            "line": " src/mode/javascript/jshint.ts:676"
+        },
+        {
+            "message": "Missing item type\nChecks the left hand side of an assignment for issues, returns if ok",
+            "line": " src/mode/javascript/jshint.ts:1357"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/jshint.ts:2832"
+        },
+        {
+            "message": "Missing item type\nDetermine if the parser has begun parsing executable code.",
+            "line": " src/mode/javascript/jshint.ts:2975"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/jshint.ts:3020"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/jshint.ts:3210"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/jshint.ts:4839"
+        },
+        {
+            "message": "Missing item type\nTest whether a given token is a punctuator matching one of the specified values",
+            "line": " src/mode/javascript/jshint.ts:4885"
+        },
+        {
+            "message": "Missing item type\nTest whether a given token is a punctuator matching the specified value",
+            "line": " src/mode/javascript/jshint.ts:4898"
+        },
+        {
+            "message": "Missing item type\nCreate a new entry in the stack. Useful for tracking names across\nexpressions.",
+            "line": " src/mode/javascript/name-stack.ts:13"
+        },
+        {
+            "message": "Missing item type\nDiscard the most recently-created name on the stack.",
+            "line": " src/mode/javascript/name-stack.ts:21"
+        },
+        {
+            "message": "Missing item type\nUpdate the most recent name on the top of the stack.",
+            "line": " src/mode/javascript/name-stack.ts:28"
+        },
+        {
+            "message": "Missing item type\nGenerate a string representation of the most recent name.",
+            "line": " src/mode/javascript/name-stack.ts:38"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of bitwise operators such as `^` (XOR),\n`|` (OR) and others. Bitwise operators are very rare in JavaScript\nprograms and quite often `&` is simply a mistyped `&&`.",
+            "line": " src/mode/javascript/options.ts:7"
+        },
+        {
+            "message": "Missing item type\nThis options prohibits overwriting prototypes of native objects such as\n `Array`, `Date` and so on.\n    // jshint freeze:true\n     Array.prototype.count = function (value) { return 4; };\n     // -> Warning: Extending prototype of native object: 'Array'.",
+            "line": " src/mode/javascript/options.ts:14"
+        },
+        {
+            "message": "Missing item type\nThis option allows you to force all variable names to use either\ncamelCase style or UPPER_CASE with underscores.",
+            "line": " src/mode/javascript/options.ts:25"
+        },
+        {
+            "message": "Missing item type\nThis option requires you to always put curly braces around blocks in\nloops and conditionals. JavaScript allows you to omit curly braces when\nthe block consists of only one statement, for example:\n\n    while (day)\n      shuffle();\n\nHowever, in some circumstances, it can lead to bugs (you'd think that\n`sleep()` is a part of the loop while in reality it is not):\n\n    while (day)\n      shuffle();\n      sleep();",
+            "line": " src/mode/javascript/options.ts:36"
+        },
+        {
+            "message": "Missing item type\nThis options prohibits the use of `==` and `!=` in favor of `===` and\n`!==`. The former try to coerce values before comparing them which can\nlead to some unexpected results. The latter don't do any coercion so\nthey are generally safer. If you would like to learn more about type\ncoercion in JavaScript, we recommend [Truth, Equality and\nJavaScript](http://javascriptweblog.wordpress.com/2011/02/07/truth-equality-and-javascript/)\nby Angus Croll.",
+            "line": " src/mode/javascript/options.ts:53"
+        },
+        {
+            "message": "Missing item type\nThis option enables warnings about the use of identifiers which are\ndefined in future versions of JavaScript. Although overwriting them has\nno effect in contexts where they are not implemented, this practice can\ncause issues when migrating codebases to newer versions of the language.",
+            "line": " src/mode/javascript/options.ts:64"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about invalid `typeof` operator values.\nThis operator has only [a limited set of possible return\nvalues](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof).\nBy default, JSHint warns when you compare its result with an invalid\nvalue which often can be a typo.\n\n    // 'fuction' instead of 'function'\n    if (typeof a == \"fuction\") { // Invalid typeof value 'fuction'\n      // ...\n    }\n\nDo not use this option unless you're absolutely sure you don't want\nthese checks.",
+            "line": " src/mode/javascript/options.ts:72"
+        },
+        {
+            "message": "Missing item type\nThis option tells JSHint that your code needs to adhere to ECMAScript 3\nspecification. Use this option if you need your program to be executable\nin older browsers—such as Internet Explorer 6/7/8/9—and other legacy\nJavaScript environments.",
+            "line": " src/mode/javascript/options.ts:89"
+        },
+        {
+            "message": "Missing item type\nThis option enables syntax first defined in [the ECMAScript 5.1\nspecification](http://es5.github.io/). This includes allowing reserved\nkeywords as object properties.",
+            "line": " src/mode/javascript/options.ts:99"
+        },
+        {
+            "message": "Missing item type\nThis option requires all `for in` loops to filter object's items. The\nfor in statement allows for looping through the names of all of the\nproperties of an object including those inherited through the prototype\nchain. This behavior can lead to unexpected items in your object so it\nis generally safer to always filter inherited properties out as shown in\nthe example:\n\n    for (key in obj) {\n      if (obj.hasOwnProperty(key)) {\n        // We are sure that obj[key] belongs to the object and was not inherited.\n      }\n    }\n\nFor more in-depth understanding of `for in` loops in JavaScript, read\n[Exploring JavaScript for-in\nloops](http://javascriptweblog.wordpress.com/2011/01/04/exploring-javascript-for-in-loops/)\nby Angus Croll.",
+            "line": " src/mode/javascript/options.ts:108"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about declaring variables inside of\ncontrol\nstructures while accessing them later from the outside. Even though\nJavaScript has only two real scopes—global and function—such practice\nleads to confusion among people new to the language and hard-to-debug\nbugs. This is why, by default, JSHint warns about variables that are\nused outside of their intended scope.\n\n    function test() {\n      if (true) {\n        var x = 0;\n      }\n\n      x += 1; // Default: 'x' used out of scope.\n                // No warning when funcscope:true\n    }",
+            "line": " src/mode/javascript/options.ts:129"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of immediate function invocations without\nwrapping them in parentheses. Wrapping parentheses assists readers of\nyour code in understanding that the expression is the result of a\nfunction, and not the function itself.",
+            "line": " src/mode/javascript/options.ts:149"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the `__iterator__` property. This\nproperty is not supported by all browsers so use it carefully.",
+            "line": " src/mode/javascript/options.ts:162"
+        },
+        {
+            "message": "Missing item type\nThis option requires you to capitalize names of constructor functions.\nCapitalizing functions that are intended to be used with `new` operator\nis just a convention that helps programmers to visually distinguish\nconstructor functions from other types of functions to help spot\nmistakes when using `this`.\n\nNot doing so won't break your code in any browsers or environments but\nit will be a bit harder to figure out—by reading the code—if the\nfunction was supposed to be used with or without new. And this is\nimportant because when the function that was intended to be used with\n`new` is used without it, `this` will point to the global object instead\nof a new object.",
+            "line": " src/mode/javascript/options.ts:168"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of `arguments.caller` and\n`arguments.callee`.  Both `.caller` and `.callee` make quite a few\noptimizations impossible so they were deprecated in future versions of\nJavaScript. In fact, ECMAScript 5 forbids the use of `arguments.callee`\nin strict mode.",
+            "line": " src/mode/javascript/options.ts:189"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of the comma operator. When misused, the\ncomma operator can obscure the value of a statement and promote\nincorrect code.",
+            "line": " src/mode/javascript/options.ts:198"
+        },
+        {
+            "message": "Missing item type\nThis option warns when you have an empty block in your code. JSLint was\noriginally warning for all empty blocks and we simply made it optional.\nThere were no studies reporting that empty blocks in JavaScript break\nyour code in any way.",
+            "line": " src/mode/javascript/options.ts:205"
+        },
+        {
+            "message": "Missing item type\nThis option warns about \"non-breaking whitespace\" characters. These\ncharacters can be entered with option-space on Mac computers and have a\npotential of breaking non-UTF8 web pages.",
+            "line": " src/mode/javascript/options.ts:218"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of constructor functions for side-effects.\nSome people like to call constructor functions without assigning its\nresult to any variable:\n\n    new MyConstructor();\n\nThere is no advantage in this approach over simply calling\n`MyConstructor` since the object that the operator `new` creates isn't\nused anywhere so you should generally avoid constructors like this one.",
+            "line": " src/mode/javascript/options.ts:225"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of explicitly undeclared variables. This\noption is very useful for spotting leaking and mistyped variables.\n\n    // jshint undef:true\n\n    function test() {\n      var myVar = 'Hello, World';\n      console.log(myvar); // Oops, typoed here. JSHint with undef will complain\n    }\n\nIf your variable is defined in another file, you can use the `global`\ndirective to tell JSHint about it.",
+            "line": " src/mode/javascript/options.ts:238"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of the grouping operator when it is not\nstrictly required. Such usage commonly reflects a misunderstanding of\nunary operators, for example:\n\n    // jshint singleGroups: true\n\n    delete(obj.attr); // Warning: Unnecessary grouping operator.",
+            "line": " src/mode/javascript/options.ts:254"
+        },
+        {
+            "message": "Missing item type\nWhen set to true, the use of VariableStatements are forbidden.\nFor example:\n\n    // jshint varstmt: true\n\n    var a; // Warning: `var` declarations are forbidden. Use `let` or `const` instead.",
+            "line": " src/mode/javascript/options.ts:265"
+        },
+        {
+            "message": "Missing item type\nThis option is a short hand for the most strict JSHint configuration as\navailable in JSHint version 2.6.3. It enables all enforcing options and\ndisables all relaxing options that were defined in that release.",
+            "line": " src/mode/javascript/options.ts:275"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about missing semicolons. There is a lot\nof FUD about semicolon spread by quite a few people in the community.\nThe common myths are that semicolons are required all the time (they are\nnot) and that they are unreliable. JavaScript has rules about semicolons\nwhich are followed by *all* browsers so it is up to you to decide\nwhether you should or should not use semicolons in your code.\n\nFor more information about semicolons in JavaScript read [An Open Letter\nto JavaScript Leaders Regarding\nSemicolons](http://blog.izs.me/post/2353458699/an-open-letter-to-javascript-leaders-regarding)\nby Isaac Schlueter and [JavaScript Semicolon\nInsertion](http://inimino.org/~inimino/blog/javascript_semicolons).",
+            "line": " src/mode/javascript/options.ts:289"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about multi-line strings. Multi-line\nstrings can be dangerous in JavaScript because all hell breaks loose if\nyou accidentally put a whitespace in between the escape character (`\\`)\nand a new line.\n\nNote that even though this option allows correct multi-line strings, it\nstill warns about multi-line strings without escape characters or with\nanything in between the escape character and a whitespace.\n\n    // jshint multistr:true\n\n    var text = \"Hello\\\n    World\"; // All good.\n\n    text = \"Hello\n    World\"; // Warning, no escape character.\n\n    text = \"Hello\\\n    World\"; // Warning, there is a space after \\",
+            "line": " src/mode/javascript/options.ts:305"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the `debugger` statements in your\ncode.",
+            "line": " src/mode/javascript/options.ts:333"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the use of assignments in cases\nwhere comparisons are expected. More often than not, code like `if (a =\n10) {}` is a typo. However, it can be useful in cases like this one:\n\n    for (var i = 0, person; person = people[i]; i++) {}\n\nYou can silence this error on a per-use basis by surrounding the assignment\nwith parenthesis, such as:\n\n    for (var i = 0, person; (person = people[i]); i++) {}",
+            "line": " src/mode/javascript/options.ts:339"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the use of `eval`. The use of\n`eval` is discouraged because it can make your code vulnerable to\nvarious injection attacks and it makes it hard for JavaScript\ninterpreter to do certain optimizations.",
+            "line": " src/mode/javascript/options.ts:353"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the use of global strict mode.\nGlobal strict mode can break third-party widgets so it is not\nrecommended.\n\nFor more info about strict mode see the `strict` option.",
+            "line": " src/mode/javascript/options.ts:361"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of unary increment and decrement\noperators.  Some people think that `++` and `--` reduces the quality of\ntheir coding styles and there are programming languages—such as\nPython—that go completely without these operators.",
+            "line": " src/mode/javascript/options.ts:372"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the `__proto__` property.",
+            "line": " src/mode/javascript/options.ts:380"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the use of script-targeted\nURLs—such as `javascript:...`.",
+            "line": " src/mode/javascript/options.ts:385"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about using `[]` notation when it can be\nexpressed in dot notation: `person['name']` vs. `person.name`.",
+            "line": " src/mode/javascript/options.ts:391"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about \"weird\" constructions like\n`new function () { ... }` and `new Object;`. Such constructions are\nsometimes used to produce singletons in JavaScript:\n\n    var singleton = new function() {\n      var privateVar;\n\n      this.publicMethod  = function () {}\n      this.publicMethod2 = function () {}\n    };",
+            "line": " src/mode/javascript/options.ts:402"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses most of the warnings about possibly unsafe line\nbreakings in your code. It doesn't suppress warnings about comma-first\ncoding style. To suppress those you have to use `laxcomma` (see below).",
+            "line": " src/mode/javascript/options.ts:416"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about comma-first coding style:\n\n    var obj = {\n        name: 'Anton'\n      , handle: 'valueof'\n      , role: 'SW Engineer'\n    };",
+            "line": " src/mode/javascript/options.ts:428"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about possible strict violations when\nthe code is running in strict mode and you use `this` in a\nnon-constructor function. You should use this option—in a function scope\nonly—when you are positive that your use of `this` is valid in the\nstrict mode (for example, if you call your function using\n`Function.call`).\n\n**Note:** This option can be used only inside of a function scope.\nJSHint will fail with an error if you will try to set this option\nglobally.",
+            "line": " src/mode/javascript/options.ts:444"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the use of the `with` statement.\nThe semantics of the `with` statement can cause confusion among\ndevelopers and accidental definition of global variables.\n\nMore info:\n\n* [with Statement Considered\n  Harmful](http://yuiblog.com/blog/2006/04/11/with-statement-considered-harmful/)",
+            "line": " src/mode/javascript/options.ts:458"
+        },
+        {
+            "message": "Missing item type\nThis options tells JSHint that your code uses Mozilla JavaScript\nextensions. Unless you develop specifically for the Firefox web browser\nyou don't need this option.\n\nMore info:\n\n* [New in JavaScript\n  1.7](https://developer.mozilla.org/en-US/docs/JavaScript/New_in_JavaScript/1.7)",
+            "line": " src/mode/javascript/options.ts:470"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about generator functions with no\n`yield` statement in them.",
+            "line": " src/mode/javascript/options.ts:482"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about `== null` comparisons. Such\ncomparisons are often useful when you want to check if a variable is\n`null` or `undefined`.",
+            "line": " src/mode/javascript/options.ts:488"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about missing semicolons, but only when\nthe semicolon is omitted for the last statement in a one-line block:\n\n    var name = (function() { return 'Anton' }());\n\nThis is a very niche use case that is useful only when you use automatic\nJavaScript code generators.",
+            "line": " src/mode/javascript/options.ts:495"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about functions inside of loops.\nDefining functions inside of loops can lead to bugs such as this one:\n\n    var nums = [];\n\n    for (var i = 0; i < 10; i++) {\n      nums[i] = function (j) {\n        return i + j;\n      };\n    }\n\n    nums[0](2); // Prints 12 instead of 2\n\nTo fix the code above you need to copy the value of `i`:\n\n    var nums = [];\n\n    for (var i = 0; i < 10; i++) {\n      (function (i) {\n        nums[i] = function (j) {\n            return i + j;\n        };\n      }(i));\n    }",
+            "line": " src/mode/javascript/options.ts:506"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about the use of expressions where\nnormally you would expect to see assignments or function calls. Most of\nthe time, such code is a typo. However, it is not forbidden by the spec\nand that's why this warning is optional.",
+            "line": " src/mode/javascript/options.ts:534"
+        },
+        {
+            "message": "Missing item type\nThis option tells JSHint that your code uses ECMAScript 6 specific\nsyntax. Note that not all browsers implement these features.\n\nMore info:\n\n* [Specification for ECMAScript\n  6](http://www.ecma-international.org/ecma-262/6.0/index.html)",
+            "line": " src/mode/javascript/options.ts:542"
+        },
+        {
+            "message": "Missing item type\nThis option tells JSHint that your code uses ES3 array elision elements,\nor empty elements (for example, `[1, , , 4, , , 7]`).",
+            "line": " src/mode/javascript/options.ts:555"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by the\n[MooTools](http://mootools.net/) JavaScript framework.",
+            "line": " src/mode/javascript/options.ts:565"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by\n[CouchDB](http://couchdb.apache.org/). CouchDB is a document-oriented\ndatabase that can be queried and indexed in a MapReduce fashion using\nJavaScript.",
+            "line": " src/mode/javascript/options.ts:571"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by [the Jasmine unit testing\nframework](https://jasmine.github.io/).",
+            "line": " src/mode/javascript/options.ts:579"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by the [jQuery](http://jquery.com/)\nJavaScript library.",
+            "line": " src/mode/javascript/options.ts:585"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals available when your code is running inside\nof the Node runtime environment. [Node.js](http://nodejs.org/) is a\nserver-side JavaScript environment that uses an asynchronous\nevent-driven model. This option also skips some warnings that make sense\nin the browser environments but don't make sense in Node such as\nfile-level `use strict` pragmas and `console.log` statements.",
+            "line": " src/mode/javascript/options.ts:591"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by [the QUnit unit testing\nframework](http://qunitjs.com/).",
+            "line": " src/mode/javascript/options.ts:601"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals available when your code is running inside\nof the Rhino runtime environment. [Rhino](http://www.mozilla.org/rhino/)\nis an open-source implementation of JavaScript written entirely in Java.",
+            "line": " src/mode/javascript/options.ts:607"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by [the ShellJS\nlibrary](http://documentup.com/arturadib/shelljs).",
+            "line": " src/mode/javascript/options.ts:614"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by the\n[Prototype](http://www.prototypejs.org/) JavaScript framework.",
+            "line": " src/mode/javascript/options.ts:620"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by the [YUI](http://yuilibrary.com/)\nJavaScript framework.",
+            "line": " src/mode/javascript/options.ts:626"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by the \"BDD\" and \"TDD\" UIs of the\n[Mocha unit testing framework](http://mochajs.org/).",
+            "line": " src/mode/javascript/options.ts:632"
+        },
+        {
+            "message": "Missing item type\nThis option informs JSHint that the input code describes an ECMAScript 6\nmodule. All module code is interpreted as strict mode code.",
+            "line": " src/mode/javascript/options.ts:638"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals available when your code is running as a\nscript for the [Windows Script\nHost](http://en.wikipedia.org/wiki/Windows_Script_Host).",
+            "line": " src/mode/javascript/options.ts:644"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals available when your code is running inside\nof a Web Worker. [Web\nWorkers](https://developer.mozilla.org/en/Using_web_workers) provide a\nsimple means for web content to run scripts in background threads.",
+            "line": " src/mode/javascript/options.ts:651"
+        },
+        {
+            "message": "Missing item type\nThis option defines non-standard but widely adopted globals such as\n`escape` and `unescape`.",
+            "line": " src/mode/javascript/options.ts:659"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by modern browsers: all the way from\ngood old `document` and `navigator` to the HTML5 `FileReader` and other\nnew developments in the browser world.\n\n**Note:** This option doesn't expose variables like `alert` or\n`console`. See option `devel` for more information.",
+            "line": " src/mode/javascript/options.ts:665"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals available when using [the Browserify\ntool](http://browserify.org/) to build a project.",
+            "line": " src/mode/javascript/options.ts:675"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals that are usually used for logging poor-man's\ndebugging: `console`, `alert`, etc. It is usually a good idea to not\nship them in production because, for example, `console.log` breaks in\nlegacy versions of Internet Explorer.",
+            "line": " src/mode/javascript/options.ts:681"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals exposed by the [Dojo\nToolkit](http://dojotoolkit.org/).",
+            "line": " src/mode/javascript/options.ts:689"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals for typed array constructors.\n\nMore info:\n\n* [JavaScript typed\n  arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)",
+            "line": " src/mode/javascript/options.ts:695"
+        },
+        {
+            "message": "Missing item type\nThis option defines globals available when your core is running inside\nof the PhantomJS runtime environment. [PhantomJS](http://phantomjs.org/)\nis a headless WebKit scriptable with a JavaScript API. It has fast and\nnative support for various web standards: DOM handling, CSS selector,\nJSON, Canvas, and SVG.",
+            "line": " src/mode/javascript/options.ts:705"
+        },
+        {
+            "message": "Missing item type\nThis option lets you set the maximum length of a line.",
+            "line": " src/mode/javascript/options.ts:728"
+        },
+        {
+            "message": "Missing item type\nThis option sets a specific tab width for your code.",
+            "line": " src/mode/javascript/options.ts:737"
+        },
+        {
+            "message": "Missing item type\nThis options allows you to set the maximum amount of warnings JSHint will\nproduce before giving up. Default is 50.",
+            "line": " src/mode/javascript/options.ts:746"
+        },
+        {
+            "message": "Missing item type\nThis option allows you to control which variables JSHint considers to be\nimplicitly defined in the environment. Configure it with an array of\nstring values. Prefixing a variable name with a hyphen (-) character will\nremove that name from the collection of predefined variables.\n\nJSHint will consider variables declared in this way to be read-only.\n\nThis option cannot be specified in-line; it may only be used via the\nJavaScript API or from an external configuration file.",
+            "line": " src/mode/javascript/options.ts:752"
+        },
+        {
+            "message": "Missing item type\nThis option can be used to specify a white list of global variables that\nare not formally defined in the source code. This is most useful when\ncombined with the `undef` option in order to suppress warnings for\nproject-specific global variables.\n\nSetting an entry to `true` enables reading and writing to that variable.\nSetting it to `false` will trigger JSHint to consider that variable\nread-only.\n\nSee also the \"environment\" options: a set of options to be used as short\nhand for enabling global variables defined in common JavaScript\nenvironments.\n\nTo configure `globals` within an individual file, see [Inline\nConfiguration](http://jshint.com/docs/#inline-configuration).",
+            "line": " src/mode/javascript/options.ts:765"
+        },
+        {
+            "message": "Missing item type\nThis option enforces the consistency of quotation marks used throughout\nyour code. It accepts three values: `true` if you don't want to enforce\none particular style but want some consistency, `\"single\"` if you want to\nallow only single quotes and `\"double\"` if you want to allow only double\nquotes.",
+            "line": " src/mode/javascript/options.ts:784"
+        },
+        {
+            "message": "Missing item type\nThis option lets you set the max number of statements allowed per function:\n\n    // jshint maxstatements:4\n\n    function main() {\n      var i = 0;\n      var j = 0;\n\n      // Function declarations count as one statement. Their bodies\n      // don't get taken into account for the outer function.\n      function inner() {\n        var i2 = 1;\n        var j2 = 1;\n\n        return i2 + j2;\n      }\n\n      j = i + j;\n      return j; // JSHint: Too many statements per function. (5)\n    }",
+            "line": " src/mode/javascript/options.ts:799"
+        },
+        {
+            "message": "Missing item type\nThis option lets you control how nested do you want your blocks to be:\n\n    // jshint maxdepth:2\n\n    function main(meaning) {\n      var day = true;\n\n      if (meaning === 42) {\n        while (day) {\n          shuffle();\n\n          if (tired) { // JSHint: Blocks are nested too deeply (3).\n              sleep();\n          }\n        }\n      }\n    }",
+            "line": " src/mode/javascript/options.ts:823"
+        },
+        {
+            "message": "Missing item type\nThis option lets you set the max number of formal parameters allowed per\nfunction:\n\n    // jshint maxparams:3\n\n    function login(request, onSuccess) {\n      // ...\n    }\n\n    // JSHint: Too many parameters per function (4).\n    function logout(request, isManual, whereAmI, onSuccess) {\n      // ...\n    }",
+            "line": " src/mode/javascript/options.ts:844"
+        },
+        {
+            "message": "Missing item type\nThis option lets you control cyclomatic complexity throughout your code.\nCyclomatic complexity measures the number of linearly independent paths\nthrough a program's source code. Read more about [cyclomatic complexity on\nWikipedia](http://en.wikipedia.org/wiki/Cyclomatic_complexity).",
+            "line": " src/mode/javascript/options.ts:861"
+        },
+        {
+            "message": "Missing item type\nThis option suppresses warnings about variable shadowing i.e. declaring a\nvariable that had been already declared somewhere in the outer scope.\n\n- \"inner\"  - check for variables defined in the same scope only\n- \"outer\"  - check for variables defined in outer scopes as well\n- false    - same as inner\n- true     - allow variable shadowing",
+            "line": " src/mode/javascript/options.ts:869"
+        },
+        {
+            "message": "Missing item type\nThis option requires the code to run in ECMAScript 5's strict mode.\n[Strict mode](https://developer.mozilla.org/en/JavaScript/Strict_mode)\nis a way to opt in to a restricted variant of JavaScript. Strict mode\neliminates some JavaScript pitfalls that didn't cause errors by changing\nthem to produce errors.  It also fixes mistakes that made it difficult\nfor the JavaScript engines to perform certain optimizations.\n\n- \"func\"    - there must be a `\"use strict\";` directive at function level\n- \"global\"  - there must be a `\"use strict\";` directive at global level\n- \"implied\" - lint the code as if there is the `\"use strict\";` directive\n- false     - disable warnings about strict mode\n- true      - same as `\"func\"`, but environment options have precedence over\n              this (e.g. `node`, `module`, `browserify` and `phantomjs` can\n              set `strict: global`)",
+            "line": " src/mode/javascript/options.ts:880"
+        },
+        {
+            "message": "Missing item type\nThis option warns when you define and never use your variables. It is very\nuseful for general code cleanup, especially when used in addition to\n`undef`.\n\n    // jshint unused:true\n\n    function test(a, b) {\n      var c, d = 2;\n\n      return a + d;\n    }\n\n    test(1, 2);\n\n    // Line 3: 'b' was defined but never used.\n    // Line 4: 'c' was defined but never used.\n\nIn addition to that, this option will warn you about unused global\nvariables declared via the `global` directive.\n\nThis can be set to `vars` to only check for variables, not function\nparameters, or `strict` to check all variables and parameters.  The\ndefault (true) behavior is to allow unused parameters that are followed by\na used parameter.",
+            "line": " src/mode/javascript/options.ts:898"
+        },
+        {
+            "message": "Missing item type\nThis option prohibits the use of a variable before it was defined.\nJavaScript has function scope only and, in addition to that, all variables\nare always moved—or hoisted— to the top of the function. This behavior can\nlead to some very nasty bugs and that's why it is safer to always use\nvariable only after they have been explicitly defined.\n\nSetting this option to \"nofunc\" will allow function declarations to be\nignored.\n\nFor more in-depth understanding of scoping and hoisting in JavaScript,\nread [JavaScript Scoping and\nHoisting](http://www.adequatelygood.com/2010/2/JavaScript-Scoping-and-Hoisting)\nby Ben Cherry.",
+            "line": " src/mode/javascript/options.ts:926"
+        },
+        {
+            "message": "Missing item type\nThis option is used to specify the ECMAScript version to which the code\nmust adhere. It can assume one of the following values:\n - `3` - If you need your program to be executable\n   in older browsers—such as Internet Explorer 6/7/8/9—and other legacy\n   JavaScript environments\n - `5` - To enable syntax first defined in [the ECMAScript 5.1\n   specification](http://www.ecma-international.org/ecma-262/5.1/index.html).\n   This includes allowing reserved keywords as object properties.\n - `6` - To tell JSHint that your code uses [ECMAScript\n   6](http://www.ecma-international.org/ecma-262/6.0/index.html) specific\n   syntax. Note that not all browsers implement them.",
+            "line": " src/mode/javascript/options.ts:952"
+        },
+        {
+            "message": "Missing item type\nCreates a scope manager that handles variables and labels, storing usages\nand resolving when variables are used and undefined",
+            "line": " src/mode/javascript/scope-manager.ts:28"
+        },
+        {
+            "message": "Missing item type\nChecks the current scope for unused identifiers",
+            "line": " src/mode/javascript/scope-manager.ts:126"
+        },
+        {
+            "message": "Missing item type\nChecks the current scope for unused parameters\nMust be called in a function parameter scope",
+            "line": " src/mode/javascript/scope-manager.ts:147"
+        },
+        {
+            "message": "Missing item type\nFinds the relevant label's scope, searching from nearest outwards",
+            "line": " src/mode/javascript/scope-manager.ts:181"
+        },
+        {
+            "message": "Missing item type\nTell the manager we are entering a new block of code",
+            "line": " src/mode/javascript/scope-manager.ts:257"
+        },
+        {
+            "message": "Missing item type\nAdd a param to the current scope",
+            "line": " src/mode/javascript/scope-manager.ts:461"
+        },
+        {
+            "message": "Missing item type\nGets an array of implied globals",
+            "line": " src/mode/javascript/scope-manager.ts:552"
+        },
+        {
+            "message": "Missing item type\nReturns a list of unused variables",
+            "line": " src/mode/javascript/scope-manager.ts:577"
+        },
+        {
+            "message": "Missing item type\nfor the exported options, indicating a variable is used outside the file",
+            "line": " src/mode/javascript/scope-manager.ts:598"
+        },
+        {
+            "message": "Missing item type\nMark an indentifier as es6 module exported",
+            "line": " src/mode/javascript/scope-manager.ts:626"
+        },
+        {
+            "message": "Missing item type\nadds an indentifier to the relevant current scope and creates warnings/errors as necessary",
+            "line": " src/mode/javascript/scope-manager.ts:633"
+        },
+        {
+            "message": "Missing item type\nReturns the label type given certain options",
+            "line": " src/mode/javascript/scope-manager.ts:722"
+        },
+        {
+            "message": "Missing item type\nReturns if a break label exists in the function scope",
+            "line": " src/mode/javascript/scope-manager.ts:748"
+        },
+        {
+            "message": "Missing item type\nReturns if the label is in the current function scope\nSee scopeManager.funct.labelType for options",
+            "line": " src/mode/javascript/scope-manager.ts:766"
+        },
+        {
+            "message": "Missing item type\nAdds a new function scoped variable\nsee block.add for block scoped",
+            "line": " src/mode/javascript/scope-manager.ts:774"
+        },
+        {
+            "message": "Missing item type\nis the current block global?",
+            "line": " src/mode/javascript/scope-manager.ts:791"
+        },
+        {
+            "message": "Missing item type\nAdds a new variable",
+            "line": " src/mode/javascript/scope-manager.ts:844"
+        },
+        {
+            "message": "Missing item type\nDetermine if the code currently being linted is strict mode code.",
+            "line": " src/mode/javascript/state.ts:36"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/state.ts:50"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/state.ts:61"
         },
         {
             "message": "Missing item type",

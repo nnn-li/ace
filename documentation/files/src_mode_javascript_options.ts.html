@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/mode/javascript/options.ts - deuce</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../../assets/logo.png" title="deuce"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.1.15</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/Anchor.html">Anchor</a></li>
+                                <li><a href="../classes/BackgroundTokenizer.html">BackgroundTokenizer</a></li>
+                                <li><a href="../classes/Editor.html">Editor</a></li>
+                                <li><a href="../classes/EditorDocument.html">EditorDocument</a></li>
+                                <li><a href="../classes/EditSession.html">EditSession</a></li>
+                                <li><a href="../classes/Fold.html">Fold</a></li>
+                                <li><a href="../classes/FoldLine.html">FoldLine</a></li>
+                                <li><a href="../classes/GutterTooltip.html">GutterTooltip</a></li>
+                                <li><a href="../classes/HScrollBar.html">HScrollBar</a></li>
+                                <li><a href="../classes/HtmlMode.html">HtmlMode</a></li>
+                                <li><a href="../classes/.html"></a></li>
+                                <li><a href="../classes/Mode.html">Mode</a></li>
+                                <li><a href="../classes/Position.html">Position</a></li>
+                                <li><a href="../classes/Range.html">Range</a></li>
+                                <li><a href="../classes/ScrollBar.html">ScrollBar</a></li>
+                                <li><a href="../classes/Search.html">Search</a></li>
+                                <li><a href="../classes/Selection.html">Selection</a></li>
+                                <li><a href="../classes/TokenIterator.html">TokenIterator</a></li>
+                                <li><a href="../classes/Tokenizer.html">Tokenizer</a></li>
+                                <li><a href="../classes/Tooltip.html">Tooltip</a></li>
+                                <li><a href="../classes/UndoManager.html">UndoManager</a></li>
+                                <li><a href="../classes/VirtualRenderer.html">VirtualRenderer</a></li>
+                                <li><a href="../classes/VScrollBar.html">VScrollBar</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: src/mode/javascript/options.ts</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+&quot;use strict&quot;;
+
+// These are the JSHint boolean options.
+export var bool = {
+  enforcing: {
+
+    /**
+     * This option prohibits the use of bitwise operators such as &#x60;^&#x60; (XOR),
+     * &#x60;|&#x60; (OR) and others. Bitwise operators are very rare in JavaScript
+     * programs and quite often &#x60;&amp;&#x60; is simply a mistyped &#x60;&amp;&amp;&#x60;.
+     */
+    bitwise     : true,
+
+    /**
+     *
+     * This options prohibits overwriting prototypes of native objects such as
+     * &#x60;Array&#x60;, &#x60;Date&#x60; and so on.
+     *
+     *     // jshint freeze:true
+     *     Array.prototype.count = function (value) { return 4; };
+     *     // -&gt; Warning: Extending prototype of native object: &#x27;Array&#x27;.
+     */
+    freeze      : true,
+
+    /**
+     * This option allows you to force all variable names to use either
+     * camelCase style or UPPER_CASE with underscores.
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    camelcase   : true,
+
+    /**
+     * This option requires you to always put curly braces around blocks in
+     * loops and conditionals. JavaScript allows you to omit curly braces when
+     * the block consists of only one statement, for example:
+     *
+     *     while (day)
+     *       shuffle();
+     *
+     * However, in some circumstances, it can lead to bugs (you&#x27;d think that
+     * &#x60;sleep()&#x60; is a part of the loop while in reality it is not):
+     *
+     *     while (day)
+     *       shuffle();
+     *       sleep();
+     */
+    curly       : true,
+
+    /**
+     * This options prohibits the use of &#x60;==&#x60; and &#x60;!=&#x60; in favor of &#x60;===&#x60; and
+     * &#x60;!==&#x60;. The former try to coerce values before comparing them which can
+     * lead to some unexpected results. The latter don&#x27;t do any coercion so
+     * they are generally safer. If you would like to learn more about type
+     * coercion in JavaScript, we recommend [Truth, Equality and
+     * JavaScript](http://javascriptweblog.wordpress.com/2011/02/07/truth-equality-and-javascript/)
+     * by Angus Croll.
+     */
+    eqeqeq      : true,
+
+    /**
+     * This option enables warnings about the use of identifiers which are
+     * defined in future versions of JavaScript. Although overwriting them has
+     * no effect in contexts where they are not implemented, this practice can
+     * cause issues when migrating codebases to newer versions of the language.
+     */
+    futurehostile: true,
+
+    /**
+     * This option suppresses warnings about invalid &#x60;typeof&#x60; operator values.
+     * This operator has only [a limited set of possible return
+     * values](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof).
+     * By default, JSHint warns when you compare its result with an invalid
+     * value which often can be a typo.
+     *
+     *     // &#x27;fuction&#x27; instead of &#x27;function&#x27;
+     *     if (typeof a == &quot;fuction&quot;) { // Invalid typeof value &#x27;fuction&#x27;
+     *       // ...
+     *     }
+     *
+     * Do not use this option unless you&#x27;re absolutely sure you don&#x27;t want
+     * these checks.
+     */
+    notypeof    : true,
+
+    /**
+     * This option tells JSHint that your code needs to adhere to ECMAScript 3
+     * specification. Use this option if you need your program to be executable
+     * in older browsers—such as Internet Explorer 6/7/8/9—and other legacy
+     * JavaScript environments.
+     *
+     * @deprecated Use &#x60;esversion: 3&#x60; instead.
+     */
+    es3         : true,
+
+    /**
+     * This option enables syntax first defined in [the ECMAScript 5.1
+     * specification](http://es5.github.io/). This includes allowing reserved
+     * keywords as object properties.
+     *
+     * @deprecated Use &#x60;esversion: 5&#x60; instead.
+     */
+    es5         : true,
+
+    /**
+     * This option requires all &#x60;for in&#x60; loops to filter object&#x27;s items. The
+     * for in statement allows for looping through the names of all of the
+     * properties of an object including those inherited through the prototype
+     * chain. This behavior can lead to unexpected items in your object so it
+     * is generally safer to always filter inherited properties out as shown in
+     * the example:
+     *
+     *     for (key in obj) {
+     *       if (obj.hasOwnProperty(key)) {
+     *         // We are sure that obj[key] belongs to the object and was not inherited.
+     *       }
+     *     }
+     *
+     * For more in-depth understanding of &#x60;for in&#x60; loops in JavaScript, read
+     * [Exploring JavaScript for-in
+     * loops](http://javascriptweblog.wordpress.com/2011/01/04/exploring-javascript-for-in-loops/)
+     * by Angus Croll.
+     */
+    forin       : true,
+
+    /**
+     * This option suppresses warnings about declaring variables inside of
+     * control
+     * structures while accessing them later from the outside. Even though
+     * JavaScript has only two real scopes—global and function—such practice
+     * leads to confusion among people new to the language and hard-to-debug
+     * bugs. This is why, by default, JSHint warns about variables that are
+     * used outside of their intended scope.
+     *
+     *     function test() {
+     *       if (true) {
+     *         var x = 0;
+     *       }
+     *
+     *       x += 1; // Default: &#x27;x&#x27; used out of scope.
+     *                 // No warning when funcscope:true
+     *     }
+     */
+    funcscope   : true,
+
+    /**
+     * This option prohibits the use of immediate function invocations without
+     * wrapping them in parentheses. Wrapping parentheses assists readers of
+     * your code in understanding that the expression is the result of a
+     * function, and not the function itself.
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    immed       : true,
+
+    /**
+     * This option suppresses warnings about the &#x60;__iterator__&#x60; property. This
+     * property is not supported by all browsers so use it carefully.
+     */
+    iterator    : true,
+
+    /**
+     * This option requires you to capitalize names of constructor functions.
+     * Capitalizing functions that are intended to be used with &#x60;new&#x60; operator
+     * is just a convention that helps programmers to visually distinguish
+     * constructor functions from other types of functions to help spot
+     * mistakes when using &#x60;this&#x60;.
+     *
+     * Not doing so won&#x27;t break your code in any browsers or environments but
+     * it will be a bit harder to figure out—by reading the code—if the
+     * function was supposed to be used with or without new. And this is
+     * important because when the function that was intended to be used with
+     * &#x60;new&#x60; is used without it, &#x60;this&#x60; will point to the global object instead
+     * of a new object.
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    newcap      : true,
+
+    /**
+     * This option prohibits the use of &#x60;arguments.caller&#x60; and
+     * &#x60;arguments.callee&#x60;.  Both &#x60;.caller&#x60; and &#x60;.callee&#x60; make quite a few
+     * optimizations impossible so they were deprecated in future versions of
+     * JavaScript. In fact, ECMAScript 5 forbids the use of &#x60;arguments.callee&#x60;
+     * in strict mode.
+     */
+    noarg       : true,
+
+    /**
+     * This option prohibits the use of the comma operator. When misused, the
+     * comma operator can obscure the value of a statement and promote
+     * incorrect code.
+     */
+    nocomma     : true,
+
+    /**
+     * This option warns when you have an empty block in your code. JSLint was
+     * originally warning for all empty blocks and we simply made it optional.
+     * There were no studies reporting that empty blocks in JavaScript break
+     * your code in any way.
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    noempty     : true,
+
+    /**
+     * This option warns about &quot;non-breaking whitespace&quot; characters. These
+     * characters can be entered with option-space on Mac computers and have a
+     * potential of breaking non-UTF8 web pages.
+     */
+    nonbsp      : true,
+
+    /**
+     * This option prohibits the use of constructor functions for side-effects.
+     * Some people like to call constructor functions without assigning its
+     * result to any variable:
+     *
+     *     new MyConstructor();
+     *
+     * There is no advantage in this approach over simply calling
+     * &#x60;MyConstructor&#x60; since the object that the operator &#x60;new&#x60; creates isn&#x27;t
+     * used anywhere so you should generally avoid constructors like this one.
+     */
+    nonew       : true,
+
+    /**
+     * This option prohibits the use of explicitly undeclared variables. This
+     * option is very useful for spotting leaking and mistyped variables.
+     *
+     *     // jshint undef:true
+     *
+     *     function test() {
+     *       var myVar = &#x27;Hello, World&#x27;;
+     *       console.log(myvar); // Oops, typoed here. JSHint with undef will complain
+     *     }
+     *
+     * If your variable is defined in another file, you can use the &#x60;global&#x60;
+     * directive to tell JSHint about it.
+     */
+    undef       : true,
+
+    /**
+     * This option prohibits the use of the grouping operator when it is not
+     * strictly required. Such usage commonly reflects a misunderstanding of
+     * unary operators, for example:
+     *
+     *     // jshint singleGroups: true
+     *
+     *     delete(obj.attr); // Warning: Unnecessary grouping operator.
+     */
+    singleGroups: false,
+
+    /**
+     * When set to true, the use of VariableStatements are forbidden.
+     * For example:
+     *
+     *     // jshint varstmt: true
+     *
+     *     var a; // Warning: &#x60;var&#x60; declarations are forbidden. Use &#x60;let&#x60; or &#x60;const&#x60; instead.
+     */
+    varstmt: false,
+
+    /**
+     * This option is a short hand for the most strict JSHint configuration as
+     * available in JSHint version 2.6.3. It enables all enforcing options and
+     * disables all relaxing options that were defined in that release.
+     *
+     * @deprecated The option cannot be maintained without automatically opting
+     *             users in to new features. This can lead to unexpected
+     *             warnings/errors in when upgrading between minor versions of
+     *             JSHint.
+     */
+    enforceall : false
+  },
+  relaxing: {
+
+    /**
+     * This option suppresses warnings about missing semicolons. There is a lot
+     * of FUD about semicolon spread by quite a few people in the community.
+     * The common myths are that semicolons are required all the time (they are
+     * not) and that they are unreliable. JavaScript has rules about semicolons
+     * which are followed by *all* browsers so it is up to you to decide
+     * whether you should or should not use semicolons in your code.
+     *
+     * For more information about semicolons in JavaScript read [An Open Letter
+     * to JavaScript Leaders Regarding
+     * Semicolons](http://blog.izs.me/post/2353458699/an-open-letter-to-javascript-leaders-regarding)
+     * by Isaac Schlueter and [JavaScript Semicolon
+     * Insertion](http://inimino.org/~inimino/blog/javascript_semicolons).
+     */
+    asi         : true,
+
+    /**
+     * This option suppresses warnings about multi-line strings. Multi-line
+     * strings can be dangerous in JavaScript because all hell breaks loose if
+     * you accidentally put a whitespace in between the escape character (&#x60;\&#x60;)
+     * and a new line.
+     *
+     * Note that even though this option allows correct multi-line strings, it
+     * still warns about multi-line strings without escape characters or with
+     * anything in between the escape character and a whitespace.
+     *
+     *     // jshint multistr:true
+     *
+     *     var text = &quot;Hello\
+     *     World&quot;; // All good.
+     *
+     *     text = &quot;Hello
+     *     World&quot;; // Warning, no escape character.
+     *
+     *     text = &quot;Hello\
+     *     World&quot;; // Warning, there is a space after \
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    multistr    : true,
+
+    /**
+     * This option suppresses warnings about the &#x60;debugger&#x60; statements in your
+     * code.
+     */
+    debug       : true,
+
+    /**
+     * This option suppresses warnings about the use of assignments in cases
+     * where comparisons are expected. More often than not, code like &#x60;if (a =
+     * 10) {}&#x60; is a typo. However, it can be useful in cases like this one:
+     *
+     *     for (var i = 0, person; person = people[i]; i++) {}
+     *
+     * You can silence this error on a per-use basis by surrounding the assignment
+     * with parenthesis, such as:
+     *
+     *     for (var i = 0, person; (person = people[i]); i++) {}
+     */
+    boss        : true,
+
+    /**
+     * This option suppresses warnings about the use of &#x60;eval&#x60;. The use of
+     * &#x60;eval&#x60; is discouraged because it can make your code vulnerable to
+     * various injection attacks and it makes it hard for JavaScript
+     * interpreter to do certain optimizations.
+    */
+    evil        : true,
+
+    /**
+     * This option suppresses warnings about the use of global strict mode.
+     * Global strict mode can break third-party widgets so it is not
+     * recommended.
+     *
+     * For more info about strict mode see the &#x60;strict&#x60; option.
+     *
+     * @deprecated Use &#x60;strict: &quot;global&quot;&#x60;.
+     */
+    globalstrict: true,
+
+    /**
+     * This option prohibits the use of unary increment and decrement
+     * operators.  Some people think that &#x60;++&#x60; and &#x60;--&#x60; reduces the quality of
+     * their coding styles and there are programming languages—such as
+     * Python—that go completely without these operators.
+     */
+    plusplus    : true,
+
+    /**
+     * This option suppresses warnings about the &#x60;__proto__&#x60; property.
+     */
+    proto       : true,
+
+    /**
+     * This option suppresses warnings about the use of script-targeted
+     * URLs—such as &#x60;javascript:...&#x60;.
+     */
+    scripturl   : true,
+
+    /**
+     * This option suppresses warnings about using &#x60;[]&#x60; notation when it can be
+     * expressed in dot notation: &#x60;person[&#x27;name&#x27;]&#x60; vs. &#x60;person.name&#x60;.
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    sub         : true,
+
+    /**
+     * This option suppresses warnings about &quot;weird&quot; constructions like
+     * &#x60;new function () { ... }&#x60; and &#x60;new Object;&#x60;. Such constructions are
+     * sometimes used to produce singletons in JavaScript:
+     *
+     *     var singleton = new function() {
+     *       var privateVar;
+     *
+     *       this.publicMethod  = function () {}
+     *       this.publicMethod2 = function () {}
+     *     };
+     */
+    supernew    : true,
+
+    /**
+     * This option suppresses most of the warnings about possibly unsafe line
+     * breakings in your code. It doesn&#x27;t suppress warnings about comma-first
+     * coding style. To suppress those you have to use &#x60;laxcomma&#x60; (see below).
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    laxbreak    : true,
+
+    /**
+     * This option suppresses warnings about comma-first coding style:
+     *
+     *     var obj = {
+     *         name: &#x27;Anton&#x27;
+     *       , handle: &#x27;valueof&#x27;
+     *       , role: &#x27;SW Engineer&#x27;
+     *     };
+     *
+     * @deprecated JSHint is limiting its scope to issues of code correctness.
+     *             If you would like to enforce rules relating to code style,
+     *             check out [the JSCS
+     *             project](https://github.com/jscs-dev/node-jscs).
+     */
+    laxcomma    : true,
+
+    /**
+     * This option suppresses warnings about possible strict violations when
+     * the code is running in strict mode and you use &#x60;this&#x60; in a
+     * non-constructor function. You should use this option—in a function scope
+     * only—when you are positive that your use of &#x60;this&#x60; is valid in the
+     * strict mode (for example, if you call your function using
+     * &#x60;Function.call&#x60;).
+     *
+     * **Note:** This option can be used only inside of a function scope.
+     * JSHint will fail with an error if you will try to set this option
+     * globally.
+     */
+    validthis   : true,
+
+    /**
+     * This option suppresses warnings about the use of the &#x60;with&#x60; statement.
+     * The semantics of the &#x60;with&#x60; statement can cause confusion among
+     * developers and accidental definition of global variables.
+     *
+     * More info:
+     *
+     * * [with Statement Considered
+     *   Harmful](http://yuiblog.com/blog/2006/04/11/with-statement-considered-harmful/)
+     */
+    withstmt    : true,
+
+    /**
+     * This options tells JSHint that your code uses Mozilla JavaScript
+     * extensions. Unless you develop specifically for the Firefox web browser
+     * you don&#x27;t need this option.
+     *
+     * More info:
+     *
+     * * [New in JavaScript
+     *   1.7](https://developer.mozilla.org/en-US/docs/JavaScript/New_in_JavaScript/1.7)
+     */
+    moz         : true,
+
+    /**
+     * This option suppresses warnings about generator functions with no
+     * &#x60;yield&#x60; statement in them.
+     */
+    noyield     : true,
+
+    /**
+     * This option suppresses warnings about &#x60;== null&#x60; comparisons. Such
+     * comparisons are often useful when you want to check if a variable is
+     * &#x60;null&#x60; or &#x60;undefined&#x60;.
+     */
+    eqnull      : true,
+
+    /**
+     * This option suppresses warnings about missing semicolons, but only when
+     * the semicolon is omitted for the last statement in a one-line block:
+     *
+     *     var name = (function() { return &#x27;Anton&#x27; }());
+     *
+     * This is a very niche use case that is useful only when you use automatic
+     * JavaScript code generators.
+     */
+    lastsemic   : true,
+
+    /**
+     * This option suppresses warnings about functions inside of loops.
+     * Defining functions inside of loops can lead to bugs such as this one:
+     *
+     *     var nums = [];
+     *
+     *     for (var i = 0; i &lt; 10; i++) {
+     *       nums[i] = function (j) {
+     *         return i + j;
+     *       };
+     *     }
+     *
+     *     nums[0](2); // Prints 12 instead of 2
+     *
+     * To fix the code above you need to copy the value of &#x60;i&#x60;:
+     *
+     *     var nums = [];
+     *
+     *     for (var i = 0; i &lt; 10; i++) {
+     *       (function (i) {
+     *         nums[i] = function (j) {
+     *             return i + j;
+     *         };
+     *       }(i));
+     *     }
+     */
+    loopfunc    : true,
+
+    /**
+     * This option suppresses warnings about the use of expressions where
+     * normally you would expect to see assignments or function calls. Most of
+     * the time, such code is a typo. However, it is not forbidden by the spec
+     * and that&#x27;s why this warning is optional.
+     */
+    expr        : true,
+
+    /**
+     * This option tells JSHint that your code uses ECMAScript 6 specific
+     * syntax. Note that not all browsers implement these features.
+     *
+     * More info:
+     *
+     * * [Specification for ECMAScript
+     *   6](http://www.ecma-international.org/ecma-262/6.0/index.html)
+     *
+     * @deprecated Use &#x60;esversion: 6&#x60; instead.
+     */
+    esnext      : true,
+
+    /**
+     * This option tells JSHint that your code uses ES3 array elision elements,
+     * or empty elements (for example, &#x60;[1, , , 4, , , 7]&#x60;).
+     */
+    elision     : true,
+  },
+
+  // Third party globals
+  environments: {
+
+    /**
+     * This option defines globals exposed by the
+     * [MooTools](http://mootools.net/) JavaScript framework.
+     */
+    mootools    : true,
+
+    /**
+     * This option defines globals exposed by
+     * [CouchDB](http://couchdb.apache.org/). CouchDB is a document-oriented
+     * database that can be queried and indexed in a MapReduce fashion using
+     * JavaScript.
+     */
+    couch       : true,
+
+    /**
+     * This option defines globals exposed by [the Jasmine unit testing
+     * framework](https://jasmine.github.io/).
+     */
+    jasmine     : true,
+
+    /**
+     * This option defines globals exposed by the [jQuery](http://jquery.com/)
+     * JavaScript library.
+     */
+    jquery      : true,
+
+    /**
+     * This option defines globals available when your code is running inside
+     * of the Node runtime environment. [Node.js](http://nodejs.org/) is a
+     * server-side JavaScript environment that uses an asynchronous
+     * event-driven model. This option also skips some warnings that make sense
+     * in the browser environments but don&#x27;t make sense in Node such as
+     * file-level &#x60;use strict&#x60; pragmas and &#x60;console.log&#x60; statements.
+     */
+    node        : true,
+
+    /**
+     * This option defines globals exposed by [the QUnit unit testing
+     * framework](http://qunitjs.com/).
+     */
+    qunit       : true,
+
+    /**
+     * This option defines globals available when your code is running inside
+     * of the Rhino runtime environment. [Rhino](http://www.mozilla.org/rhino/)
+     * is an open-source implementation of JavaScript written entirely in Java.
+     */
+    rhino       : true,
+
+    /**
+     * This option defines globals exposed by [the ShellJS
+     * library](http://documentup.com/arturadib/shelljs).
+     */
+    shelljs     : true,
+
+    /**
+     * This option defines globals exposed by the
+     * [Prototype](http://www.prototypejs.org/) JavaScript framework.
+     */
+    prototypejs : true,
+
+    /**
+     * This option defines globals exposed by the [YUI](http://yuilibrary.com/)
+     * JavaScript framework.
+     */
+    yui         : true,
+
+    /**
+     * This option defines globals exposed by the &quot;BDD&quot; and &quot;TDD&quot; UIs of the
+     * [Mocha unit testing framework](http://mochajs.org/).
+     */
+    mocha       : true,
+
+    /**
+     * This option informs JSHint that the input code describes an ECMAScript 6
+     * module. All module code is interpreted as strict mode code.
+     */
+    module      : true,
+
+    /**
+     * This option defines globals available when your code is running as a
+     * script for the [Windows Script
+     * Host](http://en.wikipedia.org/wiki/Windows_Script_Host).
+     */
+    wsh         : true,
+
+    /**
+     * This option defines globals available when your code is running inside
+     * of a Web Worker. [Web
+     * Workers](https://developer.mozilla.org/en/Using_web_workers) provide a
+     * simple means for web content to run scripts in background threads.
+     */
+    worker      : true,
+
+    /**
+     * This option defines non-standard but widely adopted globals such as
+     * &#x60;escape&#x60; and &#x60;unescape&#x60;.
+     */
+    nonstandard : true,
+
+    /**
+     * This option defines globals exposed by modern browsers: all the way from
+     * good old &#x60;document&#x60; and &#x60;navigator&#x60; to the HTML5 &#x60;FileReader&#x60; and other
+     * new developments in the browser world.
+     *
+     * **Note:** This option doesn&#x27;t expose variables like &#x60;alert&#x60; or
+     * &#x60;console&#x60;. See option &#x60;devel&#x60; for more information.
+     */
+    browser     : true,
+
+    /**
+     * This option defines globals available when using [the Browserify
+     * tool](http://browserify.org/) to build a project.
+     */
+    browserify  : true,
+
+    /**
+     * This option defines globals that are usually used for logging poor-man&#x27;s
+     * debugging: &#x60;console&#x60;, &#x60;alert&#x60;, etc. It is usually a good idea to not
+     * ship them in production because, for example, &#x60;console.log&#x60; breaks in
+     * legacy versions of Internet Explorer.
+     */
+    devel       : true,
+
+    /**
+     * This option defines globals exposed by the [Dojo
+     * Toolkit](http://dojotoolkit.org/).
+     */
+    dojo        : true,
+
+    /**
+     * This option defines globals for typed array constructors.
+     *
+     * More info:
+     *
+     * * [JavaScript typed
+     *   arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
+     */
+    typed       : true,
+
+    /**
+     * This option defines globals available when your core is running inside
+     * of the PhantomJS runtime environment. [PhantomJS](http://phantomjs.org/)
+     * is a headless WebKit scriptable with a JavaScript API. It has fast and
+     * native support for various web standards: DOM handling, CSS selector,
+     * JSON, Canvas, and SVG.
+     */
+    phantom     : true
+  },
+
+  // Obsolete options
+  obsolete: {
+    onecase     : true, // if one case switch statements should be allowed
+    regexp      : true, // if the . should not be allowed in regexp literals
+    regexdash   : true  // if unescaped first/last dash (-) inside brackets
+                        // should be tolerated
+  }
+};
+
+// These are the JSHint options that can take any value
+// (we use this object to detect invalid options)
+export  var val = {
+
+  /**
+   * This option lets you set the maximum length of a line.
+   *
+   * @deprecated JSHint is limiting its scope to issues of code correctness. If
+   *             you would like to enforce rules relating to code style, check
+   *             out [the JSCS project](https://github.com/jscs-dev/node-jscs).
+   */
+  maxlen       : false,
+
+  /**
+   * This option sets a specific tab width for your code.
+   *
+   * @deprecated JSHint is limiting its scope to issues of code correctness. If
+   *             you would like to enforce rules relating to code style, check
+   *             out [the JSCS project](https://github.com/jscs-dev/node-jscs).
+   */
+  indent       : false,
+
+  /**
+   * This options allows you to set the maximum amount of warnings JSHint will
+   * produce before giving up. Default is 50.
+   */
+  maxerr       : false,
+
+  /**
+   * This option allows you to control which variables JSHint considers to be
+   * implicitly defined in the environment. Configure it with an array of
+   * string values. Prefixing a variable name with a hyphen (-) character will
+   * remove that name from the collection of predefined variables.
+   *
+   * JSHint will consider variables declared in this way to be read-only.
+   *
+   * This option cannot be specified in-line; it may only be used via the
+   * JavaScript API or from an external configuration file.
+   */
+  predef       : false,
+
+  /**
+   * This option can be used to specify a white list of global variables that
+   * are not formally defined in the source code. This is most useful when
+   * combined with the &#x60;undef&#x60; option in order to suppress warnings for
+   * project-specific global variables.
+   *
+   * Setting an entry to &#x60;true&#x60; enables reading and writing to that variable.
+   * Setting it to &#x60;false&#x60; will trigger JSHint to consider that variable
+   * read-only.
+   *
+   * See also the &quot;environment&quot; options: a set of options to be used as short
+   * hand for enabling global variables defined in common JavaScript
+   * environments.
+   *
+   * To configure &#x60;globals&#x60; within an individual file, see [Inline
+   * Configuration](http://jshint.com/docs/#inline-configuration).
+   */
+  globals      : false,
+
+  /**
+   * This option enforces the consistency of quotation marks used throughout
+   * your code. It accepts three values: &#x60;true&#x60; if you don&#x27;t want to enforce
+   * one particular style but want some consistency, &#x60;&quot;single&quot;&#x60; if you want to
+   * allow only single quotes and &#x60;&quot;double&quot;&#x60; if you want to allow only double
+   * quotes.
+   *
+   * @deprecated JSHint is limiting its scope to issues of code correctness. If
+   *             you would like to enforce rules relating to code style, check
+   *             out [the JSCS project](https://github.com/jscs-dev/node-jscs).
+   */
+  quotmark     : false,
+
+  scope        : false,
+
+  /**
+   * This option lets you set the max number of statements allowed per function:
+   *
+   *     // jshint maxstatements:4
+   *
+   *     function main() {
+   *       var i = 0;
+   *       var j = 0;
+   *
+   *       // Function declarations count as one statement. Their bodies
+   *       // don&#x27;t get taken into account for the outer function.
+   *       function inner() {
+   *         var i2 = 1;
+   *         var j2 = 1;
+   *
+   *         return i2 + j2;
+   *       }
+   *
+   *       j = i + j;
+   *       return j; // JSHint: Too many statements per function. (5)
+   *     }
+   */
+  maxstatements: false,
+
+  /**
+   * This option lets you control how nested do you want your blocks to be:
+   *
+   *     // jshint maxdepth:2
+   *
+   *     function main(meaning) {
+   *       var day = true;
+   *
+   *       if (meaning === 42) {
+   *         while (day) {
+   *           shuffle();
+   *
+   *           if (tired) { // JSHint: Blocks are nested too deeply (3).
+   *               sleep();
+   *           }
+   *         }
+   *       }
+   *     }
+   */
+  maxdepth     : false,
+
+  /**
+   * This option lets you set the max number of formal parameters allowed per
+   * function:
+   *
+   *     // jshint maxparams:3
+   *
+   *     function login(request, onSuccess) {
+   *       // ...
+   *     }
+   *
+   *     // JSHint: Too many parameters per function (4).
+   *     function logout(request, isManual, whereAmI, onSuccess) {
+   *       // ...
+   *     }
+   */
+  maxparams    : false,
+
+  /**
+   * This option lets you control cyclomatic complexity throughout your code.
+   * Cyclomatic complexity measures the number of linearly independent paths
+   * through a program&#x27;s source code. Read more about [cyclomatic complexity on
+   * Wikipedia](http://en.wikipedia.org/wiki/Cyclomatic_complexity).
+   */
+  maxcomplexity: false,
+
+  /**
+   * This option suppresses warnings about variable shadowing i.e. declaring a
+   * variable that had been already declared somewhere in the outer scope.
+   *
+   * - &quot;inner&quot;  - check for variables defined in the same scope only
+   * - &quot;outer&quot;  - check for variables defined in outer scopes as well
+   * - false    - same as inner
+   * - true     - allow variable shadowing
+   */
+  shadow       : false,
+
+  /**
+   * This option requires the code to run in ECMAScript 5&#x27;s strict mode.
+   * [Strict mode](https://developer.mozilla.org/en/JavaScript/Strict_mode)
+   * is a way to opt in to a restricted variant of JavaScript. Strict mode
+   * eliminates some JavaScript pitfalls that didn&#x27;t cause errors by changing
+   * them to produce errors.  It also fixes mistakes that made it difficult
+   * for the JavaScript engines to perform certain optimizations.
+   *
+   * - &quot;func&quot;    - there must be a &#x60;&quot;use strict&quot;;&#x60; directive at function level
+   * - &quot;global&quot;  - there must be a &#x60;&quot;use strict&quot;;&#x60; directive at global level
+   * - &quot;implied&quot; - lint the code as if there is the &#x60;&quot;use strict&quot;;&#x60; directive
+   * - false     - disable warnings about strict mode
+   * - true      - same as &#x60;&quot;func&quot;&#x60;, but environment options have precedence over
+   *               this (e.g. &#x60;node&#x60;, &#x60;module&#x60;, &#x60;browserify&#x60; and &#x60;phantomjs&#x60; can
+   *               set &#x60;strict: global&#x60;)
+   */
+  strict      : true,
+
+  /**
+   * This option warns when you define and never use your variables. It is very
+   * useful for general code cleanup, especially when used in addition to
+   * &#x60;undef&#x60;.
+   *
+   *     // jshint unused:true
+   *
+   *     function test(a, b) {
+   *       var c, d = 2;
+   *
+   *       return a + d;
+   *     }
+   *
+   *     test(1, 2);
+   *
+   *     // Line 3: &#x27;b&#x27; was defined but never used.
+   *     // Line 4: &#x27;c&#x27; was defined but never used.
+   *
+   * In addition to that, this option will warn you about unused global
+   * variables declared via the &#x60;global&#x60; directive.
+   *
+   * This can be set to &#x60;vars&#x60; to only check for variables, not function
+   * parameters, or &#x60;strict&#x60; to check all variables and parameters.  The
+   * default (true) behavior is to allow unused parameters that are followed by
+   * a used parameter.
+   */
+  unused       : true,
+
+  /**
+   * This option prohibits the use of a variable before it was defined.
+   * JavaScript has function scope only and, in addition to that, all variables
+   * are always moved—or hoisted— to the top of the function. This behavior can
+   * lead to some very nasty bugs and that&#x27;s why it is safer to always use
+   * variable only after they have been explicitly defined.
+   *
+   * Setting this option to &quot;nofunc&quot; will allow function declarations to be
+   * ignored.
+   *
+   * For more in-depth understanding of scoping and hoisting in JavaScript,
+   * read [JavaScript Scoping and
+   * Hoisting](http://www.adequatelygood.com/2010/2/JavaScript-Scoping-and-Hoisting)
+   * by Ben Cherry.
+   */
+  latedef      : false,
+
+  ignore       : false, // start/end ignoring lines of code, bypassing the lexer
+                        //   start    - start ignoring lines, including the current line
+                        //   end      - stop ignoring lines, starting on the next line
+                        //   line     - ignore warnings / errors for just a single line
+                        //              (this option does not bypass the lexer)
+
+  ignoreDelimiters: false, // array of start/end delimiters used to ignore
+                           // certain chunks from code
+
+  /**
+   * This option is used to specify the ECMAScript version to which the code
+   * must adhere. It can assume one of the following values:
+   *  - &#x60;3&#x60; - If you need your program to be executable
+   *    in older browsers—such as Internet Explorer 6/7/8/9—and other legacy
+   *    JavaScript environments
+   *  - &#x60;5&#x60; - To enable syntax first defined in [the ECMAScript 5.1
+   *    specification](http://www.ecma-international.org/ecma-262/5.1/index.html).
+   *    This includes allowing reserved keywords as object properties.
+   *  - &#x60;6&#x60; - To tell JSHint that your code uses [ECMAScript
+   *    6](http://www.ecma-international.org/ecma-262/6.0/index.html) specific
+   *    syntax. Note that not all browsers implement them.
+   */
+  esversion: 5
+};
+
+// These are JSHint boolean options which are shared with JSLint
+// where the definition in JSHint is opposite JSLint
+export var inverted = {
+  bitwise : true,
+  forin   : true,
+  newcap  : true,
+  plusplus: true,
+  regexp  : true,
+  undef   : true,
+
+  // Inverted and renamed, use JSHint name here
+  eqeqeq  : true,
+  strict  : true
+};
+
+export var validNames = Object.keys(val)
+  .concat(Object.keys(bool.relaxing))
+  .concat(Object.keys(bool.enforcing))
+  .concat(Object.keys(bool.obsolete))
+  .concat(Object.keys(bool.environments));
+
+// These are JSHint boolean options which are shared with JSLint
+// where the name has been changed but the effect is unchanged
+export var renamed = {
+  eqeq   : &quot;eqeqeq&quot;,
+  windows: &quot;wsh&quot;,
+  sloppy : &quot;strict&quot;
+};
+
+export var removed = {
+  nomen: true,
+  onevar: true,
+  passfail: true,
+  white: true,
+  gcl: true,
+  smarttabs: true,
+  trailing: true
+};
+
+// Add options here which should not be automatically enforced by
+// &#x60;enforceall&#x60;.
+export var noenforceall = {
+  varstmt: true,
+  strict: true
+};
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

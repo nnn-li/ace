@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 //require("./lib/fixoldbrowsers");
-define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditorDocument", "./EditSession", "./UndoManager", "./VirtualRenderer", "./mode/HtmlMode"], function (require, exports, dom_1, event_1, Editor_1, EditorDocument_1, EditSession_1, UndoManager_1, VirtualRenderer_1, HtmlMode_1) {
+define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditorDocument", "./EditSession", "./UndoManager", "./VirtualRenderer", "./mode/JavaScriptMode"], function (require, exports, dom_1, event_1, Editor_1, EditorDocument_1, EditSession_1, UndoManager_1, VirtualRenderer_1, JavaScriptMode_1) {
     function edit(source) {
         var element;
         if (typeof source === 'string') {
@@ -55,7 +55,7 @@ define(["require", "exports", "./lib/dom", "./lib/event", "./Editor", "./EditorD
             value = dom_1.getInnerText(element);
             element.innerHTML = '';
         }
-        var editSession = createEditSession(new EditorDocument_1.default(value), new HtmlMode_1.default());
+        var editSession = createEditSession(new EditorDocument_1.default(value), new JavaScriptMode_1.default());
         var editor = new Editor_1.default(new VirtualRenderer_1.default(element), editSession);
         // FIXME: The first property is incorrectly named.
         var env = {
