@@ -27,20 +27,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-define(function(require, exports, module) {
 "use strict";
 
-var oop = require("../../lib/oop");
-var XmlBehaviour = require("../behaviour/xml").XmlBehaviour;
+import XmlBehaviour from "../behaviour/XmlBehaviour";
 
-var HtmlBehaviour = function () {
-
-    XmlBehaviour.call(this);
-
-};
-
-oop.inherits(HtmlBehaviour, XmlBehaviour);
-
-exports.HtmlBehaviour = HtmlBehaviour;
-});
+export default class HtmlBehaviour extends XmlBehaviour {
+  constructor() {
+    super()
+  }
+}

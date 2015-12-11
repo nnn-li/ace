@@ -27,35 +27,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-define(function(require, exports, module) {
 "use strict";
 
-  var oop = require("../../lib/oop");
-  var Behaviour = require('../behaviour').Behaviour;
-  var CstyleBehaviour = require('./cstyle').CstyleBehaviour;
-  var XmlBehaviour = require("../behaviour/xml").XmlBehaviour;
-  var TokenIterator = require("../../token_iterator").TokenIterator;
+import Behaviour from '../Behaviour';
+import CstyleBehaviour from './CstyleBehaviour';
+import XmlBehaviour from "../behaviour/XmlBehaviour";
+import TokenIterator from "../../TokenIterator";
+import Editor from "../../Editor";
+import EditSession from "../../EditSession";
 
-function hasType(token, type) {
+function hasType(token: {type: string}, type: string) {
     var hasType = true;
     var typeList = token.type.split('.');
     var needleList = type.split('.');
     needleList.forEach(function(needle){
-        if (typeList.indexOf(needle) == -1) {
+        if (typeList.indexOf(needle) === -1) {
             hasType = false;
             return false;
         }
     });
     return hasType;
 }
- 
-  var XQueryBehaviour = function () {
-      
-      this.inherit(CstyleBehaviour, ["braces", "parens", "string_dquotes"]); // Get string behaviour
-      this.inherit(XmlBehaviour); // Get xml behaviour
-      
-      this.add("autoclosing", "insertion", function (state, action, editor, session, text) {
-        if (text == '>') {
+
+export default class XQueryBehaviour extends Behaviour {
+  constructor() {
+    super();
+    this.inherit(CstyleBehaviour, ["braces", "parens", "string_dquotes"]);
+    this.inherit(XmlBehaviour);
+
+      this.add("autoclosing", "insertion", function (state, action, editor: Editor, session: EditSession, text: string) {
+        if (text === '>') {
             var position = editor.getCursorPosition();
             var iterator = new TokenIterator(session, position.row, position.column);
             var token = iterator.getCurrentToken();
@@ -84,9 +85,5 @@ function hasType(token, type) {
             }
         }
     });
-
   }
-  oop.inherits(XQueryBehaviour, Behaviour);
-
-  exports.XQueryBehaviour = XQueryBehaviour;
-});
+}

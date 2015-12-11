@@ -31,6 +31,8 @@
 import Behaviour from "../Behaviour";
 import TokenIterator from "../../TokenIterator";
 import {stringRepeat} from "../../lib/lang";
+import Editor from "../../Editor";
+import EditSession from "../../EditSession";
 
 var SAFE_INSERT_IN_TOKENS =
     ["text", "paren.rparen", "punctuation.operator"];
@@ -62,10 +64,10 @@ var initContext = function(editor) {
 export default class CstyleBehaviour extends Behaviour {
     constructor() {
         super();
-        this.add("braces", "insertion", function(state, action, editor, session, text): any {
+        this.add("braces", "insertion", function(state, action, editor: Editor, session: EditSession, text: string): any {
             var cursor = editor.getCursorPosition();
             var line = session.doc.getLine(cursor.row);
-            if (text == '{') {
+            if (text === '{') {
                 initContext(editor);
                 var selection = editor.getSelectionRange();
                 var selected = session.doc.getTextRange(selection);
@@ -89,10 +91,10 @@ export default class CstyleBehaviour extends Behaviour {
                         };
                     }
                 }
-            } else if (text == '}') {
+            } else if (text === '}') {
                 initContext(editor);
                 var rightChar = line.substring(cursor.column, cursor.column + 1);
-                if (rightChar == '}') {
+                if (rightChar === '}') {
                     var matching = session.$findOpeningBracket('}', { column: cursor.column + 1, row: cursor.row });
                     if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
                         CstyleBehaviour.popAutoInsertedClosing();
@@ -102,7 +104,7 @@ export default class CstyleBehaviour extends Behaviour {
                         };
                     }
                 }
-            } else if (text == "\n" || text == "\r\n") {
+            } else if (text === "\n" || text === "\r\n") {
                 initContext(editor);
                 var closing = "";
                 if (CstyleBehaviour.isMaybeInsertedClosing(cursor, line)) {

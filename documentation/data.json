@@ -679,7 +679,7 @@
             "plugin_for": [],
             "extension_for": [],
             "file": "src/mode/HtmlMode.ts",
-            "line": 62,
+            "line": 64,
             "is_constructor": 1
         },
         "Mode": {
@@ -5462,7 +5462,7 @@
         },
         {
             "file": "src/mode/HtmlMode.ts",
-            "line": 55,
+            "line": 57,
             "description": "The name of the element for fragment parsing.",
             "class": "HtmlMode"
         },
@@ -13937,7 +13937,7 @@
         },
         {
             "message": "Missing item type\nThe name of the element for fragment parsing.",
-            "line": " src/mode/HtmlMode.ts:55"
+            "line": " src/mode/HtmlMode.ts:57"
         },
         {
             "message": "Missing item type\nUsed when loading snippets for zero or more modes?",

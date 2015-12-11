@@ -1,6 +1,6 @@
 {
   "name": "deuce",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "main": "lib/deuce.js",
   "bin": {},

@@ -31,6 +31,8 @@
 import Behaviour from "../Behaviour";
 import CstyleBehaviour from "./CstyleBehaviour";
 import TokenIterator from "../../TokenIterator";
+import Editor from "../../Editor";
+import EditSession from "../../EditSession";
 
 export default class CssBehavior extends CstyleBehaviour {
 constructor() {
@@ -38,7 +40,7 @@ constructor() {
 
     this.inherit(CstyleBehaviour);
 
-    this.add("colon", "insertion", function (state, action, editor, session, text) {
+    this.add("colon", "insertion", function (state, action, editor: Editor, session: EditSession, text) {
         if (text === ':') {
             var cursor = editor.getCursorPosition();
             var iterator = new TokenIterator(session, cursor.row, cursor.column);

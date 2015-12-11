@@ -41,10 +41,10 @@ define(["require", "exports", "../Behaviour", "../../TokenIterator"], function (
         function XmlBehaviour() {
             _super.call(this);
             this.add("string_dquotes", "insertion", function (state, action, editor, session, text) {
-                if (text == '"' || text == "'") {
+                if (text === '"' || text === "'") {
                     var quote = text;
                     var selected = session.doc.getTextRange(editor.getSelectionRange());
-                    if (selected !== "" && selected !== "'" && selected != '"' && editor.getWrapBehavioursEnabled()) {
+                    if (selected !== "" && selected !== "'" && selected !== '"' && editor.getWrapBehavioursEnabled()) {
                         return {
                             text: quote + selected + quote,
                             selection: false
@@ -55,7 +55,7 @@ define(["require", "exports", "../Behaviour", "../../TokenIterator"], function (
                     var rightChar = line.substring(cursor.column, cursor.column + 1);
                     var iterator = new TokenIterator_1.default(session, cursor.row, cursor.column);
                     var token = iterator.getCurrentToken();
-                    if (rightChar == quote && (is(token, "attribute-value") || is(token, "string"))) {
+                    if (rightChar === quote && (is(token, "attribute-value") || is(token, "string"))) {
                         // Ignore input and move right one if we're typing over the closing quote.
                         return {
                             text: "",
@@ -70,7 +70,7 @@ define(["require", "exports", "../Behaviour", "../../TokenIterator"], function (
                         token = iterator.stepBackward();
                     }
                     var rightSpace = !rightChar || rightChar.match(/\s/);
-                    if (is(token, "attribute-equals") && (rightSpace || rightChar == '>') || (is(token, "decl-attribute-equals") && (rightSpace || rightChar == '?'))) {
+                    if (is(token, "attribute-equals") && (rightSpace || rightChar === '>') || (is(token, "decl-attribute-equals") && (rightSpace || rightChar == '?'))) {
                         return {
                             text: quote + quote,
                             selection: [1, 1]
@@ -80,7 +80,7 @@ define(["require", "exports", "../Behaviour", "../../TokenIterator"], function (
             });
             this.add("string_dquotes", "deletion", function (state, action, editor, session, range) {
                 var selected = session.doc.getTextRange(range);
-                if (!range.isMultiLine() && (selected == '"' || selected == "'")) {
+                if (!range.isMultiLine() && (selected === '"' || selected === "'")) {
                     var line = session.doc.getLine(range.start.row);
                     var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
                     if (rightChar == selected) {
@@ -90,7 +90,7 @@ define(["require", "exports", "../Behaviour", "../../TokenIterator"], function (
                 }
             });
             this.add("autoclosing", "insertion", function (state, action, editor, session, text) {
-                if (text == '>') {
+                if (text === '>') {
                     var position = editor.getCursorPosition();
                     var iterator = new TokenIterator_1.default(session, position.row, position.column);
                     var token = iterator.getCurrentToken() || iterator.stepBackward();
@@ -130,7 +130,7 @@ define(["require", "exports", "../Behaviour", "../../TokenIterator"], function (
                 }
             });
             this.add('autoindent', 'insertion', function (state, action, editor, session, text) {
-                if (text == "\n") {
+                if (text === "\n") {
                     var cursor = editor.getCursorPosition();
                     var line = session.getLine(cursor.row);
                     var rightChars = line.substring(cursor.column, cursor.column + 2);

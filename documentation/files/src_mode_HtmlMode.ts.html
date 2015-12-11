@@ -131,14 +131,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+&quot;use strict&quot;;
 
 import {inherits} from &quot;../lib/oop&quot;;
 import {arrayToMap} from &quot;../lib/lang&quot;;
+import Annotation from &quot;../Annotation&quot;;
 import TextMode from &quot;./Mode&quot;;
 import JavaScriptMode from &quot;./JavaScriptMode&quot;;
 import CssMode from &quot;./CssMode&quot;;
 import HtmlHighlightRules from &quot;./HtmlHighlightRules&quot;;
-import XmlBehaviour from &quot;./behaviour/XmlBehaviour&quot;;
+import HtmlBehaviour from &quot;./behaviour/HtmlBehaviour&quot;;
 import HtmlFoldMode from &quot;./folding/HtmlFoldMode&quot;;
 import HtmlCompletions from &quot;./HtmlCompletions&quot;;
 import WorkerClient from &quot;../worker/WorkerClient&quot;;
@@ -167,11 +169,11 @@ export default class HtmlMode extends TextMode {
      * @class HtmlMode
      * @constructor
      */
-    constructor(options?: {fragmentContext: string}) {
+    constructor(options?: { fragmentContext: string }) {
         super();
         this.fragmentContext = options &amp;&amp; options.fragmentContext;
         this.HighlightRules = HtmlHighlightRules;
-        this.$behaviour = new XmlBehaviour();
+        this.$behaviour = new HtmlBehaviour();
         this.$completer = new HtmlCompletions();
 
         this.createModeDelegates({
@@ -206,8 +208,9 @@ export default class HtmlMode extends TextMode {
             }
         });
 
-        worker.on(&quot;error&quot;, function(e) {
-            session.setAnnotations(e.data);
+        // FIXME: Standardize
+        worker.on(&quot;error&quot;, function(message: {data: Annotation[]}) {
+            session.setAnnotations(message.data);
         });
 
         worker.on(&quot;terminate&quot;, function() {

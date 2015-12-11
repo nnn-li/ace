@@ -107,6 +107,8 @@
 
     "./src/mode/behaviour/CssBehaviour.ts",
     "./src/mode/behaviour/CstyleBehaviour.ts",
+    "./src/mode/behaviour/HtmlBehaviour.ts",
+    "./src/mode/behaviour/XQueryBehaviour.ts",
     "./src/mode/behaviour/XmlBehaviour.ts",
 
     "./src/mode/folding/CstyleFoldMode.ts",

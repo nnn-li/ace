@@ -27,14 +27,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {inherits} from "../lib/oop";
 import {arrayToMap} from "../lib/lang";
+import Annotation from "../Annotation";
 import TextMode from "./Mode";
 import JavaScriptMode from "./JavaScriptMode";
 import CssMode from "./CssMode";
 import HtmlHighlightRules from "./HtmlHighlightRules";
-import XmlBehaviour from "./behaviour/XmlBehaviour";
+import HtmlBehaviour from "./behaviour/HtmlBehaviour";
 import HtmlFoldMode from "./folding/HtmlFoldMode";
 import HtmlCompletions from "./HtmlCompletions";
 import WorkerClient from "../worker/WorkerClient";
@@ -63,11 +65,11 @@ export default class HtmlMode extends TextMode {
      * @class HtmlMode
      * @constructor
      */
-    constructor(options?: {fragmentContext: string}) {
+    constructor(options?: { fragmentContext: string }) {
         super();
         this.fragmentContext = options && options.fragmentContext;
         this.HighlightRules = HtmlHighlightRules;
-        this.$behaviour = new XmlBehaviour();
+        this.$behaviour = new HtmlBehaviour();
         this.$completer = new HtmlCompletions();
 
         this.createModeDelegates({
@@ -102,8 +104,9 @@ export default class HtmlMode extends TextMode {
             }
         });
 
-        worker.on("error", function(e) {
-            session.setAnnotations(e.data);
+        // FIXME: Standardize
+        worker.on("error", function(message: {data: Annotation[]}) {
+            session.setAnnotations(message.data);
         });
 
         worker.on("terminate", function() {

@@ -30,6 +30,8 @@
 
 import Behaviour from "../Behaviour";
 import TokenIterator from "../../TokenIterator";
+import Editor from "../../Editor";
+import EditSession from "../../EditSession";
 
 function is(token, type) {
     return token.type.lastIndexOf(type + ".xml") > -1;
@@ -39,11 +41,11 @@ export default class XmlBehaviour extends Behaviour {
     constructor() {
         super();
 
-        this.add("string_dquotes", "insertion", function(state, action, editor, session, text): any {
-            if (text == '"' || text == "'") {
+        this.add("string_dquotes", "insertion", function(state, action, editor: Editor, session: EditSession, text: string): any {
+            if (text === '"' || text === "'") {
                 var quote = text;
                 var selected = session.doc.getTextRange(editor.getSelectionRange());
-                if (selected !== "" && selected !== "'" && selected != '"' && editor.getWrapBehavioursEnabled()) {
+                if (selected !== "" && selected !== "'" && selected !== '"' && editor.getWrapBehavioursEnabled()) {
                     return {
                         text: quote + selected + quote,
                         selection: false
@@ -56,7 +58,7 @@ export default class XmlBehaviour extends Behaviour {
                 var iterator = new TokenIterator(session, cursor.row, cursor.column);
                 var token = iterator.getCurrentToken();
 
-                if (rightChar == quote && (is(token, "attribute-value") || is(token, "string"))) {
+                if (rightChar === quote && (is(token, "attribute-value") || is(token, "string"))) {
                     // Ignore input and move right one if we're typing over the closing quote.
                     return {
                         text: "",
@@ -74,7 +76,7 @@ export default class XmlBehaviour extends Behaviour {
                     token = iterator.stepBackward();
                 }
                 var rightSpace = !rightChar || rightChar.match(/\s/);
-                if (is(token, "attribute-equals") && (rightSpace || rightChar == '>') || (is(token, "decl-attribute-equals") && (rightSpace || rightChar == '?'))) {
+                if (is(token, "attribute-equals") && (rightSpace || rightChar === '>') || (is(token, "decl-attribute-equals") && (rightSpace || rightChar == '?'))) {
                     return {
                         text: quote + quote,
                         selection: [1, 1]
@@ -85,7 +87,7 @@ export default class XmlBehaviour extends Behaviour {
 
         this.add("string_dquotes", "deletion", function(state, action, editor, session, range) {
             var selected = session.doc.getTextRange(range);
-            if (!range.isMultiLine() && (selected == '"' || selected == "'")) {
+            if (!range.isMultiLine() && (selected === '"' || selected === "'")) {
                 var line = session.doc.getLine(range.start.row);
                 var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
                 if (rightChar == selected) {
@@ -96,7 +98,7 @@ export default class XmlBehaviour extends Behaviour {
         });
 
         this.add("autoclosing", "insertion", function(state, action, editor, session, text) {
-            if (text == '>') {
+            if (text === '>') {
                 var position = editor.getCursorPosition();
                 var iterator = new TokenIterator(session, position.row, position.column);
                 var token = iterator.getCurrentToken() || iterator.stepBackward();
@@ -144,15 +146,14 @@ export default class XmlBehaviour extends Behaviour {
             }
         });
 
-        this.add('autoindent', 'insertion', function(state, action, editor, session, text) {
-            if (text == "\n") {
+        this.add('autoindent', 'insertion', function(state, action, editor: Editor, session: EditSession, text: string) {
+            if (text === "\n") {
                 var cursor = editor.getCursorPosition();
                 var line = session.getLine(cursor.row);
                 var rightChars = line.substring(cursor.column, cursor.column + 2);
                 if (rightChars == '</') {
                     var next_indent = this.$getIndent(line);
                     var indent = next_indent + session.getTabString();
-
                     return {
                         text: '\n' + indent + '\n' + next_indent,
                         selection: [1, indent.length, 1, indent.length]
