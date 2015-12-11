@@ -35171,8 +35171,11 @@ define('mode/javascript/options',["require", "exports"], function (require, expo
 
 define('fp/has',["require", "exports"], function (require, exports) {
     function has(obj, v) {
+        if (typeof v === 'undefined') {
+            return false;
+        }
         if (typeof v !== 'string') {
-            throw new Error("has(obj, v): v must be a string");
+            console.warn("has(obj, v): v must be a string, v => " + v);
         }
         if (obj && obj.hasOwnProperty) {
             return obj.hasOwnProperty(v);
