@@ -162,7 +162,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
 
   var compilerSources = [
-      "src/deuce.ts"
+      "src/deuce.ts",
+      "src/mode/HtmlMode",
+      "src/mode/HtmlWorker",
+      "src/mode/JavaScriptMode",
+      "src/mode/JavaScriptWorker"
   ];
 
   function ES5(xs) {

@@ -1,5 +1,6 @@
 import EventEmitterClass from "../lib/event_emitter";
 import EditSession from "../EditSession";
+import Annotation from "../Annotation";
 export default class Gutter extends EventEmitterClass {
     element: HTMLDivElement;
     gutterWidth: number;
@@ -17,12 +18,7 @@ export default class Gutter extends EventEmitterClass {
     $padding: any;
     constructor(parentEl: HTMLElement);
     setSession(session: EditSession): void;
-    setAnnotations(annotations: {
-        html: string;
-        row: number;
-        text: string;
-        type: string;
-    }[]): void;
+    setAnnotations(annotations: Annotation[]): void;
     $updateAnnotations(e: any, session: EditSession): void;
     update(config: any): void;
     setShowLineNumbers(show: any): void;

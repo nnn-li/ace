@@ -135,6 +135,7 @@
 import {addCssClass, createElement, importCssString, removeCssClass, setCssClass} from &quot;./lib/dom&quot;;
 import {_emit, defineOptions, loadModule, resetOptions} from &quot;./config&quot;;
 import {isOldIE} from &quot;./lib/useragent&quot;;
+import Annotation from &#x27;./Annotation&#x27;;
 import Gutter from &quot;./layer/Gutter&quot;;
 import Marker from &quot;./layer/Marker&quot;;
 import Text from &quot;./layer/Text&quot;;
@@ -1292,11 +1293,13 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * Sets annotations for the gutter.
-    * @param {Array} annotations An array containing annotations
-    **/
-    setAnnotations(annotations) {
+     * Sets annotations for the gutter.
+     *
+     * @method setAnnotations
+     * @param {Annotation[]} annotations An array containing annotations.
+     * @return {void}
+     */
+    setAnnotations(annotations: Annotation[]): void {
         this.$gutterLayer.setAnnotations(annotations);
         this.$loop.schedule(CHANGE_GUTTER);
     }

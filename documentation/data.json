@@ -245,6 +245,13 @@
             "fors": {},
             "namespaces": {}
         },
+        "src/mode/javascript/JSHintOptions.ts": {
+            "name": "src/mode/javascript/JSHintOptions.ts",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
         "src/mode/javascript/jshint.ts": {
             "name": "src/mode/javascript/jshint.ts",
             "modules": {},
@@ -451,6 +458,13 @@
             "classes": {
                 "Anchor": 1
             },
+            "fors": {},
+            "namespaces": {}
+        },
+        "src/Annotation.ts": {
+            "name": "src/Annotation.ts",
+            "modules": {},
+            "classes": {},
             "fors": {},
             "namespaces": {}
         },
@@ -713,7 +727,7 @@
             "plugin_for": [],
             "extension_for": [],
             "file": "src/EditSession.ts",
-            "line": 199,
+            "line": 200,
             "extends": "EventEmitterClass",
             "is_constructor": 1,
             "params": [
@@ -995,7 +1009,7 @@
             "plugin_for": [],
             "extension_for": [],
             "file": "src/VirtualRenderer.ts",
-            "line": 158,
+            "line": 159,
             "description": "Constructs a new `VirtualRenderer` within the `container` specified.",
             "related": "editor.renderer",
             "is_constructor": 1,
@@ -2379,7 +2393,7 @@
         },
         {
             "file": "src/layer/Gutter.ts",
-            "line": 264,
+            "line": 265,
             "description": "Returns either \"markers\", \"foldWidgets\", or undefined.",
             "class": "HtmlMode"
         },
@@ -3299,44 +3313,154 @@
             "class": "HtmlMode"
         },
         {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 4,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 9,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 14,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 18,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 28,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 32,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 41,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 47,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 53,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 57,
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 64,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 68,
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 73,
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 96,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 100,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 106,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 114,
+            "description": "deprecated",
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 122,
+            "class": "HtmlMode"
+        },
+        {
+            "file": "src/mode/javascript/JSHintOptions.ts",
+            "line": 128,
+            "description": "Defines console, alert, etc.",
+            "class": "HtmlMode"
+        },
+        {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 190,
+            "line": 201,
             "description": "TODO: Remove in JSHint 3",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 211,
+            "line": 222,
             "description": "Use `in` to check for the presence of any explicitly-specified value for\n`globalstrict` because both `true` and `false` should trigger an error.",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 223,
+            "line": 234,
             "description": "TODO: Extend this restriction to *all* ES6-specific options.",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 545,
+            "line": 560,
             "description": "TODO: Remove in JSHint 3",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 668,
+            "line": 683,
             "description": "TODO: Extend this restriction to *all* \"environmental\" options.",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 676,
+            "line": 691,
             "description": "TODO: Remove in JSHint 3",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 1357,
+            "line": 1372,
             "description": "Checks the left hand side of an assignment for issues, returns if ok",
             "params": [
                 {
@@ -3370,7 +3494,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 2832,
+            "line": 2847,
             "params": [
                 {
                     "name": "options",
@@ -3401,7 +3525,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 2975,
+            "line": 2990,
             "description": "Determine if the parser has begun parsing executable code.",
             "params": [
                 {
@@ -3418,7 +3542,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 3020,
+            "line": 3035,
             "params": [
                 {
                     "name": "options",
@@ -3469,7 +3593,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 3210,
+            "line": 3225,
             "params": [
                 {
                     "name": "props",
@@ -3481,7 +3605,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 4839,
+            "line": 4854,
             "params": [
                 {
                     "name": "accessorType",
@@ -3513,7 +3637,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 4885,
+            "line": 4900,
             "description": "Test whether a given token is a punctuator matching one of the specified values",
             "params": [
                 {
@@ -3535,7 +3659,7 @@
         },
         {
             "file": "src/mode/javascript/jshint.ts",
-            "line": 4898,
+            "line": 4913,
             "description": "Test whether a given token is a punctuator matching the specified value",
             "params": [
                 {
@@ -4116,25 +4240,25 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 28,
+            "line": 13,
             "description": "Creates a scope manager that handles variables and labels, storing usages\nand resolving when variables are used and undefined",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 126,
+            "line": 111,
             "description": "Checks the current scope for unused identifiers",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 147,
+            "line": 132,
             "description": "Checks the current scope for unused parameters\nMust be called in a function parameter scope",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 181,
+            "line": 166,
             "description": "Finds the relevant label's scope, searching from nearest outwards",
             "return": {
                 "description": "the scope the label was found in",
@@ -4144,7 +4268,7 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 257,
+            "line": 242,
             "description": "Tell the manager we are entering a new block of code",
             "params": [
                 {
@@ -4158,7 +4282,7 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 461,
+            "line": 446,
             "description": "Add a param to the current scope",
             "params": [
                 {
@@ -4183,7 +4307,7 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 552,
+            "line": 537,
             "description": "Gets an array of implied globals",
             "return": {
                 "description": ">}",
@@ -4193,7 +4317,7 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 577,
+            "line": 562,
             "description": "Returns a list of unused variables",
             "return": {
                 "description": "",
@@ -4203,19 +4327,19 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 598,
+            "line": 583,
             "description": "for the exported options, indicating a variable is used outside the file",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 626,
+            "line": 611,
             "description": "Mark an indentifier as es6 module exported",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 633,
+            "line": 618,
             "description": "adds an indentifier to the relevant current scope and creates warnings/errors as necessary",
             "params": [
                 {
@@ -4245,7 +4369,7 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 722,
+            "line": 707,
             "description": "Returns the label type given certain options",
             "params": [
                 {
@@ -4283,7 +4407,7 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 748,
+            "line": 733,
             "description": "Returns if a break label exists in the function scope",
             "params": [
                 {
@@ -4300,19 +4424,19 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 766,
+            "line": 751,
             "description": "Returns if the label is in the current function scope\nSee scopeManager.funct.labelType for options",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 774,
+            "line": 759,
             "description": "Adds a new function scoped variable\nsee block.add for block scoped",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 791,
+            "line": 776,
             "description": "is the current block global?",
             "return": {
                 "description": "Boolean"
@@ -4321,19 +4445,19 @@
         },
         {
             "file": "src/mode/javascript/scope-manager.ts",
-            "line": 844,
+            "line": 829,
             "description": "Adds a new variable",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/state.ts",
-            "line": 36,
+            "line": 45,
             "description": "Determine if the code currently being linted is strict mode code.",
             "class": "HtmlMode"
         },
         {
             "file": "src/mode/javascript/state.ts",
-            "line": 50,
+            "line": 59,
             "params": [
                 {
                     "name": "strict",
@@ -4345,7 +4469,7 @@
         },
         {
             "file": "src/mode/javascript/state.ts",
-            "line": 61,
+            "line": 70,
             "params": [
                 {
                     "name": "strict",
@@ -5687,6 +5811,12 @@
             "class": "Anchor"
         },
         {
+            "file": "src/Annotation.ts",
+            "line": 7,
+            "description": "\"error\", \"info\", or \"warning\".",
+            "class": "BackgroundTokenizer"
+        },
+        {
             "file": "src/BackgroundTokenizer.ts",
             "line": 43,
             "description": "Creates a new `BackgroundTokenizer` object.",
@@ -5817,41 +5947,41 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 144,
+            "line": 145,
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 149,
+            "line": 150,
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 154,
+            "line": 155,
             "description": "The worker corresponding to the mode (i.e. Language).",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 185,
+            "line": 186,
             "description": "This is a marker identifier.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 189,
+            "line": 190,
             "description": "This is really a Range with an added marker id.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 193,
+            "line": 194,
             "description": "A number is a marker identifier, null indicates that no such marker exists.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 221,
+            "line": 222,
             "description": "Sets the `EditSession` to point to a new `EditorDocument`.\nIf a `BackgroundTokenizer` exists, it also points to `doc`.",
             "itemtype": "method",
             "name": "setDocument",
@@ -5870,7 +6000,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 247,
+            "line": 248,
             "description": "Returns the `EditorDocument` associated with this session.",
             "itemtype": "method",
             "name": "getDocument",
@@ -5882,7 +6012,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 257,
+            "line": 258,
             "itemtype": "method",
             "name": "$resetRowCache",
             "params": [
@@ -5902,7 +6032,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 337,
+            "line": 338,
             "description": "Sets the session text.",
             "itemtype": "method",
             "name": "setValue",
@@ -5923,7 +6053,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 356,
+            "line": 357,
             "description": "Returns the current EditorDocument as a string.",
             "itemtype": "method",
             "name": "toString",
@@ -5936,7 +6066,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 367,
+            "line": 368,
             "description": "Returns the current EditorDocument as a string.",
             "itemtype": "method",
             "name": "getValue",
@@ -5949,7 +6079,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 378,
+            "line": 379,
             "description": "Returns the current selection.",
             "itemtype": "method",
             "name": "getSelection",
@@ -5961,7 +6091,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 388,
+            "line": 389,
             "description": "Sets the current selection.",
             "itemtype": "method",
             "name": "setSelection",
@@ -5980,7 +6110,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 399,
+            "line": 400,
             "itemtype": "method",
             "name": "getState",
             "params": [
@@ -5998,7 +6128,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 408,
+            "line": 409,
             "description": "Starts tokenizing at the row indicated. Returns a list of objects of the tokenized rows.",
             "itemtype": "method",
             "name": "getTokens",
@@ -6013,7 +6143,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 417,
+            "line": 418,
             "description": "Returns an object indicating the token at the current row.\nThe object has two properties: `index` and `start`.",
             "itemtype": "method",
             "name": "getTokenAt",
@@ -6033,7 +6163,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 448,
+            "line": 449,
             "description": "Sets the undo manager.",
             "itemtype": "method",
             "name": "setUndoManager",
@@ -6052,7 +6182,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 500,
+            "line": 501,
             "description": "Starts a new group in undo history.",
             "itemtype": "method",
             "name": "markUndoGroup",
@@ -6064,7 +6194,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 512,
+            "line": 513,
             "description": "Returns the current undo manager.",
             "itemtype": "method",
             "name": "getUndoManager",
@@ -6076,7 +6206,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 523,
+            "line": 524,
             "description": "Returns the current value for tabs.\nIf the user is using soft tabs, this will be a series of spaces (defined by [[EditSession.getTabSize `getTabSize()`]]); otherwise it's simply `'\\t'`.",
             "itemtype": "method",
             "name": "getTabString",
@@ -6088,7 +6218,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 539,
+            "line": 540,
             "description": "Pass `true` to enable the use of soft tabs.\nSoft tabs means you're using spaces instead of the tab character (`'\\t'`).",
             "itemtype": "method",
             "name": "setUseSoftTabs",
@@ -6108,7 +6238,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 553,
+            "line": 554,
             "description": "Returns `true` if soft tabs are being used, `false` otherwise.",
             "itemtype": "method",
             "name": "getUseSoftTabs",
@@ -6120,7 +6250,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 564,
+            "line": 565,
             "description": "Set the number of spaces that define a soft tab.\nFor example, passing in `4` transforms the soft tabs to be equivalent to four spaces.\nThis function also emits the `changeTabSize` event.",
             "params": [
                 {
@@ -6133,13 +6263,13 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 574,
+            "line": 575,
             "description": "Returns the current tab size.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 581,
+            "line": 582,
             "description": "Returns `true` if the character at the position is a soft tab.",
             "params": [
                 {
@@ -6152,7 +6282,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 591,
+            "line": 592,
             "description": "Pass in `true` to enable overwrites in your session, or `false` to disable.\n\nIf overwrites is enabled, any text you enter will type over any text after it. If the value of `overwrite` changes, this function also emites the `changeOverwrite` event.",
             "params": [
                 {
@@ -6165,19 +6295,19 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 604,
+            "line": 605,
             "description": "Returns `true` if overwrites are enabled; `false` otherwise.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 611,
+            "line": 612,
             "description": "Sets the value of overwrite to the opposite of whatever it currently is.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 618,
+            "line": 619,
             "description": "Adds `className` to the `row`, to be used for CSS stylings and whatnot.",
             "params": [
                 {
@@ -6195,7 +6325,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 631,
+            "line": 632,
             "description": "Removes `className` from the `row`.",
             "params": [
                 {
@@ -6213,7 +6343,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 641,
+            "line": 642,
             "description": "Returns an array of numbers, indicating which rows have breakpoints.",
             "return": {
                 "description": "",
@@ -6223,7 +6353,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 649,
+            "line": 650,
             "description": "Sets a breakpoint on every row number given by `rows`. This function also emites the `'changeBreakpoint'` event.",
             "params": [
                 {
@@ -6236,13 +6366,13 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 664,
+            "line": 665,
             "description": "Removes all breakpoints on the rows. This function also emites the `'changeBreakpoint'` event.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 672,
+            "line": 673,
             "description": "Sets a breakpoint on the row number given by `rows`. This function also emites the `'changeBreakpoint'` event.",
             "params": [
                 {
@@ -6260,7 +6390,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 689,
+            "line": 690,
             "description": "Removes a breakpoint on the row number given by `rows`. This function also emites the `'changeBreakpoint'` event.",
             "params": [
                 {
@@ -6273,7 +6403,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 700,
+            "line": 701,
             "description": "Adds a new marker to the given `Range`. If `inFront` is `true`, a front marker is defined, and the `'changeFrontMarker'` event fires; otherwise, the `'changeBackMarker'` event fires.",
             "params": [
                 {
@@ -6305,7 +6435,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 735,
+            "line": 736,
             "description": "Adds a dynamic marker to the session.",
             "params": [
                 {
@@ -6327,7 +6457,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 761,
+            "line": 762,
             "description": "Removes the marker with the specified ID. If this marker was in front, the `'changeFrontMarker'` event is emitted. If the marker was in the back, the `'changeBackMarker'` event is emitted.",
             "params": [
                 {
@@ -6340,7 +6470,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 780,
+            "line": 781,
             "description": "Returns an array containing the IDs of all the markers, either front or back.",
             "params": [
                 {
@@ -6357,36 +6487,44 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 813,
-            "description": "Sets annotations for the `EditSession`. This functions emits the `'changeAnnotation'` event.",
+            "line": 805,
+            "description": "Sets annotations for the `EditSession`.\nThis functions emits the `'changeAnnotation'` event.",
+            "itemtype": "method",
+            "name": "setAnnotations",
             "params": [
                 {
                     "name": "annotations",
-                    "description": "A list of annotations",
-                    "type": "Array"
+                    "description": "A list of annotations.",
+                    "type": "Annotation[]"
                 }
             ],
-            "class": "EditSession"
-        },
-        {
-            "file": "src/EditSession.ts",
-            "line": 823,
-            "description": "Returns the annotations for the `EditSession`.",
             "return": {
                 "description": "",
-                "type": "Array"
+                "type": "Void"
             },
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 831,
+            "line": 818,
+            "description": "Returns the annotations for the `EditSession`.",
+            "itemtype": "method",
+            "name": "getAnnotations",
+            "return": {
+                "description": "",
+                "type": "Annotation[]"
+            },
+            "class": "EditSession"
+        },
+        {
+            "file": "src/EditSession.ts",
+            "line": 828,
             "description": "Clears all the annotations for this session.\nThis function also triggers the `'changeAnnotation'` event.\nThis is called by the language modes when the worker terminates.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 840,
+            "line": 837,
             "description": "If `text` contains either the newline (`\\n`) or carriage-return ('\\r') characters, `$autoNewLine` stores that value.",
             "params": [
                 {
@@ -6399,7 +6537,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 855,
+            "line": 852,
             "description": "Given a starting row and column, this method returns the `Range` of the first word boundary it finds.",
             "params": [
                 {
@@ -6421,7 +6559,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 896,
+            "line": 893,
             "description": "Gets the range of a word, including its right whitespace.",
             "params": [
                 {
@@ -6443,7 +6581,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 914,
+            "line": 911,
             "description": "{:EditorDocument.setNewLineMode.desc}",
             "params": [
                 {
@@ -6457,7 +6595,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 925,
+            "line": 922,
             "description": "Returns the current new line mode.",
             "return": {
                 "description": "",
@@ -6468,7 +6606,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 935,
+            "line": 932,
             "description": "Identifies if you want to use a worker for the `EditSession`.",
             "params": [
                 {
@@ -6481,19 +6619,19 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 942,
+            "line": 939,
             "description": "Returns `true` if workers are being used.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 947,
+            "line": 944,
             "description": "Reloads all the tokens on the current session. This function calls [[BackgroundTokenizer.start `BackgroundTokenizer.start ()`]] to all the rows; it also emits the `'tokenizerUpdate'` event.",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 957,
+            "line": 954,
             "description": "Sets a new text mode for the `EditSession`. This method also emits the `'changeMode'` event. If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.",
             "params": [
                 {
@@ -6511,7 +6649,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1076,
+            "line": 1073,
             "description": "Returns the current text mode.",
             "return": {
                 "description": "The current text mode",
@@ -6521,7 +6659,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1084,
+            "line": 1081,
             "description": "This function sets the scroll top value. It also emits the `'changeScrollTop'` event.",
             "params": [
                 {
@@ -6534,7 +6672,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1098,
+            "line": 1095,
             "description": "[Returns the value of the distance between the top of the editor and the topmost part of the visible content.]{: #EditSession.getScrollTop}",
             "return": {
                 "description": "",
@@ -6544,13 +6682,13 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1106,
+            "line": 1103,
             "description": "[Sets the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.setScrollLeft}",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1118,
+            "line": 1115,
             "description": "[Returns the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.getScrollLeft}",
             "return": {
                 "description": "",
@@ -6560,7 +6698,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1126,
+            "line": 1123,
             "description": "Returns the width of the screen.",
             "return": {
                 "description": "",
@@ -6570,7 +6708,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1182,
+            "line": 1179,
             "description": "Returns a verbatim copy of the given line as it is in the document",
             "params": [
                 {
@@ -6587,7 +6725,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1194,
+            "line": 1191,
             "description": "Returns an array of strings of the rows between `firstRow` and `lastRow`. This function is inclusive of `lastRow`.",
             "params": [
                 {
@@ -6609,7 +6747,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1206,
+            "line": 1203,
             "description": "Returns the number of rows in the document.",
             "return": {
                 "description": "",
@@ -6619,7 +6757,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1214,
+            "line": 1211,
             "description": "{:EditorDocument.getTextRange.desc}",
             "params": [
                 {
@@ -6636,7 +6774,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1224,
+            "line": 1221,
             "description": "Inserts a block of `text` and the indicated `position`.",
             "params": [
                 {
@@ -6658,7 +6796,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1236,
+            "line": 1233,
             "description": "Removes the `range` from the document.",
             "params": [
                 {
@@ -6676,7 +6814,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1248,
+            "line": 1245,
             "description": "Reverts previous changes to your document.",
             "params": [
                 {
@@ -6698,7 +6836,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1282,
+            "line": 1279,
             "description": "Re-implements a previously undone change to your document.",
             "params": [
                 {
@@ -6720,7 +6858,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1312,
+            "line": 1309,
             "description": "Enables or disables highlighting of the range where an undo occurred.",
             "params": [
                 {
@@ -6733,7 +6871,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1382,
+            "line": 1379,
             "description": "Replaces a range in the document with the new `text`.",
             "itemtype": "method",
             "name": "replace",
@@ -6757,7 +6895,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1396,
+            "line": 1393,
             "description": "Moves a range of text from the given range to the given position. `toPosition` is an object that looks like this:\n ```json\n   { row: newRowLocation, column: newColumnLocation }\n ```",
             "params": [
                 {
@@ -6779,7 +6917,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1456,
+            "line": 1453,
             "description": "Indents all the rows, from `startRow` to `endRow` (inclusive), by prefixing each row with the token in `indentString`.\n\nIf `indentString` contains the `'\\t'` character, it's replaced by whatever is defined by [[EditSession.getTabString `getTabString()`]].",
             "params": [
                 {
@@ -6802,7 +6940,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1472,
+            "line": 1469,
             "description": "Outdents all the rows defined by the `start` and `end` properties of `range`.",
             "params": [
                 {
@@ -6815,7 +6953,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1532,
+            "line": 1529,
             "description": "Shifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.",
             "params": [
                 {
@@ -6838,7 +6976,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1545,
+            "line": 1542,
             "description": "Shifts all the lines in the document down one, starting from `firstRow` and ending at `lastRow`.",
             "params": [
                 {
@@ -6861,7 +6999,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1557,
+            "line": 1554,
             "description": "Duplicates all the text between `firstRow` and `lastRow`.",
             "params": [
                 {
@@ -6883,7 +7021,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1631,
+            "line": 1628,
             "description": "Sets whether or not line wrapping is enabled. If `useWrapMode` is different than the current value, the `'changeWrapMode'` event is emitted.",
             "params": [
                 {
@@ -6896,7 +7034,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1654,
+            "line": 1651,
             "description": "Returns `true` if wrap mode is being used; `false` otherwise.",
             "return": {
                 "description": "",
@@ -6906,7 +7044,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1666,
+            "line": 1663,
             "description": "Sets the boundaries of wrap. Either value can be `null` to have an unconstrained wrap, or, they can be the same number to pin the limit. If the wrap limits for `min` or `max` are different, this method also emits the `'changeWrapMode'` event.",
             "params": [
                 {
@@ -6924,7 +7062,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1685,
+            "line": 1682,
             "description": "This should generally only be called by the renderer when a resize is detected.",
             "params": [
                 {
@@ -6943,7 +7081,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1720,
+            "line": 1717,
             "description": "Returns the value of wrap limit.",
             "return": {
                 "description": "The wrap limit.",
@@ -6953,7 +7091,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1728,
+            "line": 1725,
             "description": "Sets the line length for soft wrap in the editor. Lines will break\n at a minimum of the given length minus 20 chars and at a maximum\n of the given number of chars.",
             "params": [
                 {
@@ -6966,7 +7104,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 1738,
+            "line": 1735,
             "description": "Returns an object that defines the minimum and maximum of the wrap limit; it looks something like this:\n\n    { min: wrapLimitRange_min, max: wrapLimitRange_max }",
             "return": {
                 "description": "",
@@ -6976,7 +7114,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2047,
+            "line": 2044,
             "description": "Given a string, returns an array of the display characters, including tabs and spaces.",
             "params": [
                 {
@@ -6994,7 +7132,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2087,
+            "line": 2084,
             "description": "Calculates the width of the string `str` on the screen while assuming that the string starts at the first column on the screen.",
             "params": [
                 {
@@ -7021,7 +7159,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2126,
+            "line": 2123,
             "description": "Returns number of screenrows in a wrapped line.",
             "params": [
                 {
@@ -7038,7 +7176,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2165,
+            "line": 2162,
             "description": "Returns the position (on screen) for the last character in the provided screen row.",
             "params": [
                 {
@@ -7056,7 +7194,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2177,
+            "line": 2174,
             "description": "For the given document row and column, this returns the column position of the last screen row.",
             "params": [
                 {
@@ -7074,7 +7212,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2188,
+            "line": 2185,
             "description": "For the given document row and column, this returns the document position of the last row.",
             "params": [
                 {
@@ -7092,7 +7230,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2200,
+            "line": 2197,
             "description": "For the given row, this returns the split data.",
             "return": {
                 "description": "",
@@ -7102,7 +7240,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2212,
+            "line": 2209,
             "description": "The distance to the next tab stop at the specified screen column.",
             "methos": "getScreenTabSize",
             "params": [
@@ -7120,7 +7258,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2232,
+            "line": 2229,
             "description": "Converts characters coordinates on the screen to characters coordinates within the document. [This takes into account code folding, word wrap, tab size, and any other visual modifications.]{: #conversionConsiderations}",
             "params": [
                 {
@@ -7142,7 +7280,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2324,
+            "line": 2321,
             "description": "Converts document coordinates to screen coordinates. {:conversionConsiderations}",
             "params": [
                 {
@@ -7165,7 +7303,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2427,
+            "line": 2424,
             "description": "For the given document row and column, returns the screen column.",
             "params": [
                 {
@@ -7187,7 +7325,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2438,
+            "line": 2435,
             "description": "For the given document row and column, returns the screen row.",
             "params": [
                 {
@@ -7205,7 +7343,7 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2453,
+            "line": 2450,
             "description": "Returns the length of the screen.",
             "return": {
                 "description": "",
@@ -7215,14 +7353,14 @@
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2496,
+            "line": 2493,
             "access": "private",
             "tagname": "",
             "class": "EditSession"
         },
         {
             "file": "src/EditSession.ts",
-            "line": 2745,
+            "line": 2742,
             "description": "Adds a new fold.",
             "return": {
                 "description": "The new created Fold object or an existing fold object in case the\n     passed in range fits an existing fold exactly."
@@ -11022,13 +11160,13 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 96,
+            "line": 97,
             "description": "The loaded theme object. This allows us to remove a theme.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 251,
+            "line": 252,
             "itemtype": "property",
             "name": "maxLines",
             "type": "number",
@@ -11036,7 +11174,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 259,
+            "line": 260,
             "itemtype": "property",
             "name": "keepTextAreaAtCursor",
             "type": "boolean",
@@ -11044,7 +11182,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 267,
+            "line": 268,
             "description": "Sets the <code>style</code> property of the content to \"default\".",
             "itemtype": "method",
             "name": "setDefaultCursorStyle",
@@ -11056,7 +11194,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 277,
+            "line": 278,
             "description": "Sets the <code>opacity</code> of the cursor layer to \"0\".",
             "itemtype": "method",
             "name": "setCursorLayerOff",
@@ -11069,7 +11207,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 291,
+            "line": 292,
             "itemtype": "method",
             "name": "updateCharacterSize",
             "return": {
@@ -11080,7 +11218,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 307,
+            "line": 308,
             "description": "Associates the renderer with a different EditSession.",
             "itemtype": "method",
             "name": "setSession",
@@ -11099,7 +11237,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 341,
+            "line": 342,
             "description": "Triggers a partial update of the text, from the range given by the two parameters.",
             "params": [
                 {
@@ -11127,13 +11265,13 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 413,
+            "line": 414,
             "description": "Triggers a full update of the text, for all the rows.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 420,
+            "line": 421,
             "description": "Triggers a full update of all the layers, for all the rows.",
             "params": [
                 {
@@ -11146,13 +11284,13 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 431,
+            "line": 432,
             "description": "Updates the font size.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 447,
+            "line": 448,
             "description": "[Triggers a resize of the editor.]{: #VirtualRenderer.onResize}",
             "params": [
                 {
@@ -11180,13 +11318,13 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 553,
+            "line": 554,
             "description": "Adjusts the wrap limit, which is the number of characters that can fit within the width of the edit area on screen.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 562,
+            "line": 563,
             "description": "Identifies whether you want to have an animated scroll or not.",
             "itemtype": "method",
             "name": "setAnimatedScroll",
@@ -11205,7 +11343,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 573,
+            "line": 574,
             "description": "Returns whether an animated scroll happens or not.",
             "itemtype": "method",
             "name": "getAnimatedScroll",
@@ -11217,7 +11355,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 583,
+            "line": 584,
             "description": "Identifies whether you want to show invisible characters or not.",
             "params": [
                 {
@@ -11230,7 +11368,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 591,
+            "line": 592,
             "description": "Returns whether invisible characters are being shown or not.",
             "return": {
                 "description": "",
@@ -11240,7 +11378,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 607,
+            "line": 608,
             "description": "Identifies whether you want to show the print margin or not.",
             "params": [
                 {
@@ -11253,7 +11391,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 616,
+            "line": 617,
             "description": "Returns whether the print margin is being shown or not.",
             "return": {
                 "description": "",
@@ -11263,7 +11401,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 624,
+            "line": 625,
             "description": "Sets the column defining where the print margin should be.",
             "params": [
                 {
@@ -11276,7 +11414,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 632,
+            "line": 633,
             "description": "Returns the column number of where the print margin is.",
             "return": {
                 "description": "",
@@ -11286,7 +11424,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 640,
+            "line": 641,
             "description": "Returns `true` if the gutter is being shown.",
             "return": {
                 "description": "",
@@ -11296,7 +11434,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 648,
+            "line": 649,
             "description": "Identifies whether you want to show the gutter or not.",
             "params": [
                 {
@@ -11309,7 +11447,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 707,
+            "line": 708,
             "description": "Returns the root element containing this renderer.",
             "return": {
                 "description": "",
@@ -11319,7 +11457,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 716,
+            "line": 717,
             "description": "Returns the element that the mouse events are attached to",
             "return": {
                 "description": "",
@@ -11329,7 +11467,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 725,
+            "line": 726,
             "description": "Returns the element to which the hidden text area is added.",
             "return": {
                 "description": "",
@@ -11339,7 +11477,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 767,
+            "line": 768,
             "description": "[Returns the index of the first visible row.]{: #VirtualRenderer.getFirstVisibleRow}",
             "return": {
                 "description": "",
@@ -11349,7 +11487,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 776,
+            "line": 777,
             "description": "Returns the index of the first fully visible row. \"Fully\" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.",
             "return": {
                 "description": "",
@@ -11359,7 +11497,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 785,
+            "line": 786,
             "description": "Returns the index of the last fully visible row. \"Fully\" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.",
             "return": {
                 "description": "",
@@ -11369,7 +11507,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 795,
+            "line": 796,
             "description": "[Returns the index of the last visible row.]{: #VirtualRenderer.getLastVisibleRow}",
             "return": {
                 "description": "",
@@ -11379,7 +11517,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 804,
+            "line": 805,
             "description": "Sets the padding for all the layers.",
             "params": [
                 {
@@ -11392,7 +11530,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 831,
+            "line": 832,
             "description": "Returns whether the horizontal scrollbar is set to be always visible.",
             "return": {
                 "description": "",
@@ -11402,7 +11540,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 840,
+            "line": 841,
             "description": "Identifies whether you want to show the horizontal scrollbar or not.",
             "params": [
                 {
@@ -11415,7 +11553,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 848,
+            "line": 849,
             "description": "Returns whether the vertical scrollbar is set to be always visible.",
             "return": {
                 "description": "",
@@ -11425,7 +11563,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 856,
+            "line": 857,
             "description": "Identifies whether you want to show the vertical scrollbar or not.",
             "params": [
                 {
@@ -11438,62 +11576,68 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1164,
+            "line": 1165,
             "description": "Schedules an update to all the front markers in the document.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1173,
+            "line": 1174,
             "description": "Schedules an update to all the back markers in the document.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1182,
+            "line": 1183,
             "description": "Redraw breakpoints.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1190,
+            "line": 1191,
             "description": "Sets annotations for the gutter.",
+            "itemtype": "method",
+            "name": "setAnnotations",
             "params": [
                 {
                     "name": "annotations",
-                    "description": "An array containing annotations",
-                    "type": "Array"
+                    "description": "An array containing annotations.",
+                    "type": "Annotation[]"
                 }
             ],
+            "return": {
+                "description": "",
+                "type": "Void"
+            },
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1200,
+            "line": 1203,
             "description": "Updates the cursor icon.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1208,
+            "line": 1211,
             "description": "Hides the cursor icon.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1216,
+            "line": 1219,
             "description": "Shows the cursor icon.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1230,
+            "line": 1233,
             "description": "Scrolls the cursor into the first visibile area of the editor",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1277,
+            "line": 1280,
             "description": "{:EditSession.getScrollTop}",
             "related": "EditSession.getScrollTop",
             "return": {
@@ -11504,7 +11648,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1286,
+            "line": 1289,
             "description": "{:EditSession.getScrollLeft}",
             "related": "EditSession.getScrollLeft",
             "return": {
@@ -11515,7 +11659,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1295,
+            "line": 1298,
             "description": "Returns the first visible row, regardless of whether it's fully visible or not.",
             "return": {
                 "description": "",
@@ -11525,7 +11669,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1304,
+            "line": 1307,
             "description": "Returns the last visible row, regardless of whether it's fully visible or not.",
             "return": {
                 "description": "",
@@ -11535,7 +11679,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1313,
+            "line": 1316,
             "description": "Gracefully scrolls from the top of the editor to the row indicated.",
             "params": [
                 {
@@ -11549,7 +11693,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1352,
+            "line": 1355,
             "description": "Gracefully scrolls the editor to the row indicated.",
             "params": [
                 {
@@ -11577,7 +11721,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1417,
+            "line": 1420,
             "description": "Scrolls the editor to the y pixel indicated.",
             "params": [
                 {
@@ -11590,7 +11734,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1430,
+            "line": 1433,
             "description": "Scrolls the editor across the x-axis to the pixel indicated.",
             "params": [
                 {
@@ -11603,7 +11747,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1441,
+            "line": 1444,
             "description": "Scrolls the editor across both x- and y-axes.",
             "params": [
                 {
@@ -11621,7 +11765,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1451,
+            "line": 1454,
             "description": "Scrolls the editor across both x- and y-axes.",
             "params": [
                 {
@@ -11639,7 +11783,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1461,
+            "line": 1464,
             "description": "Returns `true` if you can still scroll by either parameter; in other words, you haven't reached the end of the file or line.",
             "params": [
                 {
@@ -11661,7 +11805,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1502,
+            "line": 1505,
             "description": "Returns an object containing the `pageX` and `pageY` coordinates of the document position.",
             "params": [
                 {
@@ -11683,19 +11827,19 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1521,
+            "line": 1524,
             "description": "Focuses the current container.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1529,
+            "line": 1532,
             "description": "Blurs the current container.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1537,
+            "line": 1540,
             "itemtype": "method",
             "name": "showComposition",
             "params": [
@@ -11710,7 +11854,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1555,
+            "line": 1558,
             "params": [
                 {
                     "name": "text",
@@ -11722,13 +11866,13 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1565,
+            "line": 1568,
             "description": "Hides the current composition.",
             "class": "VirtualRenderer"
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1579,
+            "line": 1582,
             "description": "Sets a new theme for the editor.\n`theme` should exist, and be a directory path, like `ace/theme/textmate`.",
             "itemtype": "method",
             "name": "setTheme",
@@ -11752,7 +11896,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1642,
+            "line": 1645,
             "description": "Returns the path of the current theme.",
             "itemtype": "method",
             "name": "getTheme",
@@ -11764,7 +11908,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1656,
+            "line": 1659,
             "description": "[Adds a new class, `style`, to the editor.]{: #VirtualRenderer.setStyle}",
             "params": [
                 {
@@ -11777,7 +11921,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1665,
+            "line": 1668,
             "description": "[Removes the class `style` from the editor.]{: #VirtualRenderer.unsetStyle}",
             "params": [
                 {
@@ -11790,7 +11934,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1679,
+            "line": 1682,
             "params": [
                 {
                     "name": "cursorStyle",
@@ -11802,7 +11946,7 @@
         },
         {
             "file": "src/VirtualRenderer.ts",
-            "line": 1686,
+            "line": 1689,
             "description": "Destroys the text and cursor layers for this renderer.",
             "class": "VirtualRenderer"
         },
@@ -11917,23 +12061,23 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/jshint.ts:1357"
+            "line": " src/mode/javascript/jshint.ts:1372"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/jshint.ts:2832"
+            "line": " src/mode/javascript/jshint.ts:2847"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/jshint.ts:2975"
+            "line": " src/mode/javascript/jshint.ts:2990"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/jshint.ts:4885"
+            "line": " src/mode/javascript/jshint.ts:4900"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/jshint.ts:4898"
+            "line": " src/mode/javascript/jshint.ts:4913"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -11941,67 +12085,67 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/scope-manager.ts:181"
+            "line": " src/mode/javascript/scope-manager.ts:166"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/scope-manager.ts:552"
+            "line": " src/mode/javascript/scope-manager.ts:537"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/scope-manager.ts:577"
+            "line": " src/mode/javascript/scope-manager.ts:562"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/scope-manager.ts:722"
+            "line": " src/mode/javascript/scope-manager.ts:707"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/scope-manager.ts:748"
+            "line": " src/mode/javascript/scope-manager.ts:733"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src/mode/javascript/scope-manager.ts:791"
+            "line": " src/mode/javascript/scope-manager.ts:776"
         },
         {
             "message": "unknown tag: alias",
-            "line": " src/EditSession.ts:356"
+            "line": " src/EditSession.ts:357"
         },
         {
             "message": "unknown tag: alias",
-            "line": " src/EditSession.ts:367"
+            "line": " src/EditSession.ts:368"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:914"
+            "line": " src/EditSession.ts:911"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:925"
+            "line": " src/EditSession.ts:922"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:1236"
+            "line": " src/EditSession.ts:1233"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:1532"
+            "line": " src/EditSession.ts:1529"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:1545"
+            "line": " src/EditSession.ts:1542"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:2165"
+            "line": " src/EditSession.ts:2162"
         },
         {
             "message": "unknown tag: methos",
-            "line": " src/EditSession.ts:2212"
+            "line": " src/EditSession.ts:2209"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/EditSession.ts:2324"
+            "line": " src/EditSession.ts:2321"
         },
         {
             "message": "unknown tag: related",
@@ -12177,19 +12321,19 @@
         },
         {
             "message": "unknown tag: related",
-            "line": " src/VirtualRenderer.ts:62"
+            "line": " src/VirtualRenderer.ts:63"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/VirtualRenderer.ts:1277"
+            "line": " src/VirtualRenderer.ts:1280"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/VirtualRenderer.ts:1286"
+            "line": " src/VirtualRenderer.ts:1289"
         },
         {
             "message": "unknown tag: related",
-            "line": " src/VirtualRenderer.ts:1313"
+            "line": " src/VirtualRenderer.ts:1316"
         },
         {
             "message": "Missing item type",
@@ -12541,7 +12685,7 @@
         },
         {
             "message": "Missing item type\nReturns either \"markers\", \"foldWidgets\", or undefined.",
-            "line": " src/layer/Gutter.ts:264"
+            "line": " src/layer/Gutter.ts:265"
         },
         {
             "message": "Missing item type\nUsed in Web Workers.\nUses postMessage to communicate with a taget window.",
@@ -12912,60 +13056,136 @@
             "line": " src/mode/html/TreeBuilder.ts:2922"
         },
         {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:4"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:9"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:14"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:18"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:28"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:32"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:41"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:47"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:53"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/JSHintOptions.ts:57"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:64"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/JSHintOptions.ts:68"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/JSHintOptions.ts:73"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:96"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:100"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:106"
+        },
+        {
+            "message": "Missing item type\ndeprecated",
+            "line": " src/mode/javascript/JSHintOptions.ts:114"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src/mode/javascript/JSHintOptions.ts:122"
+        },
+        {
+            "message": "Missing item type\nDefines console, alert, etc.",
+            "line": " src/mode/javascript/JSHintOptions.ts:128"
+        },
+        {
             "message": "Missing item type\nTODO: Remove in JSHint 3",
-            "line": " src/mode/javascript/jshint.ts:190"
+            "line": " src/mode/javascript/jshint.ts:201"
         },
         {
             "message": "Missing item type\nUse `in` to check for the presence of any explicitly-specified value for\n`globalstrict` because both `true` and `false` should trigger an error.",
-            "line": " src/mode/javascript/jshint.ts:211"
+            "line": " src/mode/javascript/jshint.ts:222"
         },
         {
             "message": "Missing item type\nTODO: Extend this restriction to *all* ES6-specific options.",
-            "line": " src/mode/javascript/jshint.ts:223"
+            "line": " src/mode/javascript/jshint.ts:234"
         },
         {
             "message": "Missing item type\nTODO: Remove in JSHint 3",
-            "line": " src/mode/javascript/jshint.ts:545"
+            "line": " src/mode/javascript/jshint.ts:560"
         },
         {
             "message": "Missing item type\nTODO: Extend this restriction to *all* \"environmental\" options.",
-            "line": " src/mode/javascript/jshint.ts:668"
+            "line": " src/mode/javascript/jshint.ts:683"
         },
         {
             "message": "Missing item type\nTODO: Remove in JSHint 3",
-            "line": " src/mode/javascript/jshint.ts:676"
+            "line": " src/mode/javascript/jshint.ts:691"
         },
         {
             "message": "Missing item type\nChecks the left hand side of an assignment for issues, returns if ok",
-            "line": " src/mode/javascript/jshint.ts:1357"
+            "line": " src/mode/javascript/jshint.ts:1372"
         },
         {
             "message": "Missing item type",
-            "line": " src/mode/javascript/jshint.ts:2832"
+            "line": " src/mode/javascript/jshint.ts:2847"
         },
         {
             "message": "Missing item type\nDetermine if the parser has begun parsing executable code.",
-            "line": " src/mode/javascript/jshint.ts:2975"
+            "line": " src/mode/javascript/jshint.ts:2990"
         },
         {
             "message": "Missing item type",
-            "line": " src/mode/javascript/jshint.ts:3020"
+            "line": " src/mode/javascript/jshint.ts:3035"
         },
         {
             "message": "Missing item type",
-            "line": " src/mode/javascript/jshint.ts:3210"
+            "line": " src/mode/javascript/jshint.ts:3225"
         },
         {
             "message": "Missing item type",
-            "line": " src/mode/javascript/jshint.ts:4839"
+            "line": " src/mode/javascript/jshint.ts:4854"
         },
         {
             "message": "Missing item type\nTest whether a given token is a punctuator matching one of the specified values",
-            "line": " src/mode/javascript/jshint.ts:4885"
+            "line": " src/mode/javascript/jshint.ts:4900"
         },
         {
             "message": "Missing item type\nTest whether a given token is a punctuator matching the specified value",
-            "line": " src/mode/javascript/jshint.ts:4898"
+            "line": " src/mode/javascript/jshint.ts:4913"
         },
         {
             "message": "Missing item type\nCreate a new entry in the stack. Useful for tracking names across\nexpressions.",
@@ -13313,83 +13533,83 @@
         },
         {
             "message": "Missing item type\nCreates a scope manager that handles variables and labels, storing usages\nand resolving when variables are used and undefined",
-            "line": " src/mode/javascript/scope-manager.ts:28"
+            "line": " src/mode/javascript/scope-manager.ts:13"
         },
         {
             "message": "Missing item type\nChecks the current scope for unused identifiers",
-            "line": " src/mode/javascript/scope-manager.ts:126"
+            "line": " src/mode/javascript/scope-manager.ts:111"
         },
         {
             "message": "Missing item type\nChecks the current scope for unused parameters\nMust be called in a function parameter scope",
-            "line": " src/mode/javascript/scope-manager.ts:147"
+            "line": " src/mode/javascript/scope-manager.ts:132"
         },
         {
             "message": "Missing item type\nFinds the relevant label's scope, searching from nearest outwards",
-            "line": " src/mode/javascript/scope-manager.ts:181"
+            "line": " src/mode/javascript/scope-manager.ts:166"
         },
         {
             "message": "Missing item type\nTell the manager we are entering a new block of code",
-            "line": " src/mode/javascript/scope-manager.ts:257"
+            "line": " src/mode/javascript/scope-manager.ts:242"
         },
         {
             "message": "Missing item type\nAdd a param to the current scope",
-            "line": " src/mode/javascript/scope-manager.ts:461"
+            "line": " src/mode/javascript/scope-manager.ts:446"
         },
         {
             "message": "Missing item type\nGets an array of implied globals",
-            "line": " src/mode/javascript/scope-manager.ts:552"
+            "line": " src/mode/javascript/scope-manager.ts:537"
         },
         {
             "message": "Missing item type\nReturns a list of unused variables",
-            "line": " src/mode/javascript/scope-manager.ts:577"
+            "line": " src/mode/javascript/scope-manager.ts:562"
         },
         {
             "message": "Missing item type\nfor the exported options, indicating a variable is used outside the file",
-            "line": " src/mode/javascript/scope-manager.ts:598"
+            "line": " src/mode/javascript/scope-manager.ts:583"
         },
         {
             "message": "Missing item type\nMark an indentifier as es6 module exported",
-            "line": " src/mode/javascript/scope-manager.ts:626"
+            "line": " src/mode/javascript/scope-manager.ts:611"
         },
         {
             "message": "Missing item type\nadds an indentifier to the relevant current scope and creates warnings/errors as necessary",
-            "line": " src/mode/javascript/scope-manager.ts:633"
+            "line": " src/mode/javascript/scope-manager.ts:618"
         },
         {
             "message": "Missing item type\nReturns the label type given certain options",
-            "line": " src/mode/javascript/scope-manager.ts:722"
+            "line": " src/mode/javascript/scope-manager.ts:707"
         },
         {
             "message": "Missing item type\nReturns if a break label exists in the function scope",
-            "line": " src/mode/javascript/scope-manager.ts:748"
+            "line": " src/mode/javascript/scope-manager.ts:733"
         },
         {
             "message": "Missing item type\nReturns if the label is in the current function scope\nSee scopeManager.funct.labelType for options",
-            "line": " src/mode/javascript/scope-manager.ts:766"
+            "line": " src/mode/javascript/scope-manager.ts:751"
         },
         {
             "message": "Missing item type\nAdds a new function scoped variable\nsee block.add for block scoped",
-            "line": " src/mode/javascript/scope-manager.ts:774"
+            "line": " src/mode/javascript/scope-manager.ts:759"
         },
         {
             "message": "Missing item type\nis the current block global?",
-            "line": " src/mode/javascript/scope-manager.ts:791"
+            "line": " src/mode/javascript/scope-manager.ts:776"
         },
         {
             "message": "Missing item type\nAdds a new variable",
-            "line": " src/mode/javascript/scope-manager.ts:844"
+            "line": " src/mode/javascript/scope-manager.ts:829"
         },
         {
             "message": "Missing item type\nDetermine if the code currently being linted is strict mode code.",
-            "line": " src/mode/javascript/state.ts:36"
+            "line": " src/mode/javascript/state.ts:45"
         },
         {
             "message": "Missing item type",
-            "line": " src/mode/javascript/state.ts:50"
+            "line": " src/mode/javascript/state.ts:59"
         },
         {
             "message": "Missing item type",
-            "line": " src/mode/javascript/state.ts:61"
+            "line": " src/mode/javascript/state.ts:70"
         },
         {
             "message": "Missing item type",
@@ -13876,6 +14096,10 @@
             "line": " src/Anchor.ts:242"
         },
         {
+            "message": "Missing item type\n\"error\", \"info\", or \"warning\".",
+            "line": " src/Annotation.ts:7"
+        },
+        {
             "message": "Missing item type\nCreates a new `BackgroundTokenizer` object.",
             "line": " src/BackgroundTokenizer.ts:43"
         },
@@ -13913,315 +14137,307 @@
         },
         {
             "message": "Missing item type",
-            "line": " src/EditSession.ts:144"
+            "line": " src/EditSession.ts:145"
         },
         {
             "message": "Missing item type",
-            "line": " src/EditSession.ts:149"
+            "line": " src/EditSession.ts:150"
         },
         {
             "message": "Missing item type\nThe worker corresponding to the mode (i.e. Language).",
-            "line": " src/EditSession.ts:154"
+            "line": " src/EditSession.ts:155"
         },
         {
             "message": "Missing item type\nThis is a marker identifier.",
-            "line": " src/EditSession.ts:185"
+            "line": " src/EditSession.ts:186"
         },
         {
             "message": "Missing item type\nThis is really a Range with an added marker id.",
-            "line": " src/EditSession.ts:189"
+            "line": " src/EditSession.ts:190"
         },
         {
             "message": "Missing item type\nA number is a marker identifier, null indicates that no such marker exists.",
-            "line": " src/EditSession.ts:193"
+            "line": " src/EditSession.ts:194"
         },
         {
             "message": "Missing item type\nSet the number of spaces that define a soft tab.\nFor example, passing in `4` transforms the soft tabs to be equivalent to four spaces.\nThis function also emits the `changeTabSize` event.",
-            "line": " src/EditSession.ts:564"
+            "line": " src/EditSession.ts:565"
         },
         {
             "message": "Missing item type\nReturns the current tab size.",
-            "line": " src/EditSession.ts:574"
+            "line": " src/EditSession.ts:575"
         },
         {
             "message": "Missing item type\nReturns `true` if the character at the position is a soft tab.",
-            "line": " src/EditSession.ts:581"
+            "line": " src/EditSession.ts:582"
         },
         {
             "message": "Missing item type\nPass in `true` to enable overwrites in your session, or `false` to disable.\n\nIf overwrites is enabled, any text you enter will type over any text after it. If the value of `overwrite` changes, this function also emites the `changeOverwrite` event.",
-            "line": " src/EditSession.ts:591"
+            "line": " src/EditSession.ts:592"
         },
         {
             "message": "Missing item type\nReturns `true` if overwrites are enabled; `false` otherwise.",
-            "line": " src/EditSession.ts:604"
+            "line": " src/EditSession.ts:605"
         },
         {
             "message": "Missing item type\nSets the value of overwrite to the opposite of whatever it currently is.",
-            "line": " src/EditSession.ts:611"
+            "line": " src/EditSession.ts:612"
         },
         {
             "message": "Missing item type\nAdds `className` to the `row`, to be used for CSS stylings and whatnot.",
-            "line": " src/EditSession.ts:618"
+            "line": " src/EditSession.ts:619"
         },
         {
             "message": "Missing item type\nRemoves `className` from the `row`.",
-            "line": " src/EditSession.ts:631"
+            "line": " src/EditSession.ts:632"
         },
         {
             "message": "Missing item type\nReturns an array of numbers, indicating which rows have breakpoints.",
-            "line": " src/EditSession.ts:641"
+            "line": " src/EditSession.ts:642"
         },
         {
             "message": "Missing item type\nSets a breakpoint on every row number given by `rows`. This function also emites the `'changeBreakpoint'` event.",
-            "line": " src/EditSession.ts:649"
+            "line": " src/EditSession.ts:650"
         },
         {
             "message": "Missing item type\nRemoves all breakpoints on the rows. This function also emites the `'changeBreakpoint'` event.",
-            "line": " src/EditSession.ts:664"
+            "line": " src/EditSession.ts:665"
         },
         {
             "message": "Missing item type\nSets a breakpoint on the row number given by `rows`. This function also emites the `'changeBreakpoint'` event.",
-            "line": " src/EditSession.ts:672"
+            "line": " src/EditSession.ts:673"
         },
         {
             "message": "Missing item type\nRemoves a breakpoint on the row number given by `rows`. This function also emites the `'changeBreakpoint'` event.",
-            "line": " src/EditSession.ts:689"
+            "line": " src/EditSession.ts:690"
         },
         {
             "message": "Missing item type\nAdds a new marker to the given `Range`. If `inFront` is `true`, a front marker is defined, and the `'changeFrontMarker'` event fires; otherwise, the `'changeBackMarker'` event fires.",
-            "line": " src/EditSession.ts:700"
+            "line": " src/EditSession.ts:701"
         },
         {
             "message": "Missing item type\nAdds a dynamic marker to the session.",
-            "line": " src/EditSession.ts:735"
+            "line": " src/EditSession.ts:736"
         },
         {
             "message": "Missing item type\nRemoves the marker with the specified ID. If this marker was in front, the `'changeFrontMarker'` event is emitted. If the marker was in the back, the `'changeBackMarker'` event is emitted.",
-            "line": " src/EditSession.ts:761"
+            "line": " src/EditSession.ts:762"
         },
         {
             "message": "Missing item type\nReturns an array containing the IDs of all the markers, either front or back.",
-            "line": " src/EditSession.ts:780"
-        },
-        {
-            "message": "Missing item type\nSets annotations for the `EditSession`. This functions emits the `'changeAnnotation'` event.",
-            "line": " src/EditSession.ts:813"
-        },
-        {
-            "message": "Missing item type\nReturns the annotations for the `EditSession`.",
-            "line": " src/EditSession.ts:823"
+            "line": " src/EditSession.ts:781"
         },
         {
             "message": "Missing item type\nClears all the annotations for this session.\nThis function also triggers the `'changeAnnotation'` event.\nThis is called by the language modes when the worker terminates.",
-            "line": " src/EditSession.ts:831"
+            "line": " src/EditSession.ts:828"
         },
         {
             "message": "Missing item type\nIf `text` contains either the newline (`\\n`) or carriage-return ('\\r') characters, `$autoNewLine` stores that value.",
-            "line": " src/EditSession.ts:840"
+            "line": " src/EditSession.ts:837"
         },
         {
             "message": "Missing item type\nGiven a starting row and column, this method returns the `Range` of the first word boundary it finds.",
-            "line": " src/EditSession.ts:855"
+            "line": " src/EditSession.ts:852"
         },
         {
             "message": "Missing item type\nGets the range of a word, including its right whitespace.",
-            "line": " src/EditSession.ts:896"
+            "line": " src/EditSession.ts:893"
         },
         {
             "message": "Missing item type\n{:EditorDocument.setNewLineMode.desc}",
-            "line": " src/EditSession.ts:914"
+            "line": " src/EditSession.ts:911"
         },
         {
             "message": "Missing item type\nReturns the current new line mode.",
-            "line": " src/EditSession.ts:925"
+            "line": " src/EditSession.ts:922"
         },
         {
             "message": "Missing item type\nIdentifies if you want to use a worker for the `EditSession`.",
-            "line": " src/EditSession.ts:935"
+            "line": " src/EditSession.ts:932"
         },
         {
             "message": "Missing item type\nReturns `true` if workers are being used.",
-            "line": " src/EditSession.ts:942"
+            "line": " src/EditSession.ts:939"
         },
         {
             "message": "Missing item type\nReloads all the tokens on the current session. This function calls [[BackgroundTokenizer.start `BackgroundTokenizer.start ()`]] to all the rows; it also emits the `'tokenizerUpdate'` event.",
-            "line": " src/EditSession.ts:947"
+            "line": " src/EditSession.ts:944"
         },
         {
             "message": "Missing item type\nSets a new text mode for the `EditSession`. This method also emits the `'changeMode'` event. If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.",
-            "line": " src/EditSession.ts:957"
+            "line": " src/EditSession.ts:954"
         },
         {
             "message": "Missing item type\nReturns the current text mode.",
-            "line": " src/EditSession.ts:1076"
+            "line": " src/EditSession.ts:1073"
         },
         {
             "message": "Missing item type\nThis function sets the scroll top value. It also emits the `'changeScrollTop'` event.",
-            "line": " src/EditSession.ts:1084"
+            "line": " src/EditSession.ts:1081"
         },
         {
             "message": "Missing item type\n[Returns the value of the distance between the top of the editor and the topmost part of the visible content.]{: #EditSession.getScrollTop}",
-            "line": " src/EditSession.ts:1098"
+            "line": " src/EditSession.ts:1095"
         },
         {
             "message": "Missing item type\n[Sets the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.setScrollLeft}",
-            "line": " src/EditSession.ts:1106"
+            "line": " src/EditSession.ts:1103"
         },
         {
             "message": "Missing item type\n[Returns the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.getScrollLeft}",
-            "line": " src/EditSession.ts:1118"
+            "line": " src/EditSession.ts:1115"
         },
         {
             "message": "Missing item type\nReturns the width of the screen.",
-            "line": " src/EditSession.ts:1126"
+            "line": " src/EditSession.ts:1123"
         },
         {
             "message": "Missing item type\nReturns a verbatim copy of the given line as it is in the document",
-            "line": " src/EditSession.ts:1182"
+            "line": " src/EditSession.ts:1179"
         },
         {
             "message": "Missing item type\nReturns an array of strings of the rows between `firstRow` and `lastRow`. This function is inclusive of `lastRow`.",
-            "line": " src/EditSession.ts:1194"
+            "line": " src/EditSession.ts:1191"
         },
         {
             "message": "Missing item type\nReturns the number of rows in the document.",
-            "line": " src/EditSession.ts:1206"
+            "line": " src/EditSession.ts:1203"
         },
         {
             "message": "Missing item type\n{:EditorDocument.getTextRange.desc}",
-            "line": " src/EditSession.ts:1214"
+            "line": " src/EditSession.ts:1211"
         },
         {
             "message": "Missing item type\nInserts a block of `text` and the indicated `position`.",
-            "line": " src/EditSession.ts:1224"
+            "line": " src/EditSession.ts:1221"
         },
         {
             "message": "Missing item type\nRemoves the `range` from the document.",
-            "line": " src/EditSession.ts:1236"
+            "line": " src/EditSession.ts:1233"
         },
         {
             "message": "Missing item type\nReverts previous changes to your document.",
-            "line": " src/EditSession.ts:1248"
+            "line": " src/EditSession.ts:1245"
         },
         {
             "message": "Missing item type\nRe-implements a previously undone change to your document.",
-            "line": " src/EditSession.ts:1282"
+            "line": " src/EditSession.ts:1279"
         },
         {
             "message": "Missing item type\nEnables or disables highlighting of the range where an undo occurred.",
-            "line": " src/EditSession.ts:1312"
+            "line": " src/EditSession.ts:1309"
         },
         {
             "message": "Missing item type\nMoves a range of text from the given range to the given position. `toPosition` is an object that looks like this:\n ```json\n   { row: newRowLocation, column: newColumnLocation }\n ```",
-            "line": " src/EditSession.ts:1396"
+            "line": " src/EditSession.ts:1393"
         },
         {
             "message": "Missing item type\nIndents all the rows, from `startRow` to `endRow` (inclusive), by prefixing each row with the token in `indentString`.\n\nIf `indentString` contains the `'\\t'` character, it's replaced by whatever is defined by [[EditSession.getTabString `getTabString()`]].",
-            "line": " src/EditSession.ts:1456"
+            "line": " src/EditSession.ts:1453"
         },
         {
             "message": "Missing item type\nOutdents all the rows defined by the `start` and `end` properties of `range`.",
-            "line": " src/EditSession.ts:1472"
+            "line": " src/EditSession.ts:1469"
         },
         {
             "message": "Missing item type\nShifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.",
-            "line": " src/EditSession.ts:1532"
+            "line": " src/EditSession.ts:1529"
         },
         {
             "message": "Missing item type\nShifts all the lines in the document down one, starting from `firstRow` and ending at `lastRow`.",
-            "line": " src/EditSession.ts:1545"
+            "line": " src/EditSession.ts:1542"
         },
         {
             "message": "Missing item type\nDuplicates all the text between `firstRow` and `lastRow`.",
-            "line": " src/EditSession.ts:1557"
+            "line": " src/EditSession.ts:1554"
         },
         {
             "message": "Missing item type\nSets whether or not line wrapping is enabled. If `useWrapMode` is different than the current value, the `'changeWrapMode'` event is emitted.",
-            "line": " src/EditSession.ts:1631"
+            "line": " src/EditSession.ts:1628"
         },
         {
             "message": "Missing item type\nReturns `true` if wrap mode is being used; `false` otherwise.",
-            "line": " src/EditSession.ts:1654"
+            "line": " src/EditSession.ts:1651"
         },
         {
             "message": "Missing item type\nSets the boundaries of wrap. Either value can be `null` to have an unconstrained wrap, or, they can be the same number to pin the limit. If the wrap limits for `min` or `max` are different, this method also emits the `'changeWrapMode'` event.",
-            "line": " src/EditSession.ts:1666"
+            "line": " src/EditSession.ts:1663"
         },
         {
             "message": "Missing item type\nThis should generally only be called by the renderer when a resize is detected.",
-            "line": " src/EditSession.ts:1685"
+            "line": " src/EditSession.ts:1682"
         },
         {
             "message": "Missing item type\nReturns the value of wrap limit.",
-            "line": " src/EditSession.ts:1720"
+            "line": " src/EditSession.ts:1717"
         },
         {
             "message": "Missing item type\nSets the line length for soft wrap in the editor. Lines will break\n at a minimum of the given length minus 20 chars and at a maximum\n of the given number of chars.",
-            "line": " src/EditSession.ts:1728"
+            "line": " src/EditSession.ts:1725"
         },
         {
             "message": "Missing item type\nReturns an object that defines the minimum and maximum of the wrap limit; it looks something like this:\n\n    { min: wrapLimitRange_min, max: wrapLimitRange_max }",
-            "line": " src/EditSession.ts:1738"
+            "line": " src/EditSession.ts:1735"
         },
         {
             "message": "Missing item type\nGiven a string, returns an array of the display characters, including tabs and spaces.",
-            "line": " src/EditSession.ts:2047"
+            "line": " src/EditSession.ts:2044"
         },
         {
             "message": "Missing item type\nCalculates the width of the string `str` on the screen while assuming that the string starts at the first column on the screen.",
-            "line": " src/EditSession.ts:2087"
+            "line": " src/EditSession.ts:2084"
         },
         {
             "message": "Missing item type\nReturns number of screenrows in a wrapped line.",
-            "line": " src/EditSession.ts:2126"
+            "line": " src/EditSession.ts:2123"
         },
         {
             "message": "Missing item type\nReturns the position (on screen) for the last character in the provided screen row.",
-            "line": " src/EditSession.ts:2165"
+            "line": " src/EditSession.ts:2162"
         },
         {
             "message": "Missing item type\nFor the given document row and column, this returns the column position of the last screen row.",
-            "line": " src/EditSession.ts:2177"
+            "line": " src/EditSession.ts:2174"
         },
         {
             "message": "Missing item type\nFor the given document row and column, this returns the document position of the last row.",
-            "line": " src/EditSession.ts:2188"
+            "line": " src/EditSession.ts:2185"
         },
         {
             "message": "Missing item type\nFor the given row, this returns the split data.",
-            "line": " src/EditSession.ts:2200"
+            "line": " src/EditSession.ts:2197"
         },
         {
             "message": "Missing item type\nThe distance to the next tab stop at the specified screen column.",
-            "line": " src/EditSession.ts:2212"
+            "line": " src/EditSession.ts:2209"
         },
         {
             "message": "Missing item type\nConverts characters coordinates on the screen to characters coordinates within the document. [This takes into account code folding, word wrap, tab size, and any other visual modifications.]{: #conversionConsiderations}",
-            "line": " src/EditSession.ts:2232"
+            "line": " src/EditSession.ts:2229"
         },
         {
             "message": "Missing item type\nConverts document coordinates to screen coordinates. {:conversionConsiderations}",
-            "line": " src/EditSession.ts:2324"
+            "line": " src/EditSession.ts:2321"
         },
         {
             "message": "Missing item type\nFor the given document row and column, returns the screen column.",
-            "line": " src/EditSession.ts:2427"
+            "line": " src/EditSession.ts:2424"
         },
         {
             "message": "Missing item type\nFor the given document row and column, returns the screen row.",
-            "line": " src/EditSession.ts:2438"
+            "line": " src/EditSession.ts:2435"
         },
         {
             "message": "Missing item type\nReturns the length of the screen.",
-            "line": " src/EditSession.ts:2453"
+            "line": " src/EditSession.ts:2450"
         },
         {
             "message": "Missing item type",
-            "line": " src/EditSession.ts:2496"
+            "line": " src/EditSession.ts:2493"
         },
         {
             "message": "Missing item type\nAdds a new fold.",
-            "line": " src/EditSession.ts:2745"
+            "line": " src/EditSession.ts:2742"
         },
         {
             "message": "Missing item type\nThe renderer container element.",
@@ -15101,223 +15317,219 @@
         },
         {
             "message": "Missing item type\nThe loaded theme object. This allows us to remove a theme.",
-            "line": " src/VirtualRenderer.ts:96"
+            "line": " src/VirtualRenderer.ts:97"
         },
         {
             "message": "Missing item type\nTriggers a partial update of the text, from the range given by the two parameters.",
-            "line": " src/VirtualRenderer.ts:341"
+            "line": " src/VirtualRenderer.ts:342"
         },
         {
             "message": "Missing item type\nTriggers a full update of the text, for all the rows.",
-            "line": " src/VirtualRenderer.ts:413"
+            "line": " src/VirtualRenderer.ts:414"
         },
         {
             "message": "Missing item type\nTriggers a full update of all the layers, for all the rows.",
-            "line": " src/VirtualRenderer.ts:420"
+            "line": " src/VirtualRenderer.ts:421"
         },
         {
             "message": "Missing item type\nUpdates the font size.",
-            "line": " src/VirtualRenderer.ts:431"
+            "line": " src/VirtualRenderer.ts:432"
         },
         {
             "message": "Missing item type\n[Triggers a resize of the editor.]{: #VirtualRenderer.onResize}",
-            "line": " src/VirtualRenderer.ts:447"
+            "line": " src/VirtualRenderer.ts:448"
         },
         {
             "message": "Missing item type\nAdjusts the wrap limit, which is the number of characters that can fit within the width of the edit area on screen.",
-            "line": " src/VirtualRenderer.ts:553"
+            "line": " src/VirtualRenderer.ts:554"
         },
         {
             "message": "Missing item type\nIdentifies whether you want to show invisible characters or not.",
-            "line": " src/VirtualRenderer.ts:583"
+            "line": " src/VirtualRenderer.ts:584"
         },
         {
             "message": "Missing item type\nReturns whether invisible characters are being shown or not.",
-            "line": " src/VirtualRenderer.ts:591"
+            "line": " src/VirtualRenderer.ts:592"
         },
         {
             "message": "Missing item type\nIdentifies whether you want to show the print margin or not.",
-            "line": " src/VirtualRenderer.ts:607"
+            "line": " src/VirtualRenderer.ts:608"
         },
         {
             "message": "Missing item type\nReturns whether the print margin is being shown or not.",
-            "line": " src/VirtualRenderer.ts:616"
+            "line": " src/VirtualRenderer.ts:617"
         },
         {
             "message": "Missing item type\nSets the column defining where the print margin should be.",
-            "line": " src/VirtualRenderer.ts:624"
+            "line": " src/VirtualRenderer.ts:625"
         },
         {
             "message": "Missing item type\nReturns the column number of where the print margin is.",
-            "line": " src/VirtualRenderer.ts:632"
+            "line": " src/VirtualRenderer.ts:633"
         },
         {
             "message": "Missing item type\nReturns `true` if the gutter is being shown.",
-            "line": " src/VirtualRenderer.ts:640"
+            "line": " src/VirtualRenderer.ts:641"
         },
         {
             "message": "Missing item type\nIdentifies whether you want to show the gutter or not.",
-            "line": " src/VirtualRenderer.ts:648"
+            "line": " src/VirtualRenderer.ts:649"
         },
         {
             "message": "Missing item type\nReturns the root element containing this renderer.",
-            "line": " src/VirtualRenderer.ts:707"
+            "line": " src/VirtualRenderer.ts:708"
         },
         {
             "message": "Missing item type\nReturns the element that the mouse events are attached to",
-            "line": " src/VirtualRenderer.ts:716"
+            "line": " src/VirtualRenderer.ts:717"
         },
         {
             "message": "Missing item type\nReturns the element to which the hidden text area is added.",
-            "line": " src/VirtualRenderer.ts:725"
+            "line": " src/VirtualRenderer.ts:726"
         },
         {
             "message": "Missing item type\n[Returns the index of the first visible row.]{: #VirtualRenderer.getFirstVisibleRow}",
-            "line": " src/VirtualRenderer.ts:767"
+            "line": " src/VirtualRenderer.ts:768"
         },
         {
             "message": "Missing item type\nReturns the index of the first fully visible row. \"Fully\" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.",
-            "line": " src/VirtualRenderer.ts:776"
+            "line": " src/VirtualRenderer.ts:777"
         },
         {
             "message": "Missing item type\nReturns the index of the last fully visible row. \"Fully\" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.",
-            "line": " src/VirtualRenderer.ts:785"
+            "line": " src/VirtualRenderer.ts:786"
         },
         {
             "message": "Missing item type\n[Returns the index of the last visible row.]{: #VirtualRenderer.getLastVisibleRow}",
-            "line": " src/VirtualRenderer.ts:795"
+            "line": " src/VirtualRenderer.ts:796"
         },
         {
             "message": "Missing item type\nSets the padding for all the layers.",
-            "line": " src/VirtualRenderer.ts:804"
+            "line": " src/VirtualRenderer.ts:805"
         },
         {
             "message": "Missing item type\nReturns whether the horizontal scrollbar is set to be always visible.",
-            "line": " src/VirtualRenderer.ts:831"
+            "line": " src/VirtualRenderer.ts:832"
         },
         {
             "message": "Missing item type\nIdentifies whether you want to show the horizontal scrollbar or not.",
-            "line": " src/VirtualRenderer.ts:840"
+            "line": " src/VirtualRenderer.ts:841"
         },
         {
             "message": "Missing item type\nReturns whether the vertical scrollbar is set to be always visible.",
-            "line": " src/VirtualRenderer.ts:848"
+            "line": " src/VirtualRenderer.ts:849"
         },
         {
             "message": "Missing item type\nIdentifies whether you want to show the vertical scrollbar or not.",
-            "line": " src/VirtualRenderer.ts:856"
+            "line": " src/VirtualRenderer.ts:857"
         },
         {
             "message": "Missing item type\nSchedules an update to all the front markers in the document.",
-            "line": " src/VirtualRenderer.ts:1164"
+            "line": " src/VirtualRenderer.ts:1165"
         },
         {
             "message": "Missing item type\nSchedules an update to all the back markers in the document.",
-            "line": " src/VirtualRenderer.ts:1173"
+            "line": " src/VirtualRenderer.ts:1174"
         },
         {
             "message": "Missing item type\nRedraw breakpoints.",
-            "line": " src/VirtualRenderer.ts:1182"
-        },
-        {
-            "message": "Missing item type\nSets annotations for the gutter.",
-            "line": " src/VirtualRenderer.ts:1190"
+            "line": " src/VirtualRenderer.ts:1183"
         },
         {
             "message": "Missing item type\nUpdates the cursor icon.",
-            "line": " src/VirtualRenderer.ts:1200"
+            "line": " src/VirtualRenderer.ts:1203"
         },
         {
             "message": "Missing item type\nHides the cursor icon.",
-            "line": " src/VirtualRenderer.ts:1208"
+            "line": " src/VirtualRenderer.ts:1211"
         },
         {
             "message": "Missing item type\nShows the cursor icon.",
-            "line": " src/VirtualRenderer.ts:1216"
+            "line": " src/VirtualRenderer.ts:1219"
         },
         {
             "message": "Missing item type\nScrolls the cursor into the first visibile area of the editor",
-            "line": " src/VirtualRenderer.ts:1230"
+            "line": " src/VirtualRenderer.ts:1233"
         },
         {
             "message": "Missing item type\n{:EditSession.getScrollTop}",
-            "line": " src/VirtualRenderer.ts:1277"
+            "line": " src/VirtualRenderer.ts:1280"
         },
         {
             "message": "Missing item type\n{:EditSession.getScrollLeft}",
-            "line": " src/VirtualRenderer.ts:1286"
+            "line": " src/VirtualRenderer.ts:1289"
         },
         {
             "message": "Missing item type\nReturns the first visible row, regardless of whether it's fully visible or not.",
-            "line": " src/VirtualRenderer.ts:1295"
+            "line": " src/VirtualRenderer.ts:1298"
         },
         {
             "message": "Missing item type\nReturns the last visible row, regardless of whether it's fully visible or not.",
-            "line": " src/VirtualRenderer.ts:1304"
+            "line": " src/VirtualRenderer.ts:1307"
         },
         {
             "message": "Missing item type\nGracefully scrolls from the top of the editor to the row indicated.",
-            "line": " src/VirtualRenderer.ts:1313"
+            "line": " src/VirtualRenderer.ts:1316"
         },
         {
             "message": "Missing item type\nGracefully scrolls the editor to the row indicated.",
-            "line": " src/VirtualRenderer.ts:1352"
+            "line": " src/VirtualRenderer.ts:1355"
         },
         {
             "message": "Missing item type\nScrolls the editor to the y pixel indicated.",
-            "line": " src/VirtualRenderer.ts:1417"
+            "line": " src/VirtualRenderer.ts:1420"
         },
         {
             "message": "Missing item type\nScrolls the editor across the x-axis to the pixel indicated.",
-            "line": " src/VirtualRenderer.ts:1430"
+            "line": " src/VirtualRenderer.ts:1433"
         },
         {
             "message": "Missing item type\nScrolls the editor across both x- and y-axes.",
-            "line": " src/VirtualRenderer.ts:1441"
+            "line": " src/VirtualRenderer.ts:1444"
         },
         {
             "message": "Missing item type\nScrolls the editor across both x- and y-axes.",
-            "line": " src/VirtualRenderer.ts:1451"
+            "line": " src/VirtualRenderer.ts:1454"
         },
         {
             "message": "Missing item type\nReturns `true` if you can still scroll by either parameter; in other words, you haven't reached the end of the file or line.",
-            "line": " src/VirtualRenderer.ts:1461"
+            "line": " src/VirtualRenderer.ts:1464"
         },
         {
             "message": "Missing item type\nReturns an object containing the `pageX` and `pageY` coordinates of the document position.",
-            "line": " src/VirtualRenderer.ts:1502"
+            "line": " src/VirtualRenderer.ts:1505"
         },
         {
             "message": "Missing item type\nFocuses the current container.",
-            "line": " src/VirtualRenderer.ts:1521"
+            "line": " src/VirtualRenderer.ts:1524"
         },
         {
             "message": "Missing item type\nBlurs the current container.",
-            "line": " src/VirtualRenderer.ts:1529"
+            "line": " src/VirtualRenderer.ts:1532"
         },
         {
             "message": "Missing item type",
-            "line": " src/VirtualRenderer.ts:1555"
+            "line": " src/VirtualRenderer.ts:1558"
         },
         {
             "message": "Missing item type\nHides the current composition.",
-            "line": " src/VirtualRenderer.ts:1565"
+            "line": " src/VirtualRenderer.ts:1568"
         },
         {
             "message": "Missing item type\n[Adds a new class, `style`, to the editor.]{: #VirtualRenderer.setStyle}",
-            "line": " src/VirtualRenderer.ts:1656"
+            "line": " src/VirtualRenderer.ts:1659"
         },
         {
             "message": "Missing item type\n[Removes the class `style` from the editor.]{: #VirtualRenderer.unsetStyle}",
-            "line": " src/VirtualRenderer.ts:1665"
+            "line": " src/VirtualRenderer.ts:1668"
         },
         {
             "message": "Missing item type",
-            "line": " src/VirtualRenderer.ts:1679"
+            "line": " src/VirtualRenderer.ts:1682"
         },
         {
             "message": "Missing item type\nDestroys the text and cursor layers for this renderer.",
-            "line": " src/VirtualRenderer.ts:1686"
+            "line": " src/VirtualRenderer.ts:1689"
         },
         {
             "message": "Missing item type\nImplementation of the Completer interface.",

@@ -104,8 +104,8 @@ export default class JavaScriptMode extends Mode {
             worker.attachToDocument(session.getDocument());
         });
 
-        worker.on("jslint", function(results) {
-            session.setAnnotations(results.data);
+        worker.on("errors", function(errors) {
+            session.setAnnotations(errors.data);
         });
 
         worker.on("terminate", function() {

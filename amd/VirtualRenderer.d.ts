@@ -1,3 +1,4 @@
+import Annotation from './Annotation';
 import Gutter from "./layer/Gutter";
 import Text from "./layer/Text";
 import Cursor from "./layer/Cursor";
@@ -330,11 +331,13 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     **/
     updateBreakpoints(): void;
     /**
-    *
-    * Sets annotations for the gutter.
-    * @param {Array} annotations An array containing annotations
-    **/
-    setAnnotations(annotations: any): void;
+     * Sets annotations for the gutter.
+     *
+     * @method setAnnotations
+     * @param {Annotation[]} annotations An array containing annotations.
+     * @return {void}
+     */
+    setAnnotations(annotations: Annotation[]): void;
     /**
     *
     * Updates the cursor icon.

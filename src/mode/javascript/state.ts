@@ -1,13 +1,14 @@
 "use strict";
 import NameStack from "./name-stack";
+import JSHintOptions from "./JSHintOptions";
 
 export var state: {
-    option;
+    option: JSHintOptions;
     cache: {};
     condition: boolean;
     directive: {};
     funct;
-    ignored: {};
+    ignored: { [line: string]: boolean };
     tab: string;
     lines: string[];
     syntax: { [name: string]: any };
@@ -18,7 +19,7 @@ export var state: {
     inES6: (strict?: boolean) => boolean;
     inES5: (strict?: boolean) => boolean;
     inClassBody: boolean;
-    ignoredLines: {},
+    ignoredLines: { [line: string]: boolean },
     jsonMode: boolean;
     nameStack: NameStack;
     reset: () => void;

@@ -135,6 +135,7 @@
 import {mixin} from &quot;./lib/oop&quot;;
 import {delayedCall, stringRepeat} from &quot;./lib/lang&quot;;
 import {_signal, defineOptions, loadModule, resetOptions} from &quot;./config&quot;;
+import Annotation from &#x27;./Annotation&#x27;;
 import EventEmitterClass from &quot;./lib/event_emitter&quot;;
 import FoldLine from &quot;./FoldLine&quot;;
 import Fold from &quot;./Fold&quot;;
@@ -240,7 +241,7 @@ export default class EditSession extends EventEmitterClass {
     private $rowLengthCache;
     private $overwrite = false;
     public $searchHighlight: SearchHighlight;
-    private $annotations;
+    private $annotations: Annotation[];
     private $autoNewLine;
     private getOption;
     private setOption;
@@ -905,30 +906,26 @@ export default class EditSession extends EventEmitterClass {
         return range;
     }
 
-    /*
-     * Error:
-     *  {
-     *    row: 12,
-     *    column: 2, //can be undefined
-     *    text: &quot;Missing argument&quot;,
-     *    type: &quot;error&quot; // or &quot;warning&quot; or &quot;info&quot;
-     *  }
-     */
     /**
-    * Sets annotations for the &#x60;EditSession&#x60;. This functions emits the &#x60;&#x27;changeAnnotation&#x27;&#x60; event.
-    * @param {Array} annotations A list of annotations
-    *
-    **/
-    public setAnnotations(annotations) {
+     * Sets annotations for the &#x60;EditSession&#x60;.
+     * This functions emits the &#x60;&#x27;changeAnnotation&#x27;&#x60; event.
+     *
+     * @method setAnnotations
+     * @param {Annotation[]} annotations A list of annotations.
+     * @return {void}
+     */
+    public setAnnotations(annotations: Annotation[]): void {
         this.$annotations = annotations;
         this._signal(&quot;changeAnnotation&quot;, {});
     }
 
     /**
-    * Returns the annotations for the &#x60;EditSession&#x60;.
-    * @return {Array}
-    **/
-    public getAnnotations = function() {
+     * Returns the annotations for the &#x60;EditSession&#x60;.
+     *
+     * @method getAnnotations
+     * @return {Annotation[]}
+     */
+    public getAnnotations(): Annotation[] {
         return this.$annotations || [];
     }
 

@@ -1,3 +1,4 @@
+import Annotation from './Annotation';
 import EventEmitterClass from "./lib/event_emitter";
 import FoldLine from "./FoldLine";
 import Fold from "./Fold";
@@ -370,16 +371,21 @@ export default class EditSession extends EventEmitterClass {
     highlight(re: RegExp): void;
     private highlightLines(startRow, endRow, clazz?, inFront?);
     /**
-    * Sets annotations for the `EditSession`. This functions emits the `'changeAnnotation'` event.
-    * @param {Array} annotations A list of annotations
-    *
-    **/
-    setAnnotations(annotations: any): void;
+     * Sets annotations for the `EditSession`.
+     * This functions emits the `'changeAnnotation'` event.
+     *
+     * @method setAnnotations
+     * @param {Annotation[]} annotations A list of annotations.
+     * @return {void}
+     */
+    setAnnotations(annotations: Annotation[]): void;
     /**
-    * Returns the annotations for the `EditSession`.
-    * @return {Array}
-    **/
-    getAnnotations: () => any;
+     * Returns the annotations for the `EditSession`.
+     *
+     * @method getAnnotations
+     * @return {Annotation[]}
+     */
+    getAnnotations(): Annotation[];
     /**
      * Clears all the annotations for this session.
      * This function also triggers the `'changeAnnotation'` event.

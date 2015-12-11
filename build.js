@@ -17,7 +17,13 @@ requirejs.config({
 
   // files to include along with almond.  only deuce is defined, as
   // it pulls in the rest of the dependencies automatically.
-  include: ["deuce", "mode/HtmlMode", "mode/HtmlWorker"],
+  include: [
+  "deuce",
+  "mode/HtmlMode",
+  "mode/HtmlWorker",
+  "mode/JavaScriptMode",
+  "mode/JavaScriptWorker"
+],
 
   // code to wrap around the start / end of the resulting build file
   // the global variable used to expose the API is defined here

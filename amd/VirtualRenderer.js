@@ -969,10 +969,12 @@ define(["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./lay
             this.$loop.schedule(CHANGE_GUTTER);
         };
         /**
-        *
-        * Sets annotations for the gutter.
-        * @param {Array} annotations An array containing annotations
-        **/
+         * Sets annotations for the gutter.
+         *
+         * @method setAnnotations
+         * @param {Annotation[]} annotations An array containing annotations.
+         * @return {void}
+         */
         VirtualRenderer.prototype.setAnnotations = function (annotations) {
             this.$gutterLayer.setAnnotations(annotations);
             this.$loop.schedule(CHANGE_GUTTER);

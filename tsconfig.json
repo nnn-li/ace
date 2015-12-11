@@ -84,6 +84,7 @@
     "./src/mode/html/messages.ts",
 
     "./src/mode/javascript/EventEmitter.ts",
+    "./src/mode/javascript/JSHintOptions.ts",
     "./src/mode/javascript/ascii-identifier-data.ts",
     "./src/mode/javascript/jshint.ts",
     "./src/mode/javascript/lex.ts",
@@ -140,6 +141,7 @@
     "./src/worker/worker-systemjs.ts",
 
     "./src/Anchor.ts",
+    "./src/Annotation.ts",
     "./src/BackgroundTokenizer.ts",
     "./src/Change.ts",
     "./src/CursorRange.ts",

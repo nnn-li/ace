@@ -36,11 +36,12 @@ removeCssClass} from "../lib/dom";
 import {escapeHTML} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
 import EditSession from "../EditSession";
+import Annotation from "../Annotation";
 
 export default class Gutter extends EventEmitterClass {
     public element: HTMLDivElement;
     public gutterWidth = 0;
-    public $annotations = [];
+    public $annotations: any[] = [];
     public $cells: { element; textNode; foldWidget }[] = [];
     private $fixedWidth = false;
     private $showLineNumbers = true;
@@ -64,16 +65,16 @@ export default class Gutter extends EventEmitterClass {
         session.on("change", this.$updateAnnotations);
     }
 
-    // FIXME: The text and html appear to be optional.
-    setAnnotations(annotations: { html: string; row: number; text: string; type: string }[]) {
+    setAnnotations(annotations: Annotation[]) {
         // iterate over sparse array
         this.$annotations = [];
         for (var i = 0; i < annotations.length; i++) {
             var annotation = annotations[i];
             var row = annotation.row;
             var rowInfo = this.$annotations[row];
-            if (!rowInfo)
+            if (!rowInfo) {
                 rowInfo = this.$annotations[row] = { text: [] };
+            }
 
             var annoText = annotation.text;
             annoText = annoText ? escapeHTML(annoText) : annotation.html || "";

@@ -1,29 +1,14 @@
 "use strict";
 
 import EventEmitter from './EventEmitter';
+import has from "../../fp/has";
+import sliceArgs from "../../fp/sliceArgs";
+import findLastIndex from "../../fp/findLastIndex";
 
 // Used to denote membership in lookup tables (a primitive value such as `true`
 // would be silently rejected for the property name "__proto__" in some
 // environments)
 var marker = {};
-
-function has(obj: {}, name: string): boolean {
-    return obj.hasOwnProperty(name)
-}
-
-function slice<T>(array: T[], start = 0, end = array.length): T[] {
-    return array.slice(start, end);
-}
-
-function findLastIndex<T>(xs: T[], callback: (x: T) => boolean): number {
-    for (var i = xs.length - 1; i >= 0; i--) {
-        var x = xs[i];
-        if (callback(x)) {
-            return i;
-        }
-    }
-    return -1;
-}
 
 /**
  * Creates a scope manager that handles variables and labels, storing usages
@@ -60,7 +45,7 @@ export var scopeManager = function(state, predefined, exported, declared) {
         emitter.emit("warning", {
             code: code,
             token: token,
-            data: slice(<any>arguments, 2)
+            data: sliceArgs(arguments, 2)
         });
     }
 
@@ -68,7 +53,7 @@ export var scopeManager = function(state, predefined, exported, declared) {
         emitter.emit("warning", {
             code: code,
             token: token,
-            data: slice(<any>arguments, 2)
+            data: sliceArgs(arguments, 2)
         });
     }
 

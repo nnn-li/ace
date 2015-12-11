@@ -135,15 +135,25 @@
 /*jshint quotmark:double */
 /*global console:true */
 /*exported console */
+import JSHintOptions from &#x27;./JSHintOptions&#x27;;
 import EventEmitter from &quot;./EventEmitter&quot;;
-import {browser, browserify, couch, devel, dojo, ecmaIdentifiers, jasmine, jquery, mocha, mootools, node, nonstandard, phantom, prototypejs, qunit, rhino, shelljs, typed, worker, wsh, yui} from &quot;./vars&quot;;
+import {browser, browserify, couch, devel, dojo, ecmaIdentifiers, jasmine, jquery, mocha, mootools, node, nonstandard, phantom, prototypejs, qunit, reservedVars, rhino, shelljs, typed, worker, wsh, yui} from &quot;./vars&quot;;
 import {errors, info, warnings} from &quot;./messages&quot;;
 import Lexer from &quot;./lex&quot;;
-import {} from &quot;./reg&quot;;
+import {identifierRegExp, javascriptURL} from &quot;./reg&quot;;
 import {state} from &quot;./state&quot;;
 import {register} from &quot;./style&quot;;
 import {bool, inverted, noenforceall, removed, renamed, validNames} from &quot;./options&quot;;
 import {scopeManager} from &quot;./scope-manager&quot;;
+import contains from &quot;../../fp/contains&quot;;
+import clone from &quot;../../fp/clone&quot;;
+import each from &quot;../../fp/each&quot;;
+import extend from &quot;../../fp/extend&quot;;
+import has from &quot;../../fp/has&quot;;
+import isEmpty from &quot;../../fp/isEmpty&quot;;
+import isNumber from &quot;../../fp/isNumber&quot;;
+import reject from &quot;../../fp/reject&quot;;
+import zip from &quot;../../fp/zip&quot;;
 
 // We need this module here because environments such as IE and Rhino
 // don&#x27;t necessarilly expose the &#x27;console&#x27; API and browserify uses
@@ -154,7 +164,8 @@ import {scopeManager} from &quot;./scope-manager&quot;;
 // variable. That function will be invoked immediately, and its return value is
 // the JSHINT function itself.
 
-export var JSHINT = (function() {
+// Throw away the type information because JSHINT is both a function with attributes!
+export var JSHINT: any = (function() {
     &quot;use strict&quot;;
 
     var api, // Extension API
@@ -207,7 +218,7 @@ export var JSHINT = (function() {
         }
 
         if (validNames.indexOf(name) === -1) {
-            if (t.type !== &quot;jslint&quot; &amp;&amp; !_.has(removed, name)) {
+            if (t.type !== &quot;jslint&quot; &amp;&amp; !has(removed, name)) {
                 error(&quot;E001&quot;, t, name);
                 return false;
             }
@@ -267,7 +278,7 @@ export var JSHINT = (function() {
 
     function combine(dest, src) {
         Object.keys(src).forEach(function(name) {
-            if (_.has(JSHINT.blacklist, name)) return;
+            if (has(JSHINT.blacklist, name)) return;
             dest[name] = src[name];
         });
     }
@@ -443,7 +454,8 @@ export var JSHINT = (function() {
             raw: message,
             code: code,
             a: a,
-            b: b
+            b: b,
+            reason: void 0
         };
 
         exception.reason = supplant(message, exception) + &quot; (&quot; + percentage +
@@ -453,10 +465,13 @@ export var JSHINT = (function() {
     }
 
     function removeIgnoredMessages() {
-        var ignored = state.ignoredLines;
+        var ignored: { [line: string]: boolean } = state.ignoredLines;
 
-        if (_.isEmpty(ignored)) return;
-        JSHINT.errors = _.reject(JSHINT.errors, function(err) { return ignored[err.line] });
+        if (isEmpty(ignored)) {
+            return;
+        }
+        var errors: {}[] = JSHINT.errors;
+        JSHINT.errors = reject(errors, function(err: { line: string }) { return ignored[err.line] });
     }
 
     function warning(code: string, t?, a?, b?, c?, d?) {
@@ -570,7 +585,7 @@ export var JSHINT = (function() {
             combine(predefined, predef);
 
             for (var key in predef) {
-                if (_.has(predef, key)) {
+                if (has(predef, key)) {
                     declared[key] = nt;
                 }
             }
@@ -785,7 +800,7 @@ export var JSHINT = (function() {
                     es5: 5,
                     esnext: 6
                 };
-                if (_.has(esversions, key)) {
+                if (has(esversions, key)) {
                     switch (val) {
                         case &quot;true&quot;:
                             state.option.moz = false;
@@ -1019,8 +1034,8 @@ export var JSHINT = (function() {
         var isDangerous =
             state.option.asi &amp;&amp;
             state.tokens.prev.line !== startLine(state.tokens.curr) &amp;&amp;
-            _.contains([&quot;]&quot;, &quot;)&quot;], state.tokens.prev.id) &amp;&amp;
-            _.contains([&quot;[&quot;, &quot;(&quot;], state.tokens.curr.id);
+            contains([&quot;]&quot;, &quot;)&quot;], state.tokens.prev.id) &amp;&amp;
+            contains([&quot;[&quot;, &quot;(&quot;], state.tokens.curr.id);
 
         if (isDangerous)
             warning(&quot;W014&quot;, state.tokens.curr, state.tokens.curr.id);
@@ -1116,9 +1131,9 @@ export var JSHINT = (function() {
     function nobreakcomma(left, right) {
         if (left.line !== startLine(right)) {
             if (!state.option.laxcomma) {
-                if (comma.first) {
+                if (comma[&#x27;first&#x27;]) {
                     warning(&quot;I001&quot;);
-                    comma.first = false;
+                    comma[&#x27;first&#x27;] = false;
                 }
                 warning(&quot;W014&quot;, left, right.value);
             }
@@ -1223,7 +1238,7 @@ export var JSHINT = (function() {
         return x;
     }
 
-    function prefix(s, f) {
+    function prefix(s: string, f?) {
         var x = symbol(s, 150);
         reserveName(x);
 
@@ -1284,7 +1299,7 @@ export var JSHINT = (function() {
         return x;
     }
 
-    function reservevar(s: string, v) {
+    function reservevar(s: string, v?) {
         return reserve(s, function() {
             if (typeof v === &quot;function&quot;) {
                 v(this);
@@ -1370,7 +1385,7 @@ export var JSHINT = (function() {
                 node.type === &quot;undefined&quot;);
     }
 
-    var typeofValues: { legacy?; es3?; es6?} = {};
+    var typeofValues: { legacy?: string[]; es3?: string[]; es6?: string[] } = {};
     typeofValues.legacy = [
         // E4X extended the &#x60;typeof&#x60; operator to return &quot;xml&quot; for the XML and
         // XMLList types it introduced.
@@ -1392,8 +1407,8 @@ export var JSHINT = (function() {
     // Checks whether the &#x27;typeof&#x27; operator is used with the correct
     // value. For docs on &#x27;typeof&#x27; see:
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof
-    function isTypoTypeof(left, right, state) {
-        var values;
+    function isTypoTypeof(left: { type: string; value: string }, right, state) {
+        var values: string[];
 
         if (state.option.notypeof)
             return false;
@@ -1404,7 +1419,7 @@ export var JSHINT = (function() {
         values = state.inES6() ? typeofValues.es6 : typeofValues.es3;
 
         if (right.type === &quot;(identifier)&quot; &amp;&amp; right.value === &quot;typeof&quot; &amp;&amp; left.type === &quot;(string)&quot;)
-            return !_.contains(values, left.value);
+            return !contains(values, left.value);
 
         return false;
     }
@@ -1466,7 +1481,7 @@ export var JSHINT = (function() {
      * @param {boolean} options.allowDestructuring - whether to allow destructuting binding
      * @returns {boolean} Whether the left hand side is OK
      */
-    function checkLeftSideAssign(left, assignToken, options?) {
+    function checkLeftSideAssign(left, assignToken?, options?: { allowDestructuring?: boolean }) {
 
         var allowDestructuring = options &amp;&amp; options.allowDestructuring;
 
@@ -1898,7 +1913,7 @@ export var JSHINT = (function() {
      * isfatarrow - true if its a body of a fat arrow function
      * iscase      - true if block is a switch case block
      */
-    function block(ordinary: boolean, stmt: boolean, isfunc?: boolean, isfatarrow?: boolean, iscase?: boolean) {
+    function block(ordinary: boolean, stmt?: boolean, isfunc?: boolean, isfatarrow?: boolean, iscase?: boolean) {
         var a,
             b = inblock,
             old_indent = indent,
@@ -1932,7 +1947,7 @@ export var JSHINT = (function() {
                 if (isfunc) {
                     m = {};
                     for (d in state.directive) {
-                        if (_.has(state.directive, d)) {
+                        if (has(state.directive, d)) {
                             m[d] = state.directive[d];
                         }
                     }
@@ -1975,7 +1990,7 @@ export var JSHINT = (function() {
 
                 if (!stmt) {
                     for (d in state.directive) {
-                        if (_.has(state.directive, d)) {
+                        if (has(state.directive, d)) {
                             m[d] = state.directive[d];
                         }
                     }
@@ -2094,26 +2109,26 @@ export var JSHINT = (function() {
         identifier: false,
         template: true,
     };
-    state.syntax[&quot;(template)&quot;] = _.extend({
+    state.syntax[&quot;(template)&quot;] = extend({
         type: &quot;(template)&quot;,
         nud: doTemplateLiteral,
         led: doTemplateLiteral,
         noSubst: false
     }, baseTemplateSyntax);
 
-    state.syntax[&quot;(template middle)&quot;] = _.extend({
+    state.syntax[&quot;(template middle)&quot;] = extend({
         type: &quot;(template middle)&quot;,
         middle: true,
         noSubst: false
     }, baseTemplateSyntax);
 
-    state.syntax[&quot;(template tail)&quot;] = _.extend({
+    state.syntax[&quot;(template tail)&quot;] = extend({
         type: &quot;(template tail)&quot;,
         tail: true,
         noSubst: false
     }, baseTemplateSyntax);
 
-    state.syntax[&quot;(no subst template)&quot;] = _.extend({
+    state.syntax[&quot;(no subst template)&quot;] = extend({
         type: &quot;(template)&quot;,
         nud: doTemplateLiteral,
         led: doTemplateLiteral,
@@ -2300,7 +2315,7 @@ export var JSHINT = (function() {
         if (left &amp;&amp; right &amp;&amp; left.id === &quot;(string)&quot; &amp;&amp; right.id === &quot;(string)&quot;) {
             left.value += right.value;
             left.character = right.character;
-            if (!state.option.scripturl &amp;&amp; reg.javascriptURL.test(left.value)) {
+            if (!state.option.scripturl &amp;&amp; javascriptURL.test(left.value)) {
                 warning(&quot;W050&quot;, left);
             }
             return left;
@@ -2597,7 +2612,7 @@ export var JSHINT = (function() {
                     left.value === &quot;execScript&quot;) {
                     warning(&quot;W061&quot;, left);
 
-                    if (p[0] &amp;&amp; [0].id === &quot;(string)&quot;) {
+                    if (p[0] &amp;&amp; p[0].id === &quot;(string)&quot;) {
                         addInternalSrc(left, p[0].value);
                     }
                 } else if (p[0] &amp;&amp; p[0].id === &quot;(string)&quot; &amp;&amp;
@@ -2757,7 +2772,7 @@ export var JSHINT = (function() {
             }
 
             countMember(e.value);
-            if (!state.option.sub &amp;&amp; reg.identifier.test(e.value)) {
+            if (!state.option.sub &amp;&amp; identifierRegExp.test(e.value)) {
                 s = state.syntax[e.value];
                 if (!s || !isReserved(s)) {
                     warning(&quot;W069&quot;, state.tokens.prev, e.value);
@@ -2776,7 +2791,7 @@ export var JSHINT = (function() {
     }, 160, true);
 
     function comprehensiveArrayExpression() {
-        var res = {};
+        var res: { exps?; filter?; left?; right?} = {};
         res.exps = true;
         state.funct[&quot;(comparray)&quot;].stack();
 
@@ -2801,7 +2816,7 @@ export var JSHINT = (function() {
         advance(&quot;(&quot;);
         state.funct[&quot;(comparray)&quot;].setState(&quot;define&quot;);
         res.left = expression(130);
-        if (_.contains([&quot;in&quot;, &quot;of&quot;], state.tokens.next.value)) {
+        if (contains([&quot;in&quot;, &quot;of&quot;], state.tokens.next.value)) {
             advance();
         } else {
             error(&quot;E045&quot;, state.tokens.curr);
@@ -2899,7 +2914,7 @@ export var JSHINT = (function() {
     }
 
 
-    function propertyName(preserveOrToken) {
+    function propertyName(preserveOrToken?) {
         var id;
         var preserve = true;
         if (typeof preserveOrToken === &quot;object&quot;) {
@@ -2978,7 +2993,7 @@ export var JSHINT = (function() {
             // are added to the param scope
             var currentParams = [];
 
-            if (_.contains([&quot;{&quot;, &quot;[&quot;], state.tokens.next.id)) {
+            if (contains([&quot;{&quot;, &quot;[&quot;], state.tokens.next.id)) {
                 tokens = destructuringPattern();
                 for (t in tokens) {
                     t = tokens[t];
@@ -3004,7 +3019,7 @@ export var JSHINT = (function() {
             // a possible code smell.
             if (pastDefault) {
                 if (state.tokens.next.id !== &quot;=&quot;) {
-                    error(&quot;W138&quot;, state.tokens.current);
+                    error(&quot;W138&quot;, state.tokens.curr);
                 }
             }
             if (state.tokens.next.id === &quot;=&quot;) {
@@ -3055,14 +3070,14 @@ export var JSHINT = (function() {
         };
 
         if (token) {
-            _.extend(funct, {
+            extend(funct, {
                 &quot;(line)&quot;: token.line,
                 &quot;(character)&quot;: token.character,
                 &quot;(metrics)&quot;: createMetrics(token)
             });
         }
 
-        _.extend(funct, overwrites);
+        extend(funct, overwrites);
 
         if (funct[&quot;(context)&quot;]) {
             funct[&quot;(scope)&quot;] = funct[&quot;(context)&quot;][&quot;(scope)&quot;];
@@ -3139,7 +3154,7 @@ export var JSHINT = (function() {
      *                                           class expression names within
      *                                           the body of member functions.
      */
-    function doFunction(options) {
+    function doFunction(options?: { name?; statement?; type?; loneArg?; parsedOpening?; classExprBinding?; ignoreLoopFunc?}) {
         var f, token, name, statement, classExprBinding, isGenerator, isArrow, ignoreLoopFunc;
         var oldOption = state.option;
         var oldIgnored = state.ignored;
@@ -3254,7 +3269,7 @@ export var JSHINT = (function() {
             },
 
             verifyMaxParametersPerFunction: function() {
-                if (_.isNumber(state.option.maxparams) &amp;&amp;
+                if (isNumber(state.option.maxparams) &amp;&amp;
                     this.arity &gt; state.option.maxparams) {
                     warning(&quot;W072&quot;, functionStartToken, this.arity);
                 }
@@ -3470,7 +3485,7 @@ export var JSHINT = (function() {
         };
     } (delim(&quot;{&quot;)));
 
-    function destructuringPattern(options) {
+    function destructuringPattern(options?) {
         var isAssignment = options &amp;&amp; options.assignment;
 
         if (!state.inES6()) {
@@ -3623,13 +3638,13 @@ export var JSHINT = (function() {
         return identifiers;
     }
 
-    function destructuringPatternMatch(tokens, value) {
+    function destructuringPatternMatch(tokens: { first }[], value) {
         var first = value.first;
 
         if (!first)
             return;
 
-        _.zip(tokens, Array.isArray(first) ? first : [first]).forEach(function(val) {
+        zip(tokens, Array.isArray(first) ? first : [first]).forEach(function(val) {
             var token = val[0];
             var value = val[1];
 
@@ -3666,8 +3681,8 @@ export var JSHINT = (function() {
 
         statement.first = [];
         for (; ;) {
-            var names = [];
-            if (_.contains([&quot;{&quot;, &quot;[&quot;], state.tokens.next.value)) {
+            var names: any[] = [];
+            if (contains([&quot;{&quot;, &quot;[&quot;], state.tokens.next.value)) {
                 tokens = destructuringPattern();
                 lone = false;
             } else {
@@ -3757,8 +3772,8 @@ export var JSHINT = (function() {
 
         this.first = [];
         for (; ;) {
-            var names = [];
-            if (_.contains([&quot;{&quot;, &quot;[&quot;], state.tokens.next.value)) {
+            var names: { first }[] = [];
+            if (contains([&quot;{&quot;, &quot;[&quot;], state.tokens.next.value)) {
                 tokens = destructuringPattern();
                 lone = false;
             } else {
@@ -3779,8 +3794,8 @@ export var JSHINT = (function() {
                         if (predefined[t.id] === false) {
                             warning(&quot;W079&quot;, t.token, t.id);
                         } else if (state.option.futurehostile === false) {
-                            if ((!state.inES5() &amp;&amp; vars.ecmaIdentifiers[5][t.id] === false) ||
-                                (!state.inES6() &amp;&amp; vars.ecmaIdentifiers[6][t.id] === false)) {
+                            if ((!state.inES5() &amp;&amp; ecmaIdentifiers[5][t.id] === false) ||
+                                (!state.inES6() &amp;&amp; ecmaIdentifiers[6][t.id] === false)) {
                                 warning(&quot;W129&quot;, t.token, t.id);
                             }
                         }
@@ -4108,7 +4123,7 @@ export var JSHINT = (function() {
 
             if (checkPunctuators(state.tokens.next, [&quot;[&quot;, &quot;{&quot;])) {
                 var tokens = destructuringPattern();
-                _.each(tokens, function(token) {
+                tokens.forEach(function(token: any) {
                     if (token.id) {
                         state.funct[&quot;(scope)&quot;].addParam(token.id, token, &quot;exception&quot;);
                     }
@@ -4364,11 +4379,11 @@ export var JSHINT = (function() {
                 if (!comma &amp;&amp; checkPunctuator(nextop, &quot;,&quot;)) comma = nextop;
                 else if (!initializer &amp;&amp; checkPunctuator(nextop, &quot;=&quot;)) initializer = nextop;
             }
-        } while (level &gt; 0 || !_.contains(inof, nextop.value) &amp;&amp; nextop.value !== &quot;;&quot; &amp;&amp;
+        } while (level &gt; 0 || !contains(inof, nextop.value) &amp;&amp; nextop.value !== &quot;;&quot; &amp;&amp;
         nextop.type !== &quot;(end)&quot;); // Is this a JSCS bug? This looks really weird.
 
         // if we&#x27;re in a for (… in|of …) statement
-        if (_.contains(inof, nextop.value)) {
+        if (contains(inof, nextop.value)) {
             if (!state.inES6() &amp;&amp; nextop.value === &quot;of&quot;) {
                 warning(&quot;W104&quot;, nextop, &quot;for of&quot;, &quot;6&quot;);
             }
@@ -4885,7 +4900,7 @@ export var JSHINT = (function() {
         var pn, pn1, prev;
         var i = -1;
         var bracketStack = 0;
-        var ret = {};
+        var ret: any = {};
         if (checkPunctuators(state.tokens.curr, [&quot;[&quot;, &quot;{&quot;])) {
             bracketStack += 1;
         }
@@ -4923,9 +4938,9 @@ export var JSHINT = (function() {
         return ret;
     };
 
-    function saveProperty(props, name, tkn, isClass, isStatic) {
-        var msg = [&quot;key&quot;, &quot;class method&quot;, &quot;static class method&quot;];
-        msg = msg[(isClass || false) + (isStatic || false)];
+    function saveProperty(props, name, tkn, isClass?, isStatic?) {
+        var msgs = [&quot;key&quot;, &quot;class method&quot;, &quot;static class method&quot;];
+        var msg = msgs[(isClass || false) + (isStatic || false)];
         if (tkn.identifier) {
             name = tkn.value;
         }
@@ -4949,7 +4964,7 @@ export var JSHINT = (function() {
      *                            definition
      * @param {boolean} isStatic - whether the accessor is a static method
      */
-    function saveAccessor(accessorType, props, name, tkn, isClass, isStatic) {
+    function saveAccessor(accessorType: string, props, name, tkn, isClass?: boolean, isStatic?: boolean) {
         var flagName = accessorType === &quot;get&quot; ? &quot;getterToken&quot; : &quot;setterToken&quot;;
         var msg = &quot;&quot;;
 
@@ -4992,9 +5007,9 @@ export var JSHINT = (function() {
      * @param {Array.&lt;string&gt;} values
      * @returns {boolean}
      */
-    function checkPunctuators(token, values) {
+    function checkPunctuators(token: { type: string; value: string }, values: string[]) {
         if (token.type === &quot;(punctuator)&quot;) {
-            return _.contains(values, token.value);
+            return contains(values, token.value);
         }
         return false;
     }
@@ -5082,8 +5097,8 @@ export var JSHINT = (function() {
                 _carrays.splice(-1, 1);
                 _current = _carrays[_carrays.length - 1];
             },
-            setState: function(s) {
-                if (_.contains([&quot;use&quot;, &quot;define&quot;, &quot;generate&quot;, &quot;filter&quot;], s))
+            setState: function(s: string) {
+                if (contains([&quot;use&quot;, &quot;define&quot;, &quot;generate&quot;, &quot;filter&quot;], s))
                     _current.mode = s;
             },
             check: function(v) {
@@ -5224,13 +5239,13 @@ export var JSHINT = (function() {
     };
 
     // The actual JSHINT function itself.
-    var itself = function(s, o, g) {
+    var itself: any = function(s, o: JSHintOptions, g) {
         var i, k, x, reIgnoreStr, reIgnore;
-        var optionKeys;
+        var optionKeys: string[];
         var newOptionObj = {};
-        var newIgnoredObj = {};
+        var newIgnoredObj: { [something: string]: boolean } = {};
 
-        o = _.clone(o);
+        o = clone(o);
         state.reset();
 
         if (o &amp;&amp; o.scope) {
@@ -5244,26 +5259,16 @@ export var JSHINT = (function() {
         }
 
         predefined = Object.create(null);
-        combine(predefined, vars.ecmaIdentifiers[3]);
-        combine(predefined, vars.reservedVars);
+        combine(predefined, ecmaIdentifiers[3]);
+        combine(predefined, reservedVars);
 
         combine(predefined, g || {});
 
         declared = Object.create(null);
         var exported = Object.create(null); // Variables that live outside the current file
 
-        function each(obj, cb) {
-            if (!obj)
-                return;
-
-            if (!Array.isArray(obj) &amp;&amp; typeof obj === &quot;object&quot;)
-                obj = Object.keys(obj);
-
-            obj.forEach(cb);
-        }
-
         if (o) {
-            each(o.predef || null, function(item) {
+            each(o.predef || null, function(item: any) {
                 var slice, prop;
 
                 if (item[0] === &quot;-&quot;) {
@@ -5271,13 +5276,14 @@ export var JSHINT = (function() {
                     JSHINT.blacklist[slice] = slice;
                     // remove from predefined if there
                     delete predefined[slice];
-                } else {
+                }
+                else {
                     prop = Object.getOwnPropertyDescriptor(o.predef, item);
                     predefined[item] = prop ? prop.value : false;
                 }
             });
 
-            each(o.exported || null, function(item) {
+            each(o.exported || null, function(item: string) {
                 exported[item] = true;
             });
 
@@ -5423,7 +5429,7 @@ export var JSHINT = (function() {
 
         // Check options
         for (var name in o) {
-            if (_.has(o, name)) {
+            if (has(o, name)) {
                 checkOption(name, state.tokens.curr);
             }
         }
@@ -5435,7 +5441,7 @@ export var JSHINT = (function() {
             combine(predefined, g || {});
 
             //reset values
-            comma.first = true;
+            comma[&#x27;first&#x27;] = true;
 
             advance();
             switch (state.tokens.next.id) {
@@ -5501,7 +5507,7 @@ export var JSHINT = (function() {
         extraModules.push(func);
     };
 
-    itself.addModule(style.register);
+    itself.addModule(register);
 
     // Data summary.
     itself.data = function() {

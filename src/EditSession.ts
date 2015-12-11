@@ -31,6 +31,7 @@
 import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
+import Annotation from './Annotation';
 import EventEmitterClass from "./lib/event_emitter";
 import FoldLine from "./FoldLine";
 import Fold from "./Fold";
@@ -136,7 +137,7 @@ export default class EditSession extends EventEmitterClass {
     private $rowLengthCache;
     private $overwrite = false;
     public $searchHighlight: SearchHighlight;
-    private $annotations;
+    private $annotations: Annotation[];
     private $autoNewLine;
     private getOption;
     private setOption;
@@ -801,30 +802,26 @@ export default class EditSession extends EventEmitterClass {
         return range;
     }
 
-    /*
-     * Error:
-     *  {
-     *    row: 12,
-     *    column: 2, //can be undefined
-     *    text: "Missing argument",
-     *    type: "error" // or "warning" or "info"
-     *  }
-     */
     /**
-    * Sets annotations for the `EditSession`. This functions emits the `'changeAnnotation'` event.
-    * @param {Array} annotations A list of annotations
-    *
-    **/
-    public setAnnotations(annotations) {
+     * Sets annotations for the `EditSession`.
+     * This functions emits the `'changeAnnotation'` event.
+     *
+     * @method setAnnotations
+     * @param {Annotation[]} annotations A list of annotations.
+     * @return {void}
+     */
+    public setAnnotations(annotations: Annotation[]): void {
         this.$annotations = annotations;
         this._signal("changeAnnotation", {});
     }
 
     /**
-    * Returns the annotations for the `EditSession`.
-    * @return {Array}
-    **/
-    public getAnnotations = function() {
+     * Returns the annotations for the `EditSession`.
+     *
+     * @method getAnnotations
+     * @return {Annotation[]}
+     */
+    public getAnnotations(): Annotation[] {
         return this.$annotations || [];
     }
 

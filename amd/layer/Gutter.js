@@ -57,7 +57,6 @@ define(["require", "exports", "../lib/dom", "../lib/lang", "../lib/event_emitter
             this.session = session;
             session.on("change", this.$updateAnnotations);
         };
-        // FIXME: The text and html appear to be optional.
         Gutter.prototype.setAnnotations = function (annotations) {
             // iterate over sparse array
             this.$annotations = [];
@@ -65,8 +64,9 @@ define(["require", "exports", "../lib/dom", "../lib/lang", "../lib/event_emitter
                 var annotation = annotations[i];
                 var row = annotation.row;
                 var rowInfo = this.$annotations[row];
-                if (!rowInfo)
+                if (!rowInfo) {
                     rowInfo = this.$annotations[row] = { text: [] };
+                }
                 var annoText = annotation.text;
                 annoText = annoText ? lang_1.escapeHTML(annoText) : annotation.html || "";
                 if (rowInfo.text.indexOf(annoText) === -1)

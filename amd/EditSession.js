@@ -120,13 +120,6 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
              */
             this.$selectionMarker = null;
             this.$bracketMatcher = new BracketMatch_1.default(this);
-            /**
-            * Returns the annotations for the `EditSession`.
-            * @return {Array}
-            **/
-            this.getAnnotations = function () {
-                return this.$annotations || [];
-            };
             // structured folding
             this.$foldStyles = {
                 "manual": 1,
@@ -667,23 +660,26 @@ define(["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "
             range.markerId = this.addMarker(range, clazz, "fullLine", inFront);
             return range;
         };
-        /*
-         * Error:
-         *  {
-         *    row: 12,
-         *    column: 2, //can be undefined
-         *    text: "Missing argument",
-         *    type: "error" // or "warning" or "info"
-         *  }
-         */
         /**
-        * Sets annotations for the `EditSession`. This functions emits the `'changeAnnotation'` event.
-        * @param {Array} annotations A list of annotations
-        *
-        **/
+         * Sets annotations for the `EditSession`.
+         * This functions emits the `'changeAnnotation'` event.
+         *
+         * @method setAnnotations
+         * @param {Annotation[]} annotations A list of annotations.
+         * @return {void}
+         */
         EditSession.prototype.setAnnotations = function (annotations) {
             this.$annotations = annotations;
             this._signal("changeAnnotation", {});
+        };
+        /**
+         * Returns the annotations for the `EditSession`.
+         *
+         * @method getAnnotations
+         * @return {Annotation[]}
+         */
+        EditSession.prototype.getAnnotations = function () {
+            return this.$annotations || [];
         };
         /**
          * Clears all the annotations for this session.

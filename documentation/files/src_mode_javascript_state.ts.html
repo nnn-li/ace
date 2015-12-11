@@ -104,28 +104,37 @@
     <pre class="code prettyprint linenums">
 &quot;use strict&quot;;
 import NameStack from &quot;./name-stack&quot;;
+import JSHintOptions from &quot;./JSHintOptions&quot;;
 
 export var state: {
-    option;
-    directive: {},
+    option: JSHintOptions;
+    cache: {};
+    condition: boolean;
+    directive: {};
     funct;
-    ignored: {},
+    ignored: { [line: string]: boolean };
     tab: string;
     lines: string[];
     syntax: { [name: string]: any };
+    forinifcheckneeded: boolean;
+    forinifchecks: any[];
     isStrict: () =&gt; boolean;
     inMoz: () =&gt; boolean;
     inES6: (strict?: boolean) =&gt; boolean;
     inES5: (strict?: boolean) =&gt; boolean;
     inClassBody: boolean;
-    ignoredLines: {},
+    ignoredLines: { [line: string]: boolean },
     jsonMode: boolean;
     nameStack: NameStack;
     reset: () =&gt; void;
     tokens: { prev; next; curr };
 } = {
         option: {},
+        cache: {},
+        condition: void 0,
         directive: {},
+        forinifcheckneeded: false,
+        forinifchecks: void 0,
         funct: null,
         ignored: {},
         tab: &quot;&quot;,

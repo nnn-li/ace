@@ -3,8 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "../lib/oop", "../worker/Mirror"], function (require, exports, oop_1, Mirror_1) {
-    //import {JSHINT} from "./javascript/jshint";
+define(["require", "exports", "../lib/oop", "../worker/Mirror", "./javascript/jshint"], function (require, exports, oop_1, Mirror_1, jshint_1) {
     function startRegex(arr) {
         return RegExp("^(" + arr.join("|") + ")");
     }
@@ -81,7 +80,7 @@ define(["require", "exports", "../lib/oop", "../worker/Mirror"], function (requi
             var value = this.doc.getValue();
             value = value.replace(/^#!.*\n/, "\n");
             if (!value) {
-                this.sender.emit("jslint", []);
+                this.sender.emit("errors", []);
                 return;
             }
             var errors = [];
@@ -89,8 +88,8 @@ define(["require", "exports", "../lib/oop", "../worker/Mirror"], function (requi
             // report them as error only if code is actually invalid
             var maxErrorLevel = this.isValidJS(value) ? "warning" : "error";
             // var start = new Date();
-            // JSHINT(value, this.options);
-            var results = []; //JSHINT.errors;
+            jshint_1.JSHINT(value, this.options);
+            var results = jshint_1.JSHINT.errors;
             var errorAdded = false;
             for (var i = 0; i < results.length; i++) {
                 var error = results[i];
@@ -119,23 +118,22 @@ define(["require", "exports", "../lib/oop", "../worker/Mirror"], function (requi
                     errorAdded = true;
                     type = maxErrorLevel;
                 }
-                else if (raw == "'{a}' is not defined.") {
+                else if (raw === "'{a}' is not defined.") {
                     type = "warning";
                 }
-                else if (raw == "'{a}' is defined but never used.") {
+                else if (raw === "'{a}' is defined but never used.") {
                     type = "info";
                 }
                 errors.push({
                     row: error.line - 1,
                     column: error.character - 1,
                     text: error.reason,
-                    type: type,
-                    raw: raw
+                    type: type
                 });
                 if (errorAdded) {
                 }
             }
-            this.sender.emit("jslint", errors);
+            this.sender.emit("errors", errors);
         };
         return JavaScriptWorker;
     })(Mirror_1.default);
