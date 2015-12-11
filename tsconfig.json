@@ -133,6 +133,7 @@
 
     "./src/mode/MatchingBraceOutdent.ts",
     "./src/mode/TextHighlightRules.ts",
+    "./src/mode/TypeScriptHighlightRules.ts",
     "./src/mode/TypeScriptWorker.ts",
     "./src/mode/Mode.ts",
 

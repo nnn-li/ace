@@ -32,7 +32,7 @@ import DocCommentHighlightRules from "./DocCommentHighlightRules";
 import TextHighlightRules from "./TextHighlightRules";
 
 export default class JavaScriptHighlightRules extends TextHighlightRules {
-  constructor(options) {
+  constructor(options?: {noES6?}) {
     super()
     // see: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects
     var keywordMapper = this.createKeywordMapper({
