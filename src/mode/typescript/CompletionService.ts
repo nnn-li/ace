@@ -1,7 +1,7 @@
 import Editor from '../../Editor';
 import Position from '../../Position'
 import EditorPosition from './EditorPosition';
-import {Workspace} from '../../workspace/workspace'
+import Workspace from '../../workspace/Workspace'
 
 export default class CompletionService {
     private _editor: Editor;

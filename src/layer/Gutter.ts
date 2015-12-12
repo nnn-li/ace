@@ -36,7 +36,7 @@ removeCssClass} from "../lib/dom";
 import {escapeHTML} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
 import EditSession from "../EditSession";
-import Annotation from "../Annotation";
+import IAnnotation from "../IAnnotation";
 
 export default class Gutter extends EventEmitterClass {
     public element: HTMLDivElement;
@@ -65,7 +65,7 @@ export default class Gutter extends EventEmitterClass {
         session.on("change", this.$updateAnnotations);
     }
 
-    setAnnotations(annotations: Annotation[]) {
+    setAnnotations(annotations: IAnnotation[]) {
         // iterate over sparse array
         this.$annotations = [];
         for (var i = 0; i < annotations.length; i++) {

@@ -1,57 +1,6 @@
 import WorkerClient from '../worker/WorkerClient';
 import {EVENT_NAME_COMPLETIONS} from './workspace_protocol';
-/**
- * A workspace is a collection of source files identified by name.
- */
-export interface Workspace {
-
-    /**
-     * Insert or update a script.
-     * This is typically called by the editing application.
-     */
-    ensureScript(fileName: string, content: string): void;
-
-    /**
-     * Notify the workspace of an edit to a script.
-     */
-    editScript(fileName: string, minChar: number, limChar: number, newText: string): void;
-
-    /**
-     * Remove a script.
-     * This is typically called by the editing application.
-     */
-    removeScript(fileName: string): void;
-
-    /**
-     *
-     */
-    getFileNames(callback): void;
-
-    /**
-     *
-     */
-    getSyntaxErrors(fileName: string, callback: (err, results) => void): void;
-
-    /**
-     *
-     */
-    getSemanticErrors(fileName: string, callback: (err, results) => void): void;
-
-    /**
-     *
-     */
-    getCompletionsAtPosition(fileName: string, position: number, memberMode: boolean, callback: (err, results) => void): void;
-
-    /**
-     *
-     */
-    getTypeAtDocumentPosition(fileName: string, documentPosition: { row: number; column: number }, callback: (err, typeInfo: ts.Type) => void): void;
-
-    /**
-     *
-     */
-    getOutputFiles(fileName: string, callback: (err, results) => void): void;
-}
+import Workspace from './Workspace'
 
 /**
  * @return a workspace instance.
@@ -59,10 +8,9 @@ export interface Workspace {
  * This is a functional constructor; do not use the 'new' operator to call it.
  *                                   do not use 'this' in the code below.
  */
-export var workspace = function() {
+export default function createWorkspace() {
 
-    // N.B. The mod parameter must be absolute in order to work when requirejs is using individual files.
-    var workerProxy = new WorkerClient('ace/workspace/workspace_worker');
+    var workerProxy = new WorkerClient('lib/worker/worker-systemjs.js');
 
     var callbacks = {};
     var callbackId = 1;
@@ -122,8 +70,7 @@ export var workspace = function() {
         doCallback(response.data);
     });
 
-    // FIXME: Probably should be uppercase, and use default export.
-    workerProxy.init('ace/workspace/workspace_worker', 'WorkspaceWorker');
+    workerProxy.init('lib/workspace/WorkspaceWorker');
 
     function doCallback(data: { err: string; results: any; callbackId: number }) {
         var info = data.results;

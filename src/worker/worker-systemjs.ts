@@ -76,7 +76,7 @@
   window.onmessage = function(event: MessageEvent) {
     // The type here is probably a union of all possible message types!
     var data = event.data;  // The object passed from the other window.
-    var msg: { args; classname: string; command?; data; event; init?: boolean; module: string; tlns: { [ns: string]: string } } = data;
+    var msg: { args; command?; data; event; init?: boolean; module: string; tlns: { [ns: string]: string } } = data;
     var origin: string = event.origin;  // The origin of the window that sent the message.
     // We can do some security checks by checking the origin and source here.
     // Failure to do so enables cross-site scripting attacks.

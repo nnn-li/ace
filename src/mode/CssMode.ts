@@ -90,7 +90,7 @@ export default class CssMode extends TextMode {
             session.clearAnnotations();
         });
 
-        worker.init("ace/mode/css_worker", "Worker");
+        worker.init("ace/mode/css_worker");
 
         return worker;
     }

@@ -29,6 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 import {inherits} from "../lib/oop";
+import IAnnotation from "../IAnnotation";
 import Mode from "./Mode";
 import JavaScriptHighlightRules from "./JavaScriptHighlightRules";
 import MatchingBraceOutdent from "./MatchingBraceOutdent";
@@ -104,7 +105,7 @@ export default class JavaScriptMode extends Mode {
             worker.attachToDocument(session.getDocument());
         });
 
-        worker.on("errors", function(errors) {
+        worker.on("errors", function(errors: { data: IAnnotation[] }) {
             session.setAnnotations(errors.data);
         });
 
@@ -112,7 +113,7 @@ export default class JavaScriptMode extends Mode {
             session.clearAnnotations();
         });
 
-        worker.init("lib/mode/JavaScriptWorker", "default");
+        worker.init("lib/mode/JavaScriptWorker");
 
         return worker;
     }

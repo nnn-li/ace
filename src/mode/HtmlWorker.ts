@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 import Mirror from "../worker/Mirror";
 import SAXParser from "./html/SAXParser";
-import Sender from "../lib/Sender";
+import IWorkerCallback from "../IWorkerCallback";
 
 var errorTypes = {
     "expected-doctype-but-got-start-tag": "info",
@@ -39,7 +39,7 @@ var errorTypes = {
 
 export default class HtmlWorker extends Mirror {
     context;
-    constructor(sender: Sender) {
+    constructor(sender: IWorkerCallback) {
         super(sender);
         this.setOptions();
         sender.emit('initAfter');

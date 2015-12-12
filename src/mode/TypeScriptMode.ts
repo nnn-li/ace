@@ -72,7 +72,7 @@ export default class TypeScriptMode extends JavaScriptMode {
             session._emit("getFileNames", { data: event.data });
         });
 
-        worker.init("lib/mode/TypeScriptWorker", "default");
+        worker.init("lib/mode/TypeScriptWorker");
 
         return worker;
     };

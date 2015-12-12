@@ -31,7 +31,7 @@
 
 import {inherits} from "../lib/oop";
 import {arrayToMap} from "../lib/lang";
-import Annotation from "../Annotation";
+import IAnnotation from "../IAnnotation";
 import TextMode from "./Mode";
 import JavaScriptMode from "./JavaScriptMode";
 import CssMode from "./CssMode";
@@ -105,7 +105,7 @@ export default class HtmlMode extends TextMode {
         });
 
         // FIXME: Standardize
-        worker.on("error", function(message: {data: Annotation[]}) {
+        worker.on("error", function(message: { data: IAnnotation[] }) {
             session.setAnnotations(message.data);
         });
 
@@ -113,7 +113,7 @@ export default class HtmlMode extends TextMode {
             session.clearAnnotations();
         });
 
-        worker.init("lib/mode/HtmlWorker", "default");
+        worker.init("lib/mode/HtmlWorker");
 
         return worker;
     };

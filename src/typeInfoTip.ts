@@ -1,5 +1,5 @@
 import Tooltip from './Tooltip';
-import {Workspace} from './workspace/workspace';
+import Workspace from './workspace/Workspace';
 
 /**
  * The User Interface element leverages the existing Tooltip for consistency.
@@ -41,6 +41,7 @@ export default function typeInfoTip(doc: Document, editor, workspace: Workspace,
                 var col = Math.round(offset);
                 return editor.getSession().screenToDocumentPosition(row, col);
             }
+
             var documentPosition = getDocumentPositionFromScreenOffset(event.offsetX, event.offsetY);
             var fileName = fileNameProvider();
             if (workspace && typeof fileName === 'string') {

@@ -10,7 +10,8 @@ import Range from './Range';
 import Selection from './Selection';
 import {deferredCall} from "./lib/lang";
 import typeInfoTip from "./typeInfoTip";
-import {workspace, Workspace} from './workspace/workspace';
+import Workspace from './workspace/Workspace';
+import createWorkspace from './workspace/createWorkspace';
 import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
 import CommandManager from './commands/CommandManager';
 
@@ -20,7 +21,7 @@ import CommandManager from './commands/CommandManager';
  * and the shared workspace.
  * This is called by editing applications.
  */
-export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: Document = window.document) {
+export function wrap(editor: Editor, rootElement: HTMLElement, workspace: Workspace, doc: Document = window.document) {
 
     function show() {
         rootElement.style.display = "block";
@@ -216,7 +217,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
                 // FIXME: This is the odd man out.
                 // We should not be triggering a view refresh here?
                 // It seems very artificial to fake the editSession event, can we do better?
-                editor.onChangeFrontMarker(void 0, editor.session);
+                editor.onChangeFrontMarker(void 0, editor.getSession());
             }
         }
     });
@@ -370,7 +371,7 @@ export function wrap(editor: Editor, rootElement: HTMLElement, workspace, doc: D
         set fileName(value) { _fileName = value; },
         get commands() { return editor.commands; },
         get container() { return editor.container; },
-        get session() { return editor.session; },
+        get session() { return editor.getSession(); },
         getCursorPosition: () => { return editor.getCursorPosition(); },
         getSelection: () => { return editor.getSelection(); },
         getValue: () => { return editor.getValue(); },
@@ -431,6 +432,6 @@ function edit(source: any, workspace: Workspace, doc: Document = window.document
     return wrap(_editor, rootElement, workspace, doc);
 }
 
-export function workspace() {
-    return workspace();
+export function workspace(): Workspace {
+    return createWorkspace();
 }

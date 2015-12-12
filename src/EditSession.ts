@@ -31,7 +31,7 @@
 import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
-import Annotation from './Annotation';
+import IAnnotation from './IAnnotation';
 import EventEmitterClass from "./lib/event_emitter";
 import FoldLine from "./FoldLine";
 import Fold from "./Fold";
@@ -137,7 +137,7 @@ export default class EditSession extends EventEmitterClass {
     private $rowLengthCache;
     private $overwrite = false;
     public $searchHighlight: SearchHighlight;
-    private $annotations: Annotation[];
+    private $annotations: IAnnotation[];
     private $autoNewLine;
     private getOption;
     private setOption;
@@ -807,10 +807,10 @@ export default class EditSession extends EventEmitterClass {
      * This functions emits the `'changeAnnotation'` event.
      *
      * @method setAnnotations
-     * @param {Annotation[]} annotations A list of annotations.
+     * @param {IAnnotation[]} annotations A list of annotations.
      * @return {void}
      */
-    public setAnnotations(annotations: Annotation[]): void {
+    public setAnnotations(annotations: IAnnotation[]): void {
         this.$annotations = annotations;
         this._signal("changeAnnotation", {});
     }
@@ -819,9 +819,9 @@ export default class EditSession extends EventEmitterClass {
      * Returns the annotations for the `EditSession`.
      *
      * @method getAnnotations
-     * @return {Annotation[]}
+     * @return {IAnnotation[]}
      */
-    public getAnnotations(): Annotation[] {
+    public getAnnotations(): IAnnotation[] {
         return this.$annotations || [];
     }
 

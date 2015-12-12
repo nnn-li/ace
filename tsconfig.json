@@ -145,8 +145,19 @@
     "./src/worker/worker-amd.ts",
     "./src/worker/worker-systemjs.ts",
 
+    "./src/workspace/ScriptInfo.ts",
+    "./src/workspace/ScriptCache.ts",
+    "./src/workspace/Workspace.ts",
+    "./src/workspace/WorkspaceWorker.ts",
+    "./src/workspace/compiler-host.ts",
+    "./src/workspace/createWorkspace.ts",
+    "./src/workspace/logger.ts",
+    "./src/workspace/transpiler.ts",
+    "./src/workspace/workspace_protocol.ts",
+    "./src/workspace/utils.ts",
+
     "./src/Anchor.ts",
-    "./src/Annotation.ts",
+    "./src/IAnnotation.ts",
     "./src/BackgroundTokenizer.ts",
     "./src/Change.ts",
     "./src/CursorRange.ts",
@@ -183,7 +194,8 @@
     "./src/typeInfoTip.ts",
     "./src/unicode.ts",
 
+    "./node_modules/typescript/lib/lib.es6.d.ts",
     "./node_modules/typescript/lib/typescriptServices.d.ts",
-    "./node_modules/typescript/lib/lib.es6.d.ts"
+    "./typings/tsd.d.ts"
   ]
 }
