@@ -101,7 +101,7 @@ module.exports = function(grunt) {
                 linkNatives: false, // Native types get linked to MDN.
                 quiet: true,
                 writeJSON: true,
-                excludes: [],
+                exclude: 'src/mode/css',
                 extension: '.ts',
                 paths: ['src'],
                 outdir: 'documentation',
@@ -166,7 +166,9 @@ module.exports = function(grunt) {
       "src/mode/HtmlMode",
       "src/mode/HtmlWorker",
       "src/mode/JavaScriptMode",
-      "src/mode/JavaScriptWorker"
+      "src/mode/JavaScriptWorker",
+      "src/mode/TypeScriptMode",
+      "src/mode/TypeScriptWorker"
   ];
 
   function ES5(xs) {

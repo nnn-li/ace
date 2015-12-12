@@ -22,7 +22,9 @@ requirejs.config({
   "mode/HtmlMode",
   "mode/HtmlWorker",
   "mode/JavaScriptMode",
-  "mode/JavaScriptWorker"
+  "mode/JavaScriptWorker",
+  "mode/TypeScriptMode",
+  "mode/TypeScriptWorker"
 ],
 
   // code to wrap around the start / end of the resulting build file

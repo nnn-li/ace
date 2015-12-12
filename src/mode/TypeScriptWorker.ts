@@ -12,7 +12,7 @@ import Sender from "../lib/Sender";
  * @class TypeScriptWorker
  * @extends Mirror
  */
-export class TypeScriptWorker extends Mirror {
+export default class TypeScriptWorker extends Mirror {
 
     /**
      * @property options
