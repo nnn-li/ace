@@ -869,11 +869,12 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Moves the cursor to the row and column provided. [If `preventUpdateDesiredColumn` is `true`, then the cursor stays in the same column position as its original point.]{: #preventUpdateBoolDesc}
-    * @param {number} row The row to move to
-    * @param {number} column The column to move to
-    * @param {boolean} keepDesiredColumn [If `true`, the cursor move does not respect the previous column]{: #preventUpdateBool}
-    */
+     * Moves the cursor to the row and column provided.
+     * [If `preventUpdateDesiredColumn` is `true`, then the cursor stays in the same column position as its original point.]{: #preventUpdateBoolDesc}
+     * @param {number} row The row to move to
+     * @param {number} column The column to move to
+     * @param {boolean} keepDesiredColumn [If `true`, the cursor move does not respect the previous column]{: #preventUpdateBool}
+     */
     moveCursorTo(row: number, column: number, keepDesiredColumn?: boolean): void {
         // Ensure the row/column is not inside of a fold.
         var fold = this.session.getFoldAt(row, column, 1);
