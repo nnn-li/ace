@@ -53,12 +53,12 @@ export function _signal(eventName: string, e?: any) {
 /**
  *
  */
-export function moduleUrl(name: string, component: string): string {
-    if (options.$moduleUrls[name]) {
-        return options.$moduleUrls[name];
+export function moduleUrl(moduleName: string, component: string): string {
+    if (options.$moduleUrls[moduleName]) {
+        return options.$moduleUrls[moduleName];
     }
 
-    var parts = name.split("/");
+    var parts = moduleName.split("/");
     component = component || parts[parts.length - 2] || "";
 
     // TODO: Configurable or get rid of '-'?
@@ -98,12 +98,16 @@ export var $loading: { [name: string]: ((m) => any)[] } = {};
 // FIXME. It would be more type-safe if the first argument where an array of strings.
 // What is the type of the module returned by the require function?
 // We're actually going to insert a script tag.
-export function loadModule(moduleName, onLoad: (m) => any, doc: Document = document) {
+export function loadModule(what: string|string[], onLoad: (m) => any, doc: Document = document) {
     var module;
+    var moduleName: string;
     var moduleType: string;
-    if (Array.isArray(moduleName)) {
-        moduleType = moduleName[0];
-        moduleName = moduleName[1];
+    if (Array.isArray(what)) {
+        moduleType = what[0];
+        moduleName = what[1];
+    }
+    else {
+      moduleName = what;
     }
 
     try {

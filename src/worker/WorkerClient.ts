@@ -3,7 +3,7 @@
 import {qualifyURL} from '../lib/net';
 import EditorDocument from "../EditorDocument";
 import EventEmitterClass from '../lib/event_emitter';
-import {get, moduleUrl} from "../config";
+import {get} from "../config";
 
 /**
  * WorkerClient manages the communication with a Web Worker.

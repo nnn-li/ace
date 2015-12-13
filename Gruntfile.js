@@ -174,7 +174,8 @@ module.exports = function(grunt) {
       "src/mode/TypeScriptWorker",
       "./node_modules/typescript/lib/lib.es6.d.ts",
       "./node_modules/typescript/lib/typescriptServices.d.ts",
-      "./typings/tsd.d.ts"
+      "./typings/tsd.d.ts",
+      "./typings/systemjs.d.ts"
   ];
 
   function ES5(xs) {

@@ -5,6 +5,10 @@ interface Module {
   metadata?: any;
 }
 
+interface ImportedModule {
+  default?: any;
+}
+
 interface Export {
   (name: string, what): void;
 }
@@ -26,8 +30,12 @@ interface Load {
   kind: string;
 }
 
+interface FetchFunction {
+  (name: string, address: string, metadata: any): Promise<string>;
+}
+
 interface SystemJS {
-  import(moduleName: string, normalizedParentName?: string): Promise<Module>;
+  import(moduleName: string, normalizedParentName?: string): Promise<ImportedModule>;
   defined: any;
   defaultJSExtensions: boolean;
   amdDefine: () => void;
@@ -57,19 +65,19 @@ interface SystemJS {
    * Loader Hook: fetch.
    * Given a URL for a resource, fetch its content.
    */
-  fetch(load: { name; address; metadata }): Promise<string>;
+  fetch(load: { name: string; address: string; metadata: any }): Promise<string>;
 
   /**
    * Loader Hook: translate.
    * Given module source, make any source modifications.
    */
-  translate(load: { name; address; metadata; source }): string;
+  translate(load: { name: string; address: string; metadata: any; source: string }): string;
 
   /**
    * Loader Hook: instantiate (formerly link).
    * Given module source, determine its dependencies and how to execute it.
    */
-  instantiate(load: { name; address; metadata; source }): Load;
+  instantiate(load: { name: string; address: string; metadata: any; source: string }): Load;
 
   delete(moduleName: string): void;
   /**
@@ -150,3 +158,5 @@ declare var System: SystemJS;
 declare module "systemjs" {
   export = System;
 }
+
+declare var __moduleName: string;

@@ -204,10 +204,10 @@ export default class EditSession extends EventEmitterClass {
      * @class EditSession
      * @constructor
      * @param doc {EditorDocument}
-     * @param [mode]
-     * @param [cb]
+     * @param [mode] {LanguageMode | string}
+     * @param [cb] A function that is called when the mode has been set successfully.
      */
-    constructor(doc: EditorDocument, mode?, cb?: () => any) {
+    constructor(doc: EditorDocument, mode?: LanguageMode | string, cb?: () => any) {
         super();
         this.$foldData = [];
         this.$foldData.toString = function() {
@@ -929,30 +929,39 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    *
-    * Returns the current new line mode.
-    * @return {String}
-    * @related EditorDocument.getNewLineMode
-    **/
+     * Returns the current new line mode.
+     *
+     * @method getNewLineMode
+     * @return {string}
+     * @related EditorDocument.getNewLineMode
+     */
     private getNewLineMode(): string {
         return this.doc.getNewLineMode();
     }
 
     /**
-    * Identifies if you want to use a worker for the `EditSession`.
-    * @param {Boolean} useWorker Set to `true` to use a worker
-    *
-    **/
-    private setUseWorker(useWorker: boolean) { this.setOption("useWorker", useWorker); }
+     * Identifies if you want to use a worker for the `EditSession`.
+     *
+     * @method setUseWorker
+     * @param {boolean} useWorker Set to `true` to use a worker.
+     * @return {void}
+     */
+    private setUseWorker(useWorker: boolean): void {
+        this.setOption("useWorker", useWorker);
+    }
 
     /**
-    * Returns `true` if workers are being used.
-    **/
+     * Returns `true` if workers are being used.
+     *
+     * @method getUseWorker
+     * @return {boolean}
+     */
     private getUseWorker(): boolean { return this.$useWorker; }
 
     /**
-    * Reloads all the tokens on the current session. This function calls [[BackgroundTokenizer.start `BackgroundTokenizer.start ()`]] to all the rows; it also emits the `'tokenizerUpdate'` event.
-    **/
+     * Reloads all the tokens on the current session.
+     * This function calls [[BackgroundTokenizer.start `BackgroundTokenizer.start ()`]] to all the rows; it also emits the `'tokenizerUpdate'` event.
+     */
     private onReloadTokenizer(e) {
         var rows = e.data;
         this.bgTokenizer.start(rows.first);
@@ -961,21 +970,31 @@ export default class EditSession extends EventEmitterClass {
 
 
     /**
-    * Sets a new text mode for the `EditSession`. This method also emits the `'changeMode'` event. If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.
-    * @param {TextMode} mode Set a new text mode
-    * @param {cb} optional callback
-    *
-    **/
-    private setMode(mode, cb?: () => any): void {
+     * Sets a new langauge mode for the `EditSession`.
+     * This method also emits the `'changeMode'` event.
+     * If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.
+     *
+     * @method setMode
+     * @param mode {LanguageMode | string} Set a new language mode instance or module name.
+     * @param {cb} optional callback
+     * @return {void}
+     */
+    public setMode(mode: LanguageMode | string, cb?: () => any): void {
+
+        var path: string;
+        var options;
         if (mode && typeof mode === "object") {
             if (mode.getTokenizer) {
-                return this.$onChangeMode(mode);
+                return this.$onChangeMode(mode, false);
             }
-            var options = mode;
-            var path = options.path;
+            options = mode;
+            path = options.path;
+        }
+        else if (typeof mode === 'string') {
+            path = mode || "ace/mode/text";
         }
         else {
-            path = mode || "ace/mode/text";
+            path = "ace/mode/text";
         }
 
         // this is needed if ace isn't on require path (e.g tests in node)
@@ -984,27 +1003,39 @@ export default class EditSession extends EventEmitterClass {
         }
 
         if (this.$modes[path] && !options) {
-            this.$onChangeMode(this.$modes[path]);
+            // We've already got that mode cached, use it.
+            this.$onChangeMode(this.$modes[path], false);
             cb && cb();
             return;
         }
-        // load on demand
+        // load dynamically.
         this.$modeId = path;
-        loadModule(["mode", path], function(m: any) {
-            if (this.$modeId !== path)
-                return cb && cb();
-            if (this.$modes[path] && !options)
-                return this.$onChangeMode(this.$modes[path]);
-            if (m && m.Mode) {
-                m = new m.Mode(options);
-                if (!options) {
-                    this.$modes[path] = m;
-                    m.$id = path;
+        var self = this;
+        System.import(path)
+            .then(function(m: ImportedModule) {
+                if (self.$modeId !== path) {
+                    return cb && cb();
                 }
-                this.$onChangeMode(m);
-                cb && cb();
-            }
-        }.bind(this));
+                if (self.$modes[path] && !options) {
+                    return self.$onChangeMode(self.$modes[path], false);
+                }
+                // FIXME: This won't work because it assumes that all classes are named exports and 'Mode'.
+                if (m && m.default) {
+                    var newMode: LanguageMode = new m.default(options);
+                    // Cache the new langauge mode if there are no options set.
+                    if (!options) {
+                        self.$modes[path] = newMode;
+                        newMode.$id = path;
+                    }
+                    self.$onChangeMode(newMode, false);
+                    cb && cb();
+                }
+                else {
+                    console.warn(`${path} does not define a default export (a LangaugeMode class).`);
+                }
+            }).catch(function(reason) {
+              console.warn(`${reason}`);
+            });
 
         // set mode to text until loading is finished
         if (!this.$mode) {
@@ -1012,12 +1043,13 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-    private $onChangeMode(mode: LanguageMode, $isPlaceholder?: boolean): void {
-        if (!$isPlaceholder) {
+    private $onChangeMode(mode: LanguageMode, isPlaceholder: boolean): void {
+
+        if (!isPlaceholder) {
             this.$modeId = mode.$id;
         }
+
         if (this.$mode === mode) {
-            // Nothing to do. Be idempotent.
             return;
         }
 
@@ -1054,7 +1086,7 @@ export default class EditSession extends EventEmitterClass {
         this.nonTokenRe = mode.nonTokenRe;
 
 
-        if (!$isPlaceholder) {
+        if (!isPlaceholder) {
             this.$options.wrapMethod.set.call(this, this.$wrapMethod);
             this.$setFolding(mode.foldingRules);
             this.bgTokenizer.start(0);
@@ -1062,15 +1094,24 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-
-    private $stopWorker() {
+    /**
+     * @method $stopWorker
+     * @return {void}
+     * @private
+     */
+    private $stopWorker(): void {
         if (this.$worker) {
             this.$worker.terminate();
         }
         this.$worker = null;
     }
 
-    private $startWorker() {
+    /**
+     * @method $startWorker
+     * @return {void}
+     * @private
+     */
+    private $startWorker(): void {
         try {
             this.$worker = this.$mode.createWorker(this);
         }
@@ -1080,19 +1121,23 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * Returns the current text mode.
-    * @return {TextMode} The current text mode
-    **/
-    public getMode() {
+     * Returns the current language mode.
+     *
+     * @method getMode
+     * @return {LanguageMode} The current language mode.
+     */
+    public getMode(): LanguageMode {
         return this.$mode;
     }
 
     /**
-    * This function sets the scroll top value. It also emits the `'changeScrollTop'` event.
-    * @param {Number} scrollTop The new scroll top value
-    *
-    **/
-    public setScrollTop(scrollTop: number) {
+     * This function sets the scroll top value. It also emits the `'changeScrollTop'` event.
+     *
+     * @method setScrollTop
+     * @param scrollTop {number} The new scroll top value
+     * @return {void}
+     */
+    public setScrollTop(scrollTop: number): void {
         // TODO: should we force integer lineheight instead? scrollTop = Math.round(scrollTop); 
         if (this.$scrollTop === scrollTop || isNaN(scrollTop)) {
             return;
@@ -1235,7 +1280,7 @@ export default class EditSession extends EventEmitterClass {
      *
      *
      **/
-    public insert(position: { row: number; column: number }, text: string) {
+    public insert(position: Position, text: string) {
         return this.doc.insert(position, text);
     }
 
@@ -1247,7 +1292,7 @@ export default class EditSession extends EventEmitterClass {
      * @related EditorDocument.remove
      *
      **/
-    public remove(range: Range) {
+    public remove(range: Range): Position {
         return this.doc.remove(range);
     }
 
@@ -1259,7 +1304,7 @@ export default class EditSession extends EventEmitterClass {
      *
      * @return {Range}
     **/
-    public undoChanges(deltas, dontSelect?: boolean) {
+    public undoChanges(deltas, dontSelect?: boolean): Range {
         if (!deltas.length)
             return;
 
@@ -1271,7 +1316,8 @@ export default class EditSession extends EventEmitterClass {
                 this.doc.revertDeltas(delta.deltas);
                 lastUndoRange =
                     this.$getUndoSelection(delta.deltas, true, lastUndoRange);
-            } else {
+            }
+            else {
                 delta.deltas.forEach(function(foldDelta) {
                     this.addFolds(foldDelta.folds);
                 }, this);
@@ -1293,7 +1339,7 @@ export default class EditSession extends EventEmitterClass {
     *
      * @return {Range}
     **/
-    public redoChanges(deltas, dontSelect?: boolean) {
+    public redoChanges(deltas, dontSelect?: boolean): Range {
         if (!deltas.length)
             return;
 
@@ -1411,7 +1457,7 @@ export default class EditSession extends EventEmitterClass {
     *
     *
     **/
-    public moveText(fromRange: Range, toPosition: { row: number; column: number }, copy) {
+    public moveText(fromRange: Range, toPosition: Position, copy) {
         var text = this.getTextRange(fromRange);
         var folds = this.getFoldsInRange(fromRange);
         var rowDiff: number;
@@ -1481,7 +1527,7 @@ export default class EditSession extends EventEmitterClass {
     *
     *
     **/
-    public outdentRows(range: Range) {
+    public outdentRows(range: Range): void {
         var rowRange = range.collapseRows();
         var deleteRange = new Range(0, 0, 0, 0);
         var size = this.getTabSize();
@@ -1505,7 +1551,7 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-    private $moveLines(firstRow: number, lastRow: number, dir: number) {
+    private $moveLines(firstRow: number, lastRow: number, dir: number): number {
         firstRow = this.getRowFoldStart(firstRow);
         lastRow = this.getRowFoldEnd(lastRow);
         if (dir < 0) {
@@ -1568,23 +1614,23 @@ export default class EditSession extends EventEmitterClass {
     *
     *
     **/
-    public duplicateLines(firstRow, lastRow) {
+    public duplicateLines(firstRow: number, lastRow: number): number {
         return this.$moveLines(firstRow, lastRow, 0);
     }
 
 
-    private $clipRowToDocument(row) {
+    private $clipRowToDocument(row: number): number {
         return Math.max(0, Math.min(row, this.doc.getLength() - 1));
     }
 
-    private $clipColumnToRow(row, column) {
+    private $clipColumnToRow(row: number, column: number): number {
         if (column < 0)
             return 0;
         return Math.min(this.doc.getLine(row).length, column);
     }
 
 
-    private $clipPositionToDocument(row: number, column: number): { row: number; column: number } {
+    private $clipPositionToDocument(row: number, column: number): Position {
         column = Math.max(0, column);
 
         if (row < 0) {
@@ -1640,7 +1686,7 @@ export default class EditSession extends EventEmitterClass {
      *
     *
     **/
-    private setUseWrapMode(useWrapMode: boolean) {
+    private setUseWrapMode(useWrapMode: boolean): void {
         if (useWrapMode != this.$useWrapMode) {
             this.$useWrapMode = useWrapMode;
             this.$modified = true;
@@ -1661,7 +1707,7 @@ export default class EditSession extends EventEmitterClass {
     * Returns `true` if wrap mode is being used; `false` otherwise.
     * @return {Boolean}
     **/
-    getUseWrapMode() {
+    getUseWrapMode(): boolean {
         return this.$useWrapMode;
     }
 
@@ -1695,7 +1741,7 @@ export default class EditSession extends EventEmitterClass {
     *
     * @private
     **/
-    public adjustWrapLimit(desiredLimit: number, $printMargin: number) {
+    public adjustWrapLimit(desiredLimit: number, $printMargin: number): boolean {
         var limits = this.$wrapLimitRange
         if (limits.max < 0)
             limits = { min: $printMargin, max: $printMargin };
@@ -1727,7 +1773,7 @@ export default class EditSession extends EventEmitterClass {
     * Returns the value of wrap limit.
     * @return {Number} The wrap limit.
     **/
-    private getWrapLimit() {
+    private getWrapLimit(): number {
         return this.$wrapLimit;
     }
 
@@ -1737,7 +1783,7 @@ export default class EditSession extends EventEmitterClass {
      *  of the given number of chars.
      * @param {number} limit The maximum line length in chars, for soft wrapping lines.
      */
-    private setWrapLimit(limit) {
+    private setWrapLimit(limit: number): void {
         this.setWrapLimitRange(limit, limit);
     }
 

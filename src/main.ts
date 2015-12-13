@@ -5,6 +5,7 @@ import EditorDocument from './EditorDocument';
 import EditSession from './EditSession';
 import VirtualRenderer from './VirtualRenderer';
 
+import TextMode from './mode/TextMode';
 import CssMode from './mode/CssMode';
 import HtmlMode from './mode/HtmlMode';
 import JavaScriptMode from './mode/JavaScriptMode';
@@ -20,16 +21,20 @@ import {getPosition} from './mode/typescript/DocumentPositionUtil';
 import {parallel} from "./lib/async";
 import Range from './Range';
 
-//var mode = new CssMode()
-//var mode = new HtmlMode()
-//var mode = new JavaScriptMode()
-var mode = new TypeScriptMode()
+var text = new TextMode()
+// var mode = new CssMode()
+// var mode = new HtmlMode()
+// var mode = new JavaScriptMode()
+// var mode = new TypeScriptMode()
 
-var code = '"use strict";\nvar x = 0;\ny = 1;\n';
+var code = '// comment\n"use strict";\nvar x = 0;\ny = 1;\n';
 
 var doc = new EditorDocument(code);
 
-var editSession = new EditSession(doc, mode);
+var editSession = new EditSession(doc/*, text*/);
+// We can use module names to set the language mode.
+// FIXME: Separate out the synchronous from the async?
+editSession.setMode('lib/mode/JavaScriptMode');
 editSession.setTabSize(2);
 editSession.setUseSoftTabs(true);
 
@@ -45,11 +50,9 @@ editor.setHighlightSelectedWord(true);
 editor.setAnimatedScroll(false);
 editor.setShowInvisibles(true);
 
+/*
 createWorkspace()
     .then(function(workspace: Workspace) {
-        /**
-         * The fileName gets defined when changeFile is called?
-         */
         var _fileName: string;
         ///////////////////////////////////////////////////////////////////////////////
         function changeFile(content: string, fileName: string, cursorPos?: number) {
@@ -94,11 +97,11 @@ createWorkspace()
         var _refMarkers: number[] = [];
         var _errorMarkers: number[] = [];
 
-        /**
-         * When the text in the editor changes, the edit is applied to the workspace.
-         * The workspace communicates with the WorkspaceWorker through a WorkerClient proxy.
-         * The onUpdate method of the worker is soon triggered followed by the compile method.
-         */
+        //
+        // When the text in the editor changes, the edit is applied to the workspace.
+        // The workspace communicates with the WorkspaceWorker through a WorkerClient proxy.
+        // The onUpdate method of the worker is soon triggered followed by the compile method.
+        //
         editor.on("change", function(event: { data: { action: string; range: { start: { row: number; column: number } }; text: string; lines: string[] } }) {
             console.log(`change ${JSON.stringify(event.data)}`)
             var data = event.data;
@@ -121,9 +124,9 @@ createWorkspace()
             else {
                 console.warn("change ignored because no fileName");
             }
-            /**
-             * Updates the file in the workspace using the (captured) fileName and change event.
-             */
+            //
+            // Updates the file in the workspace using the (captured) fileName and change event.
+            //
             function updateWorkspaceFile() {
                 function editLanguageServiceScript(start: number, end: number, text: string) {
                     if (workspace) {
@@ -152,9 +155,9 @@ createWorkspace()
                 }
             }
 
-            /**
-             * Updates the marker models.
-             */
+            //
+            // Updates the marker models.
+            //
             function updateMarkerModels() {
                 var markers = editor.getSession().getMarkers(true);
                 var line_count = 0;
@@ -269,3 +272,4 @@ createWorkspace()
     .catch(function(reason: any) {
       console.warn(`No workspace because ${reason}`);
     });
+*/

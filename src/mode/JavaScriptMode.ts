@@ -46,7 +46,6 @@ import EditSession from "../EditSession";
  */
 export default class JavaScriptMode extends TextMode {
     $outdent: MatchingBraceOutdent;
-    lineCommentStart: string;
     blockComment: { start: string; end: string };
 
     /**

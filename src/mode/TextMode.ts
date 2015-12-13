@@ -66,7 +66,7 @@ export default class TextMode implements LanguageMode {
         + packages.Pc + "\\$_]|\\s])+", "g"
     );
 
-    protected lineCommentStart: any = "";
+    protected lineCommentStart: string | string[] = "";
     protected blockComment: any = "";
     public $id = "ace/mode/text";
     private $tokenizer: Tokenizer;
@@ -86,6 +86,10 @@ export default class TextMode implements LanguageMode {
     constructor() {
     }
 
+    /**
+     * @method getTokenizer
+     * @return {Tokenizer}
+     */
     getTokenizer(): Tokenizer {
         if (!this.$tokenizer) {
             this.$highlightRules = this.$highlightRules || new this.HighlightRules();
@@ -94,7 +98,15 @@ export default class TextMode implements LanguageMode {
         return this.$tokenizer;
     }
 
-    toggleCommentLines(state: string, session: EditSession, startRow: number, endRow: number) {
+    /**
+     * @method toggleCommentLines
+     * @param state {string}
+     * @param session {EditSession}
+     * @param startRow {number}
+     * @param endRow {number}
+     * @return {boolean}
+     */
+    public toggleCommentLines(state: string, session: EditSession, startRow: number, endRow: number): boolean {
         var doc = session.doc;
 
         var ignoreBlankLines = true;
@@ -140,12 +152,12 @@ export default class TextMode implements LanguageMode {
         }
         else {
             if (Array.isArray(this.lineCommentStart)) {
-                var regexpStartString: string = this.lineCommentStart.map(escapeRegExp).join("|");
-                var lineCommentStart = this.lineCommentStart[0];
+                var regexpStartString: string = (<string[]>this.lineCommentStart).map(escapeRegExp).join("|");
+                lineCommentStart = (<string[]>this.lineCommentStart)[0];
             }
             else {
-                var regexpStartString: string = escapeRegExp(this.lineCommentStart);
-                var lineCommentStart = this.lineCommentStart;
+                var regexpStartString: string = escapeRegExp(<string>this.lineCommentStart);
+                lineCommentStart = <string>this.lineCommentStart;
             }
             regexpStart = new RegExp("^(\\s*)(?:" + regexpStartString + ") ?");
 
