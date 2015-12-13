@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-"use strict";
+// "use strict"; Uncaught (in promise) SyntaxError: Unexpected token =
 
 import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";

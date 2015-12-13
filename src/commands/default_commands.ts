@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {stringRepeat, stringTrimLeft, stringTrimRight} from "../lib/lang";
 import {loadModule} from "../config";

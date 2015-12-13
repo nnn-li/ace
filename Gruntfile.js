@@ -1,5 +1,6 @@
 // The "wrapper" function.
 module.exports = function(grunt) {
+
   // Do grunt-related things in here.
 
   var path = require('path');
@@ -8,13 +9,14 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+
     // Access the package file contents for later use.
     pkg: grunt.file.readJSON('package.json'),
 
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['dist', 'amd', 'cjs', 'documentation']
+      src: ['dist', 'amd', 'cjs', 'es6', 'lib', 'documentation']
     },
 
     exec: {

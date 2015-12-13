@@ -1,3 +1,5 @@
+"use strict";
+
 import {applyMixins} from "../lib/mix";
 import HashHandler from "../keyboard/HashHandler";
 import EventEmitterClass from "../lib/event_emitter";

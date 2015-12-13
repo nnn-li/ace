@@ -1,3 +1,5 @@
+"use strict";
+
 // import Editor = require('../Editor')
 
 interface Command {

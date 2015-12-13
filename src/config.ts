@@ -98,7 +98,7 @@ export var $loading: { [name: string]: ((m) => any)[] } = {};
 // FIXME. It would be more type-safe if the first argument where an array of strings.
 // What is the type of the module returned by the require function?
 // We're actually going to insert a script tag.
-export function loadModule(moduleName, onLoad: (m: any) => any, doc: Document = document) {
+export function loadModule(moduleName, onLoad: (m) => any, doc: Document = document) {
     var module;
     var moduleType: string;
     if (Array.isArray(moduleName)) {
