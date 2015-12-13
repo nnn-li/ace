@@ -3,7 +3,7 @@
 import {mixin} from '../lib/oop';
 import Mirror from '../worker/Mirror';
 import EditorDocument from '../EditorDocument';
-import IWorkerCallback from "../IWorkerCallback";
+import WorkerCallback from "../WorkerCallback";
 
 /**
  * Doesn't really do much because TypeScript requires the concept of a workspace.
@@ -23,9 +23,9 @@ export default class TypeScriptWorker extends Mirror {
     /**
      * @class TypeScriptWorker
      * @constructor
-     * @param sender {IWorkerCallback}
+     * @param sender {WorkerCallback}
      */
-    constructor(sender: IWorkerCallback) {
+    constructor(sender: WorkerCallback) {
         super(sender, 500);
 
         this.setOptions();

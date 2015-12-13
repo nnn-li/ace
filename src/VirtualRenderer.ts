@@ -27,11 +27,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {addCssClass, createElement, importCssString, removeCssClass, setCssClass} from "./lib/dom";
 import {_emit, defineOptions, loadModule, resetOptions} from "./config";
 import {isOldIE} from "./lib/useragent";
-import IAnnotation from './IAnnotation';
+import Annotation from './Annotation';
 import Gutter from "./layer/Gutter";
 import Marker from "./layer/Marker";
 import Text from "./layer/Text";
@@ -1192,10 +1193,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * Sets annotations for the gutter.
      *
      * @method setAnnotations
-     * @param {IAnnotation[]} annotations An array containing annotations.
+     * @param {Annotation[]} annotations An array containing annotations.
      * @return {void}
      */
-    setAnnotations(annotations: IAnnotation[]): void {
+    setAnnotations(annotations: Annotation[]): void {
         this.$gutterLayer.setAnnotations(annotations);
         this.$loop.schedule(CHANGE_GUTTER);
     }
@@ -1590,9 +1591,11 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      */
     setTheme(theme: any, cb?: () => any): void {
         console.log("VirtualRenderer setTheme, theme = " + theme)
+
         var _self = this;
+
         this.$themeId = theme;
-        _self._dispatchEvent('themeChange', { theme: theme });
+        _self._emit('themeChange', { theme: theme });
 
         if (!theme || typeof theme === "string") {
             var moduleName = theme || this.getOption("theme").initialValue;
@@ -1606,6 +1609,8 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         }
 
         function afterLoad(modJs: { cssText: string; cssClass: string; isDark: boolean; padding: number }) {
+
+            console.log("VirtialRenderer.afterLoad()");
 
             if (_self.$themeId !== theme) {
                 return cb && cb();
@@ -1637,7 +1642,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
                 _self.$updateSizeAsync();
             }
 
-            _self._dispatchEvent('themeLoaded', { theme: modJs });
+            _self._emit('themeLoaded', { theme: modJs });
             cb && cb();
         }
     }

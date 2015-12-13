@@ -1,18 +1,35 @@
+"use strict";
+
 import ScriptInfo from "./ScriptInfo";
 
-export default class ScriptCache implements ts.LanguageServiceHost {
+/**
+ * @class DefaultLanguageServiceHost
+ */
+export default class DefaultLanguageServiceHost implements ts.LanguageServiceHost {
 
-    compilationSettings: ts.CompilerOptions;
+    /**
+     * @property compilerOptions
+     * @type CompilerOptions
+     * @private
+     */
+    private compilerOptions: ts.CompilerOptions;
 
-    scripts: { [fileName: string]: ScriptInfo };
-    maxScriptVersions: number;
-    constructor() {
-        this.compilationSettings = null;
+    public scripts: { [fileName: string]: ScriptInfo };
+    private maxScriptVersions: number;
+    private ts;
+
+    /**
+     * @class DefaultLanguageServiceHost
+     * @constructor
+     */
+    constructor(ts) {
+        this.compilerOptions = null;
         this.scripts = {};
         this.maxScriptVersions = 100;
+        this.ts = ts;
     }
 
-    getScriptFileNames() {
+    getScriptFileNames(): string[] {
         return Object.keys(this.scripts);
     }
 
@@ -54,12 +71,24 @@ export default class ScriptCache implements ts.LanguageServiceHost {
     ///////////////////////////////////////////////////////////////////////
     // local implementation
 
-    private addScript(fileName: string, content: string) {
-        //        var script = new ScriptInfo(fileName, content);
-        //        this.scripts[fileName] = script;
+    /**
+     * @method addScript
+     * @param fileName {string}
+     * @param content {string}
+     * @return {void}
+     */
+    private addScript(fileName: string, content: string): void {
+        var script = new ScriptInfo(fileName, content);
+        this.scripts[fileName] = script;
     }
 
-    ensureScript(fileName, content) {
+    /**
+     * @method ensureScript
+     * @param fileName {string}
+     * @param content {string}
+     * @return {void}
+     */
+    ensureScript(fileName: string, content: string): void {
         var script = this.scripts[fileName];
         if (script) {
             script.updateContent(content);
@@ -69,7 +98,15 @@ export default class ScriptCache implements ts.LanguageServiceHost {
         }
     }
 
-    editScript(fileName, minChar, limChar, newText) {
+    /**
+     * @method editScript
+     * @param fileName {string}
+     * @param minChar {number}
+     * @param limChar {number}
+     * @param newText {string}
+     * @return {void}
+     */
+    editScript(fileName: string, minChar: number, limChar: number, newText: string): void {
         var script = this.scripts[fileName];
         if (script) {
             script.editContent(minChar, limChar, newText);
@@ -79,18 +116,23 @@ export default class ScriptCache implements ts.LanguageServiceHost {
         }
     }
 
-    removeScript(fileName) {
+    /**
+     * @method removeScript
+     * @param fileName {string}
+     * @return {void}
+     */
+    removeScript(fileName: string): void {
         var script = this.scripts[fileName];
         if (script) {
             delete this.scripts[fileName];
         }
         else {
-            throw new Error("No script with fileName '" + fileName + "'");
+            console.warn(`removeScript: No script with fileName '${fileName}'`);
         }
     }
 
-    setCompilationSettings(value: ts.CompilerOptions): void {
-        this.compilationSettings = value;
+    setCompilationSettings(compilerOptions: ts.CompilerOptions): void {
+        this.compilerOptions = compilerOptions;
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -132,7 +174,7 @@ export default class ScriptCache implements ts.LanguageServiceHost {
      * @return {CompilerOptions}
      */
     getCompilationSettings(): ts.CompilerOptions {
-        return this.compilationSettings;
+        return this.compilerOptions;
     }
 
     getNewLine(): string {
@@ -152,7 +194,7 @@ export default class ScriptCache implements ts.LanguageServiceHost {
 
     getScriptSnapshot(fileName: string): ts.IScriptSnapshot {
         var script = this.scripts[fileName];
-        var result = ts.ScriptSnapshot.fromString(script.content);
+        var result = this.ts.ScriptSnapshot.fromString(script.content);
 
         // Quick hack: We don't want this to blow up.
         /*
@@ -178,14 +220,27 @@ export default class ScriptCache implements ts.LanguageServiceHost {
         return result;
     }
 
+    /**
+     * @method getCurrentDirectory
+     * @return {string}
+     */
     getCurrentDirectory(): string {
-        console.warn("ScriptCache.getCurrentDirector() called!");
+        console.warn("getCurrentDirectory() called!");
         return "";
     }
 
+    /**
+     * This method is called by the LanguageService in order to determine
+     * the library that represents what is globally available.
+     *
+     * @method getDefaultLibFileName
+     * @param options {CompilerOptions}
+     * @return {string}
+     */
     getDefaultLibFileName(options: ts.CompilerOptions): string {
-        console.warn("ScriptCache.getDefaultLibFileName() called!");
-        return "";
+        // TODO: I think this should return the d.ts file.
+        console.warn(`getDefaultLibFileName(${JSON.stringify(options)})`);
+        return "jspm_packages/npm/typescript@1.7.3/lib/lib.d.ts";
     }
 
     log(s: string): void {

@@ -73,7 +73,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
         return this.hashHandler.handleKeyboard(data, hashId, keyString, keyCode);
     }
 
-    exec(command: any, editor?: Editor, args?) {
+    exec(command: any, editor?: Editor, args?): boolean {
         if (typeof command === 'string') {
             command = this.hashHandler.commands[command];
         }

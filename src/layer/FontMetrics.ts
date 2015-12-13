@@ -1,3 +1,5 @@
+"use strict";
+
 import { createElement } from "../lib/dom";
 import { stringRepeat } from "../lib/lang";
 import { isIE } from "../lib/useragent";

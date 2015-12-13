@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {FUNCTION_KEYS, KEY_MODS} from "../lib/keys";
 import keyCodes from "../lib/keys";

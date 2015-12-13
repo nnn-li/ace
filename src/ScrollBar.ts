@@ -27,6 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
+
 import { createElement } from "./lib/dom";
 import { addListener } from "./lib/event";
 import EventEmitterClass from "./lib/event_emitter";

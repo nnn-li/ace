@@ -1,7 +1,9 @@
+"use strict";
+
 /**
- * @class IAnnotation
+ * @class Annotation
  */
-interface IAnnotation {
+interface Annotation {
 
     /**
      * @property html
@@ -34,4 +36,4 @@ interface IAnnotation {
     type: string;
 }
 
-export default IAnnotation;
+export default Annotation;

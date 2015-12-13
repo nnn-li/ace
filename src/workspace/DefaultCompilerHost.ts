@@ -1,0 +1,174 @@
+/* */
+import Logger from './logger';
+import {isHtml, isTypescriptDeclaration, isJavaScript} from './utils';
+
+let logger = new Logger({ debug: false });
+export let __HTML_MODULE__ = "__html_module__";
+
+/**
+ * @class DefaultCompilerHost
+ */
+export default class DefaultCompilerHost implements ts.CompilerHost {
+    private _options: ts.CompilerOptions;
+    private _files: Map<string, ts.SourceFile>;
+    private _fileResMaps: Map<string, any>;
+
+    /**
+     * @class DefaultCompilerHost
+     * @constructor
+     * @param [options] {CompilerOptions}
+     */
+    constructor(options?: ts.CompilerOptions) {
+        this._options = options || {};
+        this._options.module = this.getEnum(this._options.module, (<any>ts).ModuleKind, ts.ModuleKind.System);
+        this._options.target = this.getEnum(this._options.target, (<any>ts).ScriptTarget, ts.ScriptTarget.ES5);
+        this._options.jsx = this.getEnum(this._options.jsx, (<any>ts).JsxEmit, ts.JsxEmit.None);
+        this._options.allowNonTsExtensions = (this._options.allowNonTsExtensions !== false);
+        this._options.noResolve = true;
+
+        this._files = new Map<string, ts.SourceFile>();
+        this._fileResMaps = new Map<string, any>();
+
+        // support for importing html templates until
+        // https://github.com/Microsoft/TypeScript/issues/2709#issuecomment-91968950 gets implemented
+        // note - this only affects type-checking, not runtime!
+        this.addFile(__HTML_MODULE__, "var __html__: string = ''; export default __html__;");
+    }
+
+    private getEnum<T>(enumValue: any, enumType: any, defaultValue: T): T {
+        if (enumValue == undefined) return defaultValue;
+
+        for (var enumProp in enumType) {
+            if (enumProp.toLowerCase() === enumValue.toString().toLowerCase()) {
+                if (typeof enumType[enumProp] === "string")
+                    return enumType[enumType[enumProp]];
+                else
+                    return enumType[enumProp];
+            }
+        }
+
+        throw new Error(`Unrecognised value [${enumValue}]`);
+    }
+
+    public get options(): ts.CompilerOptions {
+        return this._options;
+    }
+
+    /**
+     * @method getSourceFile
+     * @param fileName {string}
+     * @param languageVersion {ScriptTarget} An enumeration 0=ES3, 1=ES5, 2=ES6
+     * @param onError
+     * @return {SourceFile}
+     */
+    public getSourceFile(fileName: string, languageVersion: ts.ScriptTarget, onError?: (message: string) => void): ts.SourceFile {
+        return this._files[fileName];
+    }
+
+    public fileExists(fileName: string): boolean {
+        return !!this._files[fileName];
+    }
+
+    public readFile(fileName: string): string {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * @method writeFile
+     * @param fileName {string}
+     * @param data {string}
+     * @param writeByteOrderMark {boolean}
+     */
+    public writeFile(fileName: string, data: string, writeByteOrderMark: boolean, onError?: (message: string) => void): void {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * @method getDefaultLibFileName
+     * @return {string}
+     */
+    public getDefaultLibFileName(): string {
+        return "typescript/lib/lib.es6.d.ts";
+    }
+
+    /**
+     * @method useCaseSensitiveFileNames
+     * @return {boolean}
+     */
+    public useCaseSensitiveFileNames(): boolean {
+        return false;
+    }
+
+    /**
+     * @method getCanonicalFileName
+     * @param fileName {string}
+     * @return {string}
+     */
+    public getCanonicalFileName(fileName: string): string {
+        return fileName;
+    }
+
+    /**
+     * @method getCurrentDirectory
+     * @return {string}
+     */
+    public getCurrentDirectory(): string {
+        return "";
+    }
+
+    /**
+     * @method getNewLine
+     * @return {string}
+     */
+    public getNewLine(): string {
+        return "\n";
+    }
+
+    public addFile(filename: string, text: string, isDefaultLib: boolean = false) {
+        this._files[filename] = ts.createSourceFile(filename, text, this._options.target);
+        this._files[filename].isDefaultLib = isDefaultLib;
+
+        logger.debug(`added ${filename}`);
+        return this._files[filename];
+    }
+
+    /*
+      Called by the type-checker, this method adds a map of imports/references used
+      by this file to their resolved locations.
+      These will include any redirections to a typings file if one is present.
+      This map is then used in resolveModuleNames below.
+    */
+    public addResolutionMap(filename: string, map: Map<string, string>) {
+        this._fileResMaps[filename] = map;
+    }
+
+    /*
+     * Overrides the standard resolution algorithm used by the compiler so that we can use systemjs
+     * resolution. Because TypeScript requires synchronous resolution, everything is pre-resolved
+     * by the type-checker and registered with the host before type-checking.
+     *
+     * @method resolveModuleNames
+     * @param moduleNames {string[]}
+     * @param containingFile {string}
+     * @return {ResolvedModule[]}
+     */
+    public resolveModuleNames(moduleNames: string[], containingFile: string): ts.ResolvedModule[] {
+        return moduleNames.map((modName) => {
+            let mappings = this._fileResMaps[containingFile];
+
+            if (isHtml(modName)) {
+                return { resolvedFileName: __HTML_MODULE__ };
+            }
+            else if (mappings) {
+                let resolvedFileName = mappings[modName];
+                let isExternalLibraryImport = isTypescriptDeclaration(resolvedFileName);
+
+                return { resolvedFileName, isExternalLibraryImport };
+            }
+            else {
+                return ts.resolveModuleName(modName, containingFile, this._options, this).resolvedModule;
+                //   throw new Error(`containing file ${containingFile} has not been loaded`);
+            }
+        });
+    }
+}

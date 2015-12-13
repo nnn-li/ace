@@ -27,16 +27,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
-import IAnnotation from './IAnnotation';
+import Annotation from './Annotation';
 import EventEmitterClass from "./lib/event_emitter";
 import FoldLine from "./FoldLine";
 import Fold from "./Fold";
 import Selection from "./Selection";
-import Mode from "./mode/Mode";
+import LanguageMode from "./LanguageMode";
 import Range from "./Range";
 import EditorDocument from "./EditorDocument";
 import BackgroundTokenizer from "./BackgroundTokenizer";
@@ -50,6 +51,8 @@ import WorkerClient from "./worker/WorkerClient";
 import LineWidget from './LineWidget';
 import LineWidgets from './LineWidgets';
 import Position from './Position';
+import FoldMode from "./mode/folding/FoldMode";
+import TextMode from "./mode/TextMode";
 
 // "Tokens"
 var CHAR = 1,
@@ -137,7 +140,7 @@ export default class EditSession extends EventEmitterClass {
     private $rowLengthCache;
     private $overwrite = false;
     public $searchHighlight: SearchHighlight;
-    private $annotations: IAnnotation[];
+    private $annotations: Annotation[];
     private $autoNewLine;
     private getOption;
     private setOption;
@@ -145,12 +148,12 @@ export default class EditSession extends EventEmitterClass {
     /**
      *
      */
-    private $modes: { [path: string]: Mode } = {};
+    private $modes: { [path: string]: LanguageMode } = {};
 
     /**
      *
      */
-    public $mode: Mode = null;
+    public $mode: LanguageMode = null;
     private $modeId = null;
     /**
      * The worker corresponding to the mode (i.e. Language).
@@ -546,7 +549,7 @@ export default class EditSession extends EventEmitterClass {
      * @return {EditSession}
      * @chainable
      */
-    private setUseSoftTabs(useSoftTabs: boolean): EditSession {
+    public setUseSoftTabs(useSoftTabs: boolean): EditSession {
         this.setOption("useSoftTabs", useSoftTabs);
         return this;
     }
@@ -563,28 +566,34 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * Set the number of spaces that define a soft tab.
-    * For example, passing in `4` transforms the soft tabs to be equivalent to four spaces.
-    * This function also emits the `changeTabSize` event.
-    * @param {Number} tabSize The new tab size
-    **/
-    private setTabSize(tabSize: number) {
+     * Set the number of spaces that define a soft tab.
+     * For example, passing in `4` transforms the soft tabs to be equivalent to four spaces.
+     * This function also emits the `changeTabSize` event.
+     *
+     * @method setTabSize
+     * @param tabSize {number} The new tab size.
+     * @return {void}
+     */
+    public setTabSize(tabSize: number): void {
         this.setOption("tabSize", tabSize);
     }
 
     /**
-    * Returns the current tab size.
-    **/
+     * Returns the current tab size.
+     *
+     * @method getTabSize
+     * @return {number}
+     */
     public getTabSize(): number {
         return this.$tabSize;
     }
 
     /**
-    * Returns `true` if the character at the position is a soft tab.
-    * @param {Object} position The position to check
-    *
-    *
-    **/
+     * Returns `true` if the character at the position is a soft tab.
+     * @param {Object} position The position to check
+     *
+     *
+     */
     public isTabStop(position: { column: number }) {
         return this.$useSoftTabs && (position.column % this.$tabSize === 0);
     }
@@ -807,10 +816,10 @@ export default class EditSession extends EventEmitterClass {
      * This functions emits the `'changeAnnotation'` event.
      *
      * @method setAnnotations
-     * @param {IAnnotation[]} annotations A list of annotations.
+     * @param {Annotation[]} annotations A list of annotations.
      * @return {void}
      */
-    public setAnnotations(annotations: IAnnotation[]): void {
+    public setAnnotations(annotations: Annotation[]): void {
         this.$annotations = annotations;
         this._signal("changeAnnotation", {});
     }
@@ -819,9 +828,9 @@ export default class EditSession extends EventEmitterClass {
      * Returns the annotations for the `EditSession`.
      *
      * @method getAnnotations
-     * @return {IAnnotation[]}
+     * @return {Annotation[]}
      */
-    public getAnnotations(): IAnnotation[] {
+    public getAnnotations(): Annotation[] {
         return this.$annotations || [];
     }
 
@@ -971,7 +980,7 @@ export default class EditSession extends EventEmitterClass {
 
         // this is needed if ace isn't on require path (e.g tests in node)
         if (!this.$modes["ace/mode/text"]) {
-            this.$modes["ace/mode/text"] = new Mode();
+            this.$modes["ace/mode/text"] = new TextMode();
         }
 
         if (this.$modes[path] && !options) {
@@ -1003,7 +1012,7 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-    private $onChangeMode(mode: Mode, $isPlaceholder?: boolean): void {
+    private $onChangeMode(mode: LanguageMode, $isPlaceholder?: boolean): void {
         if (!$isPlaceholder) {
             this.$modeId = mode.$id;
         }
@@ -2512,7 +2521,7 @@ export default class EditSession extends EventEmitterClass {
     $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
         return this.$bracketMatcher.$findClosingBracket(bracket, position, typeRe);
     }
-    private $foldMode;
+    private $foldMode: FoldMode;
 
     // structured folding
     $foldStyles = {
@@ -3184,7 +3193,7 @@ export default class EditSession extends EventEmitterClass {
         this.$setFolding(mode);
     }
 
-    private $setFolding(foldMode) {
+    private $setFolding(foldMode: FoldMode) {
         if (this.$foldMode == foldMode)
             return;
 
@@ -3193,7 +3202,7 @@ export default class EditSession extends EventEmitterClass {
         this.off('change', this.$updateFoldWidgets);
         this._emit("changeAnnotation");
 
-        if (!foldMode || this.$foldStyle == "manual") {
+        if (!foldMode || this.$foldStyle === "manual") {
             this.foldWidgets = null;
             return;
         }

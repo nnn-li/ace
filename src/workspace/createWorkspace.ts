@@ -8,17 +8,14 @@ import Workspace from './Workspace'
  * This is a functional constructor; do not use the 'new' operator to call it.
  *                                   do not use 'this' in the code below.
  */
-export default function createWorkspace() {
+export default function createWorkspace(): Promise<Workspace> {
+
+    // console.log("createWorkspace()");
 
     var workerProxy = new WorkerClient('lib/worker/worker-systemjs.js');
 
     var callbacks = {};
     var callbackId = 1;
-
-    workerProxy.on("initAfter", function(event) {
-        // Not using this capability right now.
-        // WorkspaceWorker sends this notification that constructor finished.
-    });
 
     workerProxy.on("fileNames", function(response: { data: { names: string[]; callbackId: number } }) {
         var data = response.data;
@@ -70,8 +67,6 @@ export default function createWorkspace() {
         doCallback(response.data);
     });
 
-    workerProxy.init('lib/workspace/WorkspaceWorker');
-
     function doCallback(data: { err: string; results: any; callbackId: number }) {
         var info = data.results;
         var id: number = data.callbackId;
@@ -94,6 +89,7 @@ export default function createWorkspace() {
     }
 
     function editScript(fileName: string, start: number, end: number, text: string) {
+        console.log(`Workspace.editScript(${fileName})`);
         var message =
             {
                 data: { fileName: fileName, start: start, end: end, text: text }
@@ -147,16 +143,29 @@ export default function createWorkspace() {
         workerProxy.emit("getOutputFiles", message);
     }
 
-    var that: Workspace = {
-        ensureScript: ensureScript,
-        editScript: editScript,
-        removeScript: removeScript,
-        getFileNames: getFileNames,
-        getSyntaxErrors: getSyntaxErrors,
-        getSemanticErrors: getSemanticErrors,
-        getCompletionsAtPosition: getCompletionsAtPosition,
-        getTypeAtDocumentPosition: getTypeAtDocumentPosition,
-        getOutputFiles: getOutputFiles
-    };
-    return that;
+    return new Promise<Workspace>(function(resolve, reject) {
+
+        workerProxy.on("initAfter", function(event) {
+            console.log(`workerProxy.initAfter(${JSON.stringify(event)})`);
+            var ws: Workspace = {
+                ensureScript: ensureScript,
+                editScript: editScript,
+                removeScript: removeScript,
+                getFileNames: getFileNames,
+                getSyntaxErrors: getSyntaxErrors,
+                getSemanticErrors: getSemanticErrors,
+                getCompletionsAtPosition: getCompletionsAtPosition,
+                getTypeAtDocumentPosition: getTypeAtDocumentPosition,
+                getOutputFiles: getOutputFiles
+            };
+            resolve(ws);
+        });
+
+        workerProxy.on("initFail", function(event) {
+            // console.log(`workerProxy.initFail(${JSON.stringify(event)})`);
+            reject(new Error("initFail received from worker thread."))
+        });
+
+        workerProxy.init('lib/workspace/WorkspaceWorker');
+    });
 };

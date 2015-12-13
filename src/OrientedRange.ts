@@ -1,3 +1,5 @@
+"use strict";
+
 import Range from "./Range";
 
 export default class OrientedRange extends Range {

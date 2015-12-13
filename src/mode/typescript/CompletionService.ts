@@ -1,3 +1,5 @@
+"use strict";
+
 import Editor from '../../Editor';
 import Position from '../../Position'
 import EditorPosition from './EditorPosition';

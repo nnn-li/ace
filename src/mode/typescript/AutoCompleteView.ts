@@ -1,3 +1,5 @@
+"use strict";
+
 // TODO import jquery
 declare var $: any;
 

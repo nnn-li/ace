@@ -27,9 +27,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
+
 import Mirror from "../worker/Mirror";
 import SAXParser from "./html/SAXParser";
-import IWorkerCallback from "../IWorkerCallback";
+import WorkerCallback from "../WorkerCallback";
 
 var errorTypes = {
     "expected-doctype-but-got-start-tag": "info",
@@ -39,7 +41,7 @@ var errorTypes = {
 
 export default class HtmlWorker extends Mirror {
     context;
-    constructor(sender: IWorkerCallback) {
+    constructor(sender: WorkerCallback) {
         super(sender);
         this.setOptions();
         sender.emit('initAfter');

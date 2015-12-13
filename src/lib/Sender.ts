@@ -1,11 +1,11 @@
 import EventEmitterClass from './event_emitter';
-import IWorkerCallback from '../IWorkerCallback';
+import WorkerCallback from '../WorkerCallback';
 
 /**
  * Used in Web Workers.
  * Uses postMessage to communicate with a taget window.
  */
-export default class Sender extends EventEmitterClass implements IWorkerCallback {
+export default class Sender extends EventEmitterClass implements WorkerCallback {
     private target: Window;
     constructor(target: Window) {
         super();

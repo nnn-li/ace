@@ -1,3 +1,5 @@
+"use strict";
+
 import { ContinuousRecognizer } from './attribute';
 import {
 DIRECTION_ALL,

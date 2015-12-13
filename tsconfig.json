@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "es6",
+    "module": "amd",
     "outDir": "lib",
-    "target": "es6",
+    "target": "es5",
     "noImplicitAny": false,
     "noLib": true,
     "removeComments": true,
@@ -12,6 +12,7 @@
     "inlineSources": true
   },
   "files": [
+    "./src/main.ts",
     "./src/autocomplete/popup.ts",
     "./src/autocomplete/text_completer.ts",
     "./src/autocomplete/util.ts",
@@ -136,7 +137,7 @@
     "./src/mode/TypeScriptHighlightRules.ts",
     "./src/mode/TypeScriptMode.ts",
     "./src/mode/TypeScriptWorker.ts",
-    "./src/mode/Mode.ts",
+    "./src/mode/TextMode.ts",
 
     "./src/mode/XmlHighlightRules.ts",
 
@@ -145,19 +146,19 @@
     "./src/worker/worker-amd.ts",
     "./src/worker/worker-systemjs.ts",
 
+    "./src/workspace/DefaultCompilerHost.ts",
     "./src/workspace/ScriptInfo.ts",
-    "./src/workspace/ScriptCache.ts",
+    "./src/workspace/DefaultLanguageServiceHost.ts",
     "./src/workspace/Workspace.ts",
     "./src/workspace/WorkspaceWorker.ts",
-    "./src/workspace/compiler-host.ts",
     "./src/workspace/createWorkspace.ts",
     "./src/workspace/logger.ts",
-    "./src/workspace/transpiler.ts",
+    "./src/workspace/Transpiler.ts",
     "./src/workspace/workspace_protocol.ts",
     "./src/workspace/utils.ts",
 
     "./src/Anchor.ts",
-    "./src/IAnnotation.ts",
+    "./src/Annotation.ts",
     "./src/BackgroundTokenizer.ts",
     "./src/Change.ts",
     "./src/CursorRange.ts",
@@ -184,6 +185,7 @@
     "./src/UndoManager.ts",
     "./src/VScrollBar.ts",
     "./src/VirtualRenderer.ts",
+    "./src/WorkerCallback.ts",
     "./src/autocomplete.ts",
     "./src/comparePoints.ts",
     "./src/config.ts",

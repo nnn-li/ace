@@ -27,15 +27,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import Range from "../../Range";
 import FoldMode from "./FoldMode";
 import EditSession from "../../EditSession";
 
+/**
+ * @class CstyleFoldMode
+ */
 export default class CstyleFoldMode extends FoldMode {
     foldingStartMarker: RegExp = /(\{|\[)[^\}\]]*$|^\s*(\/\*)/;
     foldingStopMarker: RegExp = /^[^\[\{]*(\}|\])|^[\s\*]*(\*\/)/;
-    constructor(commentRegex?: { start; end }) {
+
+    /**
+     * @class CstyleFoldMode
+     * @constructor
+     * @param commentRegex
+     */
+    constructor(commentRegex?: { start: RegExp; end: RegExp }) {
         super()
         if (commentRegex) {
             this.foldingStartMarker = new RegExp(

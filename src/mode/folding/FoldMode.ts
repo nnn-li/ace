@@ -27,39 +27,80 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 * * ***** END LICENSE BLOCK ***** */
+"use strict";
+
 import Range from "../../Range";
 import EditSession from "../../EditSession";
 
+/**
+ * @class FoldMode
+ */
 export default class FoldMode {
 
-    foldingStartMarker = null;
-    foldingStopMarker = null;
+    /**
+     * @property foldingStartMarker
+     * @type RegExp
+     */
+    foldingStartMarker: RegExp = null;
 
+    /**
+     * @property foldingStartMarker
+     * @type RegExp
+     */
+    foldingStopMarker: RegExp = null;
+
+    /**
+     * @class FoldMode
+     * @constructor
+     */
     constructor() {
     }
 
-    // must return "" if there's no fold, to enable caching
+    /**
+     * must return "" if there's no fold, to enable caching
+     *
+     * @method getFoldWidget
+     * @param session {EditSession}
+     * @param foldStyle {string} "markbeginend"
+     * @param row {number}
+     * @return {string}
+     */
     getFoldWidget(session: EditSession, foldStyle: string, row: number): string {
         var line = session.getLine(row);
-        if (this.foldingStartMarker.test(line))
+        if (this.foldingStartMarker.test(line)) {
             return "start";
-        if (foldStyle == "markbeginend"
-            && this.foldingStopMarker
-            && this.foldingStopMarker.test(line))
+        }
+        if (foldStyle === "markbeginend" && this.foldingStopMarker && this.foldingStopMarker.test(line)) {
             return "end";
+        }
         return "";
     }
 
-    getFoldWidgetRange(session: EditSession, foldStyle: string, row: number) {
+    /**
+     * @method getFoldWidgetRange
+     * @param session {EditSession}
+     * @param foldStyle {string}
+     * @param row {number}
+     * @return {Range}
+     */
+    getFoldWidgetRange(session: EditSession, foldStyle: string, row: number): Range {
         return null;
     }
 
+    /**
+     * @method indentationBlock
+     * @param session {EditSession}
+     * @param row {number}
+     * @param column {number}
+     * @return {Range}
+     */
     indentationBlock(session: EditSession, row: number, column: number): Range {
         var re = /\S/;
         var line = session.getLine(row);
         var startLevel = line.search(re);
-        if (startLevel == -1)
+        if (startLevel === -1) {
             return;
+        }
 
         var startColumn = column || line.length;
         var maxRow = session.getLength();
@@ -69,11 +110,13 @@ export default class FoldMode {
         while (++row < maxRow) {
             var level = session.getLine(row).search(re);
 
-            if (level == -1)
+            if (level === -1) {
                 continue;
+            }
 
-            if (level <= startLevel)
+            if (level <= startLevel) {
                 break;
+            }
 
             endRow = row;
         }
@@ -84,6 +127,15 @@ export default class FoldMode {
         }
     }
 
+    /**
+     * @method openingBracketBlock
+     * @param session {EditSession}
+     * @param bracket {string}
+     * @param row {number}
+     * @param column {number}
+     * @param [typeRe] {RegExp}
+     * @return {Range}
+     */
     openingBracketBlock(session: EditSession, bracket: string, row: number, column: number, typeRe?: RegExp): Range {
         var start = { row: row, column: column + 1 };
         var end = session.$findClosingBracket(bracket, start, typeRe);
@@ -101,12 +153,22 @@ export default class FoldMode {
         return Range.fromPoints(start, end);
     }
 
+    /**
+     * @method closingBracketBlock
+     * @param session {EditSession}
+     * @param bracket {string}
+     * @param row {number}
+     * @param column {number}
+     * @param [typeRe] {RegExp}
+     * @return {Range}
+     */
     closingBracketBlock(session: EditSession, bracket: string, row: number, column: number, typeRe?: RegExp): Range {
         var end = { row: row, column: column };
         var start = session.$findOpeningBracket(bracket, end);
 
-        if (!start)
+        if (!start) {
             return;
+        }
 
         start.column++;
         end.column--;

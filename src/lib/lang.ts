@@ -102,10 +102,10 @@ export function deepCopy(obj) {
     return copy;
 }
 
-export function arrayToMap(arr) {
-    var map = {};
-    for (var i = 0; i < arr.length; i++) {
-        map[arr[i]] = 1;
+export function arrayToMap<T>(xs: string[], value: T): { [name: string]: T } {
+    var map: { [name: string]: T } = {};
+    for (var i = 0, iLength = xs.length; i < iLength; i++) {
+        map[xs[i]] = value;
     }
     return map;
 }

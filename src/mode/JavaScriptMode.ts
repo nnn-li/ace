@@ -27,10 +27,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {inherits} from "../lib/oop";
-import IAnnotation from "../IAnnotation";
-import Mode from "./Mode";
+import Annotation from "../Annotation";
+import TextMode from "./TextMode";
 import JavaScriptHighlightRules from "./JavaScriptHighlightRules";
 import MatchingBraceOutdent from "./MatchingBraceOutdent";
 import Range from "../Range";
@@ -39,10 +40,19 @@ import CstyleBehaviour from "./behaviour/CstyleBehaviour";
 import CStyleFoldMode from "./folding/CstyleFoldMode";
 import EditSession from "../EditSession";
 
-export default class JavaScriptMode extends Mode {
+/**
+ * @class JavaScriptMode
+ * @extends TextMode
+ */
+export default class JavaScriptMode extends TextMode {
     $outdent: MatchingBraceOutdent;
     lineCommentStart: string;
     blockComment: { start: string; end: string };
+
+    /**
+     * @class JavaScriptMode
+     * @constructor
+     */
     constructor() {
         super();
         // The Tokenizer will be built using these rules.
@@ -56,6 +66,7 @@ export default class JavaScriptMode extends Mode {
 
         this.$id = "ace/mode/javascript";
     }
+
     getNextLineIndent(state: string, line: string, tab: string): string {
         var indent = this.$getIndent(line);
 
@@ -105,7 +116,7 @@ export default class JavaScriptMode extends Mode {
             worker.attachToDocument(session.getDocument());
         });
 
-        worker.on("errors", function(errors: { data: IAnnotation[] }) {
+        worker.on("errors", function(errors: { data: Annotation[] }) {
             session.setAnnotations(errors.data);
         });
 

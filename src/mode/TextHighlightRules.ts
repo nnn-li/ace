@@ -27,14 +27,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {deepCopy} from "../lib/lang";
 
+/**
+ * @class TextHighlightRules
+ */
 export default class TextHighlightRules {
     $rules;
     $embeds;
     nextState;
     $keywordList: string[];
+
+    /**
+     * @class TextHighlightRules
+     * @constructor
+     */
     constructor() {
 
         // regexp must not have capturing parentheses

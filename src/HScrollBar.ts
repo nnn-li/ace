@@ -1,3 +1,5 @@
+"use strict";
+
 import { addListener } from "./lib/event";
 import ScrollBar from './ScrollBar';
 import VirtualRenderer from "./VirtualRenderer";

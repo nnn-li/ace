@@ -31,8 +31,8 @@
 
 import {inherits} from "../lib/oop";
 import {arrayToMap} from "../lib/lang";
-import IAnnotation from "../IAnnotation";
-import TextMode from "./Mode";
+import Annotation from "../Annotation";
+import TextMode from "./TextMode";
 import JavaScriptMode from "./JavaScriptMode";
 import CssMode from "./CssMode";
 import HtmlHighlightRules from "./HtmlHighlightRules";
@@ -48,10 +48,11 @@ var optionalEndTags = ["li", "dt", "dd", "p", "rt", "rp", "optgroup", "option", 
 
 /**
  * @class HtmlMode
+ * @extends TextMode
  */
 export default class HtmlMode extends TextMode {
     protected blockComment = { start: "<!--", end: "-->" };
-    private voidElements = arrayToMap(voidElements);
+    private voidElements = arrayToMap(voidElements, 1);
     public $id = "ace/mode/html";
 
     /**
@@ -64,6 +65,7 @@ export default class HtmlMode extends TextMode {
     /**
      * @class HtmlMode
      * @constructor
+     * @param [options]
      */
     constructor(options?: { fragmentContext: string }) {
         super();
@@ -77,7 +79,7 @@ export default class HtmlMode extends TextMode {
             "css-": CssMode
         });
 
-        this.foldingRules = new HtmlFoldMode(this.voidElements, arrayToMap(optionalEndTags));
+        this.foldingRules = new HtmlFoldMode(this.voidElements, arrayToMap(optionalEndTags, 1));
     }
 
     getNextLineIndent(state: string, line: string, tab: string): string {
@@ -105,7 +107,7 @@ export default class HtmlMode extends TextMode {
         });
 
         // FIXME: Standardize
-        worker.on("error", function(message: { data: IAnnotation[] }) {
+        worker.on("error", function(message: { data: Annotation[] }) {
             session.setAnnotations(message.data);
         });
 

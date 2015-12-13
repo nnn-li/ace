@@ -1,7 +1,7 @@
 /**
- * @class IWorkerCallback
+ * @class WorkerCallback
  */
-interface IWorkerCallback {
+interface WorkerCallback {
 
     /**
      * @method on
@@ -25,4 +25,4 @@ interface IWorkerCallback {
     emit(name: string, data?);
 }
 
-export default IWorkerCallback;
+export default WorkerCallback;

@@ -1,3 +1,5 @@
+"use strict";
+
 import { addEventListeners, each, getWindowForElement, hasParent, inArray, inStr, prefixed, removeEventListeners, splitStr, TEST_ELEMENT, toArray, uniqueArray, uniqueId } from './utils';
 
 export interface Touch {

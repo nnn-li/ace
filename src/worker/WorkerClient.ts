@@ -1,3 +1,5 @@
+"use strict";
+
 import {qualifyURL} from '../lib/net';
 import EditorDocument from "../EditorDocument";
 import EventEmitterClass from '../lib/event_emitter';
@@ -5,6 +7,8 @@ import {get, moduleUrl} from "../config";
 
 /**
  * WorkerClient manages the communication with a Web Worker.
+ *
+ * @class WorkerClient
  */
 export default class WorkerClient extends EventEmitterClass {
     private $worker: Worker;
@@ -12,8 +16,15 @@ export default class WorkerClient extends EventEmitterClass {
     private callbacks: { [id: number]: (data: any) => any } = {};
     private callbackId: number = 1;
     private $doc: EditorDocument;
+
+    /**
+     * @class WorkerClient
+     * @constructor
+     * @param workerUrl {string}
+     */
     constructor(workerUrl: string) {
         super();
+        // console.log(`WorkerClient(${workerUrl})`);
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
         this.changeListener = this.changeListener.bind(this);
         this.onMessage = this.onMessage.bind(this);
@@ -21,6 +32,7 @@ export default class WorkerClient extends EventEmitterClass {
         var workerUrl = qualifyURL(workerUrl);
 
         try {
+            // console.log(`new Worker(${workerUrl})`);
             this.$worker = new Worker(workerUrl);
         }
         catch (e) {
@@ -42,13 +54,26 @@ export default class WorkerClient extends EventEmitterClass {
         this.$worker.onmessage = this.onMessage;
     }
 
+    /**
+     * Posts a message to the worker thread causing the thread to be started.
+     *
+     * @method init
+     * @param moduleName {string}
+     * @return {void}
+     */
     init(moduleName: string): void {
+        // console.log(`WorkerClient.init(${moduleName})`);
         var tlns: { [ns: string]: string } = {};
         // Sending a postMessage starts the worker.
         this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName });
     }
 
-    onMessage(event: MessageEvent) {
+    /**
+     * @method onMessage
+     * @param event {MessageEvent}
+     * @return {void}
+     */
+    onMessage(event: MessageEvent): void {
         var origin: string = event.origin;
         var source: Window = event.source;
         var msg = event.data;
@@ -75,7 +100,11 @@ export default class WorkerClient extends EventEmitterClass {
         return qualifyURL(path);
     }
 
-    terminate() {
+    /**
+     * @method terminate
+     * @return {void}
+     */
+    terminate(): void {
         this._signal("terminate", {});
         this.deltaQueue = null;
         this.$worker.terminate();
@@ -147,7 +176,7 @@ export default class WorkerClient extends EventEmitterClass {
             this.emit("change", { data: q });
     }
 
-    $workerBlob(workerUrl: string): Blob {
+    private $workerBlob(workerUrl: string): Blob {
         // workerUrl can be protocol relative
         // importScripts only takes fully qualified urls
         var script = "importScripts('" + qualifyURL(workerUrl) + "');";

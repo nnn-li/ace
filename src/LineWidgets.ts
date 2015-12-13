@@ -27,6 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
+
 import {addCssClass, createElement} from "./lib/dom";
 import Range from "./Range";
 import Editor from "./Editor";

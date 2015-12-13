@@ -1,3 +1,5 @@
+"use strict";
+
 import EditorDocument from '../../EditorDocument';
 
 export function getLinesChars(lines: string[]): number {

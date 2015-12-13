@@ -27,12 +27,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import MixedFoldMode from "./MixedFoldMode";
 import XmlFoldMode from "./XmlFoldMode";
 import CStyleFoldMode from "./CstyleFoldMode";
 
+/**
+ * @class HtmlFoldMode
+ * @extends MixedFoldMode
+ */
 export default class HtmlFoldMode extends MixedFoldMode {
+    /**
+     * @class HtmlFoldMode
+     * @constructor
+     * @param voidElements
+     * @param optionalTags
+     */
     constructor(voidElements, optionalTags) {
         super(new XmlFoldMode(voidElements, optionalTags), { "js-": new CStyleFoldMode(), "css-": new CStyleFoldMode() })
     }

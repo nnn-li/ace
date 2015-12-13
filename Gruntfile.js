@@ -101,7 +101,7 @@ module.exports = function(grunt) {
                 linkNatives: false, // Native types get linked to MDN.
                 quiet: true,
                 writeJSON: true,
-                exclude: 'src/mode/css',
+                exclude: 'src/mode/css, src/mode/python',
                 extension: '.ts',
                 paths: ['src'],
                 outdir: 'documentation',

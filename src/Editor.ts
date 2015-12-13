@@ -27,8 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
-//require("./lib/fixoldbrowsers");
+"use strict";
 
 import {mixin} from "./lib/oop";
 import {computedStyle, hasCssClass, setCssClass} from "./lib/dom";
@@ -503,15 +502,17 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * Sets the current document to `val`.
-     * @param {String} val The new value to set for the document
-     * @param {Number} cursorPos Where to set the new value. `undefined` or 0 is selectAll, -1 is at the document start, and +1 is at the end
+     * Sets the current document to `text`.
      *
-     * @return {String} The current document value
-     * @related Document.setValue
-     **/
-    setValue(val: string, cursorPos?: number): string {
-        this.session.doc.setValue(val);
+     * @method setValue
+     * @param text {string} The new value to set for the document
+     * @param [cursorPos] {number} Where to set the new value.`undefined` or 0 is selectAll, -1 is at the document start, and +1 is at the end
+     * @return {void}
+     */
+    setValue(text: string, cursorPos?: number): void {
+        // FIXME: This lacks symmetry with getValue().
+        this.session.doc.setValue(text);
+        // this.session.setValue(text);
 
         if (!cursorPos) {
             this.selectAll();
@@ -522,15 +523,13 @@ export default class Editor extends EventEmitterClass {
         else if (cursorPos == -1) {
             this.navigateFileStart();
         }
-        // TODO: Rather crazy! Either return this or the former value?
-        return val;
     }
 
     /**
      * Returns the current session's content.
      *
-     * @return {String}
-     * @related EditSession.getValue
+     * @method getValue
+     * @return {string}
      **/
     getValue(): string {
         return this.session.getValue();
@@ -593,6 +592,9 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Gets the current font size of the editor text.
+     *
+     * @method getFontSize
+     * @return {string}
      */
     getFontSize(): string {
         return this.getOption("fontSize") || computedStyle(this.container, "fontSize");
@@ -600,11 +602,12 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Set a new font size (in pixels) for the editor text.
-     * @param {string} fontSize A font size ( _e.g._ "12px")
      *
-     *
-     **/
-    setFontSize(fontSize: string) {
+     * @method setFontSize
+     * @param fontSize {string} A font size, e.g. "12px")
+     * @return {void}
+     */
+    setFontSize(fontSize: string): void {
         this.setOption("fontSize", fontSize);
     }
 

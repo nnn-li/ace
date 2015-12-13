@@ -27,31 +27,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {mixin} from "../../lib/oop";
 import Range from "../../Range";
 import FoldMode from "./FoldMode";
 import TokenIterator from "../../TokenIterator";
+import EditSession from "../../EditSession";
+import Position from "../../Position";
 
+/**
+ * @class XmlFoldMode
+ */
 export default class XmlFoldMode extends FoldMode {
-    voidElements
-    optionalEndTags
+    voidElements: { [name: string]: any };
+    optionalEndTags: { [name: string]: any };
+    /**
+     * @class XmlFoldMode
+     * @constructor
+     */
     constructor(voidElements, optionalEndTags) {
         super();
         this.voidElements = voidElements || {};
         this.optionalEndTags = mixin({}, this.voidElements);
-        if (optionalEndTags)
+        if (optionalEndTags) {
             mixin(this.optionalEndTags, optionalEndTags);
+        }
     }
 
-    getFoldWidget(session, foldStyle, row) {
+    /**
+     * @method getFoldWidget
+     * @param session {EditSession}
+     * @param foldStyle {string}
+     * @param row {number}
+     * @return {string}
+     */
+    getFoldWidget(session: EditSession, foldStyle: string, row: number): string {
         var tag = this._getFirstTagInLine(session, row);
 
         if (!tag)
             return "";
 
         if (tag.closing || (!tag.tagName && tag.selfClosing))
-            return foldStyle == "markbeginend" ? "end" : "";
+            return foldStyle === "markbeginend" ? "end" : "";
 
         if (!tag.tagName || tag.selfClosing || this.voidElements.hasOwnProperty(tag.tagName.toLowerCase()))
             return "";
@@ -65,7 +83,7 @@ export default class XmlFoldMode extends FoldMode {
     /*
      * returns a first tag (or a fragment) in a line
      */
-    _getFirstTagInLine(session, row) {
+    _getFirstTagInLine(session: EditSession, row: number): Tag {
         var tokens = session.getTokens(row);
         var tag = new Tag();
 
@@ -98,7 +116,7 @@ export default class XmlFoldMode extends FoldMode {
         return null;
     }
 
-    _findEndTagInLine(session, row, tagName, startColumn) {
+    _findEndTagInLine(session: EditSession, row: number, tagName: string, startColumn: number): boolean {
         var tokens = session.getTokens(row);
         var column = 0;
         for (var i = 0; i < tokens.length; i++) {
@@ -118,7 +136,7 @@ export default class XmlFoldMode extends FoldMode {
     /*
      * reads a full tag and places the iterator after the tag
      */
-    _readTagForward(iterator) {
+    _readTagForward(iterator: TokenIterator): Tag {
         var token = iterator.getCurrentToken();
         if (!token)
             return null;
@@ -129,9 +147,11 @@ export default class XmlFoldMode extends FoldMode {
                 tag.closing = is(token, "end-tag-open");
                 tag.start.row = iterator.getCurrentTokenRow();
                 tag.start.column = iterator.getCurrentTokenColumn();
-            } else if (is(token, "tag-name")) {
+            }
+            else if (is(token, "tag-name")) {
                 tag.tagName = token.value;
-            } else if (is(token, "tag-close")) {
+            }
+            else if (is(token, "tag-close")) {
                 tag.selfClosing = token.value == "/>";
                 tag.end.row = iterator.getCurrentTokenRow();
                 tag.end.column = iterator.getCurrentTokenColumn() + token.value.length;
@@ -143,7 +163,7 @@ export default class XmlFoldMode extends FoldMode {
         return null;
     }
 
-    _readTagBackward(iterator) {
+    _readTagBackward(iterator: TokenIterator): Tag {
         var token = iterator.getCurrentToken();
         if (!token)
             return null;
@@ -156,9 +176,11 @@ export default class XmlFoldMode extends FoldMode {
                 tag.start.column = iterator.getCurrentTokenColumn();
                 iterator.stepBackward();
                 return tag;
-            } else if (is(token, "tag-name")) {
+            }
+            else if (is(token, "tag-name")) {
                 tag.tagName = token.value;
-            } else if (is(token, "tag-close")) {
+            }
+            else if (is(token, "tag-close")) {
                 tag.selfClosing = token.value == "/>";
                 tag.end.row = iterator.getCurrentTokenRow();
                 tag.end.column = iterator.getCurrentTokenColumn() + token.value.length;
@@ -168,7 +190,7 @@ export default class XmlFoldMode extends FoldMode {
         return null;
     }
 
-    _pop(stack, tag) {
+    _pop(stack, tag: Tag): Tag {
         while (stack.length) {
 
             var top = stack[stack.length - 1];
@@ -187,15 +209,16 @@ export default class XmlFoldMode extends FoldMode {
         }
     }
 
-    getFoldWidgetRange(session, foldStyle, row) {
+    getFoldWidgetRange(session: EditSession, foldStyle: string, row: number): Range {
         var firstTag = this._getFirstTagInLine(session, row);
 
-        if (!firstTag)
+        if (!firstTag) {
             return null;
+        }
 
         var isBackward = firstTag.closing || firstTag.selfClosing;
-        var stack = [];
-        var tag;
+        var stack: Tag[] = [];
+        var tag: Tag;
 
         if (!isBackward) {
             var iterator = new TokenIterator(session, row, firstTag.start.column);
@@ -236,13 +259,15 @@ export default class XmlFoldMode extends FoldMode {
                         tag.start.column += tag.tagName.length + 2;
                         tag.end.column -= 2;
                         return Range.fromPoints(tag.start, tag.end);
-                    } else
+                    }
+                    else {
                         continue;
+                    }
                 }
 
                 if (!tag.closing) {
                     this._pop(stack, tag);
-                    if (stack.length == 0) {
+                    if (stack.length === 0) {
                         tag.start.column += tag.tagName.length + 2;
                         return Range.fromPoints(tag.start, end);
                     }
@@ -255,14 +280,21 @@ export default class XmlFoldMode extends FoldMode {
     }
 }
 
-var Tag = function() {
-    this.tagName = "";
-    this.closing = false;
-    this.selfClosing = false;
-    this.start = { row: 0, column: 0 };
-    this.end = { row: 0, column: 0 };
-};
+export class Tag {
+    tagName: string;
+    closing: boolean;
+    selfClosing: boolean;
+    start: Position;
+    end: Position;
+    constructor() {
+        this.tagName = "";
+        this.closing = false;
+        this.selfClosing = false;
+        this.start = { row: 0, column: 0 };
+        this.end = { row: 0, column: 0 };
+    }
+}
 
-function is(token, type) {
+function is(token, type: string): boolean {
     return token.type.lastIndexOf(type + ".xml") > -1;
 }

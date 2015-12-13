@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import { copyObject, escapeRegExp, getMatchOffsets } from "./lib/lang";
 import { mixin } from "./lib/oop";

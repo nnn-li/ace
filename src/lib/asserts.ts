@@ -1,3 +1,5 @@
+"use strict";
+
 export var ENABLE_ASSERTS = true;
 
 export class AssertionError implements Error {

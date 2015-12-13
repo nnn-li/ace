@@ -8,13 +8,13 @@
   "author": "david.geo.holmes@gmail.com",
   "jspm": {
     "dependencies": {
-      "ts": "github:frankwallis/plugin-typescript@^2.4.0"
+      "ts": "github:frankwallis/plugin-typescript@^2.4.3",
+      "typescript": "npm:typescript@^1.7.3"
     },
     "devDependencies": {
       "babel": "npm:babel-core@^5.8.24",
       "babel-runtime": "npm:babel-runtime@^5.8.24",
-      "core-js": "npm:core-js@^1.1.4",
-      "typescript": "npm:typescript@^1.7.3"
+      "core-js": "npm:core-js@^1.1.4"
     }
   },
   "keywords": [

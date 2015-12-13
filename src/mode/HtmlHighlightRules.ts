@@ -27,7 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-
+"use strict";
 
 import {createMap} from "../lib/lang";
 import CssHighlightRules from "./CssHighlightRules";

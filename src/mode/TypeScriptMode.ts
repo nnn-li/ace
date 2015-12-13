@@ -35,9 +35,20 @@ import CstyleBehaviour from "./behaviour/CstyleBehaviour";
 import CStyleFoldMode from "./folding/CstyleFoldMode";
 import MatchingBraceOutdent from "./MatchingBraceOutdent";
 import WorkerClient from "../worker/WorkerClient";
+import EditSession from "../EditSession";
 
+/**
+ * @class TypeScriptMode
+ * @extends JavaScriptMode
+ */
 export default class TypeScriptMode extends JavaScriptMode {
+
     $id = "ace/mode/typescript";
+
+    /**
+     * @class TypeScriptMode
+     * @constructor
+     */
     constructor() {
         super();
         this.HighlightRules = TypeScriptHighlightRules;
@@ -46,7 +57,8 @@ export default class TypeScriptMode extends JavaScriptMode {
         this.$behaviour = new CstyleBehaviour();
         this.foldingRules = new CStyleFoldMode();
     }
-    createWorker(session) {
+
+    createWorker(session: EditSession): WorkerClient {
 
         var worker = new WorkerClient("lib/worker/worker-systemjs.js");
 

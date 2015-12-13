@@ -1,7 +1,9 @@
+"use strict";
+
 import {mixin} from "../lib/oop";
-import IAnnotation from "../IAnnotation";
+import Annotation from "../Annotation";
 import Mirror from "../worker/Mirror";
-import IWorkerCallback from "../IWorkerCallback";
+import WorkerCallback from "../WorkerCallback";
 
 import {JSHINT} from "./javascript/jshint";
 import JSHintOptions from "./javascript/JSHintOptions";
@@ -41,7 +43,7 @@ var infoRe = startRegex([
 
 export default class JavaScriptWorker extends Mirror {
   options: JSHintOptions;
-  constructor(sender: IWorkerCallback) {
+  constructor(sender: WorkerCallback) {
     super(sender);
     this.setOptions();
     sender.emit('initAfter');
@@ -93,7 +95,7 @@ export default class JavaScriptWorker extends Mirror {
       this.sender.emit("errors", []);
       return;
     }
-    var errors: IAnnotation[] = [];
+    var errors: Annotation[] = [];
 
     // jshint reports many false errors
     // report them as error only if code is actually invalid

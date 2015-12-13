@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import {
 addCssClass,
@@ -36,7 +37,7 @@ removeCssClass} from "../lib/dom";
 import {escapeHTML} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
 import EditSession from "../EditSession";
-import IAnnotation from "../IAnnotation";
+import Annotation from "../Annotation";
 
 export default class Gutter extends EventEmitterClass {
     public element: HTMLDivElement;
@@ -65,7 +66,7 @@ export default class Gutter extends EventEmitterClass {
         session.on("change", this.$updateAnnotations);
     }
 
-    setAnnotations(annotations: IAnnotation[]) {
+    setAnnotations(annotations: Annotation[]) {
         // iterate over sparse array
         this.$annotations = [];
         for (var i = 0; i < annotations.length; i++) {

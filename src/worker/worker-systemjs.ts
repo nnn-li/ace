@@ -46,14 +46,14 @@
     return moduleName;
   };
 
-  function initDelegate(name: string): void {
+  function initDelegate(name: string, ts): void {
 
     System.import('lib/lib/Sender')
-      .then(function(s) {
+      .then(function(s: any/*Module*/) {
         sender = new s.default(window)
         System.import(name)
-          .then(function(m) {
-            main = window.main = new m.default(sender)
+        .then(function(m: any/*Module*/) {
+            main = window.main = new m.default(sender, ts)
           })
           .catch(function(error) {
             console.error(error);
@@ -97,7 +97,13 @@
       }
     }
     else if (msg.init) {
-      initDelegate(msg.module);
+      System.import('jspm_packages/npm/typescript@1.7.3/lib/typescriptServices.js')
+      .then(function(ts) {
+        initDelegate(msg.module, ts);
+      })
+      .catch(function(error) {
+        console.error(error);
+      });
     }
     else if (msg.event && sender) {
       // Expect "change" events as the user edits the document.

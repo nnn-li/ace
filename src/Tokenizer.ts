@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 // tokenizing lines longer than this makes editor very slow
 var MAX_TOKEN_COUNT = 1000;

@@ -27,20 +27,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 import FoldMode from "./FoldMode";
+import EditSession from "../../EditSession";
+import Range from "../../Range";
 
+/**
+ * @class MixedFoldMode
+ * @extends FoldMode
+ */
 export default class MixedFoldMode extends FoldMode {
-    defaultMode;
-    subModes;
-    constructor(defaultMode, subModes) {
+    defaultMode: FoldMode;
+    subModes: { [name: string]: FoldMode };
+    /**
+     * @class MixedFoldMode
+     * @constructor
+     * @param defaultMode {FoldMode}
+     * @param subModes
+     */
+    constructor(defaultMode: FoldMode, subModes: { [name: string]: FoldMode }) {
         super();
         this.defaultMode = defaultMode;
         this.subModes = subModes;
     }
-    $getMode(state) {
-        if (typeof state != "string")
+
+    private $getMode(state: string) {
+        if (typeof state !== "string") {
             state = state[0];
+        }
         for (var key in this.subModes) {
             if (state.indexOf(key) === 0)
                 return this.subModes[key];
@@ -48,12 +63,12 @@ export default class MixedFoldMode extends FoldMode {
         return null;
     }
 
-    $tryMode(state, session, foldStyle, row) {
+    private $tryMode(state: string, session: EditSession, foldStyle: string, row: number): string {
         var mode = this.$getMode(state);
         return (mode ? mode.getFoldWidget(session, foldStyle, row) : "");
     }
 
-    getFoldWidget(session, foldStyle, row) {
+    getFoldWidget(session: EditSession, foldStyle: string, row: number): string {
         return (
             this.$tryMode(session.getState(row - 1), session, foldStyle, row) ||
             this.$tryMode(session.getState(row), session, foldStyle, row) ||
@@ -61,14 +76,16 @@ export default class MixedFoldMode extends FoldMode {
         );
     }
 
-    getFoldWidgetRange(session, foldStyle, row) {
+    getFoldWidgetRange(session: EditSession, foldStyle: string, row: number): Range {
         var mode = this.$getMode(session.getState(row - 1));
 
-        if (!mode || !mode.getFoldWidget(session, foldStyle, row))
+        if (!mode || !mode.getFoldWidget(session, foldStyle, row)) {
             mode = this.$getMode(session.getState(row));
+        }
 
-        if (!mode || !mode.getFoldWidget(session, foldStyle, row))
+        if (!mode || !mode.getFoldWidget(session, foldStyle, row)) {
             mode = this.defaultMode;
+        }
 
         return mode.getFoldWidgetRange(session, foldStyle, row);
     }

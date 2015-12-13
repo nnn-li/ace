@@ -27,7 +27,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import TextMode from "./Mode";
+"use strict";
+
+import TextMode from "./TextMode";
 import CssHighlightRules from "./CssHighlightRules";
 import MatchingBraceOutdent from "./MatchingBraceOutdent";
 import WorkerClient from "../worker/WorkerClient";
@@ -35,11 +37,19 @@ import CssBehaviour from "./behaviour/CssBehaviour";
 import CStyleFoldMode from "./folding/CstyleFoldMode";
 import EditSession from "../EditSession";
 
+/**
+ * @class CssMode
+ * @extends TextMode
+ */
 export default class CssMode extends TextMode {
     $id = "ace/mode/css";
     $outdent: MatchingBraceOutdent;
     blockComment = { start: "/*", end: "*/" };
 
+    /**
+     * @class CssMode
+     * @constructor
+     */
     constructor() {
         super();
         this.HighlightRules = CssHighlightRules;
@@ -74,7 +84,7 @@ export default class CssMode extends TextMode {
         return this.$outdent.autoOutdent(session, row);
     }
 
-    createWorker(session: EditSession) {
+    createWorker(session: EditSession): WorkerClient {
 
         var worker = new WorkerClient("lib/worker/worker-systemjs.js");
 

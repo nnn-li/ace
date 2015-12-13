@@ -27,6 +27,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 // FIXME: For some reason the generated file causes a breakage in the mouse/mouse_handler_test
 import Tokenizer from "../Tokenizer";
@@ -39,15 +40,16 @@ import Range from "../Range";
 import EditSession from '../EditSession';
 import Editor from '../Editor';
 import WorkerClient from "../worker/WorkerClient";
+import LanguageMode from '../LanguageMode';
 
 /**
- * @class Mode
+ * @class TextMode
  */
-export default class Mode {
+export default class TextMode implements LanguageMode {
     /**
      * Used when loading snippets for zero or more modes?
      */
-    public modes: Mode[];
+    public modes: TextMode[];
     protected HighlightRules: any = TextHighlightRules;
     protected $behaviour = new Behaviour();
     public tokenRe = new RegExp("^["
@@ -77,6 +79,10 @@ export default class Mode {
     public foldingRules;
     public getMatching: (session: EditSession) => Range;
 
+    /**
+     * @class TextMode
+     * @constructor
+     */
     constructor() {
     }
 
@@ -88,7 +94,7 @@ export default class Mode {
         return this.$tokenizer;
     }
 
-    toggleCommentLines(state, session: EditSession, startRow: number, endRow: number) {
+    toggleCommentLines(state: string, session: EditSession, startRow: number, endRow: number) {
         var doc = session.doc;
 
         var ignoreBlankLines = true;
@@ -214,7 +220,7 @@ export default class Mode {
         iter(shouldRemove ? uncomment : comment);
     }
 
-    toggleBlockComment(state, session: EditSession, range: Range, cursor: { row: number; column: number }) {
+    toggleBlockComment(state: string, session: EditSession, range: Range, cursor: { row: number; column: number }) {
         var comment = this.blockComment;
         if (!comment)
             return;

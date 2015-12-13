@@ -1,3 +1,5 @@
+"use strict";
+
 import Position from './Position'
 
 interface CursorRange {

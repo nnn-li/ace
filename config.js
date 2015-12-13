@@ -1,7 +1,12 @@
 System.config({
   baseURL: "/",
   defaultJSExtensions: true,
-  transpiler: "babel",
+  transpiler: 'babel',
+  typescriptOptions: {
+    "noImplicitAny": true,
+    "typeCheck": true,
+    "tsconfig": true
+  },
   babelOptions: {
     "optional": [
       "runtime",
@@ -13,28 +18,14 @@ System.config({
     "npm:*": "jspm_packages/npm/*"
   },
 
-  packages: {
-    "app": {
-      "defaultExtension": "ts",
-      "meta": {
-        "*.ts": {
-          "loader": "ts"
-        },
-        "*.js": {
-          "loader": "ts"
-        }
-      }
-    }
-  },
-
   map: {
     "babel": "npm:babel-core@5.8.34",
     "babel-runtime": "npm:babel-runtime@5.8.34",
     "core-js": "npm:core-js@1.2.6",
     "geometryzen/deuce": "github:geometryzen/deuce@0.1.15",
-    "ts": "github:frankwallis/plugin-typescript@2.4.0",
+    "ts": "github:frankwallis/plugin-typescript@2.4.3",
     "typescript": "npm:typescript@1.7.3",
-    "github:frankwallis/plugin-typescript@2.4.0": {
+    "github:frankwallis/plugin-typescript@2.4.3": {
       "typescript": "npm:typescript@1.7.3"
     },
     "github:jspm/nodelibs-assert@0.1.0": {

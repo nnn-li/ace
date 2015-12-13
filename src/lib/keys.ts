@@ -28,6 +28,7 @@ For more information about SproutCore, visit http://www.sproutcore.com
 
 ==========================================================================
 @license */
+"use strict";
 
 // Most of the following code is taken from SproutCore with a few changes.
 

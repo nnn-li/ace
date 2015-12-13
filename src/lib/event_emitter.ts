@@ -1,3 +1,5 @@
+"use strict";
+
 var stopPropagation = function() { this.propagationStopped = true; };
 var preventDefault = function() { this.defaultPrevented = true; };
 
@@ -5,6 +7,8 @@ var preventDefault = function() { this.defaultPrevented = true; };
  * Intended to be used as a Mixin.
  * N.B. The original implementation was an object, the TypeScript way is
  * designed to satisfy the compiler.
+ *
+ * @class EventEmitterClass
  */
 export default class EventEmitterClass {
     /**
@@ -14,52 +18,80 @@ export default class EventEmitterClass {
     /**
      * There may be one default handler for an event too.
      */
-    private _defaultHandlers/*: { [name: string]: (event, ee: EventEmitterClass) => any }*/;
+    private _defaultHandlers: { [name: string]: (event, ee: EventEmitterClass) => any };
 
+    /**
+     * @class EventEmitterClass
+     * @constructor
+     */
     constructor() {
     }
 
-    _dispatchEvent(eventName: string, e: any) {
+    /**
+     * @method _dispatchEvent
+     * @param eventName {string}
+     * @param event {any}
+     * @return {any}
+     * @private
+     */
+    private _dispatchEvent(eventName: string, event: any): any {
+
         this._eventRegistry || (this._eventRegistry = {});
+
         this._defaultHandlers || (this._defaultHandlers = {});
 
         var listeners = this._eventRegistry[eventName] || [];
+
         var defaultHandler = this._defaultHandlers[eventName];
+
         if (!listeners.length && !defaultHandler)
             return;
 
-        if (typeof e !== "object" || !e) {
-            e = {};
+        if (typeof event !== "object" || !event) {
+            event = {};
         }
 
-        if (!e.type)
-            e.type = eventName;
-        if (!e.stopPropagation)
-            e.stopPropagation = stopPropagation;
-        if (!e.preventDefault)
-            e.preventDefault = preventDefault;
+        if (!event.type) {
+            event.type = eventName;
+        }
 
+        if (!event.stopPropagation) {
+            event.stopPropagation = stopPropagation;
+        }
+
+        if (!event.preventDefault) {
+            event.preventDefault = preventDefault;
+        }
+
+        // Make a copy in order to avoid race conditions.
         listeners = listeners.slice();
         for (var i = 0; i < listeners.length; i++) {
-            listeners[i](e, this);
-            if (e['propagationStopped']) {
+            listeners[i](event, this);
+            if (event['propagationStopped']) {
                 break;
             }
         }
 
-        if (defaultHandler && !e.defaultPrevented)
-            return defaultHandler(e, this);
+        if (defaultHandler && !event.defaultPrevented) {
+            return defaultHandler(event, this);
+        }
     }
 
     /**
-     *
+     * @method _emit
+     * @param eventName {string}
+     * @param event {any}
+     * @return {any}
      */
-    _emit(eventName: string, e?: any) {
-        return this._dispatchEvent(eventName, e);
+    _emit(eventName: string, event?: any): any {
+        return this._dispatchEvent(eventName, event);
     }
 
     /**
-     *
+     * @method _signal
+     * @param eventName {string}
+     * @param event {any}
+     * @return {void}
      */
     _signal(eventName: string, e?: any) {
 
@@ -72,8 +104,9 @@ export default class EventEmitterClass {
         // slice just makes a copy so that we don't mess up on array bounds.
         // It's a bit expensive though?
         listeners = listeners.slice();
-        for (var i = 0, iLength = listeners.length; i < iLength; i++)
+        for (var i = 0, iLength = listeners.length; i < iLength; i++) {
             listeners[i](e, this);
+        }
     }
 
     once(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
@@ -85,9 +118,11 @@ export default class EventEmitterClass {
     }
 
     setDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
-        var handlers = this._defaultHandlers
-        if (!handlers)
-            handlers = this._defaultHandlers = { _disabled_: {} };
+        // FIXME: All this casting is creepy.
+        var handlers: any = this._defaultHandlers
+        if (!handlers) {
+            handlers = this._defaultHandlers = <any>{ _disabled_: {} };
+        }
 
         if (handlers[eventName]) {
             var old = handlers[eventName];
@@ -103,9 +138,11 @@ export default class EventEmitterClass {
     }
 
     removeDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
-        var handlers = this._defaultHandlers
-        if (!handlers)
+        // FIXME: All this casting is creepy.
+        var handlers: any = this._defaultHandlers
+        if (!handlers) {
             return;
+        }
         var disabled = handlers._disabled_[eventName];
 
         if (handlers[eventName] === callback) {

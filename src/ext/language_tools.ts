@@ -36,7 +36,7 @@ import {retrievePrecedingIdentifier} from "../autocomplete/util";
 import Editor from "../Editor";
 import EditSession from '../EditSession';
 import {getCompletions} from '../autocomplete/text_completer';
-import Mode from '../mode/Mode';
+import LanguageMode from '../LanguageMode';
 
 // Exports existing completer so that user can construct his own set of completers.
 // export var textCompleter: acm.Completer = tcm;
@@ -92,7 +92,7 @@ var onChangeMode = function(e, editor: Editor) {
     loadSnippetsForMode(editor.getSession().$mode);
 };
 
-var loadSnippetsForMode = function(mode: Mode) {
+var loadSnippetsForMode = function(mode: LanguageMode) {
     var id = mode.$id;
     if (!snippetManager['files']) {
         snippetManager['files'] = {};

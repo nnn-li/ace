@@ -1,3 +1,5 @@
+"use strict";
+
 import Editor from './Editor';
 import EditSession from './EditSession';
 import Fold from './Fold';

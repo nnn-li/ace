@@ -27,15 +27,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
+/**
+ * @class Behaviour
+ */
 export default class Behaviour {
 
     private $behaviours = {};
 
+    /**
+     * @class Behaviour
+     * @constructor
+     */
     constructor() {
     }
 
-    add(name, action, callback) {
+    add(name: string, action: string, callback) {
         switch (undefined) {
             case this.$behaviours:
                 this.$behaviours = {};
