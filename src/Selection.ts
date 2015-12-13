@@ -33,6 +33,7 @@ import EditorDocument from "./EditorDocument";
 import {stringReverse} from "./lib/lang";
 import EventEmitterClass from "./lib/event_emitter";
 import OrientedRange from "./OrientedRange";
+import Position from "./Position";
 import Range from "./Range";
 import {RangeList} from "./range_list";
 import EditSession from "./EditSession";
@@ -41,27 +42,12 @@ import Anchor from "./Anchor";
 /**
  * Contains the cursor position and the text selection of an edit session.
  *
- * The row/columns used in the selection are in document coordinates representing ths coordinates as thez appear in the document before applying soft wrap and folding.
- * @class Selection
- **/
-
-
-/**
- * Emitted when the cursor position changes.
- * @event changeCursor
+ * The row/columns used in the selection are in document coordinates representing
+ * the coordinates as they appear in the document before applying soft wrap and folding.
  *
-**/
-/**
- * Emitted when the cursor selection changes.
- * 
- *  @event changeSelection
-**/
-/**
- * Creates a new `Selection` object.
- * @param {EditSession} session The session to use
- * 
- * @constructor
- **/
+ * @class Selection
+ * @extends EventEmitterClass
+ */
 export default class Selection extends EventEmitterClass {
     private session: EditSession;
     // FIXME: Maybe Selection should only couple to the EditSession?
@@ -77,6 +63,14 @@ export default class Selection extends EventEmitterClass {
     private rangeCount;
     public ranges;
     public rangeList: RangeList;
+
+    /**
+     * Creates a new `Selection` object.
+     *
+     * @class Selection
+     * @constructor
+     * @param session {EditSession} The session to use
+     */
     constructor(session: EditSession) {
         super();
         this.session = session;
@@ -103,11 +97,12 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-     *
      * Returns `true` if the selection is empty.
-     * @return {Boolean}
+     *
+     * @method isEmpty
+     * @return {boolean}
      */
-    isEmpty() {
+    isEmpty(): boolean {
         // What is the difference between $isEmpty and what this function returns?
         return (this.$isEmpty || (
             this.anchor.row == this.lead.row &&
@@ -116,10 +111,12 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Returns `true` if the selection is a multi-line.
-    * @return {Boolean}
-    **/
-    isMultiLine() {
+     * Returns `true` if the selection is a multi-line.
+     *
+     * @method isMultiLine
+     * @return {boolean}
+     */
+    isMultiLine(): boolean {
         if (this.isEmpty()) {
             return false;
         }
@@ -128,18 +125,24 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Returns an object containing the `row` and `column` current position of the cursor.
-    * @return {Object}
-    **/
-    getCursor() {
+     * Returns the current position of the cursor.
+     *
+     * @method getCursor
+     * @return {Position}
+     */
+    getCursor(): Position {
         return this.lead.getPosition();
     }
 
     /**
-    * Sets the row and column position of the anchor. This function also emits the `'changeSelection'` event.
-    * @param {number} row The new row
-    * @param {number} column The new column
-    **/
+     * Sets the row and column position of the anchor.
+     * This function also emits the `'changeSelection'` event.
+     *
+     * @method setSelectionAnchor
+     * @param row {number} The new row
+     * @param column {number} The new column
+     * @return {void}
+     */
     setSelectionAnchor(row: number, column: number): void {
         this.anchor.setPosition(row, column);
 
@@ -150,35 +153,39 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Returns an object containing the `row` and `column` of the calling selection anchor.
-    *
-    * @return {Object}
-    * @related Anchor.getPosition
-    **/
-    getSelectionAnchor() {
-        if (this.$isEmpty)
+     * Returns the position of the calling selection anchor.
+     *
+     * @method getSelectionAnchor
+     * @return {Position}
+     * @related Anchor.getPosition
+     */
+    getSelectionAnchor(): Position {
+        if (this.$isEmpty) {
             return this.getSelectionLead()
-        else
+        }
+        else {
             return this.anchor.getPosition();
+        }
     }
 
     /**
-    *
-    * Returns an object containing the `row` and `column` of the calling selection lead.
-    * @return {Object}
-    **/
-    getSelectionLead() {
+     * Returns an object containing the `row` and `column` of the calling selection lead.
+     *
+     * @method getSelectionLead
+     * @return {Position}
+     */
+    getSelectionLead(): Position {
         return this.lead.getPosition();
     }
 
     /**
-    * Shifts the selection up (or down, if [[Selection.isBackwards `isBackwards()`]] is true) the given number of columns.
-    * @param {Number} columns The number of columns to shift by
-    *
-    *
-    *
-    **/
-    shiftSelection(columns) {
+     * Shifts the selection up (or down, if [[Selection.isBackwards `isBackwards()`]] is true) the given number of columns.
+     *
+     * @method shiftSelection
+     * @param columns {number} The number of columns to shift by.
+     * @return {void}
+     */
+    shiftSelection(columns: number): void {
         if (this.$isEmpty) {
             this.moveCursorTo(this.lead.row, this.lead.column + columns);
             return;
@@ -200,19 +207,23 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Returns `true` if the selection is going backwards in the document.
-    * @return {Boolean}
-    **/
-    isBackwards() {
+     * Returns `true` if the selection is going backwards in the document.
+     *
+     * @method isBackwards
+     * @return {boolean}
+     */
+    isBackwards(): boolean {
         var anchor = this.anchor;
         var lead = this.lead;
         return (anchor.row > lead.row || (anchor.row == lead.row && anchor.column > lead.column));
     }
 
     /**
-    * [Returns the [[Range]] for the selected text.]{: #Selection.getRange}
-    * @return {Range}
-    **/
+     * [Returns the [[Range]] for the selected text.]{: #Selection.getRange}
+     *
+     * @method getRange
+     * @return {Range}
+     */
     getRange() {
         var anchor = this.anchor;
         var lead = this.lead;
@@ -229,9 +240,12 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * [Empties the selection (by de-selecting it). This function also emits the `'changeSelection'` event.]{: #Selection.clearSelection}
-    **/
-    clearSelection() {
+     * [Empties the selection (by de-selecting it). This function also emits the `'changeSelection'` event.]{: #Selection.clearSelection}
+     *
+     * @method clearSelection
+     * @return {void}
+     */
+    clearSelection(): void {
         if (!this.$isEmpty) {
             this.$isEmpty = true;
             this._emit("changeSelection");
@@ -239,27 +253,32 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Selects all the text in the document.
-    **/
-    selectAll() {
+     * Selects all the text in the document.
+     *
+     * @method selectAll
+     * @return {void}
+     */
+    selectAll(): void {
         var lastRow = this.doc.getLength() - 1;
         this.setSelectionAnchor(0, 0);
         this.moveCursorTo(lastRow, this.doc.getLine(lastRow).length);
     }
 
     /**
-    * Sets the selection to the provided range.
-    * @param {Range} range The range of text to select
-    * @param {Boolean} reverse Indicates if the range should go backwards (`true`) or not
-    *
-    *
-    * @method setSelectionRange
-    * @alias setRange
-    **/
-    setRange(range, reverse?: boolean) {
+     * Sets the selection to the provided range.
+     *
+     * @method setRange
+     * @param {Range} range The range of text to select
+     * @param {Boolean} reverse Indicates if the range should go backwards (`true`) or not
+     *
+     *
+     * @method setSelectionRange
+     * @alias setRange
+     */
+    setRange(range: Range, reverse?: boolean): void {
         this.setSelectionRange(range, reverse);
     }
-    setSelectionRange(range: { start: { row: number; column: number }; end: { row: number; column: number } }, reverse?: boolean) {
+    setSelectionRange(range: Range, reverse?: boolean): void {
         if (reverse) {
             this.setSelectionAnchor(range.end.row, range.end.column);
             this.selectTo(range.start.row, range.start.column);
@@ -839,12 +858,13 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Moves the selection to the position indicated by its `row` and `column`.
-    * @param {Object} position The position to move to
-    *
-    *
-    **/
-    moveCursorToPosition(position) {
+     * Moves the selection to the position indicated by its `row` and `column`.
+     *
+     * @method moveCursorToPosition
+     * @param position {Position} The position to move to.
+     * @return {void}
+     */
+    moveCursorToPosition(position: Position): void {
         this.moveCursorTo(position.row, position.column);
     }
 

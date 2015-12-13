@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['dist', 'amd', 'cjs', 'es6', 'lib', 'documentation']
+      src: ['dist', 'amd', 'cjs', 'documentation']
     },
 
     exec: {
@@ -165,12 +165,16 @@ module.exports = function(grunt) {
 
   var compilerSources = [
       "src/deuce.ts",
+      "src/main.ts",
       "src/mode/HtmlMode",
       "src/mode/HtmlWorker",
       "src/mode/JavaScriptMode",
       "src/mode/JavaScriptWorker",
       "src/mode/TypeScriptMode",
-      "src/mode/TypeScriptWorker"
+      "src/mode/TypeScriptWorker",
+      "./node_modules/typescript/lib/lib.es6.d.ts",
+      "./node_modules/typescript/lib/typescriptServices.d.ts",
+      "./typings/tsd.d.ts"
   ];
 
   function ES5(xs) {

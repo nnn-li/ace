@@ -30,12 +30,15 @@
 "use strict";
 
 import EditorDocument from "./EditorDocument";
+import Position from "./Position";
 import Range from "./Range";
 import EventEmitterClass from './lib/event_emitter';
 import { assert } from './lib/asserts';
 
 /**
- * Defines the floating pointer in the document. Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
+ * Defines the floating pointer in the document.
+ * Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
+ * 
  * @class Anchor
  * @extends EventEmitterClass
  */
@@ -77,6 +80,9 @@ export default class Anchor extends EventEmitterClass {
      * @param column {number} The starting column position.
      *
      * @constructor
+     * @param doc {EditorDocument}
+     * @param row {number}
+     * @param column {number}
      */
     constructor(doc: EditorDocument, row: number, column: number) {
         super();
@@ -90,14 +96,17 @@ export default class Anchor extends EventEmitterClass {
 
     /**
      * Returns an object identifying the `row` and `column` position of the current anchor.
-     * @return {Object}
-     **/
-    getPosition() {
+     *
+     * @method getPosition
+     * @return {Position}
+     */
+    getPosition(): Position {
         return this.$clipPositionToDocument(this.row, this.column);
     }
 
     /**
      * Returns the current document.
+     *
      * @method getDocument
      * @return {EditorDocument}
      */
@@ -112,13 +121,15 @@ export default class Anchor extends EventEmitterClass {
      *
      * Events that can trigger this function include [[Anchor.setPosition `setPosition()`]].
      *
-     * @event change
-     * @param {Object} e  An object containing information about the anchor position. It has two properties:
+     * @method onChange
+     * @param {Object} e  An object containing information about the anchor position.
+     *   It has two properties:
      *  - `old`: An object describing the old Anchor position
      *  - `value`: An object describing the new Anchor position
-     *
-     **/
-    onChange(e: { data: { range: Range; action: string } }, doc: EditorDocument) {
+     * @param doc: {EditorDocument}
+     * @return {void}
+     */
+    onChange(e: { data: { range: Range; action: string } }, doc: EditorDocument): void {
         var delta = e.data;
         var range = delta.range;
 
@@ -194,18 +205,19 @@ export default class Anchor extends EventEmitterClass {
     }
 
     /**
-     * Sets the anchor position to the specified row and column. If `noClip` is `true`, the position is not clipped.
-     * @param {Number} row The row index to move the anchor to
-     * @param {Number} column The column index to move the anchor to
-     * @param {Boolean} noClip Identifies if you want the position to be clipped
+     * Sets the anchor position to the specified row and column.
+     * If `noClip` is `true`, the position is not clipped.
+     *
+     * @method setPostion
+     * @param row {number} The row index to move the anchor to
+     * @param column {number} The column index to move the anchor to
+     * @param [noClip] {boolean} Identifies if you want the position to be clipped.
+     * @return {void}
      **/
     setPosition(row: number, column: number, noClip?: boolean): void {
-        var pos: { row: number; column: number };
+        var pos: Position;
         if (noClip) {
-            pos = {
-                row: row,
-                column: column
-            };
+            pos = { row: row, column: column };
         }
         else {
             pos = this.$clipPositionToDocument(row, column);
@@ -215,27 +227,28 @@ export default class Anchor extends EventEmitterClass {
             return;
         }
 
-        var old = {
-            row: this.row,
-            column: this.column
-        };
+        var old: Position = { row: this.row, column: this.column };
 
         this.row = pos.row;
         this.column = pos.column;
-        this._signal("change", {
-            old: old,
-            value: pos
-        });
+        this._signal("change", { old: old, value: pos });
     }
 
     /**
      * When called, the `'change'` event listener is removed.
      *
-     **/
+     * @method detach
+     * @return {void}
+     */
     detach(): void {
         this.document.off("change", this.$onChange);
     }
 
+    /**
+     * @method attach
+     * @param doc {EditorDocument}
+     * @return {void}
+     */
     attach(doc: EditorDocument): void {
         this.document = doc || this.document;
         this.document.on("change", this.$onChange);
@@ -243,12 +256,15 @@ export default class Anchor extends EventEmitterClass {
 
     /**
      * Clips the anchor position to the specified row and column.
+     *
+     * @method $clipPositionToDocument
      * @param {Number} row The row index to clip the anchor to
      * @param {Number} column The column index to clip the anchor to
-     *
-     **/
-    $clipPositionToDocument(row: number, column: number): { row: number; column: number } {
-        var pos: { row: number; column: number } = { row: 0, column: 0 };
+     * @return {Position}
+     * @private
+     */
+    private $clipPositionToDocument(row: number, column: number): Position {
+        var pos: Position = { row: 0, column: 0 };
 
         if (row >= this.document.getLength()) {
             pos.row = Math.max(0, this.document.getLength() - 1);
@@ -263,8 +279,9 @@ export default class Anchor extends EventEmitterClass {
             pos.column = Math.min(this.document.getLine(pos.row).length, Math.max(0, column));
         }
 
-        if (column < 0)
+        if (column < 0) {
             pos.column = 0;
+        }
 
         return pos;
     }
