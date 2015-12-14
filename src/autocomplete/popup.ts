@@ -33,6 +33,7 @@ import EditSession from "../EditSession";
 import VirtualRenderer from "../VirtualRenderer";
 import Editor from "../Editor";
 import Range from "../Range";
+import ThemeLink from "../ThemeLink";
 import {addListener} from "../lib/event";
 import {stringRepeat} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
@@ -52,11 +53,14 @@ export interface ListView {
     getTextLeftOffset(): number;
     show(pos, lineHeight, topdownOnly?): void;
     hide();
-    importTheme(themeName: string): void;
+    importThemeLink(themeName: string): Promise<ThemeLink>;
     setFontSize(fontSize): void;
     getLength(): number;
 }
 
+/**
+ * @class ListViewPopup
+ */
 export class ListViewPopup implements ListView {
     private editor: Editor;
     private $borderSize = 1;
@@ -71,7 +75,13 @@ export class ListViewPopup implements ListView {
     private lastMouseEventScrollTop;
     private data: any[] = [];
     private screenWidth;
-    constructor(parentNode: Node) {
+
+    /**
+     * @class ListViewPopup
+     * @constructor
+     * @param container {Node}
+     */
+    constructor(container: Node) {
         // Cache the 'this' pointer for event handlers.
         var self = this;
 
@@ -111,8 +121,8 @@ export class ListViewPopup implements ListView {
         var el: HTMLDivElement = <HTMLDivElement>createElement("div");
         this.editor = createEditor(el);
 
-        if (parentNode) {
-            parentNode.appendChild(el);
+        if (container) {
+            container.appendChild(el);
         }
         el.style.display = "none";
 
@@ -324,8 +334,14 @@ export class ListViewPopup implements ListView {
             }
         }
     }
-    importTheme(themeName: string): void {
-        this.editor.importTheme(themeName);
+
+    /**
+     * @method importThemeLink
+     * @param themeName {string}
+     * @return {Promise<ThemeLink>}
+     */
+    importThemeLink(themeName: string): Promise<ThemeLink> {
+        return this.editor.importThemeLink(themeName);
     }
     setFontSize(fontSize: string): void {
         this.editor.setFontSize(fontSize);

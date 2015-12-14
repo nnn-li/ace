@@ -136,12 +136,17 @@ export function ensureHTMLStyleElement(cssText: string, id?: string, doc: Docume
     }
 }
 
-export function importCssStylsheet(href: string, doc?: Document) {
+export function appendHTMLLinkElement(id: string, rel: string, type: string, href: string, doc: Document = document) {
     var link = <HTMLLinkElement>createElement('link');
-    link.rel = 'stylesheet';
+    link.id = id;
+    link.rel = rel;
+    if (typeof type === 'string') {
+        link.type = type;
+    }
     link.href = href;
     getDocumentHead(doc).appendChild(link);
 }
+
 /*
 export function getInnerWidth(element: HTMLElement): number {
     return (

@@ -199,6 +199,7 @@
     "./src/unicode.ts",
 
     "./src/theme/textmate.ts",
+    "./src/theme/twilight.ts",
 
     "./node_modules/typescript/lib/lib.es6.d.ts",
     "./node_modules/typescript/lib/typescriptServices.d.ts",

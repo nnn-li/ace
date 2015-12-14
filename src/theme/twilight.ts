@@ -27,10 +27,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
+"use strict";
 
 export var isDark = true;
 export var cssClass = "ace-twilight";
-export var cssText = require("../requirejs/text!./twilight.css");
-
-import dom = require("../lib/dom");
-dom.ensureHTMLStyleElement(cssText, cssClass);
+export var cssName = "src/theme/twilight.css";

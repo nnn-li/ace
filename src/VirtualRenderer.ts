@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import {addCssClass, createElement, ensureHTMLStyleElement, removeCssClass, setCssClass} from "./lib/dom";
+import {addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElement, removeCssClass, setCssClass} from "./lib/dom";
 import {_emit, defineOptions, loadModule, resetOptions} from "./config";
 import {isOldIE} from "./lib/useragent";
 import Annotation from './Annotation';
@@ -45,6 +45,7 @@ import EventEmitterClass from "./lib/event_emitter";
 import EditSession from './EditSession';
 import OptionsProvider from "./OptionsProvider";
 import Position from './Position';
+import ThemeLink from './ThemeLink';
 
 // FIXME
 // import editorCss = require("./requirejs/text!./css/editor.css");
@@ -1674,8 +1675,8 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         }
 
         this.theme = modJs;
-        addCssClass(this.container, modJs.cssClass);
-        setCssClass(this.container, "ace_dark", modJs.isDark);
+        this.addCssClass(modJs.cssClass);
+        this.setCssClass("ace_dark", modJs.isDark);
 
         // force re-measure of the gutter width
         if (this.$size) {
@@ -1687,51 +1688,76 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
+     * @method addCssClass
+     * @param cssClass {string}
+     * @return {void}
+     */
+    addCssClass(cssClass: string): void {
+        addCssClass(this.container, cssClass);
+    }
+
+    /**
+     * @method setCssClass
+     * @param className: {string}
+     * @param include {boolean}
+     * @return {void}
+     */
+    setCssClass(className: string, include: boolean): void {
+        setCssClass(this.container, className, include);
+    }
+
+    /**
      * Imports a new theme for the editor using the System Loader.
      * `theme` should exist, and be a directory path, like `ace/theme/textmate`.
      *
-     * @method importTheme
+     * @method importThemeLink
      * @param themeName {string} The name of a theme module.
-     * @param callback {Function} optional callback
-     * @return {void}
+     * @return {Promise<Theme>}
      */
-    importTheme(themeName: string, cb?: () => any): void {
-        // TODO: Assert that theme is actually a string.
-        console.log(`VirtualRenderer.setTheme()`);
+    importThemeLink(themeName: string): Promise<ThemeLink> {
+
+        console.log(`VirtualRenderer.importTheme(${themeName})`);
+
+        if (!themeName || typeof themeName === "string") {
+            themeName = themeName || this.getOption("theme").initialValue;
+        }
 
         var _self = this;
 
         this.$themeId = themeName;
 
+        // TODO: Is this the right place to emit the event?
         _self._emit('themeChange', { theme: themeName });
 
-        if (!themeName || typeof themeName === "string") {
-            themeName = themeName || this.getOption("theme").initialValue;
+        return new Promise<ThemeLink>(function(success, fail) {
             // We take advantage of the configurability of the System Loader.
             // Because we are loading CSS, we replace the instantiation.
             System.import(themeName)
                 .then(function(m: any) {
-                    var isDark = m.isDark;
-                    var cssClass = m.cssClass;
-                    var cssName = m.cssName;
-                    var padding = m.padding;
-                    console.log(`isDark => ${isDark}`);
-                    console.log(`cssClass => ${cssClass}`);
-                    console.log(`cssName => ${cssName}`);
-                    console.log(`padding => ${padding}`);
-                    System.import(cssName)
-                        .then(function(m) {
-                            console.log("We loaded the CSS!")
-                        })
-                        .catch(function(reason) {
-                            console.warn(`${reason}`);
-                        });
-
+                    var isDark: boolean = m.isDark;
+                    var id: string = m.cssClass;
+                    var href: string = m.cssName;
+                    var padding: number = m.padding;
+                    var theme = new ThemeLink(isDark, id, 'stylesheet', 'text/css', href, padding);
+                    success(theme);
                 })
                 .catch(function(reason) {
                     console.warn(`${reason}`);
+                    fail(reason);
                 });
-        }
+        });
+    }
+
+    /**
+     * @method setThemeLink
+     * @param themeLink {ThemeLink}
+     * @return {void}
+     */
+    setThemeLink(themeLink: ThemeLink): void {
+        appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, themeLink.href, document);
+        this.addCssClass(themeLink.id);
+        this.setCssClass("ace_dark", themeLink.isDark);
+        this.setPadding(themeLink.padding);
     }
 
     /**

@@ -38,6 +38,7 @@ import Editor from './Editor';
 import EditSession from './EditSession';
 import Anchor from './Anchor';
 import Range from './Range';
+import ThemeLink from './ThemeLink';
 
 var EDITOR_EXT_COMPLETER = 'completer';
 
@@ -280,7 +281,13 @@ export class CompleterAggregate implements Completer {
 
         if (!keepPopupPosition) {
             // FIXME: Seems like we can do better by using a cached theme?
-            this.popup.importTheme(editor.getTheme());
+            this.popup.importThemeLink(editor.getTheme())
+                .then(function(theme: ThemeLink) {
+                    console.warn("TODO: Handle theme in popop.")
+                })
+                .catch(function(reason) {
+                    console.warn(`popup.importThemeLink failed. Reason: ${reason}`);
+                });
             this.popup.setFontSize(editor.getFontSize());
 
             var lineHeight = editor.renderer.layerConfig.lineHeight;

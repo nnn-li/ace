@@ -53,6 +53,7 @@ import {Completer} from "./autocomplete";
 import Selection from './Selection';
 import {addListener, addMouseWheelListener, addMultiMouseDownListener, capture, getButton, preventDefault, stopEvent, stopPropagation} from "./lib/event";
 import {touchManager} from './touch/touch';
+import ThemeLink from "./ThemeLink";
 import Tooltip from "./Tooltip";
 
 //var DragdropHandler = require("./mouse/dragdrop_handler").DragdropHandler;
@@ -556,12 +557,12 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * @method importTheme
+     * @method importThemeLink
      * @param themeName {string} The name of the theme.
-     * @param [callback] optional callback called when theme is loaded
-     **/
-    importTheme(themeName: string, callback?: () => void) {
-        this.renderer.importTheme(themeName, callback);
+     * @return {Promise<ThemeLink>}
+     */
+    importThemeLink(themeName: string): Promise<ThemeLink> {
+        return this.renderer.importThemeLink(themeName);
     }
 
     /**
