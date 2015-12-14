@@ -145,7 +145,15 @@ export default class EditSession extends EventEmitterClass {
     private $autoNewLine;
     private getOption;
     private setOption;
-    private $useWorker;
+
+    /**
+     * Determines whether the worker will be started.
+     *
+     * @property $useWorker
+     * @type {boolean}
+     * @private
+     */
+    private $useWorker: boolean;
     /**
      *
      */
@@ -949,7 +957,7 @@ export default class EditSession extends EventEmitterClass {
      * @param {boolean} useWorker Set to `true` to use a worker.
      * @return {void}
      */
-    private setUseWorker(useWorker: boolean): void {
+    public setUseWorker(useWorker: boolean): void {
         this.setOption("useWorker", useWorker);
     }
 
@@ -959,7 +967,7 @@ export default class EditSession extends EventEmitterClass {
      * @method getUseWorker
      * @return {boolean}
      */
-    private getUseWorker(): boolean { return this.$useWorker; }
+    public getUseWorker(): boolean { return this.$useWorker; }
 
     /**
      * Reloads all the tokens on the current session.
@@ -991,65 +999,47 @@ export default class EditSession extends EventEmitterClass {
      * If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.
      *
      * @method setMode
-     * @param mode {LanguageMode | string} Set a new language mode instance or module name.
-     * @param {cb} optional callback
-     * @return {void}
+     * @param modeName {string}
+     * @param options {Object}
+     * @return {Promise<LanguageMode>}
      */
-    public importMode(mode: string, cb?: () => any): void {
+    public importMode(modeName: string, options?: {}): Promise<LanguageMode> {
 
-        var path: string;
-        var options;
-        if (typeof mode === 'string') {
-            path = mode || "ace/mode/text";
-        }
-        else {
-            path = "ace/mode/text";
+        if (typeof modeName !== 'string') {
+            throw new TypeError("modeName must be a string");
         }
 
-        // this is needed if ace isn't on require path (e.g tests in node)
-        if (!this.$modes["ace/mode/text"]) {
-            this.$modes["ace/mode/text"] = new TextMode();
-        }
-
-        if (this.$modes[path] && !options) {
-            // We've already got that mode cached, use it.
-            this.$onChangeMode(this.$modes[path], false);
-            cb && cb();
-            return;
-        }
-        // load dynamically.
-        this.$modeId = path;
-        var self = this;
-        System.import(path)
-            .then(function(m: ImportedModule) {
-                if (self.$modeId !== path) {
-                    return cb && cb();
-                }
-                if (self.$modes[path] && !options) {
-                    return self.$onChangeMode(self.$modes[path], false);
-                }
-                // FIXME: This won't work because it assumes that all classes are named exports and 'Mode'.
-                if (m && m.default) {
-                    var newMode: LanguageMode = new m.default(options);
-                    // Cache the new langauge mode if there are no options set.
-                    if (!options) {
-                        self.$modes[path] = newMode;
-                        newMode.$id = path;
-                    }
-                    self.$onChangeMode(newMode, false);
-                    cb && cb();
-                }
-                else {
-                    console.warn(`${path} does not define a default export (a LangaugeMode class).`);
-                }
-            }).catch(function(reason) {
-                console.warn(`${reason}`);
-            });
-
-        // set mode to text until loading is finished
+        // Set mode to text until loading is finished.
         if (!this.$mode) {
-            this.$onChangeMode(this.$modes["ace/mode/text"], true);
+            this.$onChangeMode(new TextMode(), true);
         }
+
+        var self = this;
+
+        return new Promise<LanguageMode>(function(success, fail) {
+            if (self.$modes[modeName] && !options) {
+                // We've already got that mode cached, use it.
+                success(self.$modes[modeName]);
+            }
+            else {
+                if (self.$modes[modeName] && !options) {
+                    success(self.$modes[modeName]);
+                }
+                // load dynamically.
+                System.import(modeName)
+                    .then(function(m: ImportedModule) {
+                        if (m && m.default) {
+                            var newMode: LanguageMode = new m.default(options);
+                            success(newMode);
+                        }
+                        else {
+                            fail(new Error(`${modeName} does not define a default export (a LanguageMode class).`));
+                        }
+                    }).catch(function(reason) {
+                        fail(reason);
+                    });
+            }
+        });
     }
 
     private $onChangeMode(mode: LanguageMode, isPlaceholder: boolean): void {
@@ -1282,25 +1272,26 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-     * Inserts a block of `text` and the indicated `position`.
-     * @param {Object} position The position {row, column} to start inserting at
-     * @param {String} text A chunk of text to insert
-     * @return {Object} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+     * Inserts a block of `text` at the indicated `position`.
      *
-     *
-     **/
-    public insert(position: Position, text: string) {
+     * @method insert
+     * @param position {Position} The position to start inserting at.
+     * @param text {string} A chunk of text to insert.
+     * @return {Position} The position of the last line of `text`.
+     * If the length of `text` is 0, this function simply returns `position`.
+     */
+    public insert(position: Position, text: string): Position {
         return this.doc.insert(position, text);
     }
 
     /**
      * Removes the `range` from the document.
-     * @param {Range} range A specified Range to remove
-     * @return {Object} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
      *
-     * @related EditorDocument.remove
-     *
-     **/
+     * @method remove
+     * @param range {Range} A specified Range to remove.
+     * @return {Position} The new `start` property of the range, which contains `startRow` and `startColumn`.
+     * If `range` is empty, this function returns the unmodified value of `range.start`.
+     */
     public remove(range: Range): Position {
         return this.doc.remove(range);
     }

@@ -69,7 +69,7 @@ export default class Selection extends EventEmitterClass {
      *
      * @class Selection
      * @constructor
-     * @param session {EditSession} The session to use
+     * @param session {EditSession} The session to use.
      */
     constructor(session: EditSession) {
         super();
@@ -240,7 +240,8 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-     * [Empties the selection (by de-selecting it). This function also emits the `'changeSelection'` event.]{: #Selection.clearSelection}
+     * Empties the selection (by de-selecting it).
+     * This function also emits the `'changeSelection'` event.
      *
      * @method clearSelection
      * @return {void}
@@ -278,6 +279,7 @@ export default class Selection extends EventEmitterClass {
     setRange(range: Range, reverse?: boolean): void {
         this.setSelectionRange(range, reverse);
     }
+
     setSelectionRange(range: Range, reverse?: boolean): void {
         if (reverse) {
             this.setSelectionAnchor(range.end.row, range.end.column);

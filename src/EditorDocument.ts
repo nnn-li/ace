@@ -67,6 +67,7 @@ export default class EditorDocument extends EventEmitterClass {
     private $lines: string[] = [];
     private $autoNewLine: string = "";
     private $newLineMode: string = "auto";
+
     /**
      * @class EditorDocument
      * @constructor
@@ -260,17 +261,18 @@ export default class EditorDocument extends EventEmitterClass {
      * Inserts a block of `text` at the indicated `position`.
      *
      * @method insert
-     * @param {Object} position The position to start inserting at; it's an object that looks like `{ row: row, column: column}`
+     * @param position {Position} The position to start inserting at.
      * @param text {string} A chunk of text to insert.
-     * @return {Object} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`. 
+     * @return {Position} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`. 
      */
-    insert(position: { row: number; column: number }, text: string) {
-        if (!text || text.length === 0)
+    insert(position: Position, text: string): Position {
+        if (!text || text.length === 0) {
             return position;
+        }
 
         position = $clipPosition(this, position);
 
-        // only detect new lines if the document has no line break yet
+        // Only detect new lines if the document has no line break yet
         if (this.getLength() <= 1) {
             this.$detectNewLine(text);
         }

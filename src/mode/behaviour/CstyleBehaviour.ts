@@ -118,7 +118,8 @@ export default class CstyleBehaviour extends Behaviour {
                         };
                     }
                 }
-            } else if (text === '}') {
+            }
+            else if (text === '}') {
                 initContext(editor);
                 var rightChar = line.substring(cursor.column, cursor.column + 1);
                 if (rightChar === '}') {
@@ -131,7 +132,8 @@ export default class CstyleBehaviour extends Behaviour {
                         };
                     }
                 }
-            } else if (text === "\n" || text === "\r\n") {
+            }
+            else if (text === "\n" || text === "\r\n") {
                 initContext(editor);
                 var closing = "";
                 if (CstyleBehaviour.isMaybeInsertedClosing(cursor, line)) {
@@ -144,9 +146,11 @@ export default class CstyleBehaviour extends Behaviour {
                     if (!openBracePos)
                         return null;
                     var next_indent = this.$getIndent(session.getLine(openBracePos.row));
-                } else if (closing) {
+                }
+                else if (closing) {
                     var next_indent = this.$getIndent(line);
-                } else {
+                }
+                else {
                     CstyleBehaviour.clearMaybeInsertedClosing();
                     return;
                 }
@@ -327,7 +331,8 @@ export default class CstyleBehaviour extends Behaviour {
                             text: quote + quote,
                             selection: [1, 1]
                         };
-                    } else if (token && token.type === "string") {
+                    }
+                    else if (token && token.type === "string") {
                         // Ignore input and move right one if we're typing over the closing quote.
                         var rightChar = line.substring(cursor.column, cursor.column + 1);
                         if (rightChar == quote) {

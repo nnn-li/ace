@@ -19,6 +19,7 @@ import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
 import EditorPosition from './mode/typescript/EditorPosition';
 import {getPosition} from './mode/typescript/DocumentPositionUtil';
 import {parallel} from "./lib/async";
+import LanguageMode from './LanguageMode';
 import Range from './Range';
 import ThemeLink from './ThemeLink';
 import {appendHTMLLinkElement} from './lib/dom'
@@ -48,32 +49,39 @@ System.locate = function(load): string {
 
 var systemTranslate = System.translate;
 System.translate = function(load) {
-    console.log(`(translate) ${load.name}`);
+    // console.log(`(translate) ${load.name}`);
     return systemTranslate.call(this, load);
 }
 
-//var text = new TextMode()
+// var text = new TextMode()
 // var mode = new CssMode()
 // var mode = new HtmlMode()
-//var mode = new JavaScriptMode()
+// var mode = new JavaScriptMode()
 // var mode = new TypeScriptMode()
 
 var code = '// comment\n"use strict";\nvar x = 0;\ny = 1;\n';
+//var code = '';
 
 var doc = new EditorDocument(code);
 
 var editSession = new EditSession(doc);
+// editSession.setUseWorker(false);
 // We can use module names to set the language mode.
 // FIXME: Separate out the synchronous from the async?
 //editSession.setMode(text);
-editSession.importMode('lib/mode/TypeScriptMode');
+editSession.importMode('lib/mode/JavaScriptMode')
+    .then(function(mode: LanguageMode) {
+        editSession.setMode(mode);
+    }).catch(function(reason) {
+        console.warn(`importMode() failed. Reason:  ${reason}`);
+    });
 editSession.setTabSize(2);
 editSession.setUseSoftTabs(true);
 
 var element = document.getElementById('editor')
 var renderer = new VirtualRenderer(element);
-renderer.setAnnotations([]);
-renderer.setPadding(10);
+//renderer.setAnnotations([]);
+//renderer.setPadding(10);
 renderer.importThemeLink('lib/theme/twilight')
     .then(function(themeLink: ThemeLink) {
         renderer.setThemeLink(themeLink)
@@ -104,10 +112,10 @@ renderer.importThemeLink('lib/theme/twilight')
 
 // The Editor acts as a controller between the renderer and the EditSession.
 var editor = new Editor(renderer, editSession);
-editor.setFontSize("16px");
-editor.setHighlightActiveLine(true);
+editor.setFontSize("20px");
+//editor.setHighlightActiveLine(true);
 // editor.setHighlightGutterLine(true); Why repeated?
-editor.setHighlightSelectedWord(true);
+//editor.setHighlightSelectedWord(true);
 //editor.setAnimatedScroll(false);  // Why repeated?
 //editor.setShowInvisibles(true); // Why repeated
 

@@ -328,7 +328,8 @@ export default class Editor extends EventEmitterClass {
                 && (!/\s/.test(text) || /\s/.test(prev.args)); // previous insertion was of same type
 
             this.mergeNextCommand = true;
-        } else {
+        }
+        else {
             shouldMerge = shouldMerge
                 && mergeableCommands.indexOf(e.command.name) !== -1; // the command is mergeable
         }
@@ -684,7 +685,8 @@ export default class Editor extends EventEmitterClass {
                     }
 
                 } while (token && depth >= 0);
-            } else {
+            }
+            else {
                 //find opening tag
                 do {
                     token = prevToken;
@@ -1053,21 +1055,27 @@ export default class Editor extends EventEmitterClass {
      * @param [pasted] {boolean}
      * @return {void}
      */
-    insert(text: string, pasted?: boolean): void {
+    insert(text: string, pasted: boolean): void {
+
+        // console.log(`Editor.insert(${text}, ${pasted})`);
+
         var session = this.session;
         var mode = session.getMode();
         var cursor: Position = this.getCursorPosition();
+        var transform: { text: string; selection: number[] };
+
+        // console.log(`cursor: ${JSON.stringify(cursor)}`);
 
         if (this.getBehavioursEnabled() && !pasted) {
             // Get a transform if the current mode wants one.
-            var transform: { text: string; selection: number[] } = mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
+            transform = mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
             if (transform) {
+                // console.log(`transform: ${JSON.stringify(transform)}`);
                 if (text !== transform.text) {
                     this.session.mergeUndoDeltas = false;
                     this.$mergeNextCommand = false;
                 }
                 text = transform.text;
-
             }
         }
 
@@ -1094,6 +1102,7 @@ export default class Editor extends EventEmitterClass {
                 session.doc.removeInLine(cursor.row, cursor.column, cursor.column + d);
             }
         }
+
         this.clearSelection();
 
         var start = cursor.column;
@@ -1119,9 +1128,9 @@ export default class Editor extends EventEmitterClass {
 
         if (session.getDocument().isNewLine(text)) {
             var lineIndent = mode.getNextLineIndent(lineState, line.slice(0, cursor.column), session.getTabString());
-
             session.insert({ row: cursor.row + 1, column: 0 }, lineIndent);
         }
+
         if (shouldOutdent) {
             mode.autoOutdent(lineState, session, cursor.row);
         }
@@ -1508,15 +1517,18 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Splits the line at the current selection (by inserting an `'\n'`).
-     **/
-    splitLine() {
+     *
+     * @method splitLine
+     * @return {void}
+     */
+    splitLine(): void {
         if (!this.selection.isEmpty()) {
             this.session.remove(this.getSelectionRange());
             this.clearSelection();
         }
 
         var cursor = this.getCursorPosition();
-        this.insert("\n");
+        this.insert("\n", false);
         this.moveCursorToPosition(cursor);
     }
 
@@ -1579,9 +1591,10 @@ export default class Editor extends EventEmitterClass {
     /**
      * Inserts an indentation into the current cursor position or indents the selected lines.
      *
-     * @related EditSession.indentRows
-     **/
-    indent() {
+     * @method indent
+     * @return {void}
+     */
+    indent(): void {
         var session = this.session;
         var range = this.getSelectionRange();
 
@@ -1589,7 +1602,8 @@ export default class Editor extends EventEmitterClass {
             var rows = this.$getSelectedRows();
             session.indentRows(rows.first, rows.last, "\t");
             return;
-        } else if (range.start.column < range.end.column) {
+        }
+        else if (range.start.column < range.end.column) {
             var text = session.getTextRange(range);
             if (!/^\s+$/.test(text)) {
                 var rows = this.$getSelectedRows();
@@ -1606,16 +1620,17 @@ export default class Editor extends EventEmitterClass {
         if (this.session.getUseSoftTabs()) {
             var count = (size - column % size);
             var indentString = stringRepeat(" ", count);
-        } else {
+        }
+        else {
             var count = column % size;
-            while (line[range.start.column] == " " && count) {
+            while (line[range.start.column] === " " && count) {
                 range.start.column--;
                 count--;
             }
             this.selection.setSelectionRange(range);
             indentString = "\t";
         }
-        return this.insert(indentString);
+        return this.insert(indentString, false);
     }
 
     /**
@@ -2104,8 +2119,10 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Selects all the text in editor.
-     * @related Selection.selectAll
-     **/
+     *
+     * @method selectAll
+     * @return {void}
+     */
     selectAll(): void {
         this.$blockScrolling += 1;
         this.selection.selectAll();
@@ -2113,10 +2130,11 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * {:Selection.clearSelection}
-     * @related Selection.clearSelection
-     **/
+     * @method clearSelection
+     * @return {void}
+     */
     clearSelection(): void {
+        // console.log("Editor.clearSelection()");
         this.selection.clearSelection();
     }
 
@@ -2133,21 +2151,24 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * Moves the cursor to the position indicated by `pos.row` and `pos.column`.
-     * @param {Object} pos An object with two properties, row and column
+     * Moves the cursor to the position specified by `position.row` and `position.column`.
      *
-     *
-     * @related Selection.moveCursorToPosition
-     **/
-    moveCursorToPosition(pos: Position): void {
-        this.selection.moveCursorToPosition(pos);
+     * @method moveCursorToPosition
+     * @param position {Position} An object with two properties, row and column
+     * @return {void}
+     */
+    moveCursorToPosition(position: Position): void {
+        return this.selection.moveCursorToPosition(position);
     }
 
     /**
      * Moves the cursor's row and column to the next matching bracket or HTML tag.
      *
-     **/
-    jumpToMatching(select: boolean) {
+     * @method jumpToMatching
+     * @param select {boolean}
+     * @return {void}
+     */
+    jumpToMatching(select: boolean): void {
         var cursor = this.getCursorPosition();
         var iterator = new TokenIterator(this.session, cursor.row, cursor.column);
         var prevToken = iterator.getCurrentToken();
@@ -2205,14 +2226,16 @@ export default class Editor extends EventEmitterClass {
                             break;
                     }
                 }
-            } else if (token && token.type.indexOf('tag-name') !== -1) {
+            }
+            else if (token && token.type.indexOf('tag-name') !== -1) {
                 if (isNaN(depth[token.value])) {
                     depth[token.value] = 0;
                 }
 
                 if (prevToken.value === '<') {
                     depth[token.value]++;
-                } else if (prevToken.value === '</') {
+                }
+                else if (prevToken.value === '</') {
                     depth[token.value]--;
                 }
 
@@ -2250,7 +2273,8 @@ export default class Editor extends EventEmitterClass {
                 if (pos.row === cursor.row && Math.abs(pos.column - cursor.column) < 2)
                     range = this.session.getBracketRange(pos);
             }
-        } else if (matchType === 'tag') {
+        }
+        else if (matchType === 'tag') {
             if (token && token.type.indexOf('tag-name') !== -1)
                 var tag = token.value;
             else
@@ -2304,7 +2328,8 @@ export default class Editor extends EventEmitterClass {
                     this.clearSelection();
                 else
                     this.selection.selectTo(pos.row, pos.column);
-            } else {
+            }
+            else {
                 this.selection.moveTo(pos.row, pos.column);
             }
         }

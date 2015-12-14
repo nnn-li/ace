@@ -8,6 +8,7 @@
   "author": "david.geo.holmes@gmail.com",
   "jspm": {
     "dependencies": {
+      "jshint": "npm:jshint@^2.9.1-rc1",
       "ts": "github:frankwallis/plugin-typescript@^2.4.3",
       "typescript": "npm:typescript@^1.7.3"
     },

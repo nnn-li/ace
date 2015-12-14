@@ -142,7 +142,7 @@ export default function autoComplete(editor: Editor, fileNameProvider: () => str
             // TODO: This is where the insertion happens.
             var curr = _view.current();
             if (curr) {
-                editor.insert($(curr).data("name"));
+                editor.insert($(curr).data("name"), false);
             }
             deactivate();
         }

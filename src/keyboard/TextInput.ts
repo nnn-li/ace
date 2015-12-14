@@ -362,7 +362,7 @@ export default class TextInput {
             setTimeout(onCompositionUpdate, 0);
             host.on("mousedown", onCompositionEnd);
             if (!host.selection.isEmpty()) {
-                host.insert("");
+                host.insert("", false);
                 host.getSession().markUndoGroup();
                 host.selection.clearSelection();
             }
@@ -382,7 +382,7 @@ export default class TextInput {
             inComposition.lastValue = val;
             if (inComposition.lastValue) {
                 var r = host.selection.getRange();
-                host.insert(inComposition.lastValue);
+                host.insert(inComposition.lastValue, false);
                 host.getSession().markUndoGroup();
                 inComposition.range = host.selection.getRange();
                 host.selection.setRange(r);

@@ -59,11 +59,11 @@ export default class AutoCompleteView {
             return this.wrap.style.left = coords.pageX + 'px';
         }
     }
-    current() {
-        var child, children, i;
-        children = this.listElement.childNodes;
+    current(): Element {
+        var i;
+        var children = this.listElement.childNodes;
         for (i in children) {
-            child = children[i];
+            var child = <Element>children[i];
             if (child.className === this.selectedClassName) {
                 return child;
             }

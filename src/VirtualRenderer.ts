@@ -63,6 +63,23 @@ var CHANGE_MARKER_FRONT = 256;
 var CHANGE_FULL = 512;
 var CHANGE_H_SCROLL = 1024;
 
+// Useful for debugging...
+function changesToString(changes: number): string {
+    var a = ""
+    if (changes & CHANGE_CURSOR) a += " cursor";
+    if (changes & CHANGE_MARKER) a += " marker";
+    if (changes & CHANGE_GUTTER) a += " gutter";
+    if (changes & CHANGE_SCROLL) a += " scroll";
+    if (changes & CHANGE_LINES) a += " lines";
+    if (changes & CHANGE_TEXT) a += " text";
+    if (changes & CHANGE_SIZE) a += " size";
+    if (changes & CHANGE_MARKER_BACK) a += " marker_back";
+    if (changes & CHANGE_MARKER_FRONT) a += " marker_front";
+    if (changes & CHANGE_FULL) a += " full";
+    if (changes & CHANGE_H_SCROLL) a += " h_scroll";
+    return a.trim();
+}
+
 /**
  * The class that is responsible for drawing everything you see on the screen!
  *
@@ -805,11 +822,22 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         return this.container;
     }
 
-    // move text input over the cursor
-    // this is required for iOS and IME
-    $moveTextAreaToCursor() {
-        if (!this.$keepTextAreaAtCursor)
+    /**
+     * Move text input over the cursor.
+     * Required for iOS and IME.
+     *
+     * @method $moveTextAreaToCursor
+     * @return {void}
+     * @private
+     */
+    public $moveTextAreaToCursor(): void {
+
+        // console.log("VirtualRenderer.$moveTextAreaToCursor()");
+        // console.log(`keepTextAreaAtCursor => ${this.$keepTextAreaAtCursor}`);
+
+        if (!this.$keepTextAreaAtCursor) {
             return;
+        }
         var config = this.layerConfig;
         var posTop = this.$cursorLayer.$pixelPos.top;
         var posLeft = this.$cursorLayer.$pixelPos.left;
@@ -876,10 +904,16 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    * Sets the padding for all the layers.
-    * @param {number} padding A new padding value (in pixels)
-    **/
-    setPadding(padding: number) {
+     * Sets the padding for all the layers.
+     *
+     * @method setPadding
+     * @param padding {number} A new padding value (in pixels).
+     * @return {void}
+     */
+    setPadding(padding: number): void {
+        if (typeof padding !== 'number') {
+            throw new TypeError("padding must be a number");
+        }
         this.$padding = padding;
         this.$textLayer.setPadding(padding);
         this.$cursorLayer.setPadding(padding);
@@ -889,7 +923,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.$updatePrintMargin();
     }
 
-    setScrollMargin(top, bottom, left, right) {
+    setScrollMargin(top: number, bottom: number, left: number, right: number): void {
         var sm = this.scrollMargin;
         sm.top = top | 0;
         sm.bottom = bottom | 0;
@@ -965,7 +999,17 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.$frozen = false;
     }
 
-    private $renderChanges(changes, force) {
+    /**
+     * @method $renderChanges
+     * @param changes {number}
+     * @param force {boolean}
+     * @return {number}
+     * @private
+     */
+    private $renderChanges(changes: number, force: boolean): number {
+
+        // console.log(`VirtualRenderer.$renderChanges(${JSON.stringify(changes)}, ${force})`);
+
         if (this.$changes) {
             changes |= this.$changes;
             this.$changes = 0;
@@ -981,7 +1025,8 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         if (!this.lineHeight) {
             this.$textLayer.checkForSizeChanges();
         }
-        // this.$logChanges(changes);
+
+        // console.log(`changes => ${changesToString(changes)}`);
 
         this._signal("beforeRender");
         var config = this.layerConfig;
@@ -1068,6 +1113,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         }
 
         if (changes & CHANGE_CURSOR) {
+            // console.log(`VitualRenderer calling cursorLayor.update(${JSON.stringify(config)})`)
             this.$cursorLayer.update(config);
             this.$moveTextAreaToCursor();
             this.$highlightGutterLine && this.$updateGutterLineHighlight();
@@ -1395,7 +1441,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.session.setScrollTop(row * this.lineHeight);
     }
 
-    alignCursor(cursor, alignment) {
+    alignCursor(cursor/*: Position*/, alignment: number) {
+        // console.log(`VirtualRenderer.alignCursor(${JSON.stringify(cursor)}, ${alignment})`);
+        // FIXME: Don't have polymorphic cursor parameter.
         if (typeof cursor == "number")
             cursor = { row: cursor, column: 0 };
 
@@ -1656,7 +1704,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      */
     setTheme(modJs: { cssText: string; cssClass: string; isDark: boolean; padding: number }): void {
 
-        console.log("VirtialRenderer.setTheme()");
+        // console.log("VirtialRenderer.setTheme()");
 
         if (!modJs.cssClass) {
             return;
@@ -1716,7 +1764,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      */
     importThemeLink(themeName: string): Promise<ThemeLink> {
 
-        console.log(`VirtualRenderer.importTheme(${themeName})`);
+        // console.log(`VirtualRenderer.importTheme(${themeName})`);
 
         if (!themeName || typeof themeName === "string") {
             themeName = themeName || this.getOption("theme").initialValue;
@@ -1737,7 +1785,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
                     var isDark: boolean = m.isDark;
                     var id: string = m.cssClass;
                     var href: string = m.cssName;
-                    var padding: number = m.padding;
+                    var padding: number = (typeof m.padding === 'number') ? m.padding : 0;
                     var theme = new ThemeLink(isDark, id, 'stylesheet', 'text/css', href, padding);
                     success(theme);
                 })

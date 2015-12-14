@@ -5,6 +5,7 @@ import Annotation from "../Annotation";
 import Mirror from "../worker/Mirror";
 import WorkerCallback from "../WorkerCallback";
 
+//import jshint from 'jshint';
 import {JSHINT} from "./javascript/jshint";
 import JSHintOptions from "./javascript/JSHintOptions";
 import JSHintError from "./javascript/JSHintError";

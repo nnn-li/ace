@@ -74,7 +74,7 @@ export class CompleterAggregate implements Completer {
             "Ctrl-Down|Ctrl-End": function(editor: Editor) { getCompleter(editor).goTo("end"); },
 
             "Esc": function(editor: Editor) { getCompleter(editor).detach(); },
-            "Space": function(editor: Editor) { getCompleter(editor).detach(); editor.insert(" "); },
+            "Space": function(editor: Editor) { getCompleter(editor).detach(); editor.insert(" ", false); },
             "Return": function(editor: Editor) { return getCompleter(editor).insertMatch(); },
             "Shift-Return": function(editor: Editor) { getCompleter(editor).insertMatch(true); },
             "Tab": function(editor: Editor) {

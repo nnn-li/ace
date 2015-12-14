@@ -51,7 +51,7 @@ export default class Cursor {
     private timeoutId: number;
     private cursors: HTMLDivElement[] = [];
     private cursor: HTMLDivElement;
-    private $padding = 0;
+    private $padding: number = 0;
     private overwrite: boolean;
     private $updateCursors: (doIt: boolean) => void;
     public config: CursorConfig;
@@ -90,7 +90,12 @@ export default class Cursor {
     }
 
     public setPadding(padding: number): void {
-        this.$padding = padding;
+        if (typeof padding === 'number') {
+            this.$padding = padding;
+        }
+        else {
+            throw new TypeError("padding must be a number");
+        }
     }
 
     public setSession(session: EditSession) {
@@ -187,13 +192,22 @@ export default class Cursor {
     // TODO: Create PixelPosition with left and top?
     public getPixelPosition(position: Position, onScreen?: boolean): PixelPosition {
 
-        if (!this.config || !this.session)
+        if (!this.config || !this.session) {
             return { left: 0, top: 0 };
+        }
 
         if (!position) {
             position = this.session.getSelection().getCursor();
         }
+
+        // console.log(`position => ${JSON.stringify(position)}`);
+
         var pos = this.session.documentToScreenPosition(position.row, position.column);
+
+        // console.log(`pos => ${JSON.stringify(pos)}`);
+        // console.log(`config => ${JSON.stringify(this.config)}`);
+        // console.log(`padding => ${JSON.stringify(this.$padding)}`);
+
         var cursorLeft = this.$padding + pos.column * this.config.characterWidth;
         var cursorTop = (pos.row - (onScreen ? this.config.firstRowScreen : 0)) * this.config.lineHeight;
 
@@ -215,7 +229,11 @@ export default class Cursor {
         }
 
         for (var i = 0, n = selections.length; i < n; i++) {
+
             var pixelPos = this.getPixelPosition(selections[i].cursor, true);
+
+            // console.log(`pixelPos => ${JSON.stringify(pixelPos)}`);
+
             if ((pixelPos.top > config.height + config.offset ||
                 pixelPos.top < 0) && i > 1) {
                 continue;
