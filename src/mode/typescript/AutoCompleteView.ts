@@ -1,14 +1,34 @@
 "use strict";
 
-// TODO import jquery
-declare var $: any;
-
 import Editor from '../../Editor';
+import PixelPosition from '../../PixelPosition';
 import HashHandler from '../../keyboard/HashHandler';
 
 var CLASSNAME = 'ace_autocomplete';
 var CLASSNAME_SELECTED = 'ace_autocomplete_selected';
 
+function outerHeight(element: HTMLElement) {
+    var height = Number(element.style.height.slice(0, -2));
+    var padding = Number(element.style.paddingTop.slice(0, -2)) + Number(element.style.paddingBottom.slice(0, -2));
+    var margin = Number(element.style.marginTop.slice(0, -2)) + Number(element.style.marginBottom.slice(0, -2));
+    var border = Number(element.style.borderTop.slice(0, -2)) + Number(element.style.borderBottom.slice(0, -2));
+    return height + padding + margin + border;
+}
+
+function position(el: HTMLElement) {
+    var _x = 0;
+    var _y = 0;
+    while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
+        _x += el.offsetLeft - el.scrollLeft;
+        _y += el.offsetTop - el.scrollTop;
+        el = <HTMLElement>el.offsetParent;
+    }
+    return { top: _y, left: _x };
+}
+
+/**
+ * @class AutoCompleteView
+ */
 export default class AutoCompleteView {
     private editor: Editor;
     private autoComplete;
@@ -49,21 +69,22 @@ export default class AutoCompleteView {
     setPosition(coords: { pageX: number; pageY: number }) {
         var bottom, editorBottom, top;
         top = coords.pageY + 20;
-        editorBottom = $(this.editor.container).offset().top + $(this.editor.container).height();
-        bottom = top + $(this.wrap).height();
+        editorBottom = this.editor.container.offsetTop + parseInt(this.editor.container.style.height);
+        bottom = top + parseInt(this.wrap.style.height);
         if (bottom < editorBottom) {
             this.wrap.style.top = top + 'px';
             return this.wrap.style.left = coords.pageX + 'px';
-        } else {
-            this.wrap.style.top = (top - $(this.wrap).height() - 20) + 'px';
+        }
+        else {
+            this.wrap.style.top = (top - parseInt(this.wrap.style.height) - 20) + 'px';
             return this.wrap.style.left = coords.pageX + 'px';
         }
     }
-    current(): Element {
+    current(): HTMLElement {
         var i;
         var children = this.listElement.childNodes;
         for (i in children) {
-            var child = <Element>children[i];
+            var child = <HTMLElement>children[i];
             if (child.className === this.selectedClassName) {
                 return child;
             }
@@ -99,22 +120,28 @@ export default class AutoCompleteView {
             }
         }
     }
-    adjustPosition() {
-        var elm, elmOuterHeight, newMargin, pos, preMargin, wrapHeight;
+    adjustPosition(): void {
+        var elm: HTMLElement;
+        var elmOuterHeight: number;
+        var newMargin: string;
+        var pos: PixelPosition; // position of element relative to offset parent
+        var preMargin: number;
+        var wrapHeight: number;
         elm = this.current();
         if (elm) {
             newMargin = '';
-            wrapHeight = $(this.wrap).height();
-            elmOuterHeight = $(elm).outerHeight();
-            preMargin = parseInt($(this.listElement).css("margin-top").replace('px', ''), 10);
-            pos = $(elm).position();
+            wrapHeight = parseInt(this.wrap.style.height);
+            elmOuterHeight = outerHeight(elm);
+            preMargin = parseInt(this.listElement.style.marginTop.replace('px', ''), 10);
+
+            pos = position(elm);
             if (pos.top >= (wrapHeight - elmOuterHeight)) {
                 newMargin = (preMargin - elmOuterHeight) + 'px';
-                $(this.listElement).css("margin-top", newMargin);
+                this.listElement.style.marginTop = newMargin;
             }
             if (pos.top < 0) {
                 newMargin = (-pos.top + preMargin) + 'px';
-                return $(this.listElement).css("margin-top", newMargin);
+                this.listElement.style.marginTop = newMargin;
             }
         }
     }

@@ -1,5 +1,3 @@
-declare var $: any;
-
 import Position from '../../Position';
 import HashHandler from '../../keyboard/HashHandler';
 import EventEmitterClass from '../../lib/event_emitter';
@@ -140,9 +138,9 @@ export default function autoComplete(editor: Editor, fileNameProvider: () => str
             }
 
             // TODO: This is where the insertion happens.
-            var curr = _view.current();
+            var curr: HTMLElement = _view.current();
             if (curr) {
-                editor.insert($(curr).data("name"), false);
+                editor.insert(curr.getAttribute('name'), false);
             }
             deactivate();
         }

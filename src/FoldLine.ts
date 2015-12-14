@@ -205,12 +205,12 @@ export default class FoldLine {
 
         if (ret) {
             fold = ret.fold;
-            if (ret.kind == "inside"
-                && fold.start.column != column
-                && fold.start.row != row) {
+            if (ret.kind === "inside"
+                && fold.start.column !== column
+                && fold.start.row !== row) {
                 //throwing here breaks whole editor
                 //TODO: properly handle this
-                window.console && window.console.log(row, column, fold);
+                window.console && window.console.warn(row, column, fold);
             }
             else if (fold.start.row == row) {
                 folds = this.folds;

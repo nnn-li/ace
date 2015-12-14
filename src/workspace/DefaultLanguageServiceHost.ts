@@ -136,7 +136,6 @@ export default class DefaultLanguageServiceHost implements ts.LanguageServiceHos
     }
 
     ///////////////////////////////////////////////////////////////////////
-    // ILogger implementation
 
     information() {
         return false;
@@ -225,7 +224,6 @@ export default class DefaultLanguageServiceHost implements ts.LanguageServiceHos
      * @return {string}
      */
     getCurrentDirectory(): string {
-        console.warn("getCurrentDirectory() called!");
         return "";
     }
 
@@ -239,12 +237,11 @@ export default class DefaultLanguageServiceHost implements ts.LanguageServiceHos
      */
     getDefaultLibFileName(options: ts.CompilerOptions): string {
         // TODO: I think this should return the d.ts file.
-        console.warn(`getDefaultLibFileName(${JSON.stringify(options)})`);
         return "jspm_packages/npm/typescript@1.7.3/lib/lib.d.ts";
     }
 
     log(s: string): void {
-        console.log(s);
+        console.log(">>> " + s);
     }
 
     ///////////////////////////////////////////////////////////////////////

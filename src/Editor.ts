@@ -1057,20 +1057,15 @@ export default class Editor extends EventEmitterClass {
      */
     insert(text: string, pasted: boolean): void {
 
-        // console.log(`Editor.insert(${text}, ${pasted})`);
-
         var session = this.session;
         var mode = session.getMode();
         var cursor: Position = this.getCursorPosition();
         var transform: { text: string; selection: number[] };
 
-        // console.log(`cursor: ${JSON.stringify(cursor)}`);
-
         if (this.getBehavioursEnabled() && !pasted) {
             // Get a transform if the current mode wants one.
             transform = mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
             if (transform) {
-                // console.log(`transform: ${JSON.stringify(transform)}`);
                 if (text !== transform.text) {
                     this.session.mergeUndoDeltas = false;
                     this.$mergeNextCommand = false;
@@ -2134,7 +2129,6 @@ export default class Editor extends EventEmitterClass {
      * @return {void}
      */
     clearSelection(): void {
-        // console.log("Editor.clearSelection()");
         this.selection.clearSelection();
     }
 

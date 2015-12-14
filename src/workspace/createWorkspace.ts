@@ -10,8 +10,6 @@ import Workspace from './Workspace'
  */
 export default function createWorkspace(): Promise<Workspace> {
 
-    // console.log("createWorkspace()");
-
     var workerProxy = new WorkerClient('lib/worker/worker-systemjs.js');
 
     var callbacks = {};
@@ -89,7 +87,6 @@ export default function createWorkspace(): Promise<Workspace> {
     }
 
     function editScript(fileName: string, start: number, end: number, text: string) {
-        console.log(`Workspace.editScript(${fileName})`);
         var message =
             {
                 data: { fileName: fileName, start: start, end: end, text: text }
@@ -146,7 +143,6 @@ export default function createWorkspace(): Promise<Workspace> {
     return new Promise<Workspace>(function(resolve, reject) {
 
         workerProxy.on("initAfter", function(event) {
-            console.log(`workerProxy.initAfter(${JSON.stringify(event)})`);
             var ws: Workspace = {
                 ensureScript: ensureScript,
                 editScript: editScript,
@@ -162,7 +158,6 @@ export default function createWorkspace(): Promise<Workspace> {
         });
 
         workerProxy.on("initFail", function(event) {
-            // console.log(`workerProxy.initFail(${JSON.stringify(event)})`);
             reject(new Error("initFail received from worker thread."));
         });
 

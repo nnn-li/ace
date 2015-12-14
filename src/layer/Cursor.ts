@@ -200,13 +200,7 @@ export default class Cursor {
             position = this.session.getSelection().getCursor();
         }
 
-        // console.log(`position => ${JSON.stringify(position)}`);
-
         var pos = this.session.documentToScreenPosition(position.row, position.column);
-
-        // console.log(`pos => ${JSON.stringify(pos)}`);
-        // console.log(`config => ${JSON.stringify(this.config)}`);
-        // console.log(`padding => ${JSON.stringify(this.$padding)}`);
 
         var cursorLeft = this.$padding + pos.column * this.config.characterWidth;
         var cursorTop = (pos.row - (onScreen ? this.config.firstRowScreen : 0)) * this.config.lineHeight;
@@ -215,8 +209,6 @@ export default class Cursor {
     }
 
     public update(config: CursorConfig) {
-
-        // console.log(`Cursor.update(${JSON.stringify(config)}`);
 
         this.config = config;
 
@@ -231,8 +223,6 @@ export default class Cursor {
         for (var i = 0, n = selections.length; i < n; i++) {
 
             var pixelPos = this.getPixelPosition(selections[i].cursor, true);
-
-            // console.log(`pixelPos => ${JSON.stringify(pixelPos)}`);
 
             if ((pixelPos.top > config.height + config.offset ||
                 pixelPos.top < 0) && i > 1) {

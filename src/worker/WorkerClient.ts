@@ -24,7 +24,6 @@ export default class WorkerClient extends EventEmitterClass {
      */
     constructor(workerUrl: string) {
         super();
-        // console.log(`WorkerClient(${workerUrl})`);
         this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
         this.changeListener = this.changeListener.bind(this);
         this.onMessage = this.onMessage.bind(this);
@@ -32,7 +31,6 @@ export default class WorkerClient extends EventEmitterClass {
         var workerUrl = qualifyURL(workerUrl);
 
         try {
-            // console.log(`new Worker(${workerUrl})`);
             this.$worker = new Worker(workerUrl);
         }
         catch (e) {
@@ -62,7 +60,6 @@ export default class WorkerClient extends EventEmitterClass {
      * @return {void}
      */
     init(moduleName: string): void {
-        // console.log(`WorkerClient.init(${moduleName})`);
         var tlns: { [ns: string]: string } = {};
         // Sending a postMessage starts the worker.
         this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName });

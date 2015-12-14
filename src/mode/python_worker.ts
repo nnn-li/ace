@@ -73,7 +73,7 @@ export class PythonWorker extends m.Mirror {
                 });
             }
             catch (slippery) {
-                console.log(slippery);
+                console.warn(slippery);
             }
         }
 

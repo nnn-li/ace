@@ -832,9 +832,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      */
     public $moveTextAreaToCursor(): void {
 
-        // console.log("VirtualRenderer.$moveTextAreaToCursor()");
-        // console.log(`keepTextAreaAtCursor => ${this.$keepTextAreaAtCursor}`);
-
         if (!this.$keepTextAreaAtCursor) {
             return;
         }
@@ -1008,8 +1005,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      */
     private $renderChanges(changes: number, force: boolean): number {
 
-        // console.log(`VirtualRenderer.$renderChanges(${JSON.stringify(changes)}, ${force})`);
-
         if (this.$changes) {
             changes |= this.$changes;
             this.$changes = 0;
@@ -1025,8 +1020,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         if (!this.lineHeight) {
             this.$textLayer.checkForSizeChanges();
         }
-
-        // console.log(`changes => ${changesToString(changes)}`);
 
         this._signal("beforeRender");
         var config = this.layerConfig;
@@ -1113,7 +1106,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         }
 
         if (changes & CHANGE_CURSOR) {
-            // console.log(`VitualRenderer calling cursorLayor.update(${JSON.stringify(config)})`)
             this.$cursorLayer.update(config);
             this.$moveTextAreaToCursor();
             this.$highlightGutterLine && this.$updateGutterLineHighlight();
@@ -1442,7 +1434,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     alignCursor(cursor/*: Position*/, alignment: number) {
-        // console.log(`VirtualRenderer.alignCursor(${JSON.stringify(cursor)}, ${alignment})`);
         // FIXME: Don't have polymorphic cursor parameter.
         if (typeof cursor == "number")
             cursor = { row: cursor, column: 0 };
@@ -1704,8 +1695,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      */
     setTheme(modJs: { cssText: string; cssClass: string; isDark: boolean; padding: number }): void {
 
-        // console.log("VirtialRenderer.setTheme()");
-
         if (!modJs.cssClass) {
             return;
         }
@@ -1763,8 +1752,6 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * @return {Promise<Theme>}
      */
     importThemeLink(themeName: string): Promise<ThemeLink> {
-
-        // console.log(`VirtualRenderer.importTheme(${themeName})`);
 
         if (!themeName || typeof themeName === "string") {
             themeName = themeName || this.getOption("theme").initialValue;

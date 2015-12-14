@@ -147,14 +147,11 @@
     "./src/worker/worker-amd.ts",
     "./src/worker/worker-systemjs.ts",
 
-    "./src/workspace/DefaultCompilerHost.ts",
     "./src/workspace/ScriptInfo.ts",
     "./src/workspace/DefaultLanguageServiceHost.ts",
     "./src/workspace/Workspace.ts",
     "./src/workspace/WorkspaceWorker.ts",
     "./src/workspace/createWorkspace.ts",
-    "./src/workspace/logger.ts",
-    "./src/workspace/Transpiler.ts",
     "./src/workspace/workspace_protocol.ts",
     "./src/workspace/utils.ts",
 

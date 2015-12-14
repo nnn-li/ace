@@ -6,6 +6,7 @@ import WorkerCallback from "../WorkerCallback";
 import DefaultLanguageServiceHost from "./DefaultLanguageServiceHost";
 // FIXME: Make this an implementation detail.
 import ScriptInfo from "./ScriptInfo";
+import {isTypescriptDeclaration} from "./utils";
 
 /**
  * WorkspaceWorker is responsible for maintaining the language service host and language service.
@@ -45,11 +46,8 @@ export default class WorkspaceWorker {
      * @param ts typescriptServices injected by thread code.
      */
     constructor(sender: WorkerCallback, ts) {
-        // console.log("WorkspaceWorker constructor()");
-
         this.host = new DefaultLanguageServiceHost(ts);
         if (ts) {
-            // console.warn("WorkspaceWorker calling createLanguageService");
             this.service = ts.createLanguageService(this.host);
         }
         else {
@@ -192,14 +190,28 @@ export default class WorkspaceWorker {
         });
 
         var host = this.host;
+        // We have to do this so that d.ts files don't become d.ts.js
         System.defaultJSExtensions = false;
+
+        var systemTranslate = System.translate;
+        System.translate = function(load) {
+            if (isTypescriptDeclaration(load.name)) {
+                var name: string = load.name;
+                var source: string = load.source;
+                host.ensureScript(name, source);
+                return "// Nothing to see here.";
+            }
+            else {
+                return systemTranslate.call(this, load);
+            }
+        }
+
         System.import(this.host.getDefaultLibFileName({}))
             .then(function(m: Module) {
-                host.ensureScript(m.name, m.source);
-                // console.log("WorkspaceWorker ready.")
                 sender.emit('initAfter');
             })
             .catch(function(reason: any) {
+                // TODO: Propagate the error back.
                 console.warn(`Failed to load defaultLib: ${reason}`);
                 sender.emit('initFail');
             });
@@ -226,7 +238,6 @@ export default class WorkspaceWorker {
      * @private
      */
     private editScript(fileName: string, start: number, end: number, text: string): void {
-        console.log(`WorkspaceWorker.editScript(${fileName}, ${start}, ${end}, ${text})`);
         this.host.editScript(fileName, start, end, text);
     }
 

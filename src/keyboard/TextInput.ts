@@ -252,7 +252,6 @@ export default class TextInput {
                 afterContextMenu = false;
         };
         var onInput = function(e) {
-            // console.log("onInput", inComposition)
             if (inComposition)
                 return;
             var data = text.value;
@@ -356,7 +355,7 @@ export default class TextInput {
         var onCompositionStart = function() {
             if (inComposition || !host.onCompositionStart || host.$readOnly)
                 return;
-            // console.log("onCompositionStart", inComposition)
+
             inComposition = {};
             host.onCompositionStart();
             setTimeout(onCompositionUpdate, 0);
@@ -370,7 +369,7 @@ export default class TextInput {
         };
 
         var onCompositionUpdate = function() {
-            // console.log("onCompositionUpdate", inComposition && JSON.stringify(text.value))
+
             if (!inComposition || !host.onCompositionUpdate || host.$readOnly)
                 return;
             var val = text.value.replace(/\x01/g, "");
@@ -392,13 +391,13 @@ export default class TextInput {
 
         var onCompositionEnd = function(e, editor: Editor) {
             if (!host.onCompositionEnd || host.$readOnly) return;
-            // console.log("onCompositionEnd", inComposition &&inComposition.lastValue)
+
             var c = inComposition;
             inComposition = false;
             var timer = setTimeout(function() {
                 timer = null;
                 var str = text.value.replace(/\x01/g, "");
-                // console.log(str, c.lastValue)
+
                 if (inComposition)
                     return;
                 else if (str == c.lastValue)
@@ -409,7 +408,7 @@ export default class TextInput {
                 }
             });
             inputHandler = function compositionInputHandler(str: string) {
-                // console.log("onCompositionEnd", str, c.lastValue)
+
                 if (timer)
                     clearTimeout(timer);
                 str = str.replace(/\x01/g, "");

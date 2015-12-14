@@ -26,30 +26,17 @@ import {appendHTMLLinkElement} from './lib/dom'
 
 var systemNormalize = System.normalize;
 System.normalize = function(name: string, parentName: string, parentAddress: string): Promise<string> {
-    //console.log(`(normalize) name => ${name}`);
-    //    console.log(`parentName => ${parentName}`);
-    //    console.log(`parentAddress => ${parentAddress}`);
-    var x = systemNormalize.call(this, name, parentName, parentAddress)
-    //console.log(`typeof x => ${typeof x}`);
-    //console.log(`x instanceof Promise => ${x instanceof Promise}`);
-    var keys = Object.keys(x);
-    for (var i = 0; i < keys.length; i++) {
-        console.log(`key => ${keys[i]}`);
-    }
-    return x;
+    return systemNormalize.call(this, name, parentName, parentAddress);
 }
 
 var systemLocate = System.locate;
 System.locate = function(load): string {
     // The name is already a URL?
-    //console.log(`(locate) name => ${load.name}`);
-    //console.log(`(locate) metadata => ${JSON.stringify(load.metadata)}`);
     return systemLocate.call(this, load);
 }
 
 var systemTranslate = System.translate;
 System.translate = function(load) {
-    // console.log(`(translate) ${load.name}`);
     return systemTranslate.call(this, load);
 }
 
@@ -59,7 +46,7 @@ System.translate = function(load) {
 // var mode = new JavaScriptMode()
 // var mode = new TypeScriptMode()
 
-var code = '// comment\n"use strict";\nvar x = 0;\ny = 1;\n';
+var code = '// comment\n"use strict";\nvar x = 0;\nvar y = 1;\n';
 //var code = '';
 
 var doc = new EditorDocument(code);
@@ -69,7 +56,7 @@ var editSession = new EditSession(doc);
 // We can use module names to set the language mode.
 // FIXME: Separate out the synchronous from the async?
 //editSession.setMode(text);
-editSession.importMode('lib/mode/JavaScriptMode')
+editSession.importMode('lib/mode/TypeScriptMode')
     .then(function(mode: LanguageMode) {
         editSession.setMode(mode);
     }).catch(function(reason) {
@@ -124,8 +111,7 @@ editor.setFontSize("20px");
         .then(function(workspace: Workspace) {
             var _fileName: string;
             ///////////////////////////////////////////////////////////////////////////////
-            function changeFile(content: string, fileName: string, cursorPos?: number) {
-                console.log(`changeFile(${content}, ${fileName}, ${cursorPos})`)
+            function changeFile(content: string, fileName: string, cursorPos?: number): void {
                 if (_fileName) {
                     if (workspace) {
                         workspace.removeScript(fileName);
@@ -148,7 +134,6 @@ editor.setFontSize("20px");
                 name: COMMAND_NAME_AUTO_COMPLETE,
                 bindKey: "Ctrl-Space",
                 exec: function(editor: Editor) {
-                    console.log("Ctrl-Space");
                     if (!autoComplete.isActive()) {
                         autoComplete.activate();
                     }
@@ -172,7 +157,6 @@ editor.setFontSize("20px");
             // The onUpdate method of the worker is soon triggered followed by the compile method.
             //
             editor.on("change", function(event: { data: { action: string; range: { start: { row: number; column: number } }; text: string; lines: string[] } }) {
-                console.log(`change ${JSON.stringify(event.data)}`)
                 var data = event.data;
                 var action: string = data.action;
                 var range = data.range;
@@ -187,7 +171,7 @@ editor.setFontSize("20px");
                         }
                     }
                     else {
-                        console.warn("change ignored because of syncStop");
+                        // console.warn("change ignored because of syncStop");
                     }
                 }
                 else {
@@ -341,4 +325,4 @@ editor.setFontSize("20px");
         .catch(function(reason: any) {
             console.warn(`No workspace because ${reason}`);
         });
-});
+})();
