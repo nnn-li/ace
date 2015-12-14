@@ -35,13 +35,17 @@ import EditSession from "../EditSession";
 import EventEmitterClass from "../lib/event_emitter";
 import FontMetrics from "../layer/FontMetrics";
 
+/**
+ * @class Text
+ * @extends EventEmitterClass
+ */
 export default class Text extends EventEmitterClass {
     public element = <HTMLDivElement>createElement("div");
     private $padding = 0;
     private EOF_CHAR = "\xB6";
     private EOL_CHAR_LF = "\xAC";
     private EOL_CHAR_CRLF = "\xa4";
-    private EOL_CHAR;
+    private EOL_CHAR: string;
     private TAB_CHAR = "\u2192"; //"\u21E5";
     private SPACE_CHAR = "\xB7";
     private $fontMetrics: FontMetrics;
@@ -49,22 +53,28 @@ export default class Text extends EventEmitterClass {
     private $pollSizeChangesTimer;
     private showInvisibles = false;
     private displayIndentGuides: boolean = true;
-    private $tabStrings = [];
+    private $tabStrings: string[] = [];
     private $textToken = { "text": true, "rparen": true, "lparen": true };
-    private tabSize;
-    private $indentGuideRe;
+    private tabSize: number;
+    private $indentGuideRe: RegExp;
     public config;
     private $measureNode;
-    constructor(parentEl: HTMLElement) {
+
+    /**
+     * @class Text
+     * @constructor
+     * @param container {HTMLElement}
+     */
+    constructor(container: HTMLElement) {
         super();
         this.element.className = "ace_layer ace_text-layer";
-        parentEl.appendChild(this.element);
+        container.appendChild(this.element);
         this.$updateEolChar = this.$updateEolChar.bind(this);
         this.EOL_CHAR = this.EOL_CHAR_LF;
     }
 
     $updateEolChar() {
-        var EOL_CHAR = this.session.doc.getNewLineCharacter() == "\n"
+        var EOL_CHAR = this.session.doc.getNewLineCharacter() === "\n"
             ? this.EOL_CHAR_LF
             : this.EOL_CHAR_CRLF;
         if (this.EOL_CHAR != EOL_CHAR) {
@@ -130,12 +140,12 @@ export default class Text extends EventEmitterClass {
     }
 
     // FIXME: DGH Check that this is consistent with ACE
-    public onChangeTabSize() {
+    public onChangeTabSize(): void {
         this.$computeTabString()
     }
 
     //    this.onChangeTabSize =
-    private $computeTabString() {
+    private $computeTabString(): void {
         var tabSize = this.session.getTabSize();
         this.tabSize = tabSize;
         var tabStr = this.$tabStrings = ["0"];
@@ -384,11 +394,12 @@ export default class Text extends EventEmitterClass {
         return screenColumn + value.length;
     }
 
-    private renderIndentGuide(stringBuilder, value, max?) {
+    // FIXME; How can max be optional if it is always used?
+    private renderIndentGuide(stringBuilder: string[], value: string, max?: number) {
         var cols = value.search(this.$indentGuideRe);
         if (cols <= 0 || cols >= max)
             return value;
-        if (value[0] == " ") {
+        if (value[0] === " ") {
             cols -= cols % this.tabSize;
             stringBuilder.push(stringRepeat(this.$tabStrings[" "], cols / this.tabSize));
             return value.substr(cols);

@@ -39,6 +39,7 @@ import Fold from "./Fold";
 import Selection from "./Selection";
 import LanguageMode from "./LanguageMode";
 import Range from "./Range";
+import Token from "./Token";
 import EditorDocument from "./EditorDocument";
 import BackgroundTokenizer from "./BackgroundTokenizer";
 import SearchHighlight from "./SearchHighlight";
@@ -204,11 +205,12 @@ export default class EditSession extends EventEmitterClass {
      * @class EditSession
      * @constructor
      * @param doc {EditorDocument}
-     * @param [mode] {LanguageMode | string}
-     * @param [cb] A function that is called when the mode has been set successfully.
      */
-    constructor(doc: EditorDocument, mode?: LanguageMode | string, cb?: () => any) {
+    constructor(doc: EditorDocument) {
         super();
+        if (!(doc instanceof EditorDocument)) {
+            throw new TypeError('doc must be an EditorDocument');
+        }
         this.$foldData = [];
         this.$foldData.toString = function() {
             return this.join("\n");
@@ -218,7 +220,6 @@ export default class EditSession extends EventEmitterClass {
         this.selection = new Selection(this);
 
         resetOptions(this);
-        this.setMode(mode, cb);
         _signal("session", this);
     }
 
@@ -411,10 +412,12 @@ export default class EditSession extends EventEmitterClass {
 
     /**
      * Starts tokenizing at the row indicated. Returns a list of objects of the tokenized rows.
+     *
      * @method getTokens
      * @param row {number} The row to start at.
+     * @return {Token[]} An array of <code>Token</code>s.
      */
-    public getTokens(row: number): { start: number; type: string; value: string }[] {
+    public getTokens(row: number): Token[] {
         return this.bgTokenizer.getTokens(row);
     }
 
@@ -968,6 +971,19 @@ export default class EditSession extends EventEmitterClass {
         this._signal("tokenizerUpdate", e);
     }
 
+    /**
+     * Sets a new langauge mode for the `EditSession`.
+     * This method also emits the `'changeMode'` event.
+     * If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.
+     *
+     * @method setMode
+     * @param mode {LanguageMode | string} Set a new language mode instance or module name.
+     * @param {cb} optional callback
+     * @return {void}
+     */
+    public setMode(mode: LanguageMode): void {
+        return this.$onChangeMode(mode, false);
+    }
 
     /**
      * Sets a new langauge mode for the `EditSession`.
@@ -979,18 +995,11 @@ export default class EditSession extends EventEmitterClass {
      * @param {cb} optional callback
      * @return {void}
      */
-    public setMode(mode: LanguageMode | string, cb?: () => any): void {
+    public importMode(mode: string, cb?: () => any): void {
 
         var path: string;
         var options;
-        if (mode && typeof mode === "object") {
-            if (mode.getTokenizer) {
-                return this.$onChangeMode(mode, false);
-            }
-            options = mode;
-            path = options.path;
-        }
-        else if (typeof mode === 'string') {
+        if (typeof mode === 'string') {
             path = mode || "ace/mode/text";
         }
         else {
@@ -1034,7 +1043,7 @@ export default class EditSession extends EventEmitterClass {
                     console.warn(`${path} does not define a default export (a LangaugeMode class).`);
                 }
             }).catch(function(reason) {
-              console.warn(`${reason}`);
+                console.warn(`${reason}`);
             });
 
         // set mode to text until loading is finished

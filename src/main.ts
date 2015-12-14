@@ -21,34 +21,87 @@ import {getPosition} from './mode/typescript/DocumentPositionUtil';
 import {parallel} from "./lib/async";
 import Range from './Range';
 
-var text = new TextMode()
+var systemNormalize = System.normalize;
+System.normalize = function(name: string, parentName: string, parentAddress: string): Promise<string> {
+    //console.log(`(normalize) name => ${name}`);
+    //    console.log(`parentName => ${parentName}`);
+    //    console.log(`parentAddress => ${parentAddress}`);
+    var x = systemNormalize.call(this, name, parentName, parentAddress)
+    //console.log(`typeof x => ${typeof x}`);
+    //console.log(`x instanceof Promise => ${x instanceof Promise}`);
+    var keys = Object.keys(x);
+    for (var i = 0; i < keys.length; i++) {
+        console.log(`key => ${keys[i]}`);
+    }
+    return x;
+}
+
+var systemLocate = System.locate;
+System.locate = function(load): string {
+    // The name is already a URL?
+    //console.log(`(locate) name => ${load.name}`);
+    //console.log(`(locate) metadata => ${JSON.stringify(load.metadata)}`);
+    return systemLocate.call(this, load);
+}
+
+var systemTranslate = System.translate;
+System.translate = function(load) {
+    console.log(`(translate) ${load.name}`);
+    return systemTranslate.call(this, load);
+}
+
+//var text = new TextMode()
 // var mode = new CssMode()
 // var mode = new HtmlMode()
-// var mode = new JavaScriptMode()
+//var mode = new JavaScriptMode()
 // var mode = new TypeScriptMode()
 
 var code = '// comment\n"use strict";\nvar x = 0;\ny = 1;\n';
 
 var doc = new EditorDocument(code);
 
-var editSession = new EditSession(doc/*, text*/);
+var editSession = new EditSession(doc);
 // We can use module names to set the language mode.
 // FIXME: Separate out the synchronous from the async?
-editSession.setMode('lib/mode/JavaScriptMode');
+//editSession.setMode(text);
+editSession.importMode('lib/mode/TypeScriptMode');
 editSession.setTabSize(2);
 editSession.setUseSoftTabs(true);
 
 var element = document.getElementById('editor')
 var renderer = new VirtualRenderer(element);
-// renderer.setTheme...
+renderer.setAnnotations([]);
+renderer.setPadding(10);
+// renderer.importTheme('lib/theme/textmate');
+//renderer.setAnimatedScroll(true);
+//renderer.setCompositionText("Hello");
+//renderer.setCursorStyle('yahoo');
+
+//renderer.setDefaultHandler('', function() {
+//});
+
+//renderer.setMouseCursor('cursor-style');
+//renderer.setScrollMargin(5, 5, 5, 5);
+//renderer.setShowGutter(true);
+//renderer.setShowInvisibles(true);
+//renderer.setCursorLayerOff();
+//renderer.setDefaultCursorStyle();
+//renderer.setDisplayIndentGuides(true);
+//renderer.setFadeFoldWidgets(true);
+//renderer.setHighlightGutterLine(true);
+//renderer.setPrintMarginColumn(23);
+//renderer.setShowPrintMargin(true);
+//renderer.setHScrollBarAlwaysVisible(true);
+//renderer.setVScrollBarAlwaysVisible(true);
+
 // The Editor acts as a controller between the renderer and the EditSession.
 var editor = new Editor(renderer, editSession);
 editor.setFontSize("16px");
 editor.setHighlightActiveLine(true);
-editor.setHighlightGutterLine(true);
+// editor.setHighlightGutterLine(true); Why repeated?
 editor.setHighlightSelectedWord(true);
-editor.setAnimatedScroll(false);
-editor.setShowInvisibles(true);
+//editor.setAnimatedScroll(false);  // Why repeated?
+//editor.setShowInvisibles(true); // Why repeated
 
 /*
 createWorkspace()

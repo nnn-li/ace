@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import {addCssClass, createElement, importCssString, removeCssClass, setCssClass} from "./lib/dom";
+import {addCssClass, createElement, ensureHTMLStyleElement, removeCssClass, setCssClass} from "./lib/dom";
 import {_emit, defineOptions, loadModule, resetOptions} from "./config";
 import {isOldIE} from "./lib/useragent";
 import Annotation from './Annotation';
@@ -44,10 +44,11 @@ import FontMetrics from "./layer/FontMetrics";
 import EventEmitterClass from "./lib/event_emitter";
 import EditSession from './EditSession';
 import OptionsProvider from "./OptionsProvider";
+import Position from './Position';
 
 // FIXME
 // import editorCss = require("./requirejs/text!./css/editor.css");
-// importCssString(editorCss, "ace_editor");
+// ensureHTMLStyleElement(editorCss, "ace_editor");
 
 var CHANGE_CURSOR = 1;
 var CHANGE_MARKER = 2;
@@ -63,9 +64,9 @@ var CHANGE_H_SCROLL = 1024;
 
 /**
  * The class that is responsible for drawing everything you see on the screen!
- * @related editor.renderer 
+ *
  * @class VirtualRenderer
- **/
+ */
 export default class VirtualRenderer extends EventEmitterClass implements OptionsProvider {
     public textarea: HTMLTextAreaElement;
     public container: HTMLElement;
@@ -130,7 +131,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     private $fontMetrics: FontMetrics;
     private $allowBoldFonts;
     private cursorPos;
-    public $size;
+
+    /**
+     * A cache of various sizes TBA.
+     */
+    public $size: { height: number; width: number; scrollerHeight: number; scrollerWidth; $dirty: boolean };
+
     private $loop: RenderLoop;
     private $changedLines;
     private $changes = 0;
@@ -159,6 +165,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Constructs a new `VirtualRenderer` within the `container` specified.
+     *
      * @class VirtualRenderer
      * @constructor
      * @param container {HTMLElement} The root element of the editor.
@@ -172,7 +179,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
         // TODO: this breaks rendering in Cloud9 with multiple ace instances
         // // Imports CSS once per DOM document ('ace_editor' serves as an identifier).
-        // importCssString(editorCss, "ace_editor", container.ownerDocument);
+        // ensureHTMLStyleElement(editorCss, "ace_editor", container.ownerDocument);
 
         // in IE <= 9 the native cursor always shines through
         this.$keepTextAreaAtCursor = !isOldIE;
@@ -343,8 +350,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     /**
      * Triggers a partial update of the text, from the range given by the two parameters.
      *
-     * @param {Number} firstRow The first row to update.
-     * @param {Number} lastRow The last row to update.
+     * @method updateLines
+     * @param firstRow {number} The first row to update.
+     * @param lastRow {number} The last row to update.
      * @param [force] {boolean}
      * @return {void}
      */
@@ -385,12 +393,21 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.$loop.schedule(CHANGE_LINES);
     }
 
-    onChangeNewLineMode(): void {
+    /**
+     * @method onChangeNewLineMode
+     * @return {void}
+     * @private
+     */
+    private onChangeNewLineMode(): void {
         this.$loop.schedule(CHANGE_TEXT);
         this.$textLayer.$updateEolChar();
     }
 
-    onChangeTabSize(): void {
+    /**
+     * @method onChangeTabSize
+     * @return {void}
+     */
+    public onChangeTabSize(): void {
         if (this.$loop) {
             if (this.$loop.schedule) {
                 this.$loop.schedule(CHANGE_TEXT | CHANGE_MARKER);
@@ -414,6 +431,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Triggers a full update of the text, for all the rows.
+     *
+     * @method updateText
+     * @return {void}
      */
     updateText(): void {
         this.$loop.schedule(CHANGE_TEXT);
@@ -421,7 +441,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Triggers a full update of all the layers, for all the rows.
-     * @param {Boolean} force If `true`, forces the changes through
+     *
+     * @method updateFull
+     * @param [force] {boolean} If `true`, forces the changes through.
+     * @return {void}
      */
     updateFull(force?: boolean): void {
         if (force)
@@ -432,12 +455,19 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Updates the font size.
+     *
+     * @method updateFontSize
+     * @return {void}
      */
     updateFontSize(): void {
         this.$textLayer.checkForSizeChanges();
     }
 
-    $updateSizeAsync() {
+    /**
+     * @method $updateSizeAsync
+     * @return {void}
+     */
+    private $updateSizeAsync(): void {
         if (this.$loop.pending) {
             this.$size.$dirty = true;
         }
@@ -448,12 +478,15 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
+     *
+     * @method
      * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
      * @param {Number} gutterWidth The width of the gutter in pixels
      * @param {Number} width The width of the editor in pixels
      * @param {Number} height The hiehgt of the editor, in pixels
+     * @return {number}
      */
-    onResize(force?: boolean, gutterWidth?: number, width?: number, height?: number) {
+    public onResize(force?: boolean, gutterWidth?: number, width?: number, height?: number): number {
         if (this.resizing > 2)
             return;
         else if (this.resizing > 0)
@@ -485,7 +518,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
             this.resizing = 0;
     }
 
-    $updateCachedSize(force, gutterWidth, width, height) {
+    private $updateCachedSize(force: boolean, gutterWidth: number, width: number, height: number): number {
         height -= (this.$extraHeight || 0);
         var changes = 0;
         var size = this.$size;
@@ -537,7 +570,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         return changes;
     }
 
-    onGutterResize() {
+    private onGutterResize() {
         var gutterWidth = this.$showGutter ? this.$gutter.offsetWidth : 0;
         if (gutterWidth != this.gutterWidth)
             this.$changes |= this.$updateCachedSize(true, gutterWidth, this.$size.width, this.$size.height);
@@ -553,9 +586,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    * Adjusts the wrap limit, which is the number of characters that can fit within the width of the edit area on screen.
-    **/
-    adjustWrapLimit() {
+     * Adjusts the wrap limit, which is the number of characters that can fit within the width of the edit area on screen.
+     *
+     * @method adjustWrapLimit
+     * @return {boolean}
+     */
+    public adjustWrapLimit(): boolean {
         var availableWidth = this.$size.scrollerWidth - this.$padding * 2;
         var limit = Math.floor(availableWidth / this.characterWidth);
         return this.session.adjustWrapLimit(limit, this.$showPrintMargin && this.$printMarginColumn);
@@ -584,40 +620,57 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Identifies whether you want to show invisible characters or not.
+     *
+     * @method setShowInvisibles
      * @param {Boolean} showInvisibles Set to `true` to show invisibles
      */
-    setShowInvisibles(showInvisibles: boolean) {
+    setShowInvisibles(showInvisibles: boolean): void {
         this.setOption("showInvisibles", showInvisibles);
     }
 
     /**
      * Returns whether invisible characters are being shown or not.
-     * @return {Boolean}
+     *
+     * @method getShowInvisibles
+     * @return {boolean}
      */
     getShowInvisibles(): boolean {
         return this.getOption("showInvisibles");
     }
 
+    /**
+     * @method getDisplayIndentGuides
+     * @return {boolean}
+     */
     getDisplayIndentGuides(): boolean {
         return this.getOption("displayIndentGuides");
     }
 
-    setDisplayIndentGuides(displayIndentGuides: boolean) {
+    /**
+     * @method setDisplayIndentGuides
+     * @param displayIndentGuides {boolean}
+     * @return {void}
+     */
+    setDisplayIndentGuides(displayIndentGuides: boolean): void {
         this.setOption("displayIndentGuides", displayIndentGuides);
     }
 
     /**
      * Identifies whether you want to show the print margin or not.
-     * @param {Boolean} showPrintMargin Set to `true` to show the print margin
      *
+     * @method setShowPrintMargin
+     * @param showPrintMargin {boolean} Set to `true` to show the print margin.
+     * @return {void}
      */
-    setShowPrintMargin(showPrintMargin: boolean) {
+    setShowPrintMargin(showPrintMargin: boolean): void {
         this.setOption("showPrintMargin", showPrintMargin);
     }
 
     /**
      * Returns whether the print margin is being shown or not.
-     * @return {Boolean}
+     *
+     * @method getShowPrintMargin
+     * @return {boolean}
      */
     getShowPrintMargin(): boolean {
         return this.getOption("showPrintMargin");
@@ -625,15 +678,20 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Sets the column defining where the print margin should be.
-     * @param {Number} printMarginColumn Specifies the new print margin
+     *
+     * @method setPrintMarginColumn
+     * @param printMarginColumn {number} Specifies the new print margin.
+     * @return {void}
      */
-    setPrintMarginColumn(printMarginColumn: number) {
+    setPrintMarginColumn(printMarginColumn: number): void {
         this.setOption("printMarginColumn", printMarginColumn);
     }
 
     /**
      * Returns the column number of where the print margin is.
-     * @return {Number}
+     *
+     * @method getPrintMarginColumn
+     * @return {number}
      */
     getPrintMarginColumn(): number {
         return this.getOption("printMarginColumn");
@@ -641,27 +699,40 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Returns `true` if the gutter is being shown.
-     * @return {Boolean}
+     *
+     * @method getShowGutter
+     * @return {boolean}
      */
-    getShowGutter() {
+    getShowGutter(): boolean {
         return this.getOption("showGutter");
     }
 
     /**
-    * Identifies whether you want to show the gutter or not.
-    * @param {Boolean} show Set to `true` to show the gutter
-    *
-    **/
-    setShowGutter(show) {
-        return this.setOption("showGutter", show);
+     * Identifies whether you want to show the gutter or not.
+     *
+     * @method setShowGutter
+     * @param showGutter {boolean} Set to `true` to show the gutter
+     * @return {void}
+     */
+    setShowGutter(showGutter: boolean): void {
+        return this.setOption("showGutter", showGutter);
     }
 
-    getFadeFoldWidgets() {
+    /**
+     * @method getFadeFoldWidgets
+     * @return {boolean}
+     */
+    getFadeFoldWidgets(): boolean {
         return this.getOption("fadeFoldWidgets")
     }
 
-    setFadeFoldWidgets(show) {
-        this.setOption("fadeFoldWidgets", show);
+    /**
+     * @method setFadeFoldWidgets
+     * @param fadeFoldWidgets {boolean}
+     * @return {void}
+     */
+    setFadeFoldWidgets(fadeFoldWidgets: boolean): void {
+        this.setOption("fadeFoldWidgets", fadeFoldWidgets);
     }
 
     setHighlightGutterLine(shouldHighlight) {
@@ -834,24 +905,27 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * Returns whether the horizontal scrollbar is set to be always visible.
      * @return {Boolean}
      **/
-    getHScrollBarAlwaysVisible() {
-        // FIXME
+    getHScrollBarAlwaysVisible(): boolean {
+        // FIXME?
         return this.$hScrollBarAlwaysVisible;
     }
 
     /**
      * Identifies whether you want to show the horizontal scrollbar or not.
-     * @param {Boolean} alwaysVisible Set to `true` to make the horizontal scroll bar visible
-     **/
-    setHScrollBarAlwaysVisible(alwaysVisible) {
-        this.setOption("hScrollBarAlwaysVisible", alwaysVisible);
+     *
+     * @method setHScrollBarAlwaysVisible
+     * @param hScrollBarAlwaysVisible {boolean} Set to `true` to make the horizontal scroll bar visible.
+     * @return {void}
+     */
+    setHScrollBarAlwaysVisible(hScrollBarAlwaysVisible: boolean) {
+        this.setOption("hScrollBarAlwaysVisible", hScrollBarAlwaysVisible);
     }
 
     /**
      * Returns whether the vertical scrollbar is set to be always visible.
      * @return {Boolean}
      **/
-    getVScrollBarAlwaysVisible() {
+    getVScrollBarAlwaysVisible(): boolean {
         return this.$vScrollBarAlwaysVisible;
     }
 
@@ -859,11 +933,11 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * Identifies whether you want to show the vertical scrollbar or not.
      * @param {Boolean} alwaysVisible Set to `true` to make the vertical scroll bar visible
      */
-    setVScrollBarAlwaysVisible(alwaysVisible) {
+    setVScrollBarAlwaysVisible(alwaysVisible: boolean) {
         this.setOption("vScrollBarAlwaysVisible", alwaysVisible);
     }
 
-    $updateScrollBarV() {
+    private $updateScrollBarV(): void {
         var scrollHeight = this.layerConfig.maxHeight;
         var scrollerHeight = this.$size.scrollerHeight;
         if (!this.$maxLines && this.$scrollPastEnd) {
@@ -877,7 +951,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.scrollBarV.setScrollTop(this.scrollTop + this.scrollMargin.top);
     }
 
-    $updateScrollBarH() {
+    private $updateScrollBarH() {
         this.scrollBarH.setScrollWidth(this.layerConfig.width + 2 * this.$padding + this.scrollMargin.h);
         this.scrollBarH.setScrollLeft(this.scrollLeft + this.scrollMargin.left);
     }
@@ -890,7 +964,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.$frozen = false;
     }
 
-    $renderChanges(changes, force) {
+    private $renderChanges(changes, force) {
         if (this.$changes) {
             changes |= this.$changes;
             this.$changes = 0;
@@ -948,8 +1022,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         // full
         if (changes & CHANGE_FULL) {
             this.$textLayer.update(config);
-            if (this.$showGutter)
+            if (this.$showGutter) {
                 this.$gutterLayer.update(config);
+            }
             this.$markerBack.update(config);
             this.$markerFront.update(config);
             this.$cursorLayer.update(config);
@@ -1008,7 +1083,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this._signal("afterRender");
     }
 
-    $autosize() {
+    private $autosize() {
         var height = this.session.getScreenLength() * this.lineHeight;
         var maxHeight = this.$maxLines * this.lineHeight;
         var desiredHeight = Math.max(
@@ -1032,7 +1107,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         }
     }
 
-    $computeLayerConfig() {
+    private $computeLayerConfig() {
 
         if (this.$maxLines && this.lineHeight > 1) {
             this.$autosize();
@@ -1132,7 +1207,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         return changes;
     }
 
-    $updateLines() {
+    private $updateLines() {
         var firstRow = this.$changedLines.firstRow;
         var lastRow = this.$changedLines.lastRow;
         this.$changedLines = null;
@@ -1155,7 +1230,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         return true;
     }
 
-    $getLongestLine(): number {
+    private $getLongestLine(): number {
         var charCount = this.session.getScreenWidth();
         if (this.showInvisibles && !this.session.$useWrapMode)
             charCount += 1;
@@ -1164,27 +1239,24 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * Schedules an update to all the front markers in the document.
-    **/
+     * Schedules an update to all the front markers in the document.
+     */
     updateFrontMarkers() {
         this.$markerFront.setMarkers(this.session.getMarkers(true));
         this.$loop.schedule(CHANGE_MARKER_FRONT);
     }
 
     /**
-    *
-    * Schedules an update to all the back markers in the document.
-    **/
+     * Schedules an update to all the back markers in the document.
+     */
     updateBackMarkers() {
         this.$markerBack.setMarkers(this.session.getMarkers(false));
         this.$loop.schedule(CHANGE_MARKER_BACK);
     }
 
     /**
-    *
-    * Redraw breakpoints.
-    **/
+     * Redraw breakpoints.
+     */
     updateBreakpoints() {
         this.$loop.schedule(CHANGE_GUTTER);
     }
@@ -1202,25 +1274,22 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * Updates the cursor icon.
-    **/
+     * Updates the cursor icon.
+     */
     updateCursor(): void {
         this.$loop.schedule(CHANGE_CURSOR);
     }
 
     /**
-    *
-    * Hides the cursor icon.
-    **/
+     * Hides the cursor icon.
+     */
     hideCursor(): void {
         this.$cursorLayer.hideCursor();
     }
 
     /**
-    *
-    * Shows the cursor icon.
-    **/
+     * Shows the cursor icon.
+     */
     showCursor() {
         this.$cursorLayer.showCursor();
     }
@@ -1235,7 +1304,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     *
     * Scrolls the cursor into the first visibile area of the editor
     **/
-    scrollCursorIntoView(cursor?, offset?, $viewMargin?) {
+    scrollCursorIntoView(cursor?: Position, offset?, $viewMargin?) {
         // the editor is not visible
         if (this.$size.scrollerHeight === 0)
             return;
@@ -1582,68 +1651,86 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
 
     /**
      * Sets a new theme for the editor.
+     * This is a synchronous method.
+     */
+    setTheme(modJs: { cssText: string; cssClass: string; isDark: boolean; padding: number }): void {
+
+        console.log("VirtialRenderer.setTheme()");
+
+        if (!modJs.cssClass) {
+            return;
+        }
+
+        ensureHTMLStyleElement(modJs.cssText, modJs.cssClass, this.container.ownerDocument);
+
+        if (this.theme) {
+            removeCssClass(this.container, this.theme.cssClass);
+        }
+
+        var padding = "padding" in modJs ? modJs.padding : "padding" in (this.theme || {}) ? 4 : this.$padding;
+
+        if (this.$padding && padding != this.$padding) {
+            this.setPadding(padding);
+        }
+
+        this.theme = modJs;
+        addCssClass(this.container, modJs.cssClass);
+        setCssClass(this.container, "ace_dark", modJs.isDark);
+
+        // force re-measure of the gutter width
+        if (this.$size) {
+            this.$size.width = 0;
+            this.$updateSizeAsync();
+        }
+
+        this._emit('themeLoaded', { theme: modJs });
+    }
+
+    /**
+     * Imports a new theme for the editor using the System Loader.
      * `theme` should exist, and be a directory path, like `ace/theme/textmate`.
      *
-     * @method setTheme
-     * @param theme {String} theme The path to a theme
-     * @param theme {Function} cb optional callback
+     * @method importTheme
+     * @param themeName {string} The name of a theme module.
+     * @param callback {Function} optional callback
      * @return {void}
      */
-    setTheme(theme: any, cb?: () => any): void {
-        console.log("VirtualRenderer setTheme, theme = " + theme)
+    importTheme(themeName: string, cb?: () => any): void {
+        // TODO: Assert that theme is actually a string.
+        console.log(`VirtualRenderer.setTheme()`);
 
         var _self = this;
 
-        this.$themeId = theme;
-        _self._emit('themeChange', { theme: theme });
+        this.$themeId = themeName;
 
-        if (!theme || typeof theme === "string") {
-            var moduleName = theme || this.getOption("theme").initialValue;
-            console.log("moduleName => " + moduleName);
-            // Loading a theme will insert a script that, upon execution, will
-            // insert a style tag.
-            loadModule(["theme", moduleName], afterLoad, this.container.ownerDocument);
-        }
-        else {
-            afterLoad(theme);
-        }
+        _self._emit('themeChange', { theme: themeName });
 
-        function afterLoad(modJs: { cssText: string; cssClass: string; isDark: boolean; padding: number }) {
+        if (!themeName || typeof themeName === "string") {
+            themeName = themeName || this.getOption("theme").initialValue;
+            // We take advantage of the configurability of the System Loader.
+            // Because we are loading CSS, we replace the instantiation.
+            System.import(themeName)
+                .then(function(m: any) {
+                    var isDark = m.isDark;
+                    var cssClass = m.cssClass;
+                    var cssName = m.cssName;
+                    var padding = m.padding;
+                    console.log(`isDark => ${isDark}`);
+                    console.log(`cssClass => ${cssClass}`);
+                    console.log(`cssName => ${cssName}`);
+                    console.log(`padding => ${padding}`);
+                    System.import(cssName)
+                        .then(function(m) {
+                            console.log("We loaded the CSS!")
+                        })
+                        .catch(function(reason) {
+                            console.warn(`${reason}`);
+                        });
 
-            console.log("VirtialRenderer.afterLoad()");
-
-            if (_self.$themeId !== theme) {
-                return cb && cb();
-            }
-
-            if (!modJs.cssClass) {
-                return;
-            }
-
-            importCssString(modJs.cssText, modJs.cssClass, _self.container.ownerDocument);
-
-            if (_self.theme) {
-                removeCssClass(_self.container, _self.theme.cssClass);
-            }
-
-            var padding = "padding" in modJs ? modJs.padding : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
-
-            if (_self.$padding && padding != _self.$padding) {
-                _self.setPadding(padding);
-            }
-
-            _self.theme = modJs;
-            addCssClass(_self.container, modJs.cssClass);
-            setCssClass(_self.container, "ace_dark", modJs.isDark);
-
-            // force re-measure of the gutter width
-            if (_self.$size) {
-                _self.$size.width = 0;
-                _self.$updateSizeAsync();
-            }
-
-            _self._emit('themeLoaded', { theme: modJs });
-            cb && cb();
+                })
+                .catch(function(reason) {
+                    console.warn(`${reason}`);
+                });
         }
     }
 

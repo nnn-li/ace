@@ -60,7 +60,7 @@ export default class Selection extends EventEmitterClass {
     private $isEmpty: boolean;
     private $keepDesiredColumnOnChange: boolean;
     private $desiredColumn;  // Is this used anywhere?
-    private rangeCount;
+    public rangeCount: number;
     public ranges;
     public rangeList: RangeList;
 
@@ -968,15 +968,15 @@ export default class Selection extends EventEmitterClass {
         return data;
     }
 
-    private toSingleRange(data) {
+    public toSingleRange(data: Range) {
         throw new Error("Selection.toSingleRange is unsupported");
     }
 
-    public addRange(data, something: boolean) {
+    public addRange(data: Range, something?: boolean) {
         throw new Error("Selection.addRange is unsupported");
     }
 
-    fromJSON(data) {
+    fromJSON(data/*: {start;length;isBackards}*/) {
         if (data.start == undefined) {
             if (this.rangeList) {
                 this.toSingleRange(data[0]);
@@ -996,7 +996,7 @@ export default class Selection extends EventEmitterClass {
     }
 
     isEqual(data) {
-        if ((data.length || this.rangeCount) && data.length != this.rangeCount)
+        if ((data.length || this.rangeCount) && data.length !== this.rangeCount)
             return false;
         if (!data.length || !this.ranges)
             return this.getRange().isEqual(data);

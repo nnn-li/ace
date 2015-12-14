@@ -28,13 +28,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-define(function(require, exports, module) {
 "use strict";
 
-exports.isDark = false;
-exports.cssClass = "ace-tm";
-exports.cssText = require("../requirejs/text!./textmate.css");
-
-var dom = require("../lib/dom");
-dom.importCssString(exports.cssText, exports.cssClass);
-});
+export var isDark = false;
+export var cssClass = "ace-tm";
+export var cssName = "src/theme/textmate.css";

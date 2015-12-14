@@ -32,18 +32,28 @@
 import Range from "../Range";
 import {createElement} from "../lib/dom";
 import EditSession from '../EditSession';
+import MarkerConfig from "./MarkerConfig";
+import LayerConfig from "./LayerConfig";
 
+/**
+ * @class Marker
+ */
 export default class Marker {
     private element: HTMLDivElement;
     private session: EditSession;
     private markers;
-    private config;
+    private config: MarkerConfig;
     private $padding: number = 0;
 
-    constructor(parentEl: Node) {
+    /**
+     * @class Marker
+     * @constructor
+     * @param container {Node}
+     */
+    constructor(container: Node) {
         this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_layer ace_marker-layer";
-        parentEl.appendChild(this.element);
+        container.appendChild(this.element);
     }
 
     public setPadding(padding: number) {
@@ -58,7 +68,7 @@ export default class Marker {
         this.markers = markers;
     }
 
-    public update(config) {
+    public update(config: MarkerConfig) {
         var config = config || this.config;
         if (!config)
             return;
@@ -102,12 +112,12 @@ export default class Marker {
         this.element.innerHTML = html.join("");
     }
 
-    private $getTop(row: number, layerConfig): number {
+    private $getTop(row: number, layerConfig: LayerConfig): number {
         return (row - layerConfig.firstRowScreen) * layerConfig.lineHeight;
     }
 
     // Draws a marker, which spans a range of text on multiple lines 
-    private drawTextMarker(stringBuilder, range: Range, clazz: string, layerConfig, extraStyle?) {
+    private drawTextMarker(stringBuilder: (number | string)[], range: Range, clazz: string, layerConfig: MarkerConfig, extraStyle?) {
 
         function getBorderClass(tl, tr, br, bl) {
             return (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
@@ -139,7 +149,7 @@ export default class Marker {
     }
 
     // Draws a multi line marker, where lines span the full width
-    private drawMultiLineMarker(stringBuilder, range: Range, clazz, config, extraStyle?) {
+    private drawMultiLineMarker(stringBuilder: (number | string)[], range: Range, clazz, config: MarkerConfig, extraStyle?: string) {
         // from selection start to the end of the line
         var padding = this.$padding;
         var height = config.lineHeight;
@@ -187,7 +197,7 @@ export default class Marker {
     }
 
     // Draws a marker which covers part or whole width of a single screen line
-    public drawSingleLineMarker(stringBuilder, range: Range, clazz: string, config, extraLength?: number, extraStyle?) {
+    public drawSingleLineMarker(stringBuilder, range: Range, clazz: string, config: MarkerConfig, extraLength?: number, extraStyle?: string): void {
         var height = config.lineHeight;
         var width = (range.end.column + (extraLength || 0) - range.start.column) * config.characterWidth;
 
@@ -203,7 +213,7 @@ export default class Marker {
         );
     }
 
-    private drawFullLineMarker(stringBuilder, range: Range, clazz: string, config, extraStyle?) {
+    private drawFullLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: LayerConfig, extraStyle?: string): void {
         var top = this.$getTop(range.start.row, config);
         var height = config.lineHeight;
         if (range.start.row != range.end.row) {
@@ -218,7 +228,7 @@ export default class Marker {
         );
     }
 
-    private drawScreenLineMarker(stringBuilder, range: Range, clazz: string, config, extraStyle?) {
+    private drawScreenLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: LayerConfig, extraStyle?: string): void {
         var top = this.$getTop(range.start.row, config);
         var height = config.lineHeight;
 

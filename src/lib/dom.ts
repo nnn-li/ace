@@ -118,13 +118,16 @@ export function hasCssString(id: string, doc: Document = document) {
     return false;
 }
 
-export function importCssString(cssText: string, id?: string, doc: Document = document): void {
+/**
+ *
+ */
+export function ensureHTMLStyleElement(cssText: string, id?: string, doc: Document = document): void {
     // If style is already imported return immediately.
     if (id && hasCssString(id, doc)) {
         return;
     }
     else {
-        let style = createElement('style');
+        let style: HTMLStyleElement = <HTMLStyleElement>createElement('style');
         style.appendChild(doc.createTextNode(cssText));
         if (id) {
             style.id = id;

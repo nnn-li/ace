@@ -39,9 +39,9 @@ export default class CssBehavior extends CstyleBehaviour {
 constructor() {
   super();
 
-    this.inherit(CstyleBehaviour);
+    this.inherit(new CstyleBehaviour());
 
-    this.add("colon", "insertion", function (state, action, editor: Editor, session: EditSession, text) {
+    this.add("colon", "insertion", function (state: string, action: string, editor: Editor, session: EditSession, text) {
         if (text === ':') {
             var cursor = editor.getCursorPosition();
             var iterator = new TokenIterator(session, cursor.row, cursor.column);

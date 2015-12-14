@@ -28,7 +28,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {importCssString} from "./lib/dom";
+import {ensureHTMLStyleElement} from "./lib/dom";
 import EventEmitterClass from "./lib/event_emitter";
 import {delayedCall, escapeRegExp} from "./lib/lang";
 import Range from "./Range";
@@ -665,7 +665,7 @@ export class SnippetManager extends EventEmitterClass {
 class TabstopManager {
     private index: number;
     private ranges;
-    private tabstops;
+    private tabstops: { firstNonLinked: Range; hasLinkedRanges: boolean; length: number }[];
     private $openTabstops;
     private selectedTabstop;
     private editor: Editor;
@@ -849,7 +849,7 @@ class TabstopManager {
 
         this.selectedTabstop = ts;
         if (!this.editor.inVirtualSelectionMode) {
-            var sel = this.editor['multiSelect'];
+            var sel = this.editor.multiSelect;
             sel.toSingleRange(ts.firstNonLinked.clone());
             for (var i = ts.length; i--;) {
                 if (ts.hasLinkedRanges && ts[i].linked)
@@ -976,7 +976,7 @@ var moveRelative = function(point, start) {
 };
 
 
-importCssString("\
+ensureHTMLStyleElement("\
 .ace_snippet-marker {\
     -moz-box-sizing: border-box;\
     box-sizing: border-box;\

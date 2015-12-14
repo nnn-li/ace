@@ -32,6 +32,7 @@
     "./src/hammer/recognizers/tap.ts",
 
     "./src/lib/Sender.ts",
+    "./src/lib/URLPolyfill.ts",
     "./src/lib/asserts.ts",
     "./src/lib/async.ts",
     "./src/lib/dom.ts",
@@ -160,6 +161,7 @@
     "./src/Anchor.ts",
     "./src/Annotation.ts",
     "./src/BackgroundTokenizer.ts",
+    "./src/BehaviourCallback.ts",
     "./src/Change.ts",
     "./src/CursorRange.ts",
     "./src/EditSession.ts",
@@ -195,6 +197,8 @@
     "./src/snippets.ts",
     "./src/typeInfoTip.ts",
     "./src/unicode.ts",
+
+    "./src/theme/textmate.ts",
 
     "./node_modules/typescript/lib/lib.es6.d.ts",
     "./node_modules/typescript/lib/typescriptServices.d.ts",

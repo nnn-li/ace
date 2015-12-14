@@ -7,6 +7,9 @@ import EventEmitterClass from "../lib/event_emitter";
 
 var CHAR_COUNT = 0;
 
+/**
+ * @class FontMetrics
+ */
 export default class FontMetrics extends EventEmitterClass {
     private el: HTMLDivElement;
     private $main: HTMLDivElement;
@@ -15,7 +18,15 @@ export default class FontMetrics extends EventEmitterClass {
     private charSizes: { [ch: string]: number };
     private allowBoldFonts: boolean;
     private $pollSizeChangesTimer: number;
-    constructor(parentEl: HTMLElement, interval) {
+
+    /**
+     * @class FontMetrics
+     * @constructor
+     * @param container {HTMLElement}
+     * @param pollingInterval {number}
+     */
+    // FIXME: The interval should be being used to configure the polling interval (normally 500ms)
+    constructor(container: HTMLElement, pollingInterval: number) {
         super();
         this.el = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(this.el.style, true);
@@ -28,7 +39,7 @@ export default class FontMetrics extends EventEmitterClass {
 
         this.el.appendChild(this.$main);
         this.el.appendChild(this.$measureNode);
-        parentEl.appendChild(this.el);
+        container.appendChild(this.el);
 
         if (!CHAR_COUNT) {
             this.$testFractionalRect();
@@ -94,7 +105,7 @@ export default class FontMetrics extends EventEmitterClass {
         }, 500);
     }
 
-    private setPolling(val): void {
+    private setPolling(val: boolean): void {
         if (val) {
             this.$pollSizeChanges();
         }

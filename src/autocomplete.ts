@@ -279,7 +279,8 @@ export class CompleterAggregate implements Completer {
         this.popup.setRow(this.autoSelect ? 0 : -1);
 
         if (!keepPopupPosition) {
-            this.popup.setTheme(editor.getTheme());
+            // FIXME: Seems like we can do better by using a cached theme?
+            this.popup.importTheme(editor.getTheme());
             this.popup.setFontSize(editor.getFontSize());
 
             var lineHeight = editor.renderer.layerConfig.lineHeight;

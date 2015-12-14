@@ -33,4 +33,4 @@ export var cssClass = "ace-twilight";
 export var cssText = require("../requirejs/text!./twilight.css");
 
 import dom = require("../lib/dom");
-dom.importCssString(cssText, cssClass);
+dom.ensureHTMLStyleElement(cssText, cssClass);

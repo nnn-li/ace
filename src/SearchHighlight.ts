@@ -33,29 +33,54 @@ import { getMatchOffsets } from "./lib/lang";
 import Range from "./Range";
 import EditSession from "./EditSession";
 import Marker from "./layer/Marker";
+import MarkerConfig from "./layer/MarkerConfig";
 
 // needed to prevent long lines from freezing the browser
 var MAX_RANGES = 500;
 
+/**
+ * @class SearchHighlight
+ */
 export default class SearchHighlight {
     private regExp: RegExp;
     public clazz: string;
     private type: string;
     private cache: Range[][];
+
+    /**
+     * @class SearchHighlight
+     * @constructor
+     * @param regExpr {RegExp}
+     * @param clazz {string}
+     * @param type {string}
+     */
     constructor(regExp: RegExp, clazz: string, type: string) {
         this.setRegexp(regExp);
         this.clazz = clazz;
         this.type = type || "text";
     }
 
-    setRegexp(regExp: RegExp) {
-        if (this.regExp + "" == regExp + "")
+    /**
+     * @method setRegexp
+     * @param regExp {RegExp}
+     */
+    setRegexp(regExp: RegExp): void {
+        if (this.regExp + "" == regExp + "") {
             return;
+        }
         this.regExp = regExp;
         this.cache = [];
     }
 
-    update(html, markerLayer: Marker, session: EditSession, config: { firstRow: number; lastRow: number }) {
+    /**
+     * @method update
+     * @param html {(number|string)[]}
+     * @param markerLayer {Marker}
+     * @param session {EditSession}
+     * @param config {MarkerConfig}
+     * @return {void}
+     */
+    update(html: (number | string)[], markerLayer: Marker, session: EditSession, config: MarkerConfig): void {
         if (!this.regExp)
             return;
         var start = config.firstRow, end = config.lastRow;
@@ -75,8 +100,7 @@ export default class SearchHighlight {
             }
 
             for (var j = ranges.length; j--;) {
-                markerLayer.drawSingleLineMarker(
-                    html, session.documentToScreenRange(ranges[j]), this.clazz, config);
+                markerLayer.drawSingleLineMarker(html, session.documentToScreenRange(ranges[j]), this.clazz, config);
             }
         }
     }

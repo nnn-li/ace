@@ -39,6 +39,7 @@ import KeyBinding from "./keyboard/KeyBinding";
 import TextInput from "./keyboard/TextInput";
 import EditSession from "./EditSession";
 import Search from "./Search";
+import Position from "./Position";
 import Range from "./Range";
 import CursorRange from './CursorRange'
 import EventEmitterClass from "./lib/event_emitter";
@@ -96,6 +97,7 @@ export default class Editor extends EventEmitterClass {
     public container: HTMLElement;
     public textInput;
     public inMultiSelectMode: boolean;
+    public multiSelect: Selection;
     public inVirtualSelectionMode;
 
     private $cursorStyle: string;
@@ -554,12 +556,12 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * {:VirtualRenderer.setTheme}
-     * @param {String} theme The path to a theme
-     * @param {Function} cb optional callback called when theme is loaded
+     * @method importTheme
+     * @param themeName {string} The name of the theme.
+     * @param [callback] optional callback called when theme is loaded
      **/
-    setTheme(theme: string, cb?: () => void) {
-        this.renderer.setTheme(theme, cb);
+    importTheme(themeName: string, callback?: () => void) {
+        this.renderer.importTheme(themeName, callback);
     }
 
     /**
@@ -1044,17 +1046,20 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Inserts `text` into wherever the cursor is pointing.
-     * @param {String} text The new text to add
      *
-     **/
+     * @method insert
+     * @param text {string} The new text to add.
+     * @param [pasted] {boolean}
+     * @return {void}
+     */
     insert(text: string, pasted?: boolean): void {
         var session = this.session;
         var mode = session.getMode();
-        var cursor = this.getCursorPosition();
+        var cursor: Position = this.getCursorPosition();
 
         if (this.getBehavioursEnabled() && !pasted) {
             // Get a transform if the current mode wants one.
-            var transform = mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
+            var transform: { text: string; selection: number[] } = mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
             if (transform) {
                 if (text !== transform.text) {
                     this.session.mergeUndoDeltas = false;
@@ -1097,11 +1102,12 @@ export default class Editor extends EventEmitterClass {
         var end = session.insert(cursor, text);
 
         if (transform && transform.selection) {
-            if (transform.selection.length == 2) { // Transform relative to the current column
+            if (transform.selection.length === 2) { // Transform relative to the current column
                 this.selection.setSelectionRange(
                     new Range(cursor.row, start + transform.selection[0],
                         cursor.row, start + transform.selection[1]));
-            } else { // Transform relative to the current row.
+            }
+            else { // Transform relative to the current row.
                 this.selection.setSelectionRange(
                     new Range(cursor.row + transform.selection[0],
                         transform.selection[1],
@@ -1410,44 +1416,48 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * Removes words of text from the editor. A "word" is defined as a string of characters bookended by whitespace.
-     * @param {String} direction The direction of the deletion to occur, either "left" or "right"
+     * Removes words of text from the editor.
+     * A "word" is defined as a string of characters bookended by whitespace.
      *
-     **/
+     * @method remove
+     * @param direction {string} The direction of the deletion to occur, either "left" or "right"
+     *
+     */
     remove(direction: string): void {
         if (this.selection.isEmpty()) {
-            if (direction == "left")
+            if (direction === "left")
                 this.selection.selectLeft();
             else
                 this.selection.selectRight();
         }
 
-        var range = this.getSelectionRange();
+        var selectionRange = this.getSelectionRange();
         if (this.getBehavioursEnabled()) {
             var session = this.session;
-            var state = session.getState(range.start.row);
-            var new_range = session.getMode().transformAction(state, 'deletion', this, session, range);
+            var state = session.getState(selectionRange.start.row);
+            var newRange: Range = session.getMode().transformAction(state, 'deletion', this, session, selectionRange);
 
-            if (range.end.column === 0) {
-                var text = session.getTextRange(range);
-                if (text[text.length - 1] == "\n") {
-                    var line = session.getLine(range.end.row);
+            if (selectionRange.end.column === 0) {
+                var text = session.getTextRange(selectionRange);
+                if (text[text.length - 1] === "\n") {
+                    var line = session.getLine(selectionRange.end.row);
                     if (/^\s+$/.test(line)) {
-                        range.end.column = line.length;
+                        selectionRange.end.column = line.length;
                     }
                 }
             }
-            if (new_range)
-                range = new_range;
+            if (newRange) {
+                selectionRange = newRange;
+            }
         }
 
-        this.session.remove(range);
+        this.session.remove(selectionRange);
         this.clearSelection();
     }
 
     /**
      * Removes the word directly to the right of the current selection.
-     **/
+     */
     removeWordRight() {
         if (this.selection.isEmpty())
             this.selection.selectWordRight();
@@ -2064,31 +2074,29 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Gets the current position of the cursor.
-     * @return {Object} An object that looks something like this:
      *
-     * ```json
-     * { row: currRow, column: currCol }
-     * ```
-     *
-     * @related Selection.getCursor
-     **/
-    getCursorPosition(): { row: number; column: number } {
+     * @method getCursorPosition
+     * @return {Position}
+     */
+    getCursorPosition(): Position {
         return this.selection.getCursor();
     }
 
     /**
      * Returns the screen position of the cursor.
-     **/
-    getCursorPositionScreen(): { row: number; column: number } {
+     *
+     * @method getCursorPositionScreen
+     * @return {Position}
+     */
+    getCursorPositionScreen(): Position {
         var cursor = this.getCursorPosition()
         return this.session.documentToScreenPosition(cursor.row, cursor.column);
     }
 
     /**
-     * {:Selection.getRange}
+     * @method getSelectionRange
      * @return {Range}
-     * @related Selection.getRange
-     **/
+     */
     getSelectionRange(): Range {
         return this.selection.getRange();
     }
@@ -2130,7 +2138,7 @@ export default class Editor extends EventEmitterClass {
      *
      * @related Selection.moveCursorToPosition
      **/
-    moveCursorToPosition(pos) {
+    moveCursorToPosition(pos: Position): void {
         this.selection.moveCursorToPosition(pos);
     }
 

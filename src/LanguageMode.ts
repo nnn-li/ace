@@ -42,7 +42,7 @@ interface LanguageMode {
     getTokenizer(): Tokenizer;
     toggleCommentLines(state: string, session: EditSession, startRow: number, endRow: number);
     toggleBlockComment(state: string, session: EditSession, range: Range, cursor: Position);
-    transformAction(state, action, editor: Editor, session: EditSession, param);
+    transformAction(state: string, action: string, editor: Editor, session: EditSession, param: string | Range);
 }
 
 export default LanguageMode;

@@ -36,7 +36,7 @@ import Range from "../Range";
 import {addListener} from "../lib/event";
 import {stringRepeat} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
-import {addCssClass, createElement, importCssString, removeCssClass} from "../lib/dom";
+import {addCssClass, createElement, ensureHTMLStyleElement, removeCssClass} from "../lib/dom";
 
 var noop = function() { };
 
@@ -52,7 +52,7 @@ export interface ListView {
     getTextLeftOffset(): number;
     show(pos, lineHeight, topdownOnly?): void;
     hide();
-    setTheme(theme: string): void;
+    importTheme(themeName: string): void;
     setFontSize(fontSize): void;
     getLength(): number;
 }
@@ -306,7 +306,7 @@ export class ListViewPopup implements ListView {
             this.editor._emit("changeHoverMarker");
         }
     }
-    getHoveredRow() {
+    getHoveredRow(): number {
         return this.hoverMarker.start.row;
     }
     getRow(): number {
@@ -324,8 +324,8 @@ export class ListViewPopup implements ListView {
             }
         }
     }
-    setTheme(theme: string): void {
-        this.editor.setTheme(theme);
+    importTheme(themeName: string): void {
+        this.editor.importTheme(themeName);
     }
     setFontSize(fontSize: string): void {
         this.editor.setFontSize(fontSize);
@@ -344,7 +344,7 @@ export class ListViewPopup implements ListView {
     }
 }
 
-importCssString("\
+ensureHTMLStyleElement("\
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {\
     background-color: #CAD6FA;\
     z-index: 1;\

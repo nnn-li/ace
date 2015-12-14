@@ -74,7 +74,8 @@ export function edit(source: any) {
         element.innerHTML = '';
     }
 
-    var editSession = createEditSession(new EditorDocument(value), new TypeScriptMode());
+    var editSession = createEditSession(new EditorDocument(value));
+    editSession.setMode(new TypeScriptMode());
 
     var editor = new Editor(new VirtualRenderer(element), editSession);
 
@@ -99,8 +100,8 @@ export function edit(source: any) {
     return editor;
 };
 
-export function createEditSession(doc: EditorDocument, mode?, callback?): EditSession {
-    var editSession = new EditSession(doc, mode, callback);
+export function createEditSession(doc: EditorDocument): EditSession {
+    var editSession = new EditSession(doc);
     editSession.setUndoManager(new UndoManager());
     return editSession;
 };

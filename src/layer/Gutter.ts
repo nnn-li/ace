@@ -38,7 +38,12 @@ import {escapeHTML} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
 import EditSession from "../EditSession";
 import Annotation from "../Annotation";
+import GutterConfig from "./GutterConfig";
 
+/**
+ * @class Gutter
+ * @extends EventEmitterClass
+ */
 export default class Gutter extends EventEmitterClass {
     public element: HTMLDivElement;
     public gutterWidth = 0;
@@ -50,14 +55,21 @@ export default class Gutter extends EventEmitterClass {
     private session: EditSession;
     private $showFoldWidgets = true;
     public $padding;
-    constructor(parentEl: HTMLElement) {
+
+    /**
+     * @class Gutter
+     * @constructor
+     * @param container {HTMLElement}
+     */
+    constructor(container: HTMLElement) {
         super();
         this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_layer ace_gutter-layer";
-        parentEl.appendChild(this.element);
+        container.appendChild(this.element);
         this.setShowFoldWidgets(this.$showFoldWidgets);
         this.$updateAnnotations = this.$updateAnnotations.bind(this);
     }
+
     setSession(session: EditSession) {
         if (this.session) {
             this.session.off("change", this.$updateAnnotations);
@@ -113,7 +125,7 @@ export default class Gutter extends EventEmitterClass {
         }
     }
 
-    update(config) {
+    update(config: GutterConfig) {
         var session = this.session;
         var firstRow = config.firstRow;
         var lastRow = Math.min(config.lastRow + config.gutterOffset,  // needed to compensate for hor scollbar

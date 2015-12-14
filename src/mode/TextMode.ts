@@ -33,6 +33,7 @@
 import Tokenizer from "../Tokenizer";
 import TextHighlightRules from "./TextHighlightRules";
 import Behaviour from "./Behaviour";
+import BehaviourCallback from "../BehaviourCallback";
 import {packages} from "../unicode";
 import {escapeRegExp} from "../lib/lang";
 import TokenIterator from "../TokenIterator";
@@ -48,10 +49,17 @@ import LanguageMode from '../LanguageMode';
 export default class TextMode implements LanguageMode {
     /**
      * Used when loading snippets for zero or more modes?
+     * @property modes
+     * @type LanguageMode[]
      */
-    public modes: TextMode[];
+    public modes: LanguageMode[];
     protected HighlightRules: any = TextHighlightRules;
     protected $behaviour = new Behaviour();
+
+    /**
+     * @property tokenRe
+     * @type RegExp
+     */
     public tokenRe = new RegExp("^["
         + packages.L
         + packages.Mn + packages.Mc
@@ -59,6 +67,10 @@ export default class TextMode implements LanguageMode {
         + packages.Pc + "\\$_]+", "g"
     );
 
+    /**
+     * @property nonTokenRe
+     * @type RegExp
+     */
     public nonTokenRe = new RegExp("^(?:[^"
         + packages.L
         + packages.Mn + packages.Mc
@@ -354,11 +366,28 @@ export default class TextMode implements LanguageMode {
         return defaultHandler ? ret : undefined;
     }
 
-    transformAction(state, action, editor: Editor, session: EditSession, param) {
+    /**
+     * This method is called by the Editor.
+     *
+     * @method transformAction
+     * @param state {string}
+     * @param action {string}
+     * @param editor {Editor}
+     * @param session {EditSession}
+     * @param param {any} This will usually be a Range or a text string.
+     * @return {any} This will usually be a Range or an object: {text: string; selection: number[]}
+     */
+    // TODO: May be able to make this type-safe by separating cases where param is string from Range.
+    // string => {text: string; selection: number[]} (This corresponds to the insert operation)
+    // Range  => Range                               (This corresponds to the remove operation)
+    transformAction(state: string, action: string, editor: Editor, session: EditSession, param: string | Range): { text: string; selection: number[] } | Range {
         if (this.$behaviour) {
             var behaviours = this.$behaviour.getBehaviours();
             for (var key in behaviours) {
                 if (behaviours[key][action]) {
+                    // FIXME: Make this type-safe?
+                    //var callback: BehaviourCallback = behaviours[key][action];
+                    //var transformed = callback(state, action, editor, session, unused);
                     var ret = behaviours[key][action].apply(this, arguments);
                     if (ret) {
                         return ret;

@@ -33,23 +33,34 @@ import Behaviour from "../Behaviour";
 import TokenIterator from "../../TokenIterator";
 import Editor from "../../Editor";
 import EditSession from "../../EditSession";
+import Range from "../../Range";
+import Token from "../../Token";
 
-function is(token, type) {
+function is(token: Token, type: string): boolean {
     return token.type.lastIndexOf(type + ".xml") > -1;
 }
 
+/**
+ * @class XmlBehaviour
+ * @extends Behaviour
+ */
 export default class XmlBehaviour extends Behaviour {
+
+    /**
+     * @class XmlBehaviour
+     * @constructor
+     */
     constructor() {
         super();
 
-        this.add("string_dquotes", "insertion", function(state, action, editor: Editor, session: EditSession, text: string): any {
+        this.add("string_dquotes", "insertion", function(state: string, action: string, editor: Editor, session: EditSession, text: string): { text: string; selection: number[] } {
             if (text === '"' || text === "'") {
                 var quote = text;
                 var selected = session.doc.getTextRange(editor.getSelectionRange());
                 if (selected !== "" && selected !== "'" && selected !== '"' && editor.getWrapBehavioursEnabled()) {
                     return {
                         text: quote + selected + quote,
-                        selection: false
+                        selection: void 0
                     };
                 }
 
@@ -86,8 +97,8 @@ export default class XmlBehaviour extends Behaviour {
             }
         });
 
-        this.add("string_dquotes", "deletion", function(state, action, editor, session, range) {
-            var selected = session.doc.getTextRange(range);
+        this.add("string_dquotes", "deletion", function(state: string, action: string, editor: Editor, session: EditSession, range: Range): Range {
+            var selected: string = session.doc.getTextRange(range);
             if (!range.isMultiLine() && (selected === '"' || selected === "'")) {
                 var line = session.doc.getLine(range.start.row);
                 var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
@@ -98,7 +109,7 @@ export default class XmlBehaviour extends Behaviour {
             }
         });
 
-        this.add("autoclosing", "insertion", function(state, action, editor, session, text) {
+        this.add("autoclosing", "insertion", function(state: string, action: string, editor: Editor, session: EditSession, text: string) {
             if (text === '>') {
                 var position = editor.getCursorPosition();
                 var iterator = new TokenIterator(session, position.row, position.column);

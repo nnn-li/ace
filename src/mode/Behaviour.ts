@@ -29,12 +29,21 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
+import BehaviourCallback from "../BehaviourCallback";
+import LanguageMode from "../LanguageMode";
+
 /**
  * @class Behaviour
  */
 export default class Behaviour {
 
-    private $behaviours = {};
+    /**
+     * A map from name to a map from action to a BehaviourCallback.
+     *
+     * @property $behaviours
+     * @type { [name: string]: { [action: string]: BehaviourCallback } }
+     */
+    private $behaviours: { [name: string]: { [action: string]: BehaviourCallback } } = {};
 
     /**
      * @class Behaviour
@@ -43,7 +52,13 @@ export default class Behaviour {
     constructor() {
     }
 
-    add(name: string, action: string, callback) {
+    /**
+     * @method add
+     * @param name {string}
+     * @param action {string}
+     * @param callback
+     */
+    add(name: string, action: string, callback: BehaviourCallback): void {
         switch (undefined) {
             case this.$behaviours:
                 this.$behaviours = {};
@@ -53,7 +68,7 @@ export default class Behaviour {
         this.$behaviours[name][action] = callback;
     }
 
-    addBehaviours(behaviours) {
+    addBehaviours(behaviours: { [name: string]: { [action: string]: BehaviourCallback } }): void {
         for (var key in behaviours) {
             for (var action in behaviours[key]) {
                 this.add(key, action, behaviours[key][action]);
@@ -61,27 +76,29 @@ export default class Behaviour {
         }
     }
 
-    remove(name: string) {
+    remove(name: string): void {
         if (this.$behaviours && this.$behaviours[name]) {
             delete this.$behaviours[name];
         }
     }
 
-    inherit(mode, filter?: string[]) {
-        if (typeof mode === 'function') {
-            var behaviours = new mode().getBehaviours(filter);
-        }
-        else {
-            var behaviours = mode.getBehaviours(filter);
-        }
+    /**
+     * @method inherit
+     * @param base {Behaviour}
+     * @param [filter] {string[]}
+     * @return {void}
+     */
+    inherit(base: Behaviour, filter?: string[]): void {
+        var behaviours = base.getBehaviours(filter);
         this.addBehaviours(behaviours);
     }
 
-    getBehaviours(filter?: string[]) {
+    getBehaviours(filter?: string[]): { [name: string]: { [action: string]: BehaviourCallback } } {
         if (!filter) {
             return this.$behaviours;
-        } else {
-            var ret = {}
+        }
+        else {
+            var ret: { [name: string]: { [action: string]: BehaviourCallback } } = {}
             for (var i = 0; i < filter.length; i++) {
                 if (this.$behaviours[filter[i]]) {
                     ret[filter[i]] = this.$behaviours[filter[i]];

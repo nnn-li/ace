@@ -31,9 +31,15 @@
 
 import {addCssClass, createElement, removeCssClass, setCssClass} from "../lib/dom";
 import EditSession from '../EditSession';
+import Position from '../Position';
+import PixelPosition from '../PixelPosition';
+import CursorConfig from './CursorConfig';
 
 var IE8;
 
+/**
+ * @class Cursor
+ */
 export default class Cursor {
     public element: HTMLDivElement;
     private session: EditSession;
@@ -41,23 +47,28 @@ export default class Cursor {
     public isBlinking = true;
     private blinkInterval = 1000;
     private smoothBlinking = false;
-    private intervalId;
-    private timeoutId;
+    private intervalId: number;
+    private timeoutId: number;
     private cursors: HTMLDivElement[] = [];
     private cursor: HTMLDivElement;
     private $padding = 0;
     private overwrite: boolean;
-    private $updateCursors;
-    public config;
-    public $pixelPos;
+    private $updateCursors: (doIt: boolean) => void;
+    public config: CursorConfig;
+    public $pixelPos: PixelPosition;
 
-    constructor(parentEl: HTMLDivElement) {
+    /**
+     * @class Cursor
+     * @constructor
+     */
+    constructor(container: HTMLDivElement) {
         this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_layer ace_cursor-layer";
-        parentEl.appendChild(this.element);
+        container.appendChild(this.element);
 
-        if (IE8 === undefined)
+        if (IE8 === undefined) {
             IE8 = "opacity" in this.element;
+        }
 
         this.cursor = this.addCursor();
         addCssClass(this.element, "ace_hidden-cursors");
@@ -66,17 +77,19 @@ export default class Cursor {
 
     private $updateVisibility(val) {
         var cursors = this.cursors;
-        for (var i = cursors.length; i--;)
+        for (var i = cursors.length; i--;) {
             cursors[i].style.visibility = val ? "" : "hidden";
+        }
     }
 
     private $updateOpacity(val) {
         var cursors = this.cursors;
-        for (var i = cursors.length; i--;)
+        for (var i = cursors.length; i--;) {
             cursors[i].style.opacity = val ? "" : "0";
+        }
     }
 
-    public setPadding(padding: number) {
+    public setPadding(padding: number): void {
         this.$padding = padding;
     }
 
@@ -110,7 +123,7 @@ export default class Cursor {
         }
     }
 
-    private addCursor() {
+    private addCursor(): HTMLDivElement {
         var el: HTMLDivElement = <HTMLDivElement>createElement("div");
         el.className = "ace_cursor";
         this.element.appendChild(el);
@@ -118,7 +131,7 @@ export default class Cursor {
         return el;
     }
 
-    private removeCursor() {
+    private removeCursor(): HTMLDivElement {
         if (this.cursors.length > 1) {
             var el = this.cursors.pop();
             el.parentNode.removeChild(el);
@@ -126,13 +139,13 @@ export default class Cursor {
         }
     }
 
-    public hideCursor() {
+    public hideCursor(): void {
         this.isVisible = false;
         addCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
-    public showCursor() {
+    public showCursor(): void {
         this.isVisible = true;
         removeCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
@@ -171,7 +184,9 @@ export default class Cursor {
         blink();
     }
 
-    public getPixelPosition(position: { row: number; column: number }, onScreen?) {
+    // TODO: Create PixelPosition with left and top?
+    public getPixelPosition(position: Position, onScreen?: boolean): PixelPosition {
+
         if (!this.config || !this.session)
             return { left: 0, top: 0 };
 
@@ -185,7 +200,10 @@ export default class Cursor {
         return { left: cursorLeft, top: cursorTop };
     }
 
-    public update(config) {
+    public update(config: CursorConfig) {
+
+        // console.log(`Cursor.update(${JSON.stringify(config)}`);
+
         this.config = config;
 
         // Selection markers is a concept from multi selection.
@@ -210,8 +228,10 @@ export default class Cursor {
             style.width = config.characterWidth + "px";
             style.height = config.lineHeight + "px";
         }
-        while (this.cursors.length > cursorIndex)
+
+        while (this.cursors.length > cursorIndex) {
             this.removeCursor();
+        }
 
         var overwrite = this.session.getOverwrite();
         this.$setOverwrite(overwrite);
@@ -222,7 +242,7 @@ export default class Cursor {
     }
 
     private $setOverwrite(overwrite: boolean) {
-        if (overwrite != this.overwrite) {
+        if (overwrite !== this.overwrite) {
             this.overwrite = overwrite;
             if (overwrite)
                 addCssClass(this.element, "ace_overwrite-cursors");

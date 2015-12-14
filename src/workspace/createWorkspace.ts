@@ -163,7 +163,7 @@ export default function createWorkspace(): Promise<Workspace> {
 
         workerProxy.on("initFail", function(event) {
             // console.log(`workerProxy.initFail(${JSON.stringify(event)})`);
-            reject(new Error("initFail received from worker thread."))
+            reject(new Error("initFail received from worker thread."));
         });
 
         workerProxy.init('lib/workspace/WorkspaceWorker');

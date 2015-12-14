@@ -6,4 +6,4 @@ export var cssClass = "ace-mathdoodle";
 export var cssText = require("../requirejs/text!./mathdoodle.css");
 
 import dom = require("../lib/dom");
-dom.importCssString(cssText, cssClass);
+dom.ensureHTMLStyleElement(cssText, cssClass);
