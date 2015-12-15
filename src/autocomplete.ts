@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 import HashHandler from "./keyboard/HashHandler";
-import {ListViewPopup} from "./autocomplete/popup";
+import ListViewPopup from "./autocomplete/ListViewPopup";
 import {retrievePrecedingIdentifier} from "./autocomplete/util";
 import {} from "./lib/event";
 import {delayedCall} from "./lib/lang";
@@ -37,13 +37,16 @@ import {snippetManager} from "./snippets";
 import Editor from './Editor';
 import EditSession from './EditSession';
 import Anchor from './Anchor';
+import Position from './Position';
 import Range from './Range';
 import ThemeLink from './ThemeLink';
+import Completion from "./Completion";
+import CompletionList from "./CompletionList";
 
 var EDITOR_EXT_COMPLETER = 'completer';
 
 export interface Completer {
-    getCompletions(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback);
+    getCompletions(editor: Editor, session: EditSession, pos: Position, prefix: string, callback: (err, results: Completion[]) => any);
 }
 
 export function getCompleter(editor: Editor): CompleterAggregate {
@@ -61,7 +64,7 @@ export class CompleterAggregate implements Completer {
     private changeTimer;
     private gatherCompletionsId = 0;
     private base: Anchor;
-    private completions: { filtered; filterText; setFilter };
+    private completions: CompletionList;
     private commands: { [name: string]: (editor: Editor) => void };
     public autoSelect = true;
     public autoInsert = true;
@@ -165,7 +168,7 @@ export class CompleterAggregate implements Completer {
     /**
      * Implementation of the Completer interface.
      */
-    public goTo(where: string) {
+    public goTo(where: string): void {
         var row = this.popup.getRow();
         var max = this.popup.getLength() - 1;
 
@@ -182,18 +185,18 @@ export class CompleterAggregate implements Completer {
     /**
      * Implementation of the Completer interface.
      */
-    public getCompletions(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
+    public getCompletions(editor: Editor, session: EditSession, pos: Position, prefix: string, callback) {
 
         this.base = session.doc.createAnchor(pos.row, pos.column - prefix.length);
 
-        var matches = [];
+        var matches: Completion[] = [];
         var total = editor.completers.length;
-        editor.completers.forEach(function(completer: Completer, i) {
-            completer.getCompletions(editor, session, pos, prefix, function(err, results) {
+        editor.completers.forEach(function(completer: Completer, index: number) {
+            completer.getCompletions(editor, session, pos, prefix, function(err, results: Completion[]) {
                 if (!err)
                     matches = matches.concat(results);
                 // Fetch prefix again, because they may have changed by now
-                var pos: { row: number; column: number } = editor.getCursorPosition();
+                var pos: Position = editor.getCursorPosition();
                 var line = session.getLine(pos.row);
                 callback(null, {
                     prefix: retrievePrecedingIdentifier(line, pos.column, results[0] && results[0].identifierRegex),
@@ -230,7 +233,7 @@ export class CompleterAggregate implements Completer {
             var session = editor.getSession();
             var line = session.getLine(pos.row);
             prefix = retrievePrecedingIdentifier(line, pos.column);
-            this.getCompletions(this.editor, session, this.editor.getCursorPosition(), prefix, function(err, results) {
+            this.getCompletions(this.editor, session, this.editor.getCursorPosition(), prefix, function(err, results: { prefix: string; matches: Completion[]; finished: boolean }) {
                 // Only detach if result gathering is finished
                 var detachIfFinished = function() {
                     if (!results.finished) return;
@@ -247,7 +250,7 @@ export class CompleterAggregate implements Completer {
                 if (prefix.indexOf(results.prefix) !== 0 || _id != this.gatherCompletionsId)
                     return;
 
-                this.completions = new FilteredList(matches);
+                this.completions = new CompletionList(matches);
                 this.completions.setFilter(prefix);
                 var filtered = this.completions.filtered;
     
@@ -380,80 +383,4 @@ export class Autocomplete {
         },
         bindKey: "Ctrl-Space|Ctrl-Shift-Space|Alt-Space"
     };
-}
-
-export class FilteredList {
-    private all;
-    private filtered;
-    private filterText: string;
-    constructor(all, filterText?: string, mutateData?) {
-        this.all = all;
-        this.filtered = all;
-        this.filterText = filterText || "";
-    }
-    private setFilter(str) {
-        var matches;
-        if (str.length > this.filterText && str.lastIndexOf(this.filterText, 0) === 0)
-            matches = this.filtered;
-        else
-            matches = this.all;
-
-        this.filterText = str;
-        matches = this.filterCompletions(matches, this.filterText);
-        matches = matches.sort(function(a, b) {
-            return b.exactMatch - a.exactMatch || b.score - a.score;
-        });
-
-        // make unique
-        var prev = null;
-        matches = matches.filter(function(item) {
-            var caption = item.value || item.caption || item.snippet;
-            if (caption === prev) return false;
-            prev = caption;
-            return true;
-        });
-
-        this.filtered = matches;
-    }
-    private filterCompletions(items: { caption; value; snippet }[], needle: string) {
-        var results = [];
-        var upper = needle.toUpperCase();
-        var lower = needle.toLowerCase();
-        // TODO: Assignment in conditional expression.
-        // It's cute but also may halt prematurely and so hide bugs.
-        // Replace by length variable and test?
-        // Use assertion within the loop to look for falsey values.
-        loop: for (var i = 0, length = items.length; i < length; i++) {
-            var item: any = items[i];
-            var caption = item.value || item.caption || item.snippet;
-            if (!caption) continue;
-            var lastIndex = -1;
-            var matchMask = 0;
-            var penalty = 0;
-            var index, distance;
-            // caption char iteration is faster in Chrome but slower in Firefox, so lets use indexOf
-            for (var j = 0; j < needle.length; j++) {
-                // TODO add penalty on case mismatch
-                var i1 = caption.indexOf(lower[j], lastIndex + 1);
-                var i2 = caption.indexOf(upper[j], lastIndex + 1);
-                index = (i1 >= 0) ? ((i2 < 0 || i1 < i2) ? i1 : i2) : i2;
-                if (index < 0)
-                    continue loop;
-                distance = index - lastIndex - 1;
-                if (distance > 0) {
-                    // first char mismatch should be more sensitive
-                    if (lastIndex === -1)
-                        penalty += 10;
-                    penalty += distance;
-                }
-                matchMask = matchMask | (1 << index);
-                lastIndex = index;
-            }
-            item.matchMask = matchMask;
-            item.exactMatch = penalty ? 0 : 1;
-            item.score = (item.score || 0) - penalty;
-            results.push(item);
-        }
-        return results;
-    }
 }

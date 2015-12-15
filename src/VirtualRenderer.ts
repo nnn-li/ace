@@ -167,9 +167,20 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     private $printMarginEl;
     private getOption;
     private setOption;
-    private characterWidth;
+
+    /**
+     * @property characterWidth
+     * @type number
+     */
+    public characterWidth: number;
+
+    /**
+     * @property lineHeight
+     * @type number
+     */
+    public lineHeight: number;
+
     private $printMarginColumn;
-    private lineHeight;
     private $extraHeight;
     private $composition: { keepTextAreaAtCursor: boolean; cssText: string };
     private $hScrollBarAlwaysVisible;

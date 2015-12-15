@@ -39,8 +39,10 @@ import KeyBinding from "./keyboard/KeyBinding";
 import TextInput from "./keyboard/TextInput";
 import EditSession from "./EditSession";
 import Search from "./Search";
+import FirstAndLast from "./FirstAndLast";
 import Position from "./Position";
 import Range from "./Range";
+import TextAndSelection from "./TextAndSelection";
 import CursorRange from './CursorRange'
 import EventEmitterClass from "./lib/event_emitter";
 import CommandManager from "./commands/CommandManager";
@@ -1060,11 +1062,11 @@ export default class Editor extends EventEmitterClass {
         var session = this.session;
         var mode = session.getMode();
         var cursor: Position = this.getCursorPosition();
-        var transform: { text: string; selection: number[] };
+        var transform: TextAndSelection;
 
         if (this.getBehavioursEnabled() && !pasted) {
             // Get a transform if the current mode wants one.
-            transform = mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
+            transform = <TextAndSelection>mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
             if (transform) {
                 if (text !== transform.text) {
                     this.session.mergeUndoDeltas = false;
@@ -1440,7 +1442,7 @@ export default class Editor extends EventEmitterClass {
         if (this.getBehavioursEnabled()) {
             var session = this.session;
             var state = session.getState(selectionRange.start.row);
-            var newRange: Range = session.getMode().transformAction(state, 'deletion', this, session, selectionRange);
+            var newRange: Range = <Range>session.getMode().transformAction(state, 'deletion', this, session, selectionRange);
 
             if (selectionRange.end.column === 0) {
                 var text = session.getTextRange(selectionRange);
@@ -1630,9 +1632,12 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Indents the current line.
+     *
+     * @method blockIndent
+     * @return {void}
      * @related EditSession.indentRows
-     **/
-    blockIndent() {
+     */
+    blockIndent(): void {
         var rows = this.$getSelectedRows();
         this.session.indentRows(rows.first, rows.last, "\t");
     }
@@ -1673,14 +1678,21 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Given the currently selected range, this function either comments all the lines, or uncomments all of them.
-     **/
-    toggleCommentLines() {
+     *
+     * @method toggleCommentLines
+     * @return {void}
+     */
+    toggleCommentLines(): void {
         var state = this.session.getState(this.getCursorPosition().row);
         var rows = this.$getSelectedRows();
         this.session.getMode().toggleCommentLines(state, this.session, rows.first, rows.last);
     }
 
-    toggleBlockComment() {
+    /**
+     * @method toggleBlockComment
+     * @return {void}
+     */
+    toggleBlockComment(): void {
         var cursor = this.getCursorPosition();
         var state = this.session.getState(cursor.row);
         var range = this.getSelectionRange();
@@ -1901,9 +1913,11 @@ export default class Editor extends EventEmitterClass {
     /**
      * Returns an object indicating the currently selected rows.
      *
-     * @return {Object}
-     **/
-    private $getSelectedRows(): { first: number; last: number } {
+     * @method $getSelectedRows
+     * @return {FirstAndLast}
+     * @private
+     */
+    private $getSelectedRows(): FirstAndLast {
         var range = this.getSelectionRange().collapseRows();
 
         return {

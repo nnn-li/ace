@@ -27,36 +27,47 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-import Range from "../Range";
+"use strict";
+
+import Completion from '../Completion';
 import EditSession from '../EditSession';
 import Editor from '../Editor';
+import Position from "../Position";
+import Range from "../Range";
 
 /**
- * Does a distance analysis of the word `prefix` at position `pos` in `doc`.
- * @return Map of string to number.
+ * A map from the word (string) to score (number).
  */
-function wordDistance(pos: { row: number; column: number }, session: EditSession) {
+interface WordScores {
+    [word: string]: number;
+}
+
+/**
+ * Does a distance analysis of the word at position `pos` in `doc`.
+ */
+function wordDistance(position: Position, session: EditSession): WordScores {
     var splitRegex: RegExp = /[^a-zA-Z_0-9\$\-\u00C0-\u1FFF\u2C00-\uD7FF\w]+/;
 
     function getWordIndex(): number {
-        var textBefore = session.getTextRange(Range.fromPoints({ row: 0, column: 0 }, pos));
+        var textBefore = session.getTextRange(Range.fromPoints({ row: 0, column: 0 }, position));
         return textBefore.split(splitRegex).length - 1;
     }
 
-    var prefixPos = getWordIndex();
-    var words = session.getValue().split(splitRegex);
-    var wordScores = Object.create(null);
+    var prefixPos: number = getWordIndex();
+    var words: string[] = session.getValue().split(splitRegex);
+    var wordScores: WordScores = Object.create(null);
 
-    var currentWord = words[prefixPos];
+    var currentWord: string = words[prefixPos];
 
-    words.forEach(function(word, idx) {
+    words.forEach(function(word: string, index: number) {
         if (!word || word === currentWord) return;
 
-        var distance = Math.abs(prefixPos - idx);
+        var distance = Math.abs(prefixPos - index);
         var score = words.length - distance;
         if (wordScores[word]) {
             wordScores[word] = Math.max(score, wordScores[word]);
-        } else {
+        }
+        else {
             wordScores[word] = score;
         }
     });
@@ -66,13 +77,13 @@ function wordDistance(pos: { row: number; column: number }, session: EditSession
 /**
  * This textual completer is rather dumb.
  */
-export function getCompletions(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback: (err, completions: { caption: string; value: string; score: number; meta: string }[]) => void) {
+export default function getCompletions(editor: Editor, session: EditSession, pos: Position, prefix: string, callback: (err, completions: Completion[]) => void) {
 
-    var wordScore = wordDistance(pos, session);
+    var wordScore: WordScores = wordDistance(pos, session);
 
-    var wordList = Object.keys(wordScore);
+    var wordList: string[] = Object.keys(wordScore);
 
-    callback(null, wordList.map(function(word) {
+    callback(null, wordList.map(function(word: string) {
         return {
             caption: word,
             value: word,

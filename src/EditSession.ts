@@ -40,11 +40,12 @@ import Selection from "./Selection";
 import LanguageMode from "./LanguageMode";
 import Range from "./Range";
 import Token from "./Token";
+import Tokenizer from "./Tokenizer";
 import EditorDocument from "./EditorDocument";
 import BackgroundTokenizer from "./BackgroundTokenizer";
 import SearchHighlight from "./SearchHighlight";
 import {assert} from './lib/asserts';
-import BracketMatch from "./edit_session/BracketMatch";
+import BracketMatch from "./BracketMatch";
 import UndoManager from './UndoManager'
 import TokenIterator from './TokenIterator';
 import FontMetrics from "./layer/FontMetrics";
@@ -431,15 +432,14 @@ export default class EditSession extends EventEmitterClass {
 
     /**
      * Returns an object indicating the token at the current row.
-     * The object has two properties: `index` and `start`.
      *
      * @method getTokenAt
      * @param {Number} row The row number to retrieve from
      * @param {Number} column The column number to retrieve from.
      */
-    public getTokenAt(row: number, column?: number) {
-        var tokens: { value: string }[] = this.bgTokenizer.getTokens(row);
-        var token: { index?: number; start?: number; value: string };
+    public getTokenAt(row: number, column?: number): Token {
+        var tokens: Token[] = this.bgTokenizer.getTokens(row);
+        var token: Token;
         var c = 0;
         if (column == null) {
             i = tokens.length - 1;
@@ -1061,7 +1061,7 @@ export default class EditSession extends EventEmitterClass {
             this.$startWorker();
         }
 
-        var tokenizer = mode.getTokenizer();
+        var tokenizer: Tokenizer = mode.getTokenizer();
 
         if (tokenizer['addEventListener'] !== undefined) {
             var onReloadTokenizer = this.onReloadTokenizer.bind(this);
@@ -2232,7 +2232,7 @@ export default class EditSession extends EventEmitterClass {
     *
     * @param {Number} docColumn
     **/
-    public getDocumentLastRowColumn(docRow, docColumn) {
+    public getDocumentLastRowColumn(docRow: number, docColumn: number): number {
         var screenRow = this.documentToScreenRow(docRow, docColumn);
         return this.getScreenLastRowColumn(screenRow);
     }
@@ -2282,12 +2282,15 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * Converts characters coordinates on the screen to characters coordinates within the document. [This takes into account code folding, word wrap, tab size, and any other visual modifications.]{: #conversionConsiderations}
-    * @param {number} screenRow The screen row to check
-    * @param {number} screenColumn The screen column to check
-    * @return {Object} The object returned has two properties: `row` and `column`.
-    **/
-    public screenToDocumentPosition(screenRow: number, screenColumn: number): { row: number; column: number } {
+     * Converts characters coordinates on the screen to characters coordinates within the document.
+     * This takes into account code folding, word wrap, tab size, and any other visual modifications.
+     *
+     * @method screenToDocumentPosition
+     * @param {number} screenRow The screen row to check
+     * @param {number} screenColumn The screen column to check
+     * @return {Object} The object returned has two properties: `row` and `column`.
+     */
+    public screenToDocumentPosition(screenRow: number, screenColumn: number): Position {
         if (screenRow < 0) {
             return { row: 0, column: 0 };
         }
@@ -2374,14 +2377,14 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * Converts document coordinates to screen coordinates. {:conversionConsiderations}
-    * @param {Number} docRow The document row to check
-    * @param {Number} docColumn The document column to check
-    * @return {Object} The object returned by this method has two properties: `row` and `column`.
-    *
-    * @related EditSession.screenToDocumentPosition
-    **/
-    public documentToScreenPosition(docRow: number, docColumn: number): { row: number; column: number } {
+     * Converts document coordinates to screen coordinates.
+     *
+     * @method documentToScreenPosition
+     * @param {Number} docRow The document row to check
+     * @param {Number} docColumn The document column to check
+     * @return {Object} The object returned by this method has two properties: `row` and `column`.
+     */
+    public documentToScreenPosition(docRow: number, docColumn: number): Position {
         var pos: { row: number; column: number };
         // Normalize the passed in arguments.
         if (typeof docColumn === "undefined") {
@@ -2552,21 +2555,47 @@ export default class EditSession extends EventEmitterClass {
         // TODO?
     }
 
-    findMatchingBracket(position: { row: number; column: number }, chr?: string): { row: number; column: number } {
+    /**
+     * @method findMatchingBracket
+     * @param position {Position}
+     * @param [chr] {string}
+     * @return {Position}
+     */
+    findMatchingBracket(position: Position, chr?: string): Position {
         return this.$bracketMatcher.findMatchingBracket(position, chr);
     }
 
-    getBracketRange(position: { row: number; column: number }): Range {
+    /**
+     * @method getBracketRange
+     * @param position {Position}
+     * @return {Range}
+     */
+    getBracketRange(position: Position): Range {
         return this.$bracketMatcher.getBracketRange(position);
     }
 
-    $findOpeningBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
-        return this.$bracketMatcher.$findOpeningBracket(bracket, position, typeRe);
+    /**
+     * @method findOpeningBracket
+     * @param bracket {string}
+     * @param position {Position}
+     * @param [typeRe] {RegExp}
+     * @return {Position}
+     */
+    findOpeningBracket(bracket: string, position: Position, typeRe?: RegExp): Position {
+        return this.$bracketMatcher.findOpeningBracket(bracket, position, typeRe);
     }
 
-    $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
-        return this.$bracketMatcher.$findClosingBracket(bracket, position, typeRe);
+    /**
+     * @method findClosingBracket
+     * @param bracket {string}
+     * @param position {Position}
+     * @param [typeRe] {RegExp}
+     * @return {Position}
+     */
+    findClosingBracket(bracket: string, position: Position, typeRe?: RegExp): Position {
+        return this.$bracketMatcher.findClosingBracket(bracket, position, typeRe);
     }
+
     private $foldMode: FoldMode;
 
     // structured folding

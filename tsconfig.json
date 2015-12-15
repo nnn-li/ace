@@ -13,7 +13,7 @@
   },
   "files": [
     "./src/main.ts",
-    "./src/autocomplete/popup.ts",
+    "./src/autocomplete/ListViewPopup.ts",
     "./src/autocomplete/text_completer.ts",
     "./src/autocomplete/util.ts",
 
@@ -101,12 +101,6 @@
     "./src/mode/javascript/style.ts",
     "./src/mode/javascript/vars.ts",
 
-    "./src/mode/typescript/AutoCompleteView.ts",
-    "./src/mode/typescript/CompletionService.ts",
-    "./src/mode/typescript/DocumentPositionUtil.ts",
-    "./src/mode/typescript/EditorPosition.ts",
-    "./src/mode/typescript/autoComplete.ts",
-
     "./src/mode/behaviour/CssBehaviour.ts",
     "./src/mode/behaviour/CstyleBehaviour.ts",
     "./src/mode/behaviour/HtmlBehaviour.ts",
@@ -147,14 +141,6 @@
     "./src/worker/worker-amd.ts",
     "./src/worker/worker-systemjs.ts",
 
-    "./src/workspace/ScriptInfo.ts",
-    "./src/workspace/DefaultLanguageServiceHost.ts",
-    "./src/workspace/Workspace.ts",
-    "./src/workspace/WorkspaceWorker.ts",
-    "./src/workspace/createWorkspace.ts",
-    "./src/workspace/workspace_protocol.ts",
-    "./src/workspace/utils.ts",
-
     "./src/Anchor.ts",
     "./src/Annotation.ts",
     "./src/BackgroundTokenizer.ts",
@@ -192,7 +178,6 @@
     "./src/editor_protocol.ts",
     "./src/range_list.ts",
     "./src/snippets.ts",
-    "./src/typeInfoTip.ts",
     "./src/unicode.ts",
 
     "./src/theme/textmate.ts",

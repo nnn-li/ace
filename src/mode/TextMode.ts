@@ -30,6 +30,8 @@
 "use strict";
 
 // FIXME: For some reason the generated file causes a breakage in the mouse/mouse_handler_test
+import Completion from "../Completion";
+import Position from "../Position";
 import Tokenizer from "../Tokenizer";
 import TextHighlightRules from "./TextHighlightRules";
 import Behaviour from "./Behaviour";
@@ -38,6 +40,7 @@ import {packages} from "../unicode";
 import {escapeRegExp} from "../lib/lang";
 import TokenIterator from "../TokenIterator";
 import Range from "../Range";
+import TextAndSelection from "./TextAndSelection";
 import EditSession from '../EditSession';
 import Editor from '../Editor';
 import WorkerClient from "../worker/WorkerClient";
@@ -83,7 +86,7 @@ export default class TextMode implements LanguageMode {
     public $id = "ace/mode/text";
     private $tokenizer: Tokenizer;
     private $highlightRules: any;
-    private $keywordList;
+    private $keywordList: string[];
     private $embeds;
     private $modes;
     private completionKeywords;
@@ -244,7 +247,7 @@ export default class TextMode implements LanguageMode {
         iter(shouldRemove ? uncomment : comment);
     }
 
-    toggleBlockComment(state: string, session: EditSession, range: Range, cursor: { row: number; column: number }) {
+    toggleBlockComment(state: string, session: EditSession, range: Range, cursor: Position): void {
         var comment = this.blockComment;
         if (!comment)
             return;
@@ -380,7 +383,7 @@ export default class TextMode implements LanguageMode {
     // TODO: May be able to make this type-safe by separating cases where param is string from Range.
     // string => {text: string; selection: number[]} (This corresponds to the insert operation)
     // Range  => Range                               (This corresponds to the remove operation)
-    transformAction(state: string, action: string, editor: Editor, session: EditSession, param: string | Range): { text: string; selection: number[] } | Range {
+    transformAction(state: string, action: string, editor: Editor, session: EditSession, param: string | Range): TextAndSelection | Range {
         if (this.$behaviour) {
             var behaviours = this.$behaviour.getBehaviours();
             for (var key in behaviours) {
@@ -436,7 +439,7 @@ export default class TextMode implements LanguageMode {
         return this.$keywordList = this.$highlightRules.$keywordList || [];
     }
 
-    getCompletions(state, session: EditSession, pos, prefix) {
+    getCompletions(state: string, session: EditSession, pos: Position, prefix: string): Completion[] {
         var keywords = this.$keywordList || this.$createKeywordList();
         return keywords.map(function(word) {
             return {

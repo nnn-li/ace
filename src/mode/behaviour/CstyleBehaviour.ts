@@ -123,13 +123,10 @@ export default class CstyleBehaviour extends Behaviour {
                 initContext(editor);
                 var rightChar = line.substring(cursor.column, cursor.column + 1);
                 if (rightChar === '}') {
-                    var matching = session.$findOpeningBracket('}', { column: cursor.column + 1, row: cursor.row });
+                    var matching = session.findOpeningBracket('}', { column: cursor.column + 1, row: cursor.row });
                     if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
                         CstyleBehaviour.popAutoInsertedClosing();
-                        return {
-                            text: '',
-                            selection: [1, 1]
-                        };
+                        return { text: '', selection: [1, 1] };
                     }
                 }
             }
@@ -187,17 +184,11 @@ export default class CstyleBehaviour extends Behaviour {
                 var selectionRange = editor.getSelectionRange();
                 var selected: string = session.doc.getTextRange(selectionRange);
                 if (selected !== "" && editor.getWrapBehavioursEnabled()) {
-                    return {
-                        text: '(' + selected + ')',
-                        selection: void 0
-                    };
+                    return { text: '(' + selected + ')', selection: void 0 };
                 }
                 else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
                     CstyleBehaviour.recordAutoInsert(editor, session, ")");
-                    return {
-                        text: '()',
-                        selection: [1, 1]
-                    };
+                    return { text: '()', selection: [1, 1] };
                 }
             }
             else if (text === ')') {
@@ -206,13 +197,10 @@ export default class CstyleBehaviour extends Behaviour {
                 var line = session.doc.getLine(cursor.row);
                 var rightChar = line.substring(cursor.column, cursor.column + 1);
                 if (rightChar === ')') {
-                    var matching = session.$findOpeningBracket(')', { column: cursor.column + 1, row: cursor.row });
+                    var matching = session.findOpeningBracket(')', { column: cursor.column + 1, row: cursor.row });
                     if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
                         CstyleBehaviour.popAutoInsertedClosing();
-                        return {
-                            text: '',
-                            selection: [1, 1]
-                        };
+                        return { text: '', selection: [1, 1] };
                     }
                 }
             }
@@ -237,16 +225,11 @@ export default class CstyleBehaviour extends Behaviour {
                 var selectionRange: Range = editor.getSelectionRange();
                 var selected: string = session.doc.getTextRange(selectionRange);
                 if (selected !== "" && editor.getWrapBehavioursEnabled()) {
-                    return {
-                        text: '[' + selected + ']',
-                        selection: void 0
-                    };
-                } else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
+                    return { text: '[' + selected + ']', selection: void 0 };
+                }
+                else if (CstyleBehaviour.isSaneInsertion(editor, session)) {
                     CstyleBehaviour.recordAutoInsert(editor, session, "]");
-                    return {
-                        text: '[]',
-                        selection: [1, 1]
-                    };
+                    return { text: '[]', selection: [1, 1] };
                 }
             }
             else if (text === ']') {
@@ -255,13 +238,10 @@ export default class CstyleBehaviour extends Behaviour {
                 var line = session.doc.getLine(cursor.row);
                 var rightChar = line.substring(cursor.column, cursor.column + 1);
                 if (rightChar == ']') {
-                    var matching = session.$findOpeningBracket(']', { column: cursor.column + 1, row: cursor.row });
+                    var matching = session.findOpeningBracket(']', { column: cursor.column + 1, row: cursor.row });
                     if (matching !== null && CstyleBehaviour.isAutoInsertedClosing(cursor, line, text)) {
                         CstyleBehaviour.popAutoInsertedClosing();
-                        return {
-                            text: '',
-                            selection: [1, 1]
-                        };
+                        return { text: '', selection: [1, 1] };
                     }
                 }
             }
@@ -287,11 +267,7 @@ export default class CstyleBehaviour extends Behaviour {
                 var selection = editor.getSelectionRange();
                 var selected = session.doc.getTextRange(selection);
                 if (selected !== "" && selected !== "'" && selected !== '"' && editor.getWrapBehavioursEnabled()) {
-                    return {
-                        text: quote + selected + quote,
-                        // FIXME: Changed this from null to allow simpler type declaration.
-                        selection: void 0
-                    };
+                    return { text: quote + selected + quote, selection: void 0 };
                 }
                 else {
                     var cursor = editor.getCursorPosition();
@@ -299,7 +275,7 @@ export default class CstyleBehaviour extends Behaviour {
                     var leftChar = line.substring(cursor.column - 1, cursor.column);
 
                     // We're escaped.
-                    if (leftChar == '\\') {
+                    if (leftChar === '\\') {
                         return null;
                     }
 
@@ -327,19 +303,13 @@ export default class CstyleBehaviour extends Behaviour {
                     if (!token || (quotepos < 0 && token.type !== "comment" && (token.type !== "string" || ((selection.start.column !== token.value.length + col - 1) && token.value.lastIndexOf(quote) === token.value.length - 1)))) {
                         if (!CstyleBehaviour.isSaneInsertion(editor, session))
                             return;
-                        return {
-                            text: quote + quote,
-                            selection: [1, 1]
-                        };
+                        return { text: quote + quote, selection: [1, 1] };
                     }
                     else if (token && token.type === "string") {
                         // Ignore input and move right one if we're typing over the closing quote.
                         var rightChar = line.substring(cursor.column, cursor.column + 1);
                         if (rightChar == quote) {
-                            return {
-                                text: '',
-                                selection: [1, 1]
-                            };
+                            return { text: '', selection: [1, 1] };
                         }
                     }
                 }
@@ -363,15 +333,16 @@ export default class CstyleBehaviour extends Behaviour {
         var cursor = editor.getCursorPosition();
         var iterator = new TokenIterator(session, cursor.row, cursor.column);
     
-        // Don't insert in the middle of a keyword/identifier/lexical
+        // Don't insert in the middle of a keyword/identifier/lexical.
         if (!this.$matchTokenType(iterator.getCurrentToken() || "text", SAFE_INSERT_IN_TOKENS)) {
-            // Look ahead in case we're at the end of a token
+            // Look ahead in case we're at the end of a token.
             var iterator2 = new TokenIterator(session, cursor.row, cursor.column + 1);
-            if (!this.$matchTokenType(iterator2.getCurrentToken() || "text", SAFE_INSERT_IN_TOKENS))
+            if (!this.$matchTokenType(iterator2.getCurrentToken() || "text", SAFE_INSERT_IN_TOKENS)) {
                 return false;
+            }
         }
     
-        // Only insert in front of whitespace/comments
+        // Only insert in front of whitespace/comments.
         iterator.stepForward();
         return iterator.getCurrentTokenRow() !== cursor.row ||
             this.$matchTokenType(iterator.getCurrentToken() || "text", SAFE_INSERT_BEFORE_TOKENS);
@@ -389,9 +360,10 @@ export default class CstyleBehaviour extends Behaviour {
     static recordAutoInsert(editor: Editor, session: EditSession, bracket: string): void {
         var cursor = editor.getCursorPosition();
         var line = session.doc.getLine(cursor.row);
-        // Reset previous state if text or context changed too much
-        if (!this.isAutoInsertedClosing(cursor, line, context.autoInsertedLineEnd[0]))
+        // Reset previous state if text or context changed too much.
+        if (!this.isAutoInsertedClosing(cursor, line, context.autoInsertedLineEnd[0])) {
             context.autoInsertedBrackets = 0;
+        }
         context.autoInsertedRow = cursor.row;
         context.autoInsertedLineEnd = bracket + line.substr(cursor.column);
         context.autoInsertedBrackets++;
@@ -400,8 +372,9 @@ export default class CstyleBehaviour extends Behaviour {
     static recordMaybeInsert(editor: Editor, session: EditSession, bracket: string): void {
         var cursor = editor.getCursorPosition();
         var line = session.doc.getLine(cursor.row);
-        if (!this.isMaybeInsertedClosing(cursor, line))
+        if (!this.isMaybeInsertedClosing(cursor, line)) {
             context.maybeInsertedBrackets = 0;
+        }
         context.maybeInsertedRow = cursor.row;
         context.maybeInsertedLineStart = line.substr(0, cursor.column) + bracket;
         context.maybeInsertedLineEnd = line.substr(cursor.column);

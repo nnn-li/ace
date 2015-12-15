@@ -32,6 +32,8 @@
 import {inherits} from "../lib/oop";
 import {arrayToMap} from "../lib/lang";
 import Annotation from "../Annotation";
+import Completion from "../Completion";
+import Position from "../Position";
 import TextMode from "./TextMode";
 import JavaScriptMode from "./JavaScriptMode";
 import CssMode from "./CssMode";
@@ -90,7 +92,7 @@ export default class HtmlMode extends TextMode {
         return false;
     }
 
-    getCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
+    getCompletions(state: string, session: EditSession, pos: Position, prefix: string): Completion[] {
         return this.$completer.getCompletions(state, session, pos, prefix);
     }
 

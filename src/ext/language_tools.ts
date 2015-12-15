@@ -33,16 +33,18 @@ import {snippetManager} from "../snippets";
 import {Completer, getCompleter, setCompleter, CompleterAggregate, Autocomplete} from "../autocomplete";
 import {defineOptions, loadModule} from "../config";
 import {retrievePrecedingIdentifier} from "../autocomplete/util";
+import Completion from "../Completion";
 import Editor from "../Editor";
 import EditSession from '../EditSession';
-import {getCompletions} from '../autocomplete/text_completer';
+import textCompleter from '../autocomplete/text_completer';
 import LanguageMode from '../LanguageMode';
+import Position from '../Position';
 
 // Exports existing completer so that user can construct his own set of completers.
 // export var textCompleter: acm.Completer = tcm;
 
 export var keyWordCompleter: Completer = {
-    getCompletions: function(editor: Editor, session: EditSession, pos: { row: number; column: number }, prefix: string, callback) {
+    getCompletions: function(editor: Editor, session: EditSession, pos: Position, prefix: string, callback) {
         var state = session.getState(pos.row);
         var completions = session.$mode.getCompletions(state, session, pos, prefix);
         callback(null, completions);
@@ -71,7 +73,7 @@ export var snippetCompleter: Completer = {
     }
 };
 
-var completers: Completer[] = [snippetCompleter/*, textCompleter*/, keyWordCompleter];
+var completers: Completer[] = [snippetCompleter, { getCompletions: textCompleter }, keyWordCompleter];
 
 export function addCompleter(completer: Completer) {
     completers.push(completer);

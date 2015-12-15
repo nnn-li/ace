@@ -138,7 +138,7 @@ export default class FoldMode {
      */
     openingBracketBlock(session: EditSession, bracket: string, row: number, column: number, typeRe?: RegExp): Range {
         var start = { row: row, column: column + 1 };
-        var end = session.$findClosingBracket(bracket, start, typeRe);
+        var end = session.findClosingBracket(bracket, start, typeRe);
         if (!end)
             return;
 
@@ -164,7 +164,7 @@ export default class FoldMode {
      */
     closingBracketBlock(session: EditSession, bracket: string, row: number, column: number, typeRe?: RegExp): Range {
         var end = { row: row, column: column };
-        var start = session.$findOpeningBracket(bracket, end);
+        var start = session.findOpeningBracket(bracket, end);
 
         if (!start) {
             return;

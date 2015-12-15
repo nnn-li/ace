@@ -28,40 +28,26 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+import BackgroundTokenizer from "../BackgroundTokenizer";
 import EditorDocument from "../EditorDocument";
 import EditSession from "../EditSession";
 import VirtualRenderer from "../VirtualRenderer";
 import Editor from "../Editor";
+import PixelPosition from "../PixelPosition";
 import Range from "../Range";
 import ThemeLink from "../ThemeLink";
 import {addListener} from "../lib/event";
 import {stringRepeat} from "../lib/lang";
 import EventEmitterClass from "../lib/event_emitter";
 import {addCssClass, createElement, ensureHTMLStyleElement, removeCssClass} from "../lib/dom";
+import ListView from "./ListView";
 
 var noop = function() { };
-
-export interface ListView {
-    isOpen: boolean;
-    focus;
-    container;
-    on(eventName: string, callback, capturing?: boolean);
-    getData(row: number);
-    setData(data: string[]);
-    getRow();
-    setRow(row: number);
-    getTextLeftOffset(): number;
-    show(pos, lineHeight, topdownOnly?): void;
-    hide();
-    importThemeLink(themeName: string): Promise<ThemeLink>;
-    setFontSize(fontSize): void;
-    getLength(): number;
-}
 
 /**
  * @class ListViewPopup
  */
-export class ListViewPopup implements ListView {
+export default class ListViewPopup implements ListView {
     private editor: Editor;
     private $borderSize = 1;
     private $imageSize = 0;
@@ -196,9 +182,9 @@ export class ListViewPopup implements ListView {
             return (data && data.value) || "";
         };
 
-        var bgTokenizer = this.editor.getSession().bgTokenizer;
-        bgTokenizer.$tokenizeRow = function(dataIndex) {
-            var data = self.data[dataIndex];
+        var bgTokenizer: BackgroundTokenizer = this.editor.getSession().bgTokenizer;
+        bgTokenizer.tokenizeRow = function(row: number) {
+            var data = self.data[row];
             var tokens = [];
             if (!data)
                 return tokens;
@@ -240,12 +226,14 @@ export class ListViewPopup implements ListView {
             }
         });
     }
+
     /**
-     * @param {{top;left}} pos
-     * @param {number} lineHeight
-     * @param {boolean} topdownOnly
+     * @method show
+     * @param pos {PixelPosition}
+     * @param lineHeight {number}
+     * @param [topdownOnly] {boolean}
      */
-    show(pos: { top: number; left: number }, lineHeight: number, topdownOnly?: boolean) {
+    show(pos: PixelPosition, lineHeight: number, topdownOnly?: boolean) {
         var el = this.editor.container;
         var screenHeight = window.innerHeight;
         var screenWidth = window.innerWidth;
@@ -279,25 +267,35 @@ export class ListViewPopup implements ListView {
         this.lastMouseEvent = null;
         this.isOpen = true;
     }
-    hide() {
+
+    /**
+     * @method hide
+     * @return {void}
+     */
+    hide(): void {
         this.editor.container.style.display = "none";
         this.editor._signal("hide");
         this.isOpen = false;
     }
+
     setData(list) {
         this.data = list || [];
         this.editor.setValue(stringRepeat("\n", list.length), -1);
         this.setRow(0);
     }
+
     getData(row: number) {
         return this.data[row];
     }
+
     on(eventName: string, callback: (event, ee: EventEmitterClass) => any, capturing?: boolean) {
         return this.editor.on(eventName, callback, capturing);
     }
+
     getTextLeftOffset(): number {
         return this.$borderSize + this.editor.renderer.$padding + this.$imageSize;
     }
+
     setSelectOnHover(val) {
         if (!val) {
             this.hoverMarkerId = this.editor.getSession().addMarker(this.hoverMarker, "ace_line-hover", "fullLine");
@@ -307,6 +305,7 @@ export class ListViewPopup implements ListView {
             this.hoverMarkerId = null;
         }
     }
+
     setHoverMarker(row: number, suppressRedraw?: boolean) {
         if (row !== this.hoverMarker.start.row) {
             this.hoverMarker.start.row = this.hoverMarker.end.row = row;
@@ -316,13 +315,16 @@ export class ListViewPopup implements ListView {
             this.editor._emit("changeHoverMarker");
         }
     }
+
     getHoveredRow(): number {
         return this.hoverMarker.start.row;
     }
+
     getRow(): number {
         return this.selectionMarker.start.row;
     }
-    setRow(row: number) {
+
+    setRow(row: number): void {
         row = Math.max(-1, Math.min(this.data.length, row));
         if (this.selectionMarker.start.row != row) {
             this.editor.selection.clearSelection();

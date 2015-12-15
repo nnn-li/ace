@@ -29,26 +29,20 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import {} from "./lib/oop"
-import EditorDocument from './EditorDocument'
-import EventEmitterClass from "./lib/event_emitter"
-import Tokenizer from './Tokenizer'
+import Editor from './Editor';
+import EditorDocument from './EditorDocument';
+import EventEmitterClass from "./lib/event_emitter";
+import Tokenizer from './Tokenizer';
+import Token from './Token';
 
 /**
- * Tokenizes the current [[EditorDocument `EditorDocument`]] in the background, and caches the tokenized rows for future use. 
+ * Tokenizes an EditorDocument in the background, and caches the tokenized rows for future use. 
  * 
  * If a certain row is changed, everything below that row is re-tokenized.
  *
  * @class BackgroundTokenizer
- **/
-
-/**
- * Creates a new `BackgroundTokenizer` object.
- * @param {Tokenizer} tokenizer The tokenizer to use
- * @param {Editor} editor The editor to associate with
- *
- * @constructor
- **/
+ * @extends EventEmitterClass
+ */
 export default class BackgroundTokenizer extends EventEmitterClass {
     /**
      * This is the value returned by setTimeout, so it's really a timer handle.
@@ -60,8 +54,15 @@ export default class BackgroundTokenizer extends EventEmitterClass {
     private currentLine: number = 0;
     private tokenizer: Tokenizer;
     private doc: EditorDocument;
-    private $worker;
-    constructor(tokenizer: Tokenizer, editor?) {
+    private $worker: () => void;
+
+    /**
+     * Creates a new `BackgroundTokenizer` object.
+     *
+     * @constructor
+     * @param tokenizer {Tokenizer} The tokenizer to use.
+     */
+    constructor(tokenizer: Tokenizer) {
         super();
         this.tokenizer = tokenizer;
 
@@ -84,7 +85,7 @@ export default class BackgroundTokenizer extends EventEmitterClass {
             var processedLines = 0;
             self.running = 0;
             while (currentLine < len) {
-                self.$tokenizeRow(currentLine);
+                self.tokenizeRow(currentLine);
                 endLine = currentLine;
                 do {
                     currentLine++;
@@ -103,60 +104,68 @@ export default class BackgroundTokenizer extends EventEmitterClass {
                 self.fireUpdateEvent(startLine, endLine);
         };
     }
+
     /**
      * Sets a new tokenizer for this object.
      *
-     * @param {Tokenizer} tokenizer The new tokenizer to use
-     *
-     **/
-    setTokenizer(tokenizer: Tokenizer) {
+     * @method setTokenizer
+     * @param tokenizer {Tokenizer} The new tokenizer to use.
+     * @return {void}
+     */
+    setTokenizer(tokenizer: Tokenizer): void {
+        // TODO: Why don't we stop first?
         this.tokenizer = tokenizer;
         this.lines = [];
         this.states = [];
 
+        // Start at row zero.
         this.start(0);
     }
 
     /**
      * Sets a new document to associate with this object.
-     * @param {EditorDocument} doc The new document to associate with
-     **/
-    setDocument(doc: EditorDocument) {
+     *
+     * @method setDocument
+     * @param doc {EditorDocument} The new document to associate with.
+     * @return {void}
+     */
+    setDocument(doc: EditorDocument): void {
         this.doc = doc;
         this.lines = [];
         this.states = [];
 
+        // TODO: Why do we stop? What is the lifecycle? Documentation!
         this.stop();
     }
 
     /**
-    * Fires whenever the background tokeniziers between a range of rows are going to be updated.
-    * 
-    * @event update
-    * @param {Object} e An object containing two properties, `first` and `last`, which indicate the rows of the region being updated.
-    *
-    **/
+     * Fires whenever the background tokeniziers between a range of rows are going to be updated.
+     * 
+     * @event update
+     * @param {Object} e An object containing two properties, `first` and `last`, which indicate the rows of the region being updated.
+     */
     /**
-     * Emits the `'update'` event. `firstRow` and `lastRow` are used to define the boundaries of the region to be updated.
-     * @param {number} firstRow The starting row region
-     * @param {number} lastRow The final row region
+     * Emits the `'update'` event.
+     * `firstRow` and `lastRow` are used to define the boundaries of the region to be updated.
      *
-     **/
-    fireUpdateEvent(firstRow: number, lastRow: number) {
-        var data = {
-            first: firstRow,
-            last: lastRow
-        };
+     * @method fireUpdateEvent
+     * @param firstRow {number} The starting row region.
+     * @param lastRow {number} The final row region.
+     * @return {void}
+     */
+    fireUpdateEvent(firstRow: number, lastRow: number): void {
+        var data = { first: firstRow, last: lastRow };
         this._signal("update", { data: data });
     }
 
     /**
      * Starts tokenizing at the row indicated.
      *
-     * @param {number} startRow The row to start at
-     *
-     **/
-    start(startRow: number) {
+     * @method start
+     * @param startRow {number} The row to start at.
+     * @return {void}
+     */
+    start(startRow: number): void {
         this.currentLine = Math.min(startRow || 0, this.currentLine, this.doc.getLength());
 
         // remove all cached items below this line
@@ -198,8 +207,10 @@ export default class BackgroundTokenizer extends EventEmitterClass {
     /**
      * Stops tokenizing.
      *
-     **/
-    stop() {
+     * @method stop
+     * @return {void}
+     */
+    stop(): void {
         if (this.running) {
             clearTimeout(this.running);
         }
@@ -215,7 +226,7 @@ export default class BackgroundTokenizer extends EventEmitterClass {
      *
      **/
     getTokens(row: number): { start: number; type: string; value: string }[] {
-        return this.lines[row] || this.$tokenizeRow(row);
+        return this.lines[row] || this.tokenizeRow(row);
     }
 
     /**
@@ -225,24 +236,29 @@ export default class BackgroundTokenizer extends EventEmitterClass {
      **/
     getState(row: number): string {
         if (this.currentLine == row) {
-            this.$tokenizeRow(row);
+            this.tokenizeRow(row);
         }
         return this.states[row] || "start";
     }
 
-    $tokenizeRow(row: number): { start: number; type: string; value: string }[] {
+    /**
+     * @method tokenizeRow
+     * @param row {number}
+     * @return {Token[]}
+     */
+    tokenizeRow(row: number): Token[] {
         var line: string = this.doc.getLine(row);
         var state = this.states[row - 1];
-        
-        // FIXME: There is no third argument in getLineTokens!
-        var data: { state: any; tokens: { start: number; type: string; value: string }[] } = this.tokenizer.getLineTokens(line, state/*, row*/);
+
+        var data: { state: any; tokens: Token[] } = this.tokenizer.getLineTokens(line, state);
 
         if (this.states[row] + "" !== data.state + "") {
             this.states[row] = data.state;
             this.lines[row + 1] = null;
             if (this.currentLine > row + 1)
                 this.currentLine = row + 1;
-        } else if (this.currentLine == row) {
+        }
+        else if (this.currentLine == row) {
             this.currentLine = row + 1;
         }
 

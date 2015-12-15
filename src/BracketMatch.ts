@@ -29,35 +29,48 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import TokenIterator from "../TokenIterator";
-import EditSession from "../EditSession";
-import Range from "../Range";
+import TokenIterator from "./TokenIterator";
+import EditSession from "./EditSession";
+import Position from "./Position";
+import Range from "./Range";
 
 /**
- * Utility service fo
+ * Maps an opening(closing) bracket string to the corresponding closing(opening) bracket.
+ */
+var $brackets: { [bracket: string]: string } = {
+    ")": "(",
+    "(": ")",
+    "]": "[",
+    "[": "]",
+    "{": "}",
+    "}": "{"
+}
+
+/**
+ * @class BracketMatch
  */
 export default class BracketMatch {
+
     /**
-     * Maps an opening(closing) bracket string to the corresponding closing(opening) bracket.
+     * @property editSession
+     * @type EditSession
+     * @private
      */
-    private $brackets;
-    private $host: EditSession;
-    constructor(host: EditSession) {
-        this.$brackets = {
-            ")": "(",
-            "(": ")",
-            "]": "[",
-            "[": "]",
-            "{": "}",
-            "}": "{"
-        };
-        this.$host = host;
+    private editSession: EditSession;
+
+    /**
+     * @class BracketMatch
+     * @constructor
+     * @param editSession {EditSession}
+     */
+    constructor(editSession: EditSession) {
+        this.editSession = editSession;
     }
 
-    findMatchingBracket(position: { row: number; column: number }, chr: string): { row: number; column: number } {
+    findMatchingBracket(position: Position, chr: string): Position {
         if (position.column === 0) return null;
 
-        var charBeforeCursor: string = chr || this.$host.getLine(position.row).charAt(position.column - 1);
+        var charBeforeCursor: string = chr || this.editSession.getLine(position.row).charAt(position.column - 1);
         if (charBeforeCursor === "") return null;
 
         var match = charBeforeCursor.match(/([\(\[\{])|([\)\]\}])/);
@@ -65,13 +78,13 @@ export default class BracketMatch {
             return null;
 
         if (match[1])
-            return this.$findClosingBracket(match[1], position);
+            return this.findClosingBracket(match[1], position);
         else
-            return this.$findOpeningBracket(match[2], position);
+            return this.findOpeningBracket(match[2], position);
     }
 
-    getBracketRange(pos: { row: number; column: number }): Range {
-        var line = this.$host.getLine(pos.row);
+    getBracketRange(pos: Position): Range {
+        var line = this.editSession.getLine(pos.row);
         var before = true;
         var range: Range;
 
@@ -87,7 +100,7 @@ export default class BracketMatch {
             return null;
 
         if (match[1]) {
-            var closingPos = this.$findClosingBracket(match[1], pos);
+            var closingPos = this.findClosingBracket(match[1], pos);
             if (!closingPos)
                 return null;
             range = Range.fromPoints(pos, closingPos);
@@ -96,8 +109,9 @@ export default class BracketMatch {
                 range.start.column--;
             }
             range['cursor'] = range.end;
-        } else {
-            var openingPos = this.$findOpeningBracket(match[2], pos);
+        }
+        else {
+            var openingPos = this.findOpeningBracket(match[2], pos);
             if (!openingPos)
                 return null;
             range = Range.fromPoints(openingPos, pos);
@@ -111,11 +125,11 @@ export default class BracketMatch {
         return range;
     }
 
-    $findOpeningBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
-        var openBracket = this.$brackets[bracket];
+    findOpeningBracket(bracket: string, position: Position, typeRe?: RegExp): Position {
+        var openBracket = $brackets[bracket];
         var depth = 1;
 
-        var iterator = new TokenIterator(this.$host, position.row, position.column);
+        var iterator = new TokenIterator(this.editSession, position.row, position.column);
         var token = iterator.getCurrentToken();
         if (!token)
             token = iterator.stepForward();
@@ -164,11 +178,11 @@ export default class BracketMatch {
         return null;
     }
 
-    $findClosingBracket(bracket: string, position: { row: number; column: number }, typeRe?: RegExp): { row: number; column: number } {
-        var closingBracket = this.$brackets[bracket];
+    findClosingBracket(bracket: string, position: Position, typeRe?: RegExp): Position {
+        var closingBracket = $brackets[bracket];
         var depth = 1;
 
-        var iterator = new TokenIterator(this.$host, position.row, position.column);
+        var iterator = new TokenIterator(this.editSession, position.row, position.column);
         var token = iterator.getCurrentToken();
         if (!token)
             token = iterator.stepForward();

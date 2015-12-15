@@ -29,8 +29,11 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import TokenIterator from "../TokenIterator";
+import Completion from "../Completion";
 import EditSession from "../EditSession";
+import Position from "../Position";
+import Token from "../Token";
+import TokenIterator from "../TokenIterator";
 
 var commonAttributes = [
     "accesskey",
@@ -233,13 +236,13 @@ var attributeMap = {
 
 var elements = Object.keys(attributeMap);
 
-function is(token, type) {
+function is(token: Token, type: string): boolean {
     return token.type.lastIndexOf(type + ".xml") > -1;
 }
 
-function findTagName(session: EditSession, pos: { row: number; column: number }) {
+function findTagName(session: EditSession, pos: Position): string {
     var iterator = new TokenIterator(session, pos.row, pos.column);
-    var token = iterator.getCurrentToken();
+    var token: Token = iterator.getCurrentToken();
     while (token && !is(token, "tag-name")) {
         token = iterator.stepBackward();
     }
@@ -252,7 +255,7 @@ export default class HtmlCompletions {
 
     }
 
-    getCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string): any {
+    getCompletions(state: string, session: EditSession, pos: Position, prefix: string): Completion[] {
         var token = session.getTokenAt(pos.row, pos.column);
 
         if (!token)
@@ -269,8 +272,8 @@ export default class HtmlCompletions {
         return [];
     }
 
-    getTagCompletions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
-        return elements.map(function(element) {
+    getTagCompletions(state: string, session: EditSession, pos: Position, prefix: string): Completion[] {
+        return elements.map(function(element: string) {
             return {
                 value: element,
                 meta: "tag",
@@ -279,7 +282,7 @@ export default class HtmlCompletions {
         });
     }
 
-    getAttributeCompetions(state: string, session: EditSession, pos: { row: number; column: number }, prefix: string) {
+    getAttributeCompetions(state: string, session: EditSession, pos: Position, prefix: string): Completion[] {
         var tagName = findTagName(session, pos);
         if (!tagName)
             return [];

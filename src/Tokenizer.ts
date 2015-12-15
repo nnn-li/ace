@@ -29,27 +29,30 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
+import Rule from "./Rule";
+
 // tokenizing lines longer than this makes editor very slow
 var MAX_TOKEN_COUNT = 1000;
+
 /**
  * This class takes a set of highlighting rules, and creates a tokenizer out of them. For more information, see [the wiki on extending highlighters](https://github.com/ajaxorg/ace/wiki/Creating-or-Extending-an-Edit-Mode#wiki-extendingTheHighlighter).
  * @class Tokenizer
  **/
-
-/**
- * Constructs a new tokenizer based on the given rules and flags.
- * @param {Object} rules The highlighting rules
- *
- * @constructor
- **/
 export default class Tokenizer {
     // Mode wants access to the states (rules)
-    public states: { caseInsensitive; defaultToken; onMatch; regex; splitRegex; token; tokenArray }[][];
+    public states: Rule[][];
     private regExps: { [state: string]: RegExp };
     private matchMappings;
     private tokenArray;
     private splitRegex: RegExp;
     private token;
+
+    /**
+     * Constructs a new tokenizer based on the given rules and flags.
+     *
+     * @constructor
+     * @param {Object} rules The highlighting rules
+     */
     constructor(rules) {
         this.states = rules;
 
@@ -223,10 +226,11 @@ export default class Tokenizer {
     }
 
     /**
-    * Returns an object containing two properties: `tokens`, which contains all the tokens; and `state`, the current state.
+    * Returns an object containing two properties:
+    * `tokens`, which contains all the tokens; and `state`, the current state.
     * @return {Object}
     **/
-    public getLineTokens(line: string, startState) {
+    public getLineTokens(line: string, startState: string) {
         var stack;
         if (startState && typeof startState !== 'string') {
             stack = startState.slice(0);
@@ -240,7 +244,7 @@ export default class Tokenizer {
             stack = [];
         }
 
-        var currentState = startState || "start";
+        var currentState: string = startState || "start";
         var state = this.states[currentState];
         if (!state) {
             currentState = "start";
