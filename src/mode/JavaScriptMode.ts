@@ -132,7 +132,10 @@ export default class JavaScriptMode extends TextMode {
 
     createWorker(session: EditSession): WorkerClient {
 
-        var worker = new WorkerClient("lib/worker/worker-systemjs.js");
+        // FIXME: This is now a URL, not a module name to be loaded through SystemJS.
+        // Therefore, we will probably need to inject in the path.
+        var path = 'jspm_packages/github/geometryzen/ace2016@0.1.22';
+        var worker = new WorkerClient(`${path}/worker/worker-systemjs.js`);
 
         worker.on("initAfter", function() {
             worker.attachToDocument(session.getDocument());
@@ -146,8 +149,11 @@ export default class JavaScriptMode extends TextMode {
             session.clearAnnotations();
         });
 
+        // FIXME: This is a module name
         worker.init("lib/mode/JavaScriptWorker");
 
+        // FIXME: We are returning the WorkerClient before the thread has been initialized.
+        // We could use a Promise here?
         return worker;
     }
 }

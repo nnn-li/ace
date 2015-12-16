@@ -1157,6 +1157,8 @@ export default class EditSession extends EventEmitterClass {
      */
     private $startWorker(): void {
         try {
+            // FIXME? Notice that the worker has been created but may not be ready
+            // to receive messages yet.
             this.$worker = this.$mode.createWorker(this);
         }
         catch (e) {
@@ -3541,8 +3543,9 @@ defineOptions(EditSession.prototype, "session", {
             this.$useWorker = useWorker;
 
             this.$stopWorker();
-            if (useWorker)
+            if (useWorker) {
                 this.$startWorker();
+            }
         },
         initialValue: true
     },
