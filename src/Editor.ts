@@ -70,7 +70,7 @@ import CursorRange from './CursorRange'
 import EventEmitterClass from "./lib/event_emitter";
 import CommandManager from "./commands/CommandManager";
 import defaultCommands from "./commands/default_commands";
-import {defineOptions, loadModule, resetOptions, _signal} from "./config";
+import {defineOptions, loadModule, resetOptions} from "./config";
 import TokenIterator from "./TokenIterator";
 import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
 import VirtualRenderer from './VirtualRenderer';
@@ -218,7 +218,8 @@ export default class Editor extends EventEmitterClass {
 
         this.setSession(session);
         resetOptions(this);
-        _signal("editor", this);
+        // FIXME: This was a signal to a global config object.
+        // _signal("editor", this);
     }
 
     cancelMouseContextMenu() {

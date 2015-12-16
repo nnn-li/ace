@@ -54,7 +54,7 @@
 
 import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
-import {_signal, defineOptions, loadModule, resetOptions} from "./config";
+import {defineOptions, loadModule, resetOptions} from "./config";
 import Annotation from './Annotation';
 import Delta from "./Delta";
 import EventEmitterClass from "./lib/event_emitter";
@@ -253,7 +253,8 @@ export default class EditSession extends EventEmitterClass {
         this.selection = new Selection(this);
 
         resetOptions(this);
-        _signal("session", this);
+        // FIXME: This was a signal to a global config object.
+        // _signal("session", this);
     }
 
     /**

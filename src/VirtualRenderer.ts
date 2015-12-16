@@ -53,7 +53,7 @@
 "use strict";
 
 import {addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElement, removeCssClass, setCssClass} from "./lib/dom";
-import {_emit, defineOptions, loadModule, resetOptions} from "./config";
+import {defineOptions, loadModule, resetOptions} from "./config";
 import {isOldIE} from "./lib/useragent";
 import Annotation from './Annotation';
 import Gutter from "./layer/Gutter";
@@ -306,7 +306,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.updateCharacterSize();
         this.setPadding(4);
         resetOptions(this);
-        _emit("renderer", this);
+        // FIXME: This was a signal to a global config object.
+        // Why do Editor and EditSession signal while this emits?
+        //_emit("renderer", this);
     }
 
     /**
