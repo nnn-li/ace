@@ -1,7 +1,10 @@
 /// <reference path="../../typings/systemjs.d.ts" />
+/**
+ * Remember! This is a Web Worker. SystemJS has not been loaded yet.
+ */
 "no use strict";
 ;
-(function(window/*: Window*/) {
+(function(window/*: WorkerGlobalScope*/) {
   if (typeof window.window !== 'undefined' && window.document) {
     return;
   }
@@ -15,8 +18,10 @@
     window.console.log =
     window.console.trace = window.console;
 
-  importScripts('/jspm_packages/system.js', '/config.js');
-  // importScripts('../../jspm_packages/system.js', '../../config.js');
+  // importScripts is synchronous and scripts are loaded in argument order.
+  // importScripts('jspm_packages/system.js', 'config.js');
+  // importScripts('/jspm_packages/system.js', '/config.js');
+  importScripts('../../jspm_packages/system.js', '../../config.js');
 
   window.window = window;
 
@@ -97,6 +102,7 @@
       }
     }
     else if (msg.init) {
+      // I'm using a 
       System.import('jspm_packages/npm/typescript@1.7.3/lib/typescriptServices.js')
       .then(function(ts) {
         initDelegate(msg.module, ts);

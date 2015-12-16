@@ -137,7 +137,6 @@
 
     "./src/worker/Mirror.ts",
     "./src/worker/WorkerClient.ts",
-    "./src/worker/worker-amd.ts",
     "./src/worker/worker-systemjs.ts",
 
     "./src/ace.ts",
@@ -183,7 +182,6 @@
     "./src/theme/twilight.ts",
 
     "./node_modules/typescript/lib/lib.es6.d.ts",
-    "./node_modules/typescript/lib/typescriptServices.d.ts",
     "./typings/jshint.d.ts",
     "./typings/tsd.d.ts"
   ]
