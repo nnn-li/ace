@@ -15,8 +15,8 @@
     window.console.log =
     window.console.trace = window.console;
 
-  //  importScripts('/jspm_packages/system.js', '/config.js');
-  importScripts('../../jspm_packages/system.js', '../../config.js');
+  importScripts('/jspm_packages/system.js', '/config.js');
+  // importScripts('../../jspm_packages/system.js', '../../config.js');
 
   window.window = window;
 
