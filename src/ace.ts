@@ -61,13 +61,13 @@ import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
 
 // The following require()s are for inclusion in the built ace file
-import HtmlMode from "./mode/HtmlMode";
-import HtmlWorker from "./mode/HtmlWorker";
-import JavaScriptMode from "./mode/JavaScriptMode";
-import JavaScriptWorker from "./mode/JavaScriptWorker";
-import TextMode from "./mode/TextMode";
-import TypeScriptMode from "./mode/TypeScriptMode";
-import TypeScriptWorker from "./mode/TypeScriptWorker";
+//import HtmlMode from "./mode/HtmlMode";
+//import HtmlWorker from "./mode/HtmlWorker";
+//import JavaScriptMode from "./mode/JavaScriptMode";
+//import JavaScriptWorker from "./mode/JavaScriptWorker";
+//import TextMode from "./mode/TextMode";
+//import TypeScriptMode from "./mode/TypeScriptMode";
+//import TypeScriptWorker from "./mode/TypeScriptWorker";
 
 /**
  * The main class required to set up an Ace instance in the browser.
@@ -115,7 +115,7 @@ export function edit(source: string | HTMLElement): Editor {
     }
 
     var editSession = createEditSession(new Document(value));
-    editSession.setLanguageMode(new TypeScriptMode());
+    // editSession.setLanguageMode(new TypeScriptMode());
 
     var editor = new Editor(new VirtualRenderer(element), editSession);
 
