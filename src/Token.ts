@@ -31,7 +31,7 @@ interface Token {
      * @property start
      * @type number
      */
-    start: number;
+    start?: number;
 
     /**
      * @property type

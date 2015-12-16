@@ -56,7 +56,9 @@ import {createElement} from "../lib/dom";
 import {stringRepeat} from "../lib/lang";
 import EditSession from "../EditSession";
 import EventEmitterClass from "../lib/event_emitter";
+import FoldLine from "../FoldLine";
 import FontMetrics from "../layer/FontMetrics";
+import Token from "../Token";
 
 /**
  * @class Text
@@ -418,7 +420,7 @@ export default class Text extends EventEmitterClass {
     }
 
     // FIXME; How can max be optional if it is always used?
-    private renderIndentGuide(stringBuilder: string[], value: string, max?: number) {
+    private renderIndentGuide(stringBuilder: (number | string)[], value: string, max?: number): string {
         var cols = value.search(this.$indentGuideRe);
         if (cols <= 0 || cols >= max)
             return value;
@@ -433,7 +435,7 @@ export default class Text extends EventEmitterClass {
         return value;
     }
 
-    private $renderWrappedLine(stringBuilder, tokens: { value: string }[], splits: number[], onlyContents) {
+    private $renderWrappedLine(stringBuilder: (number | string)[], tokens: Token[], splits: number[], onlyContents) {
         var chars = 0;
         var split = 0;
         var splitChars = splits[0];
@@ -499,14 +501,15 @@ export default class Text extends EventEmitterClass {
     }
 
     // row is either first row of foldline or not in fold
-    private $renderLine(stringBuilder, row: number, onlyContents, foldLine) {
-        if (!foldLine && foldLine != false)
+    private $renderLine(stringBuilder: (number | string)[], row: number, onlyContents: boolean, foldLine/*: FoldLine|boolean*/) {
+        if (!foldLine && foldLine != false) {
             foldLine = this.session.getFoldLine(row);
+        }
 
         if (foldLine)
-            var tokens: any[] = this.$getFoldLineTokens(row, foldLine);
+            var tokens: Token[] = this.$getFoldLineTokens(row, foldLine);
         else
-            var tokens: any[] = this.session.getTokens(row);
+            var tokens: Token[] = this.session.getTokens(row);
 
 
         if (!onlyContents) {
@@ -518,7 +521,8 @@ export default class Text extends EventEmitterClass {
             );
         }
 
-        if (tokens.length) {
+        // We may not get tokens if there is no language mode.
+        if (tokens && tokens.length) {
             var splits: number[] = this.session.getRowSplitData(row);
             if (splits && splits.length)
                 this.$renderWrappedLine(stringBuilder, tokens, splits, onlyContents);
@@ -540,11 +544,11 @@ export default class Text extends EventEmitterClass {
             stringBuilder.push("</div>");
     }
 
-    private $getFoldLineTokens(row: number, foldLine): {}[] {
+    private $getFoldLineTokens(row: number, foldLine: FoldLine): Token[] {
         var session = this.session;
-        var renderTokens: { type: string; value: string }[] = [];
+        var renderTokens: Token[] = [];
 
-        function addTokens(tokens: { type: string; value: string }[], from: number, to: number) {
+        function addTokens(tokens: Token[], from: number, to: number): void {
             var idx = 0, col = 0;
             while ((col + tokens[idx].value.length) < from) {
                 col += tokens[idx].value.length;
@@ -602,7 +606,7 @@ export default class Text extends EventEmitterClass {
         return renderTokens;
     }
 
-    private $useLineGroups() {
+    private $useLineGroups(): boolean {
         // For the updateLines function to work correctly, it's important that the
         // child nodes of this.element correspond on a 1-to-1 basis to rows in the
         // document (as distinct from lines on the screen). For sessions that are
@@ -611,7 +615,11 @@ export default class Text extends EventEmitterClass {
         return this.session.getUseWrapMode();
     }
 
-    public destroy() {
+    /**
+     * @method destroy
+     * @return {void}
+     */
+    public destroy(): void {
         clearInterval(this.$pollSizeChangesTimer);
         if (this.$measureNode)
             this.$measureNode.parentNode.removeChild(this.$measureNode);
