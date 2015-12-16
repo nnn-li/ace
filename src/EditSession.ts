@@ -475,26 +475,31 @@ export default class EditSession extends EventEmitterClass {
      * @param {Number} column The column number to retrieve from.
      */
     public getTokenAt(row: number, column?: number): Token {
-        var tokens: Token[] = this.bgTokenizer.getTokens(row);
-        var token: Token;
-        var c = 0;
-        if (column == null) {
-            i = tokens.length - 1;
-            c = this.getLine(row).length;
+        if (this.bgTokenizer) {
+            var tokens: Token[] = this.bgTokenizer.getTokens(row);
+            var token: Token;
+            var c = 0;
+            if (column == null) {
+                i = tokens.length - 1;
+                c = this.getLine(row).length;
+            }
+            else {
+                for (var i = 0; i < tokens.length; i++) {
+                    c += tokens[i].value.length;
+                    if (c >= column)
+                        break;
+                }
+            }
+            token = tokens[i];
+            if (!token)
+                return null;
+            token.index = i;
+            token.start = c - token.value.length;
+            return token;
         }
         else {
-            for (var i = 0; i < tokens.length; i++) {
-                c += tokens[i].value.length;
-                if (c >= column)
-                    break;
-            }
+            return void 0;
         }
-        token = tokens[i];
-        if (!token)
-            return null;
-        token.index = i;
-        token.start = c - token.value.length;
-        return token;
     }
 
     /**
