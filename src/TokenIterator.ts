@@ -119,23 +119,28 @@ export default class TokenIterator {
      *                 Otherwise, it returns the tokenized string.
      */
     stepForward(): Token {
-        this.$tokenIndex += 1;
-        var rowCount: number;
-        while (this.$tokenIndex >= this.$rowTokens.length) {
-            this.$row += 1;
-            if (!rowCount) {
-                rowCount = this.session.getLength();
-            }
-            if (this.$row >= rowCount) {
-                this.$row = rowCount - 1;
-                return null;
+        if (this.$rowTokens) {
+            this.$tokenIndex += 1;
+            var rowCount: number;
+            while (this.$tokenIndex >= this.$rowTokens.length) {
+                this.$row += 1;
+                if (!rowCount) {
+                    rowCount = this.session.getLength();
+                }
+                if (this.$row >= rowCount) {
+                    this.$row = rowCount - 1;
+                    return null;
+                }
+
+                this.$rowTokens = this.session.getTokens(this.$row);
+                this.$tokenIndex = 0;
             }
 
-            this.$rowTokens = this.session.getTokens(this.$row);
-            this.$tokenIndex = 0;
+            return this.$rowTokens[this.$tokenIndex];
         }
-
-        return this.$rowTokens[this.$tokenIndex];
+        else {
+            return void 0;
+        }
     }
 
     /** 
