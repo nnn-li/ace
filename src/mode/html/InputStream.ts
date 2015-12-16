@@ -29,12 +29,13 @@ export default class InputStream {
             ch = '\n';
         return ch;
     }
-    advance(amount) {
+    advance(amount: number): number {
         this.start += amount;
         if (this.start >= this.data.length) {
             if (!this.eof) throw InputStream.DRAIN;
             return InputStream.EOF;
-        } else {
+        }
+        else {
             if (this.committed > this.data.length / 2) {
                 // Sliiiide
                 this.lastLocation = this.location();
@@ -56,16 +57,18 @@ export default class InputStream {
             return '';
         }
     }
-    matchUntil(re) {
+    matchUntil(re): string {
         var m, s;
         s = this.slice();
         if (s === InputStream.EOF) {
             return '';
-        } else if (m = new RegExp(re + (this.eof ? "|$" : "")).exec(s)) {
+        }
+        else if (m = new RegExp(re + (this.eof ? "|$" : "")).exec(s)) {
             var t = this.data.slice(this.start, this.start + m.index);
             this.advance(m.index);
             return t.replace(/\r/g, '\n').replace(/\n{2,}/g, '\n');
-        } else {
+        }
+        else {
             throw InputStream.DRAIN;
         }
     }

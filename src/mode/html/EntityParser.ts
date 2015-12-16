@@ -15,34 +15,21 @@ Object.keys(entities).forEach(function(entityKey) {
 export class EntityParserClass {
     constructor() {
     }
-    consumeEntity(buffer: InputStream, tokenizer: Tokenizer, additionalAllowedCharacter?: string): any {
+    consumeEntity(buffer: InputStream, tokenizer: Tokenizer, additionalAllowedCharacter?: string): string | boolean {
         var decodedCharacter = '';
         var consumedCharacters = '';
         var ch = buffer.char();
-        if (ch === InputStream.EOF)
-            return false;
-        consumedCharacters += ch;
-        if (ch == '\t' || ch == '\n' || ch == '\v' || ch == ' ' || ch == '<' || ch == '&') {
-            buffer.unget(consumedCharacters);
-            return false;
-        }
-        if (additionalAllowedCharacter === ch) {
-            buffer.unget(consumedCharacters);
-            return false;
-        }
-        if (ch == '#') {
-            ch = buffer.shift(1);
-            if (ch === InputStream.EOF) {
-                tokenizer._parseError("expected-numeric-entity-but-got-eof");
+        if (typeof ch === 'string') {
+            consumedCharacters += ch;
+            if (ch == '\t' || ch == '\n' || ch == '\v' || ch == ' ' || ch == '<' || ch == '&') {
                 buffer.unget(consumedCharacters);
                 return false;
             }
-            consumedCharacters += ch;
-            var radix = 10;
-            var isDigit = isDecimalDigit;
-            if (ch == 'x' || ch == 'X') {
-                radix = 16;
-                isDigit = isHexDigit;
+            if (additionalAllowedCharacter === ch) {
+                buffer.unget(consumedCharacters);
+                return false;
+            }
+            if (ch == '#') {
                 ch = buffer.shift(1);
                 if (ch === InputStream.EOF) {
                     tokenizer._parseError("expected-numeric-entity-but-got-eof");
@@ -50,72 +37,93 @@ export class EntityParserClass {
                     return false;
                 }
                 consumedCharacters += ch;
+                var radix = 10;
+                var isDigit = isDecimalDigit;
+                if (ch == 'x' || ch == 'X') {
+                    radix = 16;
+                    isDigit = isHexDigit;
+                    ch = buffer.shift(1);
+                    if (ch === InputStream.EOF) {
+                        tokenizer._parseError("expected-numeric-entity-but-got-eof");
+                        buffer.unget(consumedCharacters);
+                        return false;
+                    }
+                    consumedCharacters += ch;
+                }
+                if (isDigit(ch)) {
+                    var code: any = '';
+                    while (ch !== InputStream.EOF && isDigit(ch)) {
+                        code += ch;
+                        ch = buffer.char();
+                    }
+                    code = parseInt(code, radix);
+                    var replacement = this.replaceEntityNumbers(code);
+                    if (replacement) {
+                        tokenizer._parseError("invalid-numeric-entity-replaced");
+                        code = replacement;
+                    }
+                    if (code > 0xFFFF && code <= 0x10FFFF) {
+                        // we substract 0x10000 from cp to get a 20-bits number
+                        // in the range 0..0xFFFF
+                        code -= 0x10000;
+                        // we add 0xD800 to the number formed by the first 10 bits
+                        // to give the first byte
+                        var first = ((0xffc00 & code) >> 10) + 0xD800;
+                        // we add 0xDC00 to the number formed by the low 10 bits
+                        // to give the second byte
+                        var second = (0x3ff & code) + 0xDC00;
+                        decodedCharacter = String.fromCharCode(first, second);
+                    } else
+                        decodedCharacter = String.fromCharCode(code);
+                    if (ch !== ';') {
+                        tokenizer._parseError("numeric-entity-without-semicolon");
+                        buffer.unget(ch);
+                    }
+                    return decodedCharacter;
+                }
+                buffer.unget(consumedCharacters);
+                tokenizer._parseError("expected-numeric-entity");
+                return false;
             }
-            if (isDigit(ch)) {
-                var code: any = '';
-                while (ch !== InputStream.EOF && isDigit(ch)) {
-                    code += ch;
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                var mostRecentMatch = '';
+                while (namedEntityPrefixes[consumedCharacters]) {
+                    if (entities[consumedCharacters]) {
+                        mostRecentMatch = consumedCharacters;
+                    }
+                    if (ch == ';')
+                        break;
                     ch = buffer.char();
+                    if (ch === InputStream.EOF)
+                        break;
+                    consumedCharacters += ch;
                 }
-                code = parseInt(code, radix);
-                var replacement = this.replaceEntityNumbers(code);
-                if (replacement) {
-                    tokenizer._parseError("invalid-numeric-entity-replaced");
-                    code = replacement;
+                if (!mostRecentMatch) {
+                    tokenizer._parseError("expected-named-entity");
+                    buffer.unget(consumedCharacters);
+                    return false;
                 }
-                if (code > 0xFFFF && code <= 0x10FFFF) {
-                    // we substract 0x10000 from cp to get a 20-bits number
-                    // in the range 0..0xFFFF
-                    code -= 0x10000;
-                    // we add 0xD800 to the number formed by the first 10 bits
-                    // to give the first byte
-                    var first = ((0xffc00 & code) >> 10) + 0xD800;
-                    // we add 0xDC00 to the number formed by the low 10 bits
-                    // to give the second byte
-                    var second = (0x3ff & code) + 0xDC00;
-                    decodedCharacter = String.fromCharCode(first, second);
-                } else
-                    decodedCharacter = String.fromCharCode(code);
-                if (ch !== ';') {
-                    tokenizer._parseError("numeric-entity-without-semicolon");
-                    buffer.unget(ch);
+                decodedCharacter = entities[mostRecentMatch];
+                if (ch === ';' || !additionalAllowedCharacter || !(isAlphaNumeric(ch) || ch === '=')) {
+                    if (consumedCharacters.length > mostRecentMatch.length) {
+                        buffer.unget(consumedCharacters.substring(mostRecentMatch.length));
+                    }
+                    if (ch !== ';') {
+                        tokenizer._parseError("named-entity-without-semicolon");
+                    }
+                    return decodedCharacter;
                 }
-                return decodedCharacter;
-            }
-            buffer.unget(consumedCharacters);
-            tokenizer._parseError("expected-numeric-entity");
-            return false;
-        }
-        if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
-            var mostRecentMatch = '';
-            while (namedEntityPrefixes[consumedCharacters]) {
-                if (entities[consumedCharacters]) {
-                    mostRecentMatch = consumedCharacters;
-                }
-                if (ch == ';')
-                    break;
-                ch = buffer.char();
-                if (ch === InputStream.EOF)
-                    break;
-                consumedCharacters += ch;
-            }
-            if (!mostRecentMatch) {
-                tokenizer._parseError("expected-named-entity");
                 buffer.unget(consumedCharacters);
                 return false;
             }
-            decodedCharacter = entities[mostRecentMatch];
-            if (ch === ';' || !additionalAllowedCharacter || !(isAlphaNumeric(ch) || ch === '=')) {
-                if (consumedCharacters.length > mostRecentMatch.length) {
-                    buffer.unget(consumedCharacters.substring(mostRecentMatch.length));
-                }
-                if (ch !== ';') {
-                    tokenizer._parseError("named-entity-without-semicolon");
-                }
-                return decodedCharacter;
-            }
-            buffer.unget(consumedCharacters);
-            return false;
+
+        }
+        else if (typeof ch === 'number') {
+            if (ch === InputStream.EOF)
+                return false;
+        }
+        else {
+            throw new TypeError("InputStream.char() must return string or m=number");
         }
     }
     replaceEntityNumbers(c: number) {

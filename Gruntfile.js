@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['dist', 'amd', 'cjs', 'documentation']
+      src: ['dist', 'amd', 'system', 'documentation']
     },
 
     exec: {
@@ -46,7 +46,15 @@ module.exports = function(grunt) {
         dest: 'dist/<%= pkg.name %>.min.js'
       }
     },
+    concat: {
+      options: {
 
+      },
+      dist: {
+        src: ['system/**/*.js'],
+        dest: 'dist/deuce.js'
+      }
+    },
     copy: {
       main: {
         expand: true,
@@ -152,14 +160,14 @@ module.exports = function(grunt) {
   }
 
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
-  // Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-yuidoc'); // enable the YUIDocs task.
+  grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-complexity');
   grunt.loadNpmTasks('grunt-exec');
 
@@ -186,8 +194,8 @@ module.exports = function(grunt) {
       return ['--module amd'].concat(xs);
   }
 
-  function COMMONJS(xs) {
-      return ['--module commonjs'].concat(xs);
+  function SYSTEM(xs) {
+      return ['--module system'].concat(xs);
   }
 
   function noImplicitAny(xs) {
@@ -203,22 +211,26 @@ module.exports = function(grunt) {
   }
 
   var argsAMD = AMD(ES5(compilerSources));
-  var argsCJS = COMMONJS(ES5(compilerSources));
+  var argsSYSTEM = SYSTEM(ES5(compilerSources));
 
-  grunt.registerTask('buildAMD', "Build", function(){
+  grunt.registerTask('tscAMD', "Build", function(){
     var done = this.async();
-    tsc(['--declaration'].concat(outDir('amd', argsAMD)).join(" ")).then(function(){
+    tsc(['--declaration'].concat(outDir('amd', argsAMD)).join(" "))
+    .then(function(){
       done(true);
-    }).catch(function(){
+    })
+    .catch(function(){
       done(false);
     });
   });
 
-  grunt.registerTask('buildCJS', "Build", function(){
+  grunt.registerTask('tscSYSTEM', "Build", function(){
     var done = this.async();
-    tsc(['--declaration'].concat(outDir('cjs', argsCJS)).join(" ")).then(function(){
+    tsc(['--declaration'].concat(outDir('system', argsSYSTEM)).join(" "))
+    .then(function(){
       done(true);
-    }).catch(function(){
+    })
+    .catch(function(){
       done(false);
     });
   });
@@ -230,7 +242,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
-  grunt.registerTask('style', ['clean', 'buildAMD', 'jshint', 'docs', 'copy', 'requirejs', 'uglify']);
+  grunt.registerTask('amd', ['clean', 'tscAMD', 'docs', 'copy', 'requirejs', 'uglify']);
 
-  grunt.registerTask('default', ['clean', 'buildAMD', 'docs', 'copy', 'requirejs', 'uglify']);
+  grunt.registerTask('default', ['clean', 'tscSYSTEM', 'docs', 'copy', 'concat', 'uglify']);
 };
