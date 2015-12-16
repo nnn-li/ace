@@ -2,7 +2,7 @@
   "name": "ace2016",
   "version": "0.1.18",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
-  "main": "lib/ace.js",
+  "main": "dist/ace.js",
   "bin": {},
   "homepage": "https://github.com/geometryzen/ace2016",
   "author": "david.geo.holmes@gmail.com",

@@ -1,7 +1,6 @@
 *.log
 amd/
 system/
-dist/
 documentation/
 jspm_packages/
 lib/
