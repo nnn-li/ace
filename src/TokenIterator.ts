@@ -145,7 +145,12 @@ export default class TokenIterator {
      * @return {Token}
      */
     getCurrentToken(): Token {
-        return this.$rowTokens[this.$tokenIndex];
+        if (this.$rowTokens) {
+            return this.$rowTokens[this.$tokenIndex];
+        }
+        else {
+            return void 0;
+        }
     }
 
     /**
