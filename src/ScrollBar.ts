@@ -30,11 +30,12 @@
 "use strict";
 
 import { createElement } from "./lib/dom";
-import { addListener } from "./lib/event";
+import { addListener, preventDefault } from "./lib/event";
 import EventEmitterClass from "./lib/event_emitter";
 
 /**
  * An abstract class representing a native scrollbar control.
+ *
  * @class ScrollBar
  * @extends EventEmitterClass
  */
@@ -66,7 +67,7 @@ export default class ScrollBar extends EventEmitterClass {
         this.setVisible(false);
         this.skipEvent = false;
 
-        addListener(this.element, "mousedown", event.preventDefault);
+        addListener(this.element, "mousedown", preventDefault);
     }
 
     /**

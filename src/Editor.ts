@@ -569,6 +569,19 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
+     * @method setTheme
+     * @param themeName {string}
+     * @return {void}
+     */
+    setTheme(themeName: string): void {
+        this.importThemeLink(themeName)
+            .then(themeLink => this.renderer.setThemeLink(themeLink))
+            .catch(function(reason) {
+                throw new Error(`setTheme failed. Reason: ${reason}`);
+            });
+    }
+
+    /**
      * {:VirtualRenderer.getTheme}
      *
      * @return {String} The set theme

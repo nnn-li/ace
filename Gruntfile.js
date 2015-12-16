@@ -242,7 +242,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
-  grunt.registerTask('amd', ['clean', 'tscAMD', 'docs', 'copy', 'requirejs', 'uglify']);
+  grunt.registerTask('classic', ['clean', 'tscAMD', 'docs', 'copy', 'requirejs', 'uglify']);
 
   grunt.registerTask('default', ['clean', 'tscSYSTEM', 'docs', 'copy', 'concat', 'uglify']);
 };

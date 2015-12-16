@@ -42,6 +42,7 @@ import HtmlMode from "./mode/HtmlMode";
 import HtmlWorker from "./mode/HtmlWorker";
 import JavaScriptMode from "./mode/JavaScriptMode";
 import JavaScriptWorker from "./mode/JavaScriptWorker";
+import TextMode from "./mode/TextMode";
 import TypeScriptMode from "./mode/TypeScriptMode";
 import TypeScriptWorker from "./mode/TypeScriptWorker";
 
@@ -91,7 +92,7 @@ export function edit(source: string | HTMLElement): Editor {
     }
 
     var editSession = createEditSession(new Document(value));
-    editSession.setMode(new TypeScriptMode());
+    editSession.setLanguageMode(new TypeScriptMode());
 
     var editor = new Editor(new VirtualRenderer(element), editSession);
 

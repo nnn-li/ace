@@ -985,13 +985,31 @@ export default class EditSession extends EventEmitterClass {
      * This method also emits the `'changeMode'` event.
      * If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.
      *
-     * @method setMode
-     * @param mode {LanguageMode | string} Set a new language mode instance or module name.
+     * @method setLanguageMode
+     * @param mode {LanguageMode} Set a new language mode instance or module name.
      * @param {cb} optional callback
      * @return {void}
      */
-    public setMode(mode: LanguageMode): void {
+    public setLanguageMode(mode: LanguageMode): void {
         return this.$onChangeMode(mode, false);
+    }
+
+    /**
+     * Sets a new langauge mode for the `EditSession`.
+     * This method also emits the `'changeMode'` event.
+     * If a [[BackgroundTokenizer `BackgroundTokenizer`]] is set, the `'tokenizerUpdate'` event is also emitted.
+     *
+     * @method setMode
+     * @param modeName {string} Set a new language module name.
+     * @param {cb} optional callback
+     * @return {void}
+     */
+    public setMode(modeName: string): void {
+        this.importMode(modeName)
+            .then(mode => this.setLanguageMode(mode))
+            .catch(function(reason) {
+                throw new Error(`setMode failed. Reason: ${reason}`);
+            })
     }
 
     /**
@@ -1044,6 +1062,8 @@ export default class EditSession extends EventEmitterClass {
     }
 
     private $onChangeMode(mode: LanguageMode, isPlaceholder: boolean): void {
+
+        console.log(`EditSession.$onChangeMode(${mode.$id})`);
 
         if (!isPlaceholder) {
             this.$modeId = mode.$id;
@@ -3492,7 +3512,8 @@ defineOptions(EditSession.prototype, "session", {
         initialValue: 1
     },
     useWorker: {
-        set: function(useWorker) {
+        set: function(useWorker: boolean) {
+            console.log(`EditSession.setUseWorker(${useWorker})`);
             this.$useWorker = useWorker;
 
             this.$stopWorker();

@@ -33,7 +33,7 @@ var editSession = new EditSession(doc);
 //editSession.setMode(text);
 editSession.importMode('lib/mode/JavaScriptMode')
     .then(function(mode: LanguageMode) {
-        editSession.setMode(mode);
+        editSession.setLanguageMode(mode);
     }).catch(function(reason) {
         console.warn(`importMode() failed. Reason:  ${reason}`);
     });

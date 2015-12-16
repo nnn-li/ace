@@ -133,7 +133,12 @@ export default class WorkerClient extends EventEmitterClass {
         }
     }
 
-    attachToDocument(doc: Document) {
+    /**
+     * @method attachToDocument
+     * @param doc {Document}
+     * @return {void}
+     */
+    attachToDocument(doc: Document): void {
         if (this.$doc) {
             this.terminate();
         }
@@ -142,9 +147,19 @@ export default class WorkerClient extends EventEmitterClass {
         doc.on('change', this.changeListener);
     }
 
-    detachFromDocument() {
-        this.$doc.off('change', this.changeListener);
-        this.$doc = null;
+    /**
+     * @method detachFromDocument
+     * @return {void}
+     * @private
+     */
+    private detachFromDocument(): void {
+        if (this.$doc) {
+            this.$doc.off('change', this.changeListener);
+            this.$doc = null;
+        }
+        else {
+            console.warn(`WorkerClient.detachFromDocument called with this.$doc => ${this.$doc}`);
+        }
     }
 
     /**

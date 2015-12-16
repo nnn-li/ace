@@ -324,6 +324,7 @@ export default class TextMode implements LanguageMode {
     }
 
     createWorker(session: EditSession): WorkerClient {
+        console.warn("TextMode does not create a WorkerClient");
         return null;
     }
 
