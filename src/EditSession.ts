@@ -369,7 +369,9 @@ export default class EditSession extends EventEmitterClass {
             this.$informUndoManager.schedule();
         }
 
-        this.bgTokenizer.updateOnChange(delta);
+        if (this.bgTokenizer) {
+            this.bgTokenizer.updateOnChange(delta);
+        }
         this._signal("change", e);
     }
 
@@ -441,7 +443,12 @@ export default class EditSession extends EventEmitterClass {
      * @return {string}
      */
     public getState(row: number): string {
-        return this.bgTokenizer.getState(row);
+        if (this.bgTokenizer) {
+            return this.bgTokenizer.getState(row);
+        }
+        else {
+            return void 0;
+        }
     }
 
     /**
@@ -452,7 +459,12 @@ export default class EditSession extends EventEmitterClass {
      * @return {Token[]} An array of <code>Token</code>s.
      */
     public getTokens(row: number): Token[] {
-        return this.bgTokenizer.getTokens(row);
+        if (this.bgTokenizer) {
+            return this.bgTokenizer.getTokens(row);
+        }
+        else {
+            return void 0;
+        }
     }
 
     /**
