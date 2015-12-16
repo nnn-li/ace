@@ -673,11 +673,13 @@ export default class Editor extends EventEmitterClass {
             var pos = self.session.findMatchingBracket(self.getCursorPosition());
             if (pos) {
                 var range = new Range(pos.row, pos.column, pos.row, pos.column + 1);
-            } else if (self.session.$mode.getMatching) {
+            }
+            else if (self.session.$mode && self.session.$mode.getMatching) {
                 var range: Range = self.session.$mode.getMatching(self.session);
             }
-            if (range)
+            if (range) {
                 self.session.$bracketHighlight = self.session.addMarker(range, "ace_bracket", "text");
+            }
         }, 50);
     }
 
