@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['dist', 'amd', 'system', 'documentation']
+      src: ['dist', 'amd', 'system', 'lib', 'documentation']
     },
 
     exec: {
@@ -186,16 +186,12 @@ module.exports = function(grunt) {
       "./typings/systemjs.d.ts"
   ];
 
-  function ES5(xs) {
-      return ['--target ES5'].concat(xs);
+  function TARGET(xs, target) {
+      return ['--target ' + target].concat(xs);
   }
 
-  function AMD(xs) {
-      return ['--module amd'].concat(xs);
-  }
-
-  function SYSTEM(xs) {
-      return ['--module system'].concat(xs);
+  function MODULE(xs, module) {
+      return ['--module ' + module].concat(xs);
   }
 
   function noImplicitAny(xs) {
@@ -210,23 +206,14 @@ module.exports = function(grunt) {
       return ['--outDir', where].concat(xs);
   }
 
-  var argsAMD = AMD(ES5(compilerSources));
-  var argsSYSTEM = SYSTEM(ES5(compilerSources));
+  var args = compilerSources;
+  args = TARGET(args, 'ES6');
+  args = MODULE(args, 'es6');
+  args = removeComments(args);
 
-  grunt.registerTask('tscAMD', "Build", function(){
+  grunt.registerTask('tscES6', "Build", function(){
     var done = this.async();
-    tsc(['--declaration'].concat(outDir('amd', argsAMD)).join(" "))
-    .then(function(){
-      done(true);
-    })
-    .catch(function(){
-      done(false);
-    });
-  });
-
-  grunt.registerTask('tscSYSTEM', "Build", function(){
-    var done = this.async();
-    tsc(['--declaration'].concat(outDir('system', argsSYSTEM)).join(" "))
+    tsc(outDir('lib', args).join(" "))
     .then(function(){
       done(true);
     })
@@ -242,7 +229,5 @@ module.exports = function(grunt) {
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
-  grunt.registerTask('classic', ['clean', 'tscAMD', 'docs', 'copy', 'requirejs', 'uglify']);
-
-  grunt.registerTask('default', ['clean', 'tscSYSTEM', 'docs', 'copy', 'concat', 'uglify']);
+  grunt.registerTask('default', ['clean', 'tscES6', 'docs', 'copy']);
 };

@@ -3,6 +3,5 @@ amd/
 system/
 documentation/
 jspm_packages/
-lib/
 node_modules/
 vendor/
