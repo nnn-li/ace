@@ -48,6 +48,7 @@ export default class TokenIterator {
     /**
      * Creates a new token iterator object. The inital token index is set to the provided row and column coordinates.
      *
+     * @class TokenIterator
      * @constructor
      * @param {EditSession} session The session to associate with
      * @param {Number} initialRow The row to start the tokenizing at

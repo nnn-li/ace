@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 import BackgroundTokenizer from "../BackgroundTokenizer";
-import EditorDocument from "../EditorDocument";
+import Document from "../Document";
 import EditSession from "../EditSession";
 import VirtualRenderer from "../VirtualRenderer";
 import Editor from "../Editor";
@@ -81,7 +81,7 @@ export default class ListViewPopup implements ListView {
             renderer.$maxLines = 8;
             renderer.$keepTextAreaAtCursor = false;
 
-            var model = new EditorDocument("");
+            var model = new Document("");
             var editSession = new EditSession(model);
             var editor = new Editor(renderer, editSession);
 
@@ -213,7 +213,7 @@ export default class ListViewPopup implements ListView {
             }
             return tokens;
         };
-        bgTokenizer.$updateOnChange = noop;
+        bgTokenizer.updateOnChange = noop;
         bgTokenizer.start = noop;
 
         this.editor.getSession().$computeWidth = function() {

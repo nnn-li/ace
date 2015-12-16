@@ -146,7 +146,7 @@ export default class Editor extends EventEmitterClass {
     /**
      * Creates a new `Editor` object.
      *
-     * @class
+     * @class Editor
      * @constructor
      * @param renderer {VirtualRenderer} The view.
      * @param session {EditSession} The model.

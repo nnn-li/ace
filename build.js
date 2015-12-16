@@ -15,10 +15,10 @@ requirejs.config({
 
   optimize: "none",
 
-  // files to include along with almond.  only deuce is defined, as
+  // files to include along with almond.  only ace is defined, as
   // it pulls in the rest of the dependencies automatically.
   include: [
-  "deuce",
+  "ace",
   "mode/HtmlMode",
   "mode/HtmlWorker",
   "mode/JavaScriptMode",
@@ -34,7 +34,7 @@ requirejs.config({
               // check for amd loader on global namespace
            "  var globalDefine = global.define;\n",
 
-    end:   "  var library = require('deuce');\n"+
+    end:   "  var library = require('ace');\n"+
            "  if(typeof module !== 'undefined' && module.exports) {\n"+
                 // export library for node
            "    module.exports = library;\n"+
@@ -45,7 +45,7 @@ requirejs.config({
            "    }(globalDefine));\n"+
            "  } else {\n"+
                 // define library on global namespace for inline script loading
-           "    global['DEUCE'] = library;\n"+
+           "    global['Ace'] = library;\n"+
            "  }\n"+
            "}(this));\n"
   },
@@ -54,5 +54,5 @@ requirejs.config({
   stubModules: [],
 
   // build file destination, relative to the build file itself
-  out: "./dist/deuce.js"
+  out: "./dist/ace.js"
 })

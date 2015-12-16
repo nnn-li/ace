@@ -1,5 +1,5 @@
 {
-  "name": "deuce",
+  "name": "ace2016",
   "version": "0.1.18",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "author":
@@ -7,21 +7,21 @@
     "name": "David Holmes",
     "email": "david.geo.holmes@gmail.com"
   },
-  "main": "./dist/deuce.min.js",
+  "main": "./dist/ace.min.js",
   "repository":
   {
     "type": "git",
-    "url": "git://github.com/geometryzen/deuce.git"
+    "url": "git://github.com/geometryzen/ace2016.git"
   },
   "bugs":
   {
-    "url": "https://github.com/geometryzen/deuce/issues"
+    "url": "https://github.com/geometryzen/ace2016/issues"
   },
   "licenses":
   [
     {
       "type": "MIT",
-      "url": "https://github.com/geometryzen/deuce/blob/master/LICENSE"
+      "url": "https://github.com/geometryzen/ace2016/blob/master/LICENSE"
     }
   ],
   "dependencies":

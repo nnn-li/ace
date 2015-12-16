@@ -37,7 +37,7 @@ var MAX_TOKEN_COUNT = 1000;
 /**
  * This class takes a set of highlighting rules, and creates a tokenizer out of them. For more information, see [the wiki on extending highlighters](https://github.com/ajaxorg/ace/wiki/Creating-or-Extending-an-Edit-Mode#wiki-extendingTheHighlighter).
  * @class Tokenizer
- **/
+ */
 export default class Tokenizer {
     // Mode wants access to the states (rules)
     public states: Rule[][];
@@ -50,6 +50,7 @@ export default class Tokenizer {
     /**
      * Constructs a new tokenizer based on the given rules and flags.
      *
+     * @class Tokenizer
      * @constructor
      * @param {Object} rules The highlighting rules
      */
@@ -141,6 +142,7 @@ export default class Tokenizer {
             this.regExps[key] = new RegExp("(" + ruleRegExps.join(")|(") + ")|($)", flag);
         }
     }
+
     private $setMaxTokenCount(m) {
         MAX_TOKEN_COUNT = m | 0;
     }
@@ -226,10 +228,12 @@ export default class Tokenizer {
     }
 
     /**
-    * Returns an object containing two properties:
-    * `tokens`, which contains all the tokens; and `state`, the current state.
-    * @return {Object}
-    **/
+     * Returns an object containing two properties:
+     * `tokens`, which contains all the tokens; and `state`, the current state.
+     *
+     * @method getLineTokens
+     * @return {Object}
+     */
     public getLineTokens(line: string, startState: string) {
         var stack;
         if (startState && typeof startState !== 'string') {

@@ -30,6 +30,7 @@
 "use strict";
 
 import {addCssClass, createElement} from "./lib/dom";
+import Position from "./Position";
 import Range from "./Range";
 import Editor from "./Editor";
 import EditSession from "./EditSession";
@@ -153,7 +154,7 @@ export default class LineWidgets {
     }
 
     // FIXME: Appears to be using a different format from the standard Change.
-    updateOnChange(delta: { action: string; start: { row: number; column: number }; end: { row: number; column: number } }, session: EditSession) {
+    updateOnChange(delta: { action: string; start: Position; end: Position }, session: EditSession) {
         var lineWidgets = this.session.lineWidgets;
         if (!lineWidgets) return;
 

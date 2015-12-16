@@ -213,7 +213,7 @@ export class SnippetManager extends EventEmitterClass {
             case "FILEPATH":
                 return "";
             case "FULLNAME":
-                return "DEUCE";
+                return "Ace";
         }
     }
     private getVariableValue(editor, varName) {

@@ -1,5 +1,5 @@
-deuce CONTRIBUTING
-==================
+Ace CONTRIBUTING
+================
 
 Browser Code Editor targeting ES6 written in TypeScript
 
@@ -48,6 +48,6 @@ grunt
 This is currently generated from comments in the code.
 There will be some redundancy in type declarations until a TypeScript-aware tool is used.
 
-# d.ts #
+# d.ace.ts #
 
-This is manually maintained in src/modules/deuce.d.ts
+This is manually maintained in src/modules/ace.d.ts

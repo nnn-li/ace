@@ -30,6 +30,7 @@
 "use strict";
 
 import Anchor from './Anchor';
+import Delta from './Delta';
 import EventEmitterClass from './lib/event_emitter';
 import Position from './Position';
 import Range from './Range';
@@ -49,7 +50,7 @@ var $split: (text: string) => string[] = (function() {
     }
 })();
 
-function $clipPosition(doc: EditorDocument, position: { row: number; column: number }) {
+function $clipPosition(doc: Document, position: { row: number; column: number }) {
     var length = doc.getLength();
     if (position.row >= length) {
         position.row = Math.max(0, length - 1);
@@ -61,15 +62,18 @@ function $clipPosition(doc: EditorDocument, position: { row: number; column: num
 }
 
 /**
- * @class EditorDocument
+ * @class Document
  */
-export default class EditorDocument extends EventEmitterClass {
+export default class Document extends EventEmitterClass {
     private $lines: string[] = [];
     private $autoNewLine: string = "";
     private $newLineMode: string = "auto";
 
     /**
-     * @class EditorDocument
+     * Creates a new Document.
+     * If text is included, the Document contains those strings; otherwise, it's empty.
+     *
+     * @class Document
      * @constructor
      * @param text {string | Array<string>}
      */
@@ -90,7 +94,7 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-     * Replaces all the lines in the current `EditorDocument` with the value of `text`.
+     * Replaces all the lines in the current `Document` with the value of `text`.
      *
      * @method setValue
      * @param text {string} The text to use
@@ -114,6 +118,7 @@ export default class EditorDocument extends EventEmitterClass {
 
     /** 
      * Creates a new `Anchor` to define a floating point in the document.
+     *
      * @method createAnchor
      * @param {number} row The row number to use
      * @param {number} column The column number to use
@@ -162,7 +167,7 @@ export default class EditorDocument extends EventEmitterClass {
      * Sets the new line mode.
      *
      * @method setNewLineMode
-     * @param {string} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #EditorDocument.setNewLineMode.param}
+     * @param {string} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #Document.setNewLineMode.param}
      * @return {void}
      */
     setNewLineMode(newLineMode: string): void {
@@ -209,8 +214,9 @@ export default class EditorDocument extends EventEmitterClass {
      * Returns an array of strings of the rows between `firstRow` and `lastRow`.
      * This function is inclusive of `lastRow`.
      *
-     * @param {Number} firstRow The first row index to retrieve
-     * @param {Number} lastRow The final row index to retrieve
+     * @method getLines
+     * @param [firstRow] {number} The first row index to retrieve
+     * @param [lastRow] {number} The final row index to retrieve
      * @return {string[]}
      */
     getLines(firstRow?: number, lastRow?: number): string[] {
@@ -295,17 +301,17 @@ export default class EditorDocument extends EventEmitterClass {
      *
      * Several methods trigger different `"change"` events. Below is a list of each action type, followed by each property that's also available:
      *
-     *  * `"insertLines"` (emitted by [[EditorDocument.insertLines]])
+     *  * `"insertLines"` (emitted by [[Document.insertLines]])
      *    * `range`: the [[Range]] of the change within the document
      *    * `lines`: the lines in the document that are changing
-     *  * `"insertText"` (emitted by [[EditorDocument.insertNewLine]])
+     *  * `"insertText"` (emitted by [[Document.insertNewLine]])
      *    * `range`: the [[Range]] of the change within the document
      *    * `text`: the text that's being added
-     *  * `"removeLines"` (emitted by [[EditorDocument.insertLines]])
+     *  * `"removeLines"` (emitted by [[Document.insertLines]])
      *    * `range`: the [[Range]] of the change within the document
      *    * `lines`: the lines in the document that were removed
-     *    * `nl`: the new line character (as defined by [[EditorDocument.getNewLineCharacter]])
-     *  * `"removeText"` (emitted by [[EditorDocument.removeInLine]] and [[EditorDocument.removeNewLine]])
+     *    * `nl`: the new line character (as defined by [[Document.getNewLineCharacter]])
+     *  * `"removeText"` (emitted by [[Document.removeInLine]] and [[Document.removeNewLine]])
      *    * `range`: the [[Range]] of the change within the document
      *    * `text`: the text that's being removed
      *
@@ -314,20 +320,22 @@ export default class EditorDocument extends EventEmitterClass {
      *
      **/
     /**
-    * Inserts the elements in `lines` into the document, starting at the row index given by `row`. This method also triggers the `'change'` event.
-    * @param {Number} row The index of the row to insert at
-    * @param {Array} lines An array of strings
-    * @return {Object} Contains the final row and column, like this:  
-    *   ```
-    *   {row: endRow, column: 0}
-    *   ```  
-    *   If `lines` is empty, this function returns an object containing the current row, and column, like this:  
-    *   ``` 
-    *   {row: row, column: 0}
-    *   ```
-    *
-    **/
-    insertLines(row: number, lines: string[]) {
+     * Inserts the elements in `lines` into the document, starting at the row index given by `row`.
+     * This method also triggers the `'change'` event.
+     *
+     * @method insertLines
+     * @param row {number} The index of the row to insert at
+     * @param lines {Array<string>} An array of strings
+     * @return {Position} Contains the final row and column, like this:  
+     *   ```
+     *   {row: endRow, column: 0}
+     *   ```  
+     *   If `lines` is empty, this function returns an object containing the current row, and column, like this:  
+     *   ``` 
+     *   {row: row, column: 0}
+     *   ```
+     */
+    insertLines(row: number, lines: string[]): Position {
         if (row >= this.getLength())
             return this.insert({ row: row, column: 0 }, "\n" + lines.join("\n"));
         return this._insertLines(Math.max(row, 0), lines);
@@ -360,14 +368,17 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-     * Inserts a new line into the document at the current row's `position`. This method also triggers the `'change'` event. 
-     * @param {Object} position The position to insert at
-     * @return {Object} Returns an object containing the final row and column, like this:<br/>
+     * Inserts a new line into the document at the current row's `position`.
+     * This method also triggers the `'change'` event.
+     *
+     * @method insertNewLine
+     * @param position {Position} The position to insert at.
+     * @return {Position} Returns an object containing the final row and column, like this:<br/>
      *    ```
      *    {row: endRow, column: 0}
      *    ```
      */
-    insertNewLine(position: { row: number; column: number }) {
+    insertNewLine(position: Position): Position {
         position = $clipPosition(this, position);
         var line = this.$lines[position.row] || "";
 
@@ -394,11 +405,11 @@ export default class EditorDocument extends EventEmitterClass {
      *
      * @method insertInLine
      * This method also triggers the `'change'` event.
-     * @param {Object} position The position to insert at.
+     * @param position {Position} The position to insert at.
      * @param {String} text A chunk of text
-     * @return {Object} Returns an object containing the final row and column.
+     * @return {Position} Returns an object containing the final row and column.
      */
-    insertInLine(position: { row: number; column: number }, text: string): { row: number; column: number } {
+    insertInLine(position: Position, text: string): Position {
         if (text.length == 0)
             return position;
 
@@ -411,7 +422,12 @@ export default class EditorDocument extends EventEmitterClass {
             column: position.column + text.length
         };
 
-        var delta = { action: "insertText", range: Range.fromPoints(position, end), text: text };
+        var delta: Delta = { action: "insertText", range: Range.fromPoints(position, end), text: text };
+
+        /**
+         * @event change
+         * @param delta {Delta}
+         */
         this._signal("change", { data: delta });
 
         return end;
@@ -501,7 +517,7 @@ export default class EditorDocument extends EventEmitterClass {
      */
     removeLines(firstRow: number, lastRow: number): string[] {
         if (firstRow < 0 || lastRow >= this.getLength()) {
-            throw new Error("EditorDocument.removeLines")
+            throw new Error("Document.removeLines")
             // This returns a Position, so it is incompatible.
             // return this.remove(new Range(firstRow, 0, lastRow + 1, 0));
         }
@@ -524,10 +540,12 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Removes the new line between `row` and the row immediately following it. This method also triggers the `'change'` event.
-    * @param {Number} row The row to check
-    *
-    **/
+     * Removes the new line between `row` and the row immediately following it.
+     *This method also triggers the `'change'` event.
+     * @method removeNewLine
+     * @param row {number} The row to check.
+     * @return {void}
+     */
     removeNewLine(row: number): void {
         var firstLine = this.getLine(row);
         var secondLine = this.getLine(row + 1);
@@ -546,16 +564,17 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Replaces a range in the document with the new `text`.
-    * @param {Range} range A specified Range to replace
-    * @param {String} text The new text to use as a replacement
-    * @return {Object} Returns an object containing the final row and column, like this:
-    *     {row: endRow, column: 0}
-    * If the text and range are empty, this function returns an object containing the current `range.start` value.
-    * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
-    *
-    **/
-    replace(range: Range, text: string) {
+     * Replaces a range in the document with the new `text`.
+     *
+     * @method replace
+     * @param range {Range} A specified Range to replace.
+     * @param text {string} The new text to use as a replacement.
+     * @return {Object} Returns an object containing the final row and column, like this:
+     *     {row: endRow, column: 0}
+     * If the text and range are empty, this function returns an object containing the current `range.start` value.
+     * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
+     */
+    replace(range: Range, text: string): Position {
         if (text.length == 0 && range.isEmpty())
             return range.start;
 
@@ -576,9 +595,14 @@ export default class EditorDocument extends EventEmitterClass {
     }
 
     /**
-    * Applies all the changes previously accumulated. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-    **/
-    applyDeltas(deltas: { action: string; lines: string[]; range: { start: { row: number; column: number }; end: { row: number; column: number } }; text: string }[]) {
+     * Applies all the changes previously accumulated.
+     * These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
+     *
+     * @method applyDeltas
+     * @param deltas {Delta[]}
+     * @return {void}
+     */
+    applyDeltas(deltas: Delta[]): void {
         for (var i = 0; i < deltas.length; i++) {
             var delta = deltas[i];
             var range = Range.fromPoints(delta.range.start, delta.range.end);
@@ -626,11 +650,12 @@ export default class EditorDocument extends EventEmitterClass {
      * 
      * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
      *
-     * @param {Number} index An index to convert
-     * @param {Number} startRow=0 The row from which to start the conversion
-     * @return {Object} A `{row, column}` object of the `index` position
+     * @method indexToPosition
+     * @param index {number} An index to convert
+     * @param startRow {number} The row from which to start the conversion
+     * @return {Position} A `{row, column}` object of the `index` position.
      */
-    indexToPosition(index: number, startRow: number) {
+    indexToPosition(index: number, startRow: number): Position {
         var lines = this.$lines || this.getAllLines();
         var newlineLength = this.getNewLineCharacter().length;
         for (var i = startRow || 0, l = lines.length; i < l; i++) {
@@ -653,11 +678,12 @@ export default class EditorDocument extends EventEmitterClass {
      * 
      * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
      *
-     * @param {Object} pos The `{row, column}` to convert
-     * @param {Number} startRow=0 The row from which to start the conversion
-     * @return {Number} The index position in the document
+     * @method positionToIndex
+     * @param {Position} pos The `{row, column}` to convert.
+     * @param startRow {number} The row from which to start the conversion
+     * @return {number} The index position in the document.
      */
-    positionToIndex(pos: { row: number; column: number }, startRow: number): number {
+    positionToIndex(pos: Position, startRow: number): number {
         var lines = this.$lines || this.getAllLines();
         var newlineLength = this.getNewLineCharacter().length;
         var index = 0;

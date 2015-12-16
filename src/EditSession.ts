@@ -33,6 +33,7 @@ import {mixin} from "./lib/oop";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {_signal, defineOptions, loadModule, resetOptions} from "./config";
 import Annotation from './Annotation';
+import Delta from "./Delta";
 import EventEmitterClass from "./lib/event_emitter";
 import FoldLine from "./FoldLine";
 import Fold from "./Fold";
@@ -41,7 +42,7 @@ import LanguageMode from "./LanguageMode";
 import Range from "./Range";
 import Token from "./Token";
 import Tokenizer from "./Tokenizer";
-import EditorDocument from "./EditorDocument";
+import Document from "./Document";
 import BackgroundTokenizer from "./BackgroundTokenizer";
 import SearchHighlight from "./SearchHighlight";
 import {assert} from './lib/asserts';
@@ -129,7 +130,7 @@ export default class EditSession extends EventEmitterClass {
     public getFoldWidgetRange: (row: number, forceMultiline?: boolean) => Range;
     public _changedWidgets: LineWidget[];
 
-    public doc: EditorDocument;
+    public doc: Document;
     private $defaultUndoManager = { undo: function() { }, redo: function() { }, reset: function() { } };
     private $undoManager: UndoManager;
     private $informUndoManager: { cancel: () => void; schedule: () => void };
@@ -213,12 +214,12 @@ export default class EditSession extends EventEmitterClass {
     /**
      * @class EditSession
      * @constructor
-     * @param doc {EditorDocument}
+     * @param doc {Document}
      */
-    constructor(doc: EditorDocument) {
+    constructor(doc: Document) {
         super();
-        if (!(doc instanceof EditorDocument)) {
-            throw new TypeError('doc must be an EditorDocument');
+        if (!(doc instanceof Document)) {
+            throw new TypeError('doc must be an Document');
         }
         this.$foldData = [];
         this.$foldData.toString = function() {
@@ -233,16 +234,16 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-     * Sets the `EditSession` to point to a new `EditorDocument`.
+     * Sets the `EditSession` to point to a new `Document`.
      * If a `BackgroundTokenizer` exists, it also points to `doc`.
      *
      * @method setDocument
-     * @param doc {EditorDocument} The new `EditorDocument` to use.
+     * @param doc {Document} The new `Document` to use.
      * @return {void}
      */
-    private setDocument(doc: EditorDocument): void {
-        if (!(doc instanceof EditorDocument)) {
-            throw new Error("doc must be a EditorDocument");
+    private setDocument(doc: Document): void {
+        if (!(doc instanceof Document)) {
+            throw new Error("doc must be a Document");
         }
         if (this.doc) {
             this.doc.off("change", this.$onChange);
@@ -259,12 +260,12 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-     * Returns the `EditorDocument` associated with this session.
+     * Returns the `Document` associated with this session.
      *
      * @method getDocument
-     * @return {EditorDocument}
+     * @return {Document}
      */
-    public getDocument(): EditorDocument {
+    public getDocument(): Document {
         return this.doc;
     }
 
@@ -325,8 +326,8 @@ export default class EditSession extends EventEmitterClass {
         this.$resetRowCache(fold.start.row);
     }
 
-    private onChange(e, doc: EditorDocument) {
-        var delta = e.data;
+    private onChange(e, doc: Document) {
+        var delta: Delta = e.data;
         this.$modified = true;
 
         this.$resetRowCache(delta.range.start.row);
@@ -344,7 +345,7 @@ export default class EditSession extends EventEmitterClass {
             this.$informUndoManager.schedule();
         }
 
-        this.bgTokenizer.$updateOnChange(delta);
+        this.bgTokenizer.updateOnChange(delta);
         this._signal("change", e);
     }
 
@@ -368,7 +369,7 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-     * Returns the current EditorDocument as a string.
+     * Returns the current Document as a string.
      *
      * @method toString
      * @return {string}
@@ -379,7 +380,7 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-     * Returns the current EditorDocument as a string.
+     * Returns the current Document as a string.
      *
      * @method getValue
      * @return {string}
@@ -929,11 +930,11 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * {:EditorDocument.setNewLineMode.desc}
-    * @param {String} newLineMode {:EditorDocument.setNewLineMode.param}
+    * {:Document.setNewLineMode.desc}
+    * @param {String} newLineMode {:Document.setNewLineMode.param}
     *
     *
-    * @related EditorDocument.setNewLineMode
+    * @related Document.setNewLineMode
     **/
     private setNewLineMode(newLineMode: string): void {
         this.doc.setNewLineMode(newLineMode);
@@ -944,7 +945,7 @@ export default class EditSession extends EventEmitterClass {
      *
      * @method getNewLineMode
      * @return {string}
-     * @related EditorDocument.getNewLineMode
+     * @related Document.getNewLineMode
      */
     private getNewLineMode(): string {
         return this.doc.getNewLineMode();
@@ -1069,7 +1070,7 @@ export default class EditSession extends EventEmitterClass {
         }
 
         if (!this.bgTokenizer) {
-            this.bgTokenizer = new BackgroundTokenizer(tokenizer);
+            this.bgTokenizer = new BackgroundTokenizer(tokenizer, this);
             var _self = this;
             this.bgTokenizer.on("update", function(event, bg: BackgroundTokenizer) {
                 _self._signal("tokenizerUpdate", event);
@@ -1262,7 +1263,7 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-     * {:EditorDocument.getTextRange.desc}
+     * {:Document.getTextRange.desc}
      * @param {Range} range The range to work with
      *
      * @return {string}
@@ -1587,7 +1588,7 @@ export default class EditSession extends EventEmitterClass {
     * @param {Number} lastRow The final row to move up
     * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
     *
-    * @related EditorDocument.insertLines
+    * @related Document.insertLines
     *
     **/
     private moveLinesUp(firstRow: number, lastRow: number): number {
@@ -1600,7 +1601,7 @@ export default class EditSession extends EventEmitterClass {
     * @param {Number} lastRow The final row to move down
     * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
     *
-    * @related EditorDocument.insertLines
+    * @related Document.insertLines
     **/
     private moveLinesDown(firstRow: number, lastRow: number): number {
         return this.$moveLines(firstRow, lastRow, 1);

@@ -73,6 +73,7 @@ export default class UndoManager {
      * - `args[0]` is an array of deltas
      * - `args[1]` is the document to associate with
      *
+     * @method execute
      * @param {Object} options Contains additional properties
      *
      **/

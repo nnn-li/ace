@@ -2,7 +2,7 @@
 
 import {mixin} from '../lib/oop';
 import Mirror from '../worker/Mirror';
-import EditorDocument from '../EditorDocument';
+import Document from '../Document';
 import WorkerCallback from "../WorkerCallback";
 
 /**

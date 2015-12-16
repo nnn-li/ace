@@ -29,7 +29,7 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import EditorDocument from "./EditorDocument";
+import Document from "./Document";
 import {stringReverse} from "./lib/lang";
 import EventEmitterClass from "./lib/event_emitter";
 import OrientedRange from "./OrientedRange";
@@ -51,7 +51,7 @@ import Anchor from "./Anchor";
 export default class Selection extends EventEmitterClass {
     private session: EditSession;
     // FIXME: Maybe Selection should only couple to the EditSession?
-    private doc: EditorDocument;
+    private doc: Document;
     // Why do we seem to have copies?
     public lead: Anchor;
     public anchor: Anchor;
@@ -271,16 +271,12 @@ export default class Selection extends EventEmitterClass {
      * @method setRange
      * @param {Range} range The range of text to select
      * @param {Boolean} reverse Indicates if the range should go backwards (`true`) or not
-     *
-     *
-     * @method setSelectionRange
-     * @alias setRange
      */
-    setRange(range: Range, reverse?: boolean): void {
+    public setRange(range: Range, reverse?: boolean): void {
         this.setSelectionRange(range, reverse);
     }
 
-    setSelectionRange(range: Range, reverse?: boolean): void {
+    public setSelectionRange(range: Range, reverse?: boolean): void {
         if (reverse) {
             this.setSelectionAnchor(range.end.row, range.end.column);
             this.selectTo(range.start.row, range.start.column);
@@ -303,13 +299,13 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Moves the selection cursor to the indicated row and column.
-    * @param {Number} row The row to select to
-    * @param {Number} column The column to select to
-    *
-    *
-    *
-    **/
+     * Moves the selection cursor to the indicated row and column.
+     *
+     * @method selectTo
+     * @param {Number} row The row to select to
+     * @param {Number} column The column to select to
+     * @return {void}
+     */
     selectTo(row: number, column: number): void {
         this.$moveSelection(function() {
             this.moveCursorTo(row, column);
@@ -317,92 +313,90 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Moves the selection cursor to the row and column indicated by `pos`.
-    * @param {Object} pos An object containing the row and column
-    *
-    *
-    *
-    **/
-    selectToPosition(pos) {
+     * Moves the selection cursor to the row and column indicated by `pos`.
+     *
+     * @method selectToPosition
+     * @param position {Position} An object containing the row and column
+     * @return {void}
+     */
+    selectToPosition(position: Position): void {
+        var self = this;
         this.$moveSelection(function() {
-            this.moveCursorToPosition(pos);
+            self.moveCursorToPosition(position);
         });
     }
 
     /**
-    * Moves the selection cursor to the indicated row and column.
-    * @param {Number} row The row to select to
-    * @param {Number} column The column to select to
-    *
-    **/
+     * Moves the selection cursor to the indicated row and column.
+     *
+     * @method moveTo
+     * @param {Number} row The row to select to
+     * @param {Number} column The column to select to
+     * @return {void}
+     */
     moveTo(row: number, column: number): void {
         this.clearSelection();
         this.moveCursorTo(row, column);
     }
 
     /**
-    * Moves the selection cursor to the row and column indicated by `pos`.
-    * @param {Object} pos An object containing the row and column
-    **/
-    moveToPosition(pos) {
+     * Moves the selection cursor to the row and column indicated by `pos`.
+     *
+     * @method moveToPosition
+     * @param {Object} pos An object containing the row and column.
+     * @return {void}
+     */
+    moveToPosition(pos: Position): void {
         this.clearSelection();
         this.moveCursorToPosition(pos);
     }
 
 
     /**
-    *
-    * Moves the selection up one row.
-    **/
-    selectUp() {
+     * Moves the selection up one row.
+     */
+    selectUp(): void {
         this.$moveSelection(this.moveCursorUp);
     }
 
     /**
-    *
-    * Moves the selection down one row.
-    **/
-    selectDown() {
+     * Moves the selection down one row.
+     */
+    selectDown(): void {
         this.$moveSelection(this.moveCursorDown);
     }
 
     /**
-    *
-    *
-    * Moves the selection right one column.
-    **/
+     * Moves the selection right one column.
+     */
     selectRight() {
         this.$moveSelection(this.moveCursorRight);
     }
 
     /**
-    *
-    * Moves the selection left one column.
-    **/
+     * Moves the selection left one column.
+     */
     selectLeft() {
         this.$moveSelection(this.moveCursorLeft);
     }
 
     /**
-    *
-    * Moves the selection to the beginning of the current line.
-    **/
+     * Moves the selection to the beginning of the current line.
+     */
     selectLineStart() {
         this.$moveSelection(this.moveCursorLineStart);
     }
 
     /**
-    *
-    * Moves the selection to the end of the current line.
-    **/
+     * Moves the selection to the end of the current line.
+     */
     selectLineEnd() {
         this.$moveSelection(this.moveCursorLineEnd);
     }
 
     /**
-    *
-    * Moves the selection to the end of the file.
-    **/
+     * Moves the selection to the end of the file.
+     */
     selectFileEnd() {
         this.$moveSelection(this.moveCursorFileEnd);
     }
@@ -432,15 +426,15 @@ export default class Selection extends EventEmitterClass {
     }
 
     /**
-    * Moves the selection to highlight the entire word.
-    * @related EditSession.getWordRange
-    **/
-    getWordRange(row?, column?) {
-        if (typeof column == "undefined") {
-            var cursor = row || this.lead;
-            row = cursor.row;
-            column = cursor.column;
-        }
+     * Moves the selection to highlight the entire word.
+     * @related EditSession.getWordRange
+     */
+    getWordRange(row: number, column: number): Range {
+        //        if (typeof column === "undefined") {
+        //            var cursor = row || this.lead;
+        //            row = cursor.row;
+        //            column = cursor.column;
+        //        }
         return this.session.getWordRange(row, column);
     }
 
@@ -449,7 +443,7 @@ export default class Selection extends EventEmitterClass {
     * Selects an entire word boundary.
     **/
     selectWord() {
-        this.setSelectionRange(this.getWordRange());
+        this.setSelectionRange(this.getWordRange(this.lead.row, this.lead.column));
     }
 
     /**

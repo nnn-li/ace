@@ -36,7 +36,8 @@ import EventEmitterClass from "./lib/event_emitter";
 /**
  * An abstract class representing a native scrollbar control.
  * @class ScrollBar
- **/
+ * @extends EventEmitterClass
+ */
 export default class ScrollBar extends EventEmitterClass {
     public element: HTMLDivElement;
     public inner: HTMLDivElement;
@@ -46,7 +47,7 @@ export default class ScrollBar extends EventEmitterClass {
     /**
      * Creates a new `ScrollBar`.
      *
-     * @class
+     * @class ScrollBar
      * @constructor
      * @param parent {HTMLlement} A paent of the scrollbar.
      * @param classSuffix {string}

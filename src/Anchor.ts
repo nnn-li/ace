@@ -29,16 +29,13 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import EditorDocument from "./EditorDocument";
+import Document from "./Document";
 import Position from "./Position";
 import Range from "./Range";
 import EventEmitterClass from './lib/event_emitter';
 import { assert } from './lib/asserts';
 
 /**
- * Defines the floating pointer in the document.
- * Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
- * 
  * @class Anchor
  * @extends EventEmitterClass
  */
@@ -58,11 +55,11 @@ export default class Anchor extends EventEmitterClass {
 
     /**
      * @property document
-     * @type {EditorDocument}
+     * @type {Document}
      * @private
      */
-    private document: EditorDocument;
-    private $onChange: (event, doc: EditorDocument) => void;
+    private document: Document;
+    private $onChange: (event, doc: Document) => void;
 
     /**
      * @property $insertRight
@@ -73,18 +70,21 @@ export default class Anchor extends EventEmitterClass {
     private $insertRight: boolean;
 
     /**
+     * <p>
+     * Defines the floating pointer in the document.
+     * Whenever text is inserted or deleted before the cursor, the position of the cursor is updated.
+     * </p>
+     * <p>
      * Creates a new <code>Anchor</code> and associates it with a document.
+     * </p>
      *
-     * @param doc {EditorDocument} The document to associate with the anchor.
+     * @class Anchor
+     * @constructor
+     * @param doc {Document} The document to associate with the anchor.
      * @param row {number} The starting row position.
      * @param column {number} The starting column position.
-     *
-     * @constructor
-     * @param doc {EditorDocument}
-     * @param row {number}
-     * @param column {number}
      */
-    constructor(doc: EditorDocument, row: number, column: number) {
+    constructor(doc: Document, row: number, column: number) {
         super();
         assert(typeof row === 'number', "row must be a number");
         assert(typeof column === 'number', "column must be a number");
@@ -108,9 +108,9 @@ export default class Anchor extends EventEmitterClass {
      * Returns the current document.
      *
      * @method getDocument
-     * @return {EditorDocument}
+     * @return {Document}
      */
-    getDocument(): EditorDocument {
+    getDocument(): Document {
         return this.document;
     }
 
@@ -126,10 +126,10 @@ export default class Anchor extends EventEmitterClass {
      *   It has two properties:
      *  - `old`: An object describing the old Anchor position
      *  - `value`: An object describing the new Anchor position
-     * @param doc: {EditorDocument}
+     * @param doc: {Document}
      * @return {void}
      */
-    onChange(e: { data: { range: Range; action: string } }, doc: EditorDocument): void {
+    onChange(e: { data: { range: Range; action: string } }, doc: Document): void {
         var delta = e.data;
         var range = delta.range;
 
@@ -231,6 +231,13 @@ export default class Anchor extends EventEmitterClass {
 
         this.row = pos.row;
         this.column = pos.column;
+
+        /**
+         * Fires whenever the anchor posoition changes.
+         *
+         * @event change
+         * @param msg {{old: Position; value: Position}}
+         */
         this._signal("change", { old: old, value: pos });
     }
 
@@ -246,10 +253,10 @@ export default class Anchor extends EventEmitterClass {
 
     /**
      * @method attach
-     * @param doc {EditorDocument}
+     * @param doc {Document}
      * @return {void}
      */
-    attach(doc: EditorDocument): void {
+    attach(doc: Document): void {
         this.document = doc || this.document;
         this.document.on("change", this.$onChange);
     }

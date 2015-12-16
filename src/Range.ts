@@ -62,7 +62,7 @@ export default class Range {
     /**
      * Creates a new `EditorRange` object with the given starting and ending row and column points.
      *
-     * @class
+     * @class Range
      * @constructor
      * @param {Number} startRow The starting row
      * @param {Number} startColumn The starting column

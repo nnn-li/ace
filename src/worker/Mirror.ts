@@ -1,11 +1,11 @@
-import EditorDocument from "../EditorDocument";
+import Document from "../Document";
 import {delayedCall} from "../lib/lang";
 import WorkerCallback from "../WorkerCallback";
 import Range from "../Range";
 
 export default class Mirror {
     public sender: WorkerCallback;
-    public doc: EditorDocument;
+    public doc: Document;
     public deferredUpdate;
     public $timeout: number;
     /**
@@ -17,7 +17,7 @@ export default class Mirror {
     constructor(sender: WorkerCallback, timeout: number = 500) {
         this.sender = sender;
         this.$timeout = timeout;
-        this.doc = new EditorDocument("");
+        this.doc = new Document("");
 
         var deferredUpdate = this.deferredUpdate = delayedCall(this.onUpdate.bind(this));
 

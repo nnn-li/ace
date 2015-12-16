@@ -1,7 +1,7 @@
 "use strict";
 
 import {qualifyURL} from '../lib/net';
-import EditorDocument from "../EditorDocument";
+import Document from "../Document";
 import EventEmitterClass from '../lib/event_emitter';
 import {get} from "../config";
 
@@ -15,7 +15,7 @@ export default class WorkerClient extends EventEmitterClass {
     private deltaQueue: any[];
     private callbacks: { [id: number]: (data: any) => any } = {};
     private callbackId: number = 1;
-    private $doc: EditorDocument;
+    private $doc: Document;
 
     /**
      * @class WorkerClient
@@ -133,7 +133,7 @@ export default class WorkerClient extends EventEmitterClass {
         }
     }
 
-    attachToDocument(doc: EditorDocument) {
+    attachToDocument(doc: Document) {
         if (this.$doc) {
             this.terminate();
         }
@@ -151,7 +151,7 @@ export default class WorkerClient extends EventEmitterClass {
      * This function is used as the basis for a function where this is bound safely.
      * It handles changes to the document by placing the messages in a queue
      */
-    private changeListener(e: { data }, doc: EditorDocument) {
+    private changeListener(e: { data }, doc: Document) {
         if (!this.deltaQueue) {
             this.deltaQueue = [e.data];
             setTimeout(this.$sendDeltaQueue, 0);

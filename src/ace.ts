@@ -32,7 +32,7 @@
 import {getInnerText} from "./lib/dom";
 import {addListener, removeListener} from "./lib/event";
 import Editor from "./Editor";
-import EditorDocument from "./EditorDocument";
+import Document from "./Document";
 import EditSession from "./EditSession";
 import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
@@ -45,7 +45,20 @@ import JavaScriptWorker from "./mode/JavaScriptWorker";
 import TypeScriptMode from "./mode/TypeScriptMode";
 import TypeScriptWorker from "./mode/TypeScriptWorker";
 
-export function edit(source: any) {
+/**
+ * The main class required to set up an Ace instance in the browser.
+ *
+ * @class Ace
+ */
+
+/**
+ * Embeds the Ace editor into the DOM, at the element provided by source.
+ *
+ * @method edit
+ * @param source {string | HTMLElement}
+ * @return {Editor}
+ */
+export function edit(source: string | HTMLElement): Editor {
     var element: HTMLElement;
     if (typeof source === 'string') {
         var id: string = source;
@@ -54,8 +67,11 @@ export function edit(source: any) {
             throw new Error("edit can't find div #" + id);
         }
     }
-    else {
+    else if (source instanceof HTMLElement) {
         element = source;
+    }
+    else {
+
     }
 
     if (element && element['env'] && element['env'].editor instanceof Editor) {
@@ -74,7 +90,7 @@ export function edit(source: any) {
         element.innerHTML = '';
     }
 
-    var editSession = createEditSession(new EditorDocument(value));
+    var editSession = createEditSession(new Document(value));
     editSession.setMode(new TypeScriptMode());
 
     var editor = new Editor(new VirtualRenderer(element), editSession);
@@ -100,7 +116,14 @@ export function edit(source: any) {
     return editor;
 };
 
-export function createEditSession(doc: EditorDocument): EditSession {
+/**
+ * Creates a new EditSession.
+ *
+ * @method createEditSession
+ * @param doc {Document}
+ * @return {EditSession}
+ */
+export function createEditSession(doc: Document): EditSession {
     var editSession = new EditSession(doc);
     editSession.setUndoManager(new UndoManager());
     return editSession;

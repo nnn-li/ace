@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>DEUCE Example</title>
+    <title>Ace Example</title>
     <link rel="stylesheet" type="text/css" href="src/css/editor.css">
     <link rel="stylesheet" type="text/css" href="src/theme/twilight.css">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="dist/deuce.js"></script>
+    <script src="dist/ace.js"></script>
     <script>
     window.onload = function() {
-      var editor = DEUCE.edit('editor');
+      var editor = Ace.edit('editor');
     }
     /*
-    // var cMode = new DEUCE.CssMode()
-    var hMode = new DEUCE.HtmlMode()
-    // var jMode = new DEUCE.JavaScriptMode()
+    // var cMode = new Ace.CssMode()
+    var hMode = new Ace.HtmlMode()
+    // var jMode = new Ace.JavaScriptMode()
 
     var code = "";
 
-    var doc = new DEUCE.EditorDocument(code);
+    var doc = new Ace.EditorDocument(code);
 
-    var editSession = new DEUCE.EditSession(doc, hMode);
+    var editSession = new Ace.EditSession(doc, hMode);
     editSession.setTabSize(2);
     editSession.setUseSoftTabs(true);
 
     var element = document.getElementById('editor')
-    var renderer = new DEUCE.VirtualRenderer(element);
+    var renderer = new Ace.VirtualRenderer(element);
     // renderer.setTheme...
     // The Editor acts as a controller between the renderer and the EditSession.
-    var editor = new DEUCE.Editor(renderer, editSession);
+    var editor = new Ace.Editor(renderer, editSession);
     editor.setFontSize("16px");
     editor.setHighlightActiveLine(true);
     editor.setHighlightGutterLine(true);

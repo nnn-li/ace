@@ -62,41 +62,48 @@ export default class Search {
 
     /**
      * Sets the search options via the `options` parameter.
-     * @param {Object} options An object containing all the new search properties
      *
-     * 
+     * @method set
+     * @param {Object} options An object containing all the new search properties.
      * @return {Search}
      * @chainable
-    **/
-    set(options) {
+     */
+    set(options): Search {
         mixin(this.$options, options);
         return this;
     }
 
     /**
      * [Returns an object containing all the search options.]{: #Search.getOptions}
+     *
+     * @method getOptions
      * @return {Object}
-    **/
+     */
     getOptions() {
         return copyObject(this.$options);
     }
     
     /**
      * Sets the search options via the `options` parameter.
-     * @param {Object} An object containing all the search propertie
+     *
+     * @method setOptions
+     * @param {Object} An object containing all the search properties.
+     * @return {void}
      * @related Search.set
-    **/
-    setOptions(options) {
+     */
+    setOptions(options): void {
         this.$options = options;
     }
 
     /**
-     * Searches for `options.needle`. If found, this method returns the [[Range `Range`]] where the text first occurs. If `options.backwards` is `true`, the search goes backwards in the session.
-     * @param {EditSession} session The session to search with
+     * Searches for `options.needle`.
+     * If found, this method returns the [[Range `Range`]] where the text first occurs.
+     * If `options.backwards` is `true`, the search goes backwards in the session.
      *
-     * 
+     * @method find
+     * @param {EditSession} session The session to search with.
      * @return {Range}
-    **/
+     */
     find(session: EditSession): Range {
         var iterator = this.$matchIterator(session, this.$options);
 
@@ -118,12 +125,14 @@ export default class Search {
     }
 
     /**
-     * Searches for all occurances `options.needle`. If found, this method returns an array of [[Range `Range`s]] where the text first occurs. If `options.backwards` is `true`, the search goes backwards in the session.
-     * @param {EditSession} session The session to search with
+     * Searches for all occurances `options.needle`.
+     * If found, this method returns an array of [[Range `Range`s]] where the text first occurs.
+     * If `options.backwards` is `true`, the search goes backwards in the session.
      *
-     * 
+     * @method findAll
+     * @param {EditSession} session The session to search with.
      * @return {[Range]}
-    **/
+     */
     findAll(session: EditSession): Range[] {
         var options = this.$options;
         if (!options.needle)
@@ -195,14 +204,14 @@ export default class Search {
 
     /**
      * Searches for `options.needle` in `input`, and, if found, replaces it with `replacement`.
+     *
+     * @method replace
      * @param {String} input The text to search in
      * @param {String} replacement The replacing text
      * + (String): If `options.regExp` is `true`, this function returns `input` with the replacement already made. Otherwise, this function just returns `replacement`.<br/>
      * If `options.needle` was not found, this function returns `null`.
-     *
-     * 
      * @return {String}
-    **/
+     */
     replace(input: string, replacement: string): string {
         var options = this.$options;
 

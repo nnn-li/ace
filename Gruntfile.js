@@ -42,8 +42,8 @@ module.exports = function(grunt) {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
-        src: 'dist/<%= pkg.name %>.js',
-        dest: 'dist/<%= pkg.name %>.min.js'
+        src: 'dist/ace.js',
+        dest: 'dist/ace.min.js'
       }
     },
     concat: {
@@ -52,14 +52,14 @@ module.exports = function(grunt) {
       },
       dist: {
         src: ['system/**/*.js'],
-        dest: 'dist/deuce.js'
+        dest: 'dist/ace.js'
       }
     },
     copy: {
       main: {
         expand: true,
         cwd: 'src/modules/',
-        src: ['deuce.d.ts'],
+        src: ['ace.d.ts'],
         dest: 'dist/'
       }
     },
@@ -106,7 +106,7 @@ module.exports = function(grunt) {
             description: '<%= pkg.description %>',
             version: '<%= pkg.version %>',
             url: '<%= pkg.homepage %>',
-            logo: '../assets/logo.png',
+            logo: '../assets/logo_half.png',
             options: {
                 linkNatives: false, // Native types get linked to MDN.
                 quiet: true,
@@ -172,7 +172,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
 
   var compilerSources = [
-      "src/deuce.ts",
+      "src/ace.ts",
       "src/main.ts",
       "src/mode/HtmlMode",
       "src/mode/HtmlWorker",

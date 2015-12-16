@@ -1,7 +1,7 @@
 "use strict";
 
 import Editor from './Editor';
-import EditorDocument from './EditorDocument';
+import Document from './Document';
 import EditSession from './EditSession';
 import VirtualRenderer from './VirtualRenderer';
 
@@ -24,7 +24,7 @@ import ThemeLink from './ThemeLink';
 var code = '// comment\n"use strict";\nvar x = 0;\nvar y = 1;\n';
 //var code = '';
 
-var doc = new EditorDocument(code);
+var doc = new Document(code);
 
 var editSession = new EditSession(doc);
 // editSession.setUseWorker(false);

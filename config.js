@@ -22,7 +22,7 @@ System.config({
     "babel": "npm:babel-core@5.8.34",
     "babel-runtime": "npm:babel-runtime@5.8.34",
     "core-js": "npm:core-js@1.2.6",
-    "geometryzen/deuce": "github:geometryzen/deuce@0.1.15",
+    "geometryzen/ace2016": "github:geometryzen/ace2016@0.1.15",
     "jshint": "npm:jshint@2.9.1-rc1",
     "ts": "github:frankwallis/plugin-typescript@2.4.3",
     "typescript": "npm:typescript@1.7.3",
