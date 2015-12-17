@@ -57,6 +57,7 @@ import {addListener, removeListener} from "./lib/event";
 import Editor from "./Editor";
 import Document from "./Document";
 import EditSession from "./EditSession";
+import Position from "./Position";
 import Range from "./Range";
 import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
@@ -164,7 +165,12 @@ export function createEditSession(doc: Document): EditSession {
 */
 
 var ace = {
-    get Range() { return Range }
+    get Document() { return Document },
+    get EditSession() { return EditSession },
+    get Editor() { return Editor },
+    get Range() { return Range },
+    get UndoManager() { return UndoManager },
+    get VirtualRenderer() { return VirtualRenderer }
 };
 
 export default ace;
