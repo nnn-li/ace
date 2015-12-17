@@ -584,28 +584,6 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     * @method importThemeLink
-     * @param themeName {string} The name of the theme.
-     * @return {Promise<ThemeLink>}
-     */
-    importThemeLink(themeName: string): Promise<ThemeLink> {
-        return this.renderer.importThemeLink(themeName);
-    }
-
-    /**
-     * @method setTheme
-     * @param themeName {string}
-     * @return {void}
-     */
-    setTheme(themeName: string): void {
-        this.importThemeLink(themeName)
-            .then(themeLink => this.renderer.setThemeLink(themeLink))
-            .catch(function(reason) {
-                throw new Error(`setTheme failed. Reason: ${reason}`);
-            });
-    }
-
-    /**
      * {:VirtualRenderer.getTheme}
      *
      * @return {String} The set theme
@@ -3199,12 +3177,12 @@ class MouseHandler {
     selectByLinesEnd() {
         this.$clickSelection = null;
         this.editor.unsetStyle("ace_selecting");
-        if (this.editor.renderer.scroller.releaseCapture) {
-            this.editor.renderer.scroller.releaseCapture();
+        if (this.editor.renderer.scroller['releaseCapture']) {
+            this.editor.renderer.scroller['releaseCapture']();
         }
     }
 
-    startSelect(pos: { row: number; column: number }, waitForClickSelection?: boolean) {
+    startSelect(pos: Position, waitForClickSelection?: boolean): void {
         pos = pos || this.editor.renderer.screenToTextCoordinates(this.clientX, this.clientY);
         var editor = this.editor;
         // allow double/triple click handlers to change selection
@@ -3220,8 +3198,8 @@ class MouseHandler {
             this.select();
         }
 
-        if (this.editor.renderer.scroller.setCapture) {
-            this.editor.renderer.scroller.setCapture();
+        if (this.editor.renderer.scroller['setCapture']) {
+            this.editor.renderer.scroller['setCapture']();
         }
         editor.setStyle("ace_selecting");
         this.setState("select");

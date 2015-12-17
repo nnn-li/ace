@@ -36,7 +36,7 @@ interface ListView {
     getTextLeftOffset(): number;
     show(pos: PixelPosition, lineHeight: number, topdownOnly?: boolean): void;
     hide();
-    importThemeLink(themeName: string): Promise<ThemeLink>;
+    //importThemeLink(themeName: string): Promise<ThemeLink>;
     setFontSize(fontSize): void;
     getLength(): number;
 }

@@ -59,6 +59,7 @@ import Document from "./Document";
 import EditSession from "./EditSession";
 import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
+import {isDark, cssClass} from "./theme/twilight"
 
 // The following require()s are for inclusion in the built ace file
 //import HtmlMode from "./mode/HtmlMode";
@@ -117,7 +118,11 @@ export function edit(source: string | HTMLElement): Editor {
     var editSession = createEditSession(new Document(value));
     // editSession.setLanguageMode(new TypeScriptMode());
 
-    var editor = new Editor(new VirtualRenderer(element), editSession);
+    var renderer = new VirtualRenderer(element);
+
+    renderer.setThemeCss({ isDark: isDark, id: cssClass, rel: 'stylesheet', type: 'text/css', href: '', padding: 0 }, '/assets/css/twilight.css');
+
+    var editor = new Editor(renderer, editSession);
 
     // FIXME: The first property is incorrectly named.
     var env = {

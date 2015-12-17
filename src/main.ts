@@ -26,6 +26,7 @@
 import Editor from './Editor';
 import Document from './Document';
 import EditSession from './EditSession';
+import EditorRenderer from './EditorRenderer';
 import VirtualRenderer from './VirtualRenderer';
 
 import TextMode from './mode/TextMode';
@@ -69,7 +70,7 @@ var renderer = new VirtualRenderer(element);
 //renderer.setPadding(10);
 renderer.importThemeLink('lib/theme/twilight')
     .then(function(themeLink: ThemeLink) {
-        renderer.setThemeLink(themeLink)
+        renderer.setThemeCss(themeLink,'/assets/css/twilight.css')
     })
     .catch(function(reason) {
         console.warn(`importThemeLink() failed. Reason:  ${reason}`);

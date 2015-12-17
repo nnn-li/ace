@@ -149,6 +149,7 @@
     "./src/Document.ts",
     "./src/EditSession.ts",
     "./src/Editor.ts",
+    "./src/EditorRenderer.ts",
     "./src/Fold.ts",
     "./src/FoldLine.ts",
     "./src/HScrollBar.ts",

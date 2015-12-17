@@ -69,6 +69,7 @@ import EditSession from './EditSession';
 import OptionsProvider from "./OptionsProvider";
 import Position from './Position';
 import ThemeLink from './ThemeLink';
+import EditorRenderer from './EditorRenderer';
 
 // FIXME
 // import editorCss = require("./requirejs/text!./css/editor.css");
@@ -108,7 +109,7 @@ function changesToString(changes: number): string {
  *
  * @class VirtualRenderer
  */
-export default class VirtualRenderer extends EventEmitterClass implements OptionsProvider {
+export default class VirtualRenderer extends EventEmitterClass implements EditorRenderer, OptionsProvider {
     public textarea: HTMLTextAreaElement;
     public container: HTMLElement;
     public scrollLeft = 0;
@@ -146,7 +147,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     private STEPS = 8;
     public $keepTextAreaAtCursor: boolean;
     public $gutter;
-    public scroller;
+    public scroller: HTMLDivElement;
     public content: HTMLDivElement;
     public $textLayer: Text;
     private $markerFront: Marker;
@@ -242,7 +243,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.$gutter.className = "ace_gutter";
         this.container.appendChild(this.$gutter);
 
-        this.scroller = createElement("div");
+        this.scroller = <HTMLDivElement>createElement("div");
         this.scroller.className = "ace_scroller";
         this.container.appendChild(this.scroller);
 
@@ -341,14 +342,13 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * Sets the <code>opacity</code> of the cursor layer to "0".
      *
      * @method setCursorLayerOff
-     * @return {VirtualRenderer}
+     * @return {void}
      * @chainable
      */
-    setCursorLayerOff(): VirtualRenderer {
+    setCursorLayerOff(): void {
         var noop = function() { };
         this.$cursorLayer.restartTimer = noop;
         this.$cursorLayer.element.style.opacity = "0";
-        return this;
     }
 
     /**
@@ -531,7 +531,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-     * [Triggers a resize of the editor.]{: #VirtualRenderer.onResize}
+     * Triggers a resize of the renderer.
      *
      * @method
      * @param {Boolean} force If `true`, recomputes the size, even if the height and width haven't changed
@@ -789,8 +789,8 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         this.setOption("fadeFoldWidgets", fadeFoldWidgets);
     }
 
-    setHighlightGutterLine(shouldHighlight) {
-        this.setOption("highlightGutterLine", shouldHighlight);
+    setHighlightGutterLine(highlightGutterLine: boolean): void {
+        this.setOption("highlightGutterLine", highlightGutterLine);
     }
 
     getHighlightGutterLine() {
@@ -832,11 +832,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * Returns the root element containing this renderer.
-    * @return {DOMElement}
-    **/
-    getContainerElement() {
+     * Returns the root element containing this renderer.
+     *
+     * @method getContainerElement
+     * @return {HTMLElement}
+     */
+    getContainerElement(): HTMLElement {
         return this.container;
     }
 
@@ -850,11 +851,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * Returns the element to which the hidden text area is added.
-    * @return {DOMElement}
-    **/
-    getTextAreaContainer() {
+     * Returns the element to which the hidden text area is added.
+     *
+     * @method getTextAreaContainer
+     * @return {HTMLElement}
+     */
+    getTextAreaContainer(): HTMLElement {
         return this.container;
     }
 
@@ -900,39 +902,41 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * [Returns the index of the first visible row.]{: #VirtualRenderer.getFirstVisibleRow}
-    * @return {Number}
-    **/
-    getFirstVisibleRow() {
+     * Returns the index of the first visible row.
+     *
+     * @method getFirstVisibleRow
+     * @return {Number}
+     */
+    getFirstVisibleRow(): number {
         return this.layerConfig.firstRow;
     }
 
     /**
     *
     * Returns the index of the first fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-    * @return {Number}
+    * @return {number}
     **/
-    getFirstFullyVisibleRow() {
+    getFirstFullyVisibleRow(): number {
         return this.layerConfig.firstRow + (this.layerConfig.offset === 0 ? 0 : 1);
     }
 
     /**
     *
     * Returns the index of the last fully visible row. "Fully" here means that the characters in the row are not truncated; that the top and the bottom of the row are on the screen.
-    * @return {Number}
+    * @return {number}
     **/
-    getLastFullyVisibleRow() {
+    getLastFullyVisibleRow(): number {
         var flint = Math.floor((this.layerConfig.height + this.layerConfig.offset) / this.layerConfig.lineHeight);
         return this.layerConfig.firstRow - 1 + flint;
     }
 
     /**
-    *
-    * [Returns the index of the last visible row.]{: #VirtualRenderer.getLastVisibleRow}
-    * @return {Number}
-    **/
-    getLastVisibleRow() {
+     * Returns the index of the last visible row.
+     *
+     * @method getLastVisibleRow
+     * @return {number}
+     */
+    getLastVisibleRow(): number {
         return this.layerConfig.lastRow;
     }
 
@@ -1376,10 +1380,9 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    *
-    * Scrolls the cursor into the first visibile area of the editor
-    **/
-    scrollCursorIntoView(cursor?: Position, offset?, $viewMargin?) {
+     * Scrolls the cursor into the first visibile area of the editor
+     */
+    scrollCursorIntoView(cursor?: Position, offset?, $viewMargin?): void {
         // the editor is not visible
         if (this.$size.scrollerHeight === 0)
             return;
@@ -1598,10 +1601,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-    * Scrolls the editor across both x- and y-axes.
-    * @param {Number} deltaX The x value to scroll by
-    * @param {Number} deltaY The y value to scroll by
-    **/
+     * Scrolls the editor across both x- and y-axes.
+     *
+     * @method scrollBy
+     * @param {Number} deltaX The x value to scroll by
+     * @param {Number} deltaY The y value to scroll by
+     */
     scrollBy(deltaX: number, deltaY: number): void {
         deltaY && this.session.setScrollTop(this.session.getScrollTop() + deltaY);
         deltaX && this.session.setScrollLeft(this.session.getScrollLeft() + deltaX);
@@ -1638,7 +1643,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
         return { row: row, column: col, side: offset - col > 0 ? 1 : -1 };
     }
 
-    screenToTextCoordinates(clientX: number, clientY: number) {
+    screenToTextCoordinates(clientX: number, clientY: number): Position {
         var canvasPos = this.scroller.getBoundingClientRect();
 
         var column = Math.round((clientX + this.scrollLeft - canvasPos.left - this.$padding) / this.characterWidth);
@@ -1820,22 +1825,16 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-     * @method setThemeLink
+     * @method setThemeCss
      * @param themeLink {ThemeLink}
+     * @param href {string}
      * @return {void}
      */
-    setThemeLink(themeLink: ThemeLink): void {
-        var self = this;
-        System.normalize(themeLink.href, '', '')
-            .then(function(href: string) {
-                appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, href, document);
-                self.addCssClass(themeLink.id);
-                self.setCssClass("ace_dark", themeLink.isDark);
-                self.setPadding(themeLink.padding);
-            })
-            .catch(function(e) {
-                console.warn(`${e}`);
-            });
+    setThemeCss(themeLink: ThemeLink, href: string): void {
+        appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, href, document);
+        this.addCssClass(themeLink.id);
+        this.setCssClass("ace_dark", themeLink.isDark);
+        this.setPadding(themeLink.padding);
     }
 
     /**
@@ -1853,7 +1852,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     // a certain mode that editor is in.
 
     /**
-     * [Adds a new class, `style`, to the editor.]{: #VirtualRenderer.setStyle}
+     * Adds a new class, `style`, to the editor.
      * @param {String} style A class name
      *
      */
@@ -1862,7 +1861,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
     }
 
     /**
-     * [Removes the class `style` from the editor.]{: #VirtualRenderer.unsetStyle}
+     * Removes the class `style` from the editor.
      * @param {String} style A class name
      */
     unsetStyle(style: string): void {

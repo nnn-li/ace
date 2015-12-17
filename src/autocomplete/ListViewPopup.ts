@@ -365,9 +365,9 @@ export default class ListViewPopup implements ListView {
      * @param themeName {string}
      * @return {Promise<ThemeLink>}
      */
-    importThemeLink(themeName: string): Promise<ThemeLink> {
-        return this.editor.importThemeLink(themeName);
-    }
+    //importThemeLink(themeName: string): Promise<ThemeLink> {
+    //    return this.editor.importThemeLink(themeName);
+    //}
     setFontSize(fontSize: string): void {
         this.editor.setFontSize(fontSize);
     }
