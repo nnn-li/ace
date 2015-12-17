@@ -14763,19 +14763,6 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
     });
 });
 
-define('ace',["require", "exports", "./Editor", "./Document", "./EditSession", "./Range", "./UndoManager", "./VirtualRenderer"], function (require, exports, Editor_1, Document_1, EditSession_1, Range_1, UndoManager_1, VirtualRenderer_1) {
-    var ace = {
-        get Document() { return Document_1.default; },
-        get EditSession() { return EditSession_1.default; },
-        get Editor() { return Editor_1.default; },
-        get Range() { return Range_1.default; },
-        get UndoManager() { return UndoManager_1.default; },
-        get VirtualRenderer() { return VirtualRenderer_1.default; }
-    };
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = ace;
-});
-
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15902,6 +15889,20 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
     })(TextMode_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = JavaScriptMode;
+});
+
+define('ace',["require", "exports", "./Editor", "./Document", "./EditSession", "./Range", "./UndoManager", "./VirtualRenderer", "./mode/JavaScriptMode"], function (require, exports, Editor_1, Document_1, EditSession_1, Range_1, UndoManager_1, VirtualRenderer_1, JavaScriptMode_1) {
+    var ace = {
+        get Document() { return Document_1.default; },
+        get EditSession() { return EditSession_1.default; },
+        get Editor() { return Editor_1.default; },
+        get Range() { return Range_1.default; },
+        get UndoManager() { return UndoManager_1.default; },
+        get VirtualRenderer() { return VirtualRenderer_1.default; },
+        get JavaScriptMode() { return JavaScriptMode_1.default; }
+    };
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = ace;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {

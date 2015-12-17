@@ -50,7 +50,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ***** END LICENSE BLOCK ***** */
-//require("./lib/fixoldbrowsers");
 
 import {getInnerText} from "./lib/dom";
 import {addListener, removeListener} from "./lib/event";
@@ -63,106 +62,13 @@ import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
 import {isDark, cssClass} from "./theme/twilight"
 
-// The following require()s are for inclusion in the built ace file
-//import HtmlMode from "./mode/HtmlMode";
-//import HtmlWorker from "./mode/HtmlWorker";
-//import JavaScriptMode from "./mode/JavaScriptMode";
-//import JavaScriptWorker from "./mode/JavaScriptWorker";
-//import TextMode from "./mode/TextMode";
-//import TypeScriptMode from "./mode/TypeScriptMode";
-//import TypeScriptWorker from "./mode/TypeScriptWorker";
-
-/**
- * The main class required to set up an Ace instance in the browser.
- *
- * @class Ace
- */
-
-/**
- * Embeds the Ace editor into the DOM, at the element provided by source.
- *
- * @method edit
- * @param source {string | HTMLElement}
- * @return {Editor}
- */
-/*
-export function edit(source: string | HTMLElement): Editor {
-    var element: HTMLElement;
-    if (typeof source === 'string') {
-        var id: string = source;
-        element = document.getElementById(id);
-        if (!element) {
-            throw new Error("edit can't find div #" + id);
-        }
-    }
-    else if (source instanceof HTMLElement) {
-        element = source;
-    }
-    else {
-
-    }
-
-    if (element && element['env'] && element['env'].editor instanceof Editor) {
-        return element['env'].editor;
-    }
-
-    var value = "";
-    if (element && /input|textarea/i.test(element.tagName)) {
-        var oldNode: any = element;
-        value = oldNode.value;
-        element = document.createElement("pre");
-        oldNode.parentNode.replaceChild(element, oldNode);
-    }
-    else {
-        value = getInnerText(element);
-        element.innerHTML = '';
-    }
-
-    var editSession = createEditSession(new Document(value));
-    // editSession.setLanguageMode(new TypeScriptMode());
-
-    var renderer = new VirtualRenderer(element);
-
-    renderer.setThemeCss({ isDark: isDark, id: cssClass, rel: 'stylesheet', type: 'text/css', href: '', padding: 0 }, '/assets/css/twilight.css');
-
-    var editor = new Editor(renderer, editSession);
-
-    // FIXME: The first property is incorrectly named.
-    var env = {
-        document: editSession,
-        editor: editor,
-        onResize: editor.resize.bind(editor, null)
-    };
-
-    if (oldNode) env['textarea'] = oldNode;
-
-    addListener(window, "resize", env.onResize);
-
-    editor.on("destroy", function() {
-        removeListener(window, "resize", env.onResize);
-        env.editor.container['env'] = null; // prevent memory leak on old ie
-    });
-
-    editor.container['env'] = editor['env'] = env;
-
-    return editor;
-};
-*/
-
-/**
- * Creates a new EditSession.
- *
- * @method createEditSession
- * @param doc {Document}
- * @return {EditSession}
- */
-/*
-export function createEditSession(doc: Document): EditSession {
-    var editSession = new EditSession(doc);
-    editSession.setUndoManager(new UndoManager());
-    return editSession;
-};
-*/
+import HtmlMode from "./mode/HtmlMode";
+import HtmlWorker from "./mode/HtmlWorker";
+import JavaScriptMode from "./mode/JavaScriptMode";
+import JavaScriptWorker from "./mode/JavaScriptWorker";
+import TextMode from "./mode/TextMode";
+import TypeScriptMode from "./mode/TypeScriptMode";
+import TypeScriptWorker from "./mode/TypeScriptWorker";
 
 var ace = {
     get Document() { return Document },
@@ -170,7 +76,8 @@ var ace = {
     get Editor() { return Editor },
     get Range() { return Range },
     get UndoManager() { return UndoManager },
-    get VirtualRenderer() { return VirtualRenderer }
+    get VirtualRenderer() { return VirtualRenderer },
+    get JavaScriptMode() { return JavaScriptMode }
 };
 
 export default ace;
