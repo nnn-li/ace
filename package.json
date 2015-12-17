@@ -1,6 +1,6 @@
 {
   "name": "ace2018",
-  "version": "0.1.33",
+  "version": "0.1.34",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
 
   "directories": {

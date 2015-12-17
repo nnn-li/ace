@@ -1105,7 +1105,7 @@ export default class Editor extends EventEmitterClass {
 
         if (this.getBehavioursEnabled() && !pasted) {
             // Get a transform if the current mode wants one.
-            transform = <TextAndSelection>mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
+            transform = mode && <TextAndSelection>mode.transformAction(session.getState(cursor.row), 'insertion', this, session, text);
             if (transform) {
                 if (text !== transform.text) {
                     this.session.mergeUndoDeltas = false;
