@@ -57,6 +57,7 @@ import {addListener, removeListener} from "./lib/event";
 import Editor from "./Editor";
 import Document from "./Document";
 import EditSession from "./EditSession";
+import Range from "./Range";
 import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
 import {isDark, cssClass} from "./theme/twilight"
@@ -83,6 +84,7 @@ import {isDark, cssClass} from "./theme/twilight"
  * @param source {string | HTMLElement}
  * @return {Editor}
  */
+/*
 export function edit(source: string | HTMLElement): Editor {
     var element: HTMLElement;
     if (typeof source === 'string') {
@@ -144,6 +146,7 @@ export function edit(source: string | HTMLElement): Editor {
 
     return editor;
 };
+*/
 
 /**
  * Creates a new EditSession.
@@ -152,8 +155,16 @@ export function edit(source: string | HTMLElement): Editor {
  * @param doc {Document}
  * @return {EditSession}
  */
+/*
 export function createEditSession(doc: Document): EditSession {
     var editSession = new EditSession(doc);
     editSession.setUndoManager(new UndoManager());
     return editSession;
 };
+*/
+
+var ace = {
+    get Range() { return Range }
+};
+
+export default ace;
