@@ -17,7 +17,7 @@ module.exports = function(grunt) {
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['amd', 'es6', 'dist', 'system', 'lib', 'documentation']
+      src: ['amd', 'dist', 'es6', 'system', 'lib', 'documentation']
     },
 
     exec: {
@@ -43,8 +43,8 @@ module.exports = function(grunt) {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
-        src: 'lib/ace.js',
-        dest: 'lib/ace.min.js'
+        src: 'dist/ace.js',
+        dest: 'dist/ace.min.js'
       }
     },
     copy: {
@@ -52,13 +52,13 @@ module.exports = function(grunt) {
         expand: true,
         cwd: 'src/modules/',
         src: ['ace.d.ts'],
-        dest: 'lib/'
+        dest: 'dist/'
       },
       themes: {
         expand: true,
         cwd: 'src/theme/',
         src: ['**/*.css'],
-        dest: 'lib/theme/'
+        dest: 'dist/theme/'
       }
     },
     connect: {
@@ -191,6 +191,18 @@ module.exports = function(grunt) {
       "./typings/systemjs.d.ts"
   ];
 
+  function ES5(xs) {
+      return ['--target ES5'].concat(xs);
+  }
+
+  function AMD(xs) {
+      return ['--module amd'].concat(xs);
+  }
+
+  function COMMONJS(xs) {
+      return ['--module commonjs'].concat(xs);
+  }
+
   function TARGET(xs, target) {
       return ['--target ' + target].concat(xs);
   }
@@ -242,8 +254,8 @@ module.exports = function(grunt) {
   });
 
   function bundle() {
-    var builder = new Builder('.', './config.js');
-    return builder.bundle('es6/ace.js', 'lib/ace.js', {});
+    var builder = new Builder('es6', './config.js');
+    return builder.bundle('ace.js', 'lib/ace.js');
   }
 
   grunt.registerTask('bundle', "Bundle", function() {
@@ -264,8 +276,6 @@ module.exports = function(grunt) {
   grunt.registerTask('docs', ['yuidoc']);
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
-
-  grunt.registerTask('default', ['clean', 'buildES6', 'copy', 'bundle']);
 
   grunt.registerTask('default', ['clean', 'buildAMD', 'docs', 'copy', 'requirejs', 'uglify']);
   // grunt.registerTask('default', ['clean', 'buildES6', 'copy', 'bundle']);
