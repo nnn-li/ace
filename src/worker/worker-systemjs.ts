@@ -52,8 +52,8 @@
   };
 
   function initDelegate(name: string): void {
-
-    System.import('lib/lib/Sender')
+    // FIXME: Pass in the first part...
+    System.import('geometryzen/ace2016/lib/Sender')
       .then(function(s: any/*Module*/) {
         sender = new s.default(window)
         System.import(name)
