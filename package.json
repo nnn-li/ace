@@ -1,19 +1,20 @@
 {
   "name": "ace2018",
-  "version": "0.1.47",
+  "version": "0.1.48",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
-
   "directories": {
     "lib": "lib"
   },
   "main": "ace.js",
   "format": "es6",
   "registry": "jspm",
-
   "bin": {},
   "homepage": "https://github.com/geometryzen/ace2016",
   "author": "david.geo.holmes@gmail.com",
   "jspm": {
+    "directories": {
+      "lib": "lib"
+    },
     "dependencies": {
       "jshint": "npm:jshint@^2.9.1-rc1",
       "ts": "github:frankwallis/plugin-typescript@^2.4.3",

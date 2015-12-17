@@ -60,7 +60,7 @@ module.exports = function(grunt) {
         expand: true,
         cwd: 'src/modules/',
         src: ['ace.d.ts'],
-        dest: 'dist/'
+        dest: 'lib/'
       },
       themes: {
         expand: true,
@@ -222,7 +222,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('tscES6', "Build", function(){
     var done = this.async();
-    tsc(outDir('lib', args).join(" "))
+    tsc(outDir('es6', args).join(" "))
     .then(function(){
       done(true);
     })
