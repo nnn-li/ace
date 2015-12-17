@@ -20,8 +20,8 @@
 
   // importScripts is synchronous and scripts are loaded in argument order.
   // importScripts('jspm_packages/system.js', 'config.js');
-  // importScripts('/jspm_packages/system.js', '/config.js');
-  importScripts('../../jspm_packages/system.js', '../../config.js');
+  importScripts('/jspm_packages/system.js', '/config.js');
+  // importScripts('../../jspm_packages/system.js', '../../config.js');
 
   window.window = window;
 
