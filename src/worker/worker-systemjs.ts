@@ -51,14 +51,14 @@
     return moduleName;
   };
 
-  function initDelegate(name: string, ts): void {
+  function initDelegate(name: string): void {
 
     System.import('lib/lib/Sender')
       .then(function(s: any/*Module*/) {
         sender = new s.default(window)
         System.import(name)
         .then(function(m: any/*Module*/) {
-            main = window.main = new m.default(sender, ts)
+            main = window.main = new m.default(sender)
           })
           .catch(function(error) {
             console.error(error);
@@ -102,14 +102,7 @@
       }
     }
     else if (msg.init) {
-      // I'm using a 
-      System.import('jspm_packages/npm/typescript@1.7.3/lib/typescriptServices.js')
-      .then(function(ts) {
-        initDelegate(msg.module, ts);
-      })
-      .catch(function(error) {
-        console.error(error);
-      });
+      initDelegate(msg.module);
     }
     else if (msg.event && sender) {
       // Expect "change" events as the user edits the document.
