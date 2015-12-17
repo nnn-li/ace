@@ -348,7 +348,7 @@ export default class TextMode implements LanguageMode {
 
     createWorker(session: EditSession): Promise<WorkerClient> {
         return new Promise<WorkerClient>(function(success, fail) {
-            console.warn("TextMode does not create a WorkerClient");
+            // TextMode does not create a WorkerClient.
             success(void 0);
         });
     }

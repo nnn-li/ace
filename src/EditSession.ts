@@ -1108,8 +1108,6 @@ export default class EditSession extends EventEmitterClass {
 
     private $onChangeMode(mode: LanguageMode, isPlaceholder: boolean): void {
 
-        console.log(`EditSession.$onChangeMode(${mode.$id})`);
-
         if (!isPlaceholder) {
             this.$modeId = mode.$id;
         }
