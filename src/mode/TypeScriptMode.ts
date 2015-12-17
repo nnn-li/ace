@@ -66,49 +66,52 @@ import EditSession from "../EditSession";
  */
 export default class TypeScriptMode extends JavaScriptMode {
 
-    $id = "ace/mode/typescript";
+  $id = "ace/mode/typescript";
 
-    /**
-     * @class TypeScriptMode
-     * @constructor
-     */
-    constructor() {
-        super();
-        this.HighlightRules = TypeScriptHighlightRules;
+  /**
+   * @class TypeScriptMode
+   * @constructor
+   */
+  constructor() {
+    super();
+    this.HighlightRules = TypeScriptHighlightRules;
 
-        this.$outdent = new MatchingBraceOutdent();
-        this.$behaviour = new CstyleBehaviour();
-        this.foldingRules = new CStyleFoldMode();
-    }
+    this.$outdent = new MatchingBraceOutdent();
+    this.$behaviour = new CstyleBehaviour();
+    this.foldingRules = new CStyleFoldMode();
+  }
 
-    createWorker(session: EditSession): WorkerClient {
+  createWorker(session: EditSession): Promise<WorkerClient> {
+    return new Promise<WorkerClient>(function(success, fail) {
+      System.normalize('geometryzen/ace2016/worker/worker-system.js', '', '')
+        .then(function(workerUrl: string) {
+          var worker = new WorkerClient(workerUrl);
 
-        var worker = new WorkerClient("lib/worker/worker-systemjs.js");
-
-        worker.on("initAfter", function(event) {
+          worker.on("initAfter", function(event) {
             worker.attachToDocument(session.getDocument());
             session._emit("initAfter", { data: event.data });
-        });
+          });
 
-        worker.on("terminate", function() {
+          worker.on("terminate", function() {
             session.clearAnnotations();
-        });
+          });
 
-        worker.on("compileErrors", function(event) {
+          worker.on("compileErrors", function(event) {
             session.setAnnotations(event.data);
             session._emit("compileErrors", { data: event.data });
-        });
+          });
 
-        worker.on("compiled", function(event) {
+          worker.on("compiled", function(event) {
             session._emit("compiled", { data: event.data });
-        });
+          });
 
-        worker.on("getFileNames", function(event) {
+          worker.on("getFileNames", function(event) {
             session._emit("getFileNames", { data: event.data });
-        });
+          });
 
-        worker.init("lib/mode/TypeScriptWorker");
-
-        return worker;
-    };
+          worker.init("geometryzen/ace2016/mode/TypeScriptWorker");
+        })
+        .catch(e => fail(e));
+    });
+  };
 }

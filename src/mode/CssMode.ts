@@ -58,6 +58,7 @@ import MatchingBraceOutdent from "./MatchingBraceOutdent";
 import WorkerClient from "../worker/WorkerClient";
 import CssBehaviour from "./behaviour/CssBehaviour";
 import CStyleFoldMode from "./folding/CstyleFoldMode";
+import Annotation from "../Annotation";
 import EditSession from "../EditSession";
 
 /**
@@ -107,24 +108,28 @@ export default class CssMode extends TextMode {
         return this.$outdent.autoOutdent(session, row);
     }
 
-    createWorker(session: EditSession): WorkerClient {
+    createWorker(session: EditSession): Promise<WorkerClient> {
+        return new Promise<WorkerClient>(function(success, fail) {
+            System.normalize('geometryzen/ace2016/worker/worker-system.js', '', '')
+                .then(function(workerUrl: string) {
+                    var worker = new WorkerClient(workerUrl);
 
-        var worker = new WorkerClient("lib/worker/worker-systemjs.js");
+                    worker.on("initAfter", function() {
+                        worker.attachToDocument(session.getDocument());
+                        success(worker);
+                    });
 
-        worker.on("initAfter", function() {
-            worker.attachToDocument(session.getDocument());
+                    worker.on("errors", function(message: { data: Annotation[] }) {
+                        session.setAnnotations(message.data);
+                    });
+
+                    worker.on("terminate", function() {
+                        session.clearAnnotations();
+                    });
+
+                    worker.init("geometryzen/ace2016/mode/CssWorker");
+                })
+                .catch(e => fail(e));
         });
-
-        worker.on("csslint", function(e) {
-            session.setAnnotations(e.data);
-        });
-
-        worker.on("terminate", function() {
-            session.clearAnnotations();
-        });
-
-        worker.init("ace/mode/css_worker");
-
-        return worker;
     }
 }

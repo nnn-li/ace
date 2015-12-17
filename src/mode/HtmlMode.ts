@@ -119,29 +119,32 @@ export default class HtmlMode extends TextMode {
         return this.$completer.getCompletions(state, session, pos, prefix);
     }
 
-    createWorker(session: EditSession): WorkerClient {
+    createWorker(session: EditSession): Promise<WorkerClient> {
+        return new Promise<WorkerClient>(function(success, fail) {
+            System.normalize('geometryzen/ace2016/worker/worker-system.js', '', '')
+                .then(function(workerUrl: string) {
+                    var worker = new WorkerClient(workerUrl);
+                    var mode = this;
 
-        var worker = new WorkerClient("lib/worker/worker-systemjs.js");
-        var mode = this;
+                    worker.on("initAfter", function() {
+                        worker.attachToDocument(session.getDocument());
+                        success(worker);
+                        if (mode.fragmentContext) {
+                            worker.call("setOptions", [{ context: mode.fragmentContext }]);
+                        }
+                    });
 
-        worker.on("initAfter", function() {
-            worker.attachToDocument(session.getDocument());
-            if (mode.fragmentContext) {
-                worker.call("setOptions", [{ context: mode.fragmentContext }]);
-            }
+                    worker.on("error", function(message: { data: Annotation[] }) {
+                        session.setAnnotations(message.data);
+                    });
+
+                    worker.on("terminate", function() {
+                        session.clearAnnotations();
+                    });
+
+                    worker.init("geometryzen/ace2016/mode/HtmlWorker");
+                })
+                .catch(e => fail(e));
         });
-
-        // FIXME: Standardize
-        worker.on("error", function(message: { data: Annotation[] }) {
-            session.setAnnotations(message.data);
-        });
-
-        worker.on("terminate", function() {
-            session.clearAnnotations();
-        });
-
-        worker.init("lib/mode/HtmlWorker");
-
-        return worker;
     };
 }

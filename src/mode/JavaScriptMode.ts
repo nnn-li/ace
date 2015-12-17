@@ -130,36 +130,29 @@ export default class JavaScriptMode extends TextMode {
         return this.$outdent.autoOutdent(session, row);
     };
 
-    createWorker(session: EditSession): WorkerClient {
+    createWorker(session: EditSession): Promise<WorkerClient> {
+        return new Promise<WorkerClient>(function(success, fail) {
+            System.normalize('geometryzen/ace2016/worker/worker-system.js', '', '')
+                .then(function(workerUrl: string) {
+                    var worker = new WorkerClient(workerUrl);
 
-        // FIXME: This is now a URL, not a module name to be loaded through SystemJS.
-        // Therefore, we will probably need to inject in the path.
-        console.log(`document.location => ${document.location}`);
-        System.normalize('geometryzen/ace2016/worker/worker-system.js', '', '')
-            .then(function(normalized: string) {
-                console.log(`normalized => ${normalized}`);
+                    worker.on("initAfter", function() {
+                        worker.attachToDocument(session.getDocument());
+                        success(worker);
+                    });
 
-            });
-        var path = 'jspm_packages/github/geometryzen/ace2016@0.1.25';
-        var worker = new WorkerClient(`${path}/worker/worker-systemjs.js`);
+                    worker.on("errors", function(errors: { data: Annotation[] }) {
+                        session.setAnnotations(errors.data);
+                    });
 
-        worker.on("initAfter", function() {
-            worker.attachToDocument(session.getDocument());
-        });
+                    worker.on("terminate", function() {
+                        session.clearAnnotations();
+                    });
 
-        worker.on("errors", function(errors: { data: Annotation[] }) {
-            session.setAnnotations(errors.data);
-        });
-
-        worker.on("terminate", function() {
-            session.clearAnnotations();
-        });
-
-        // FIXME: This is a module name
-        worker.init("lib/mode/JavaScriptWorker");
-
-        // FIXME: We are returning the WorkerClient before the thread has been initialized.
-        // We could use a Promise here?
-        return worker;
+                    // FIXME: This is a module name
+                    worker.init("geometryzen/ace2016/mode/JavaScriptWorker");
+                })
+                .catch(e => fail(e));
+        })
     }
 }

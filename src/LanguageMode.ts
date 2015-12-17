@@ -95,9 +95,9 @@ interface LanguageMode {
     /**
      * @method createWorker
      * @param session {EditSession}
-     * @return {WorkerClient}
+     * @return {Promise<WorkerClient>}
      */
-    createWorker(session: EditSession): WorkerClient;
+    createWorker(session: EditSession): Promise<WorkerClient>;
 
     /**
      * @method getCompletions
