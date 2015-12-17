@@ -253,8 +253,10 @@ export default class EditSession extends EventEmitterClass {
         this.selection = new Selection(this);
 
         resetOptions(this);
+
         // Without a mode all hell breaks loose.
         this.setLanguageMode(new TextMode());
+
         // FIXME: This was a signal to a global config object.
         // _signal("session", this);
     }

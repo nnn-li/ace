@@ -134,7 +134,12 @@ export default class JavaScriptMode extends TextMode {
 
         // FIXME: This is now a URL, not a module name to be loaded through SystemJS.
         // Therefore, we will probably need to inject in the path.
-        console.log(`document.location => ${document.location}`)
+        console.log(`document.location => ${document.location}`);
+        System.normalize('geometryzen/ace2016/worker/worker-system.js', '', '')
+            .then(function(normalized: string) {
+                console.log(`normalized => ${normalized}`);
+
+            });
         var path = 'jspm_packages/github/geometryzen/ace2016@0.1.25';
         var worker = new WorkerClient(`${path}/worker/worker-systemjs.js`);
 
