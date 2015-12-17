@@ -54,5 +54,5 @@ requirejs.config({
   stubModules: [],
 
   // build file destination, relative to the build file itself
-  out: "./dist/ace.js"
+  out: "./lib/ace.js"
 })

@@ -1,1 +1,0 @@
-export var COMMAND_NAME_AUTO_COMPLETE = "autoComplete";

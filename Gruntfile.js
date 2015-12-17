@@ -17,7 +17,7 @@ module.exports = function(grunt) {
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['dist', 'system', 'lib', 'documentation']
+      src: ['amd', 'es6', 'dist', 'system', 'lib', 'documentation']
     },
 
     exec: {
@@ -43,17 +43,8 @@ module.exports = function(grunt) {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
-        src: 'dist/ace.js',
-        dest: 'dist/ace.min.js'
-      }
-    },
-    concat: {
-      options: {
-
-      },
-      dist: {
-        src: ['system/**/*.js'],
-        dest: 'dist/ace.js'
+        src: 'lib/ace.js',
+        dest: 'lib/ace.min.js'
       }
     },
     copy: {
@@ -220,12 +211,26 @@ module.exports = function(grunt) {
       return ['--outDir', where].concat(xs);
   }
 
-  var args = compilerSources;
-  args = TARGET(args, 'ES6');
-  args = MODULE(args, 'es6');
-  args = removeComments(args);
+  grunt.registerTask('buildAMD', "Build", function() {
+    var args = compilerSources;
+    args = TARGET(args, 'ES5');
+    args = MODULE(args, 'amd');
+    args = removeComments(args);
+    var done = this.async();
+    tsc(outDir('amd', args).join(" "))
+    .then(function(){
+      done(true);
+    })
+    .catch(function(){
+      done(false);
+    });
+  });
 
-  grunt.registerTask('tscES6', "Build", function() {
+  grunt.registerTask('buildES6', "Build", function() {
+    var args = compilerSources;
+    args = TARGET(args, 'ES6');
+    args = MODULE(args, 'es6');
+    args = removeComments(args);
     var done = this.async();
     tsc(outDir('es6', args).join(" "))
     .then(function(){
@@ -260,5 +265,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
-  grunt.registerTask('default', ['clean', 'tscES6', 'copy', 'bundle']);
+  grunt.registerTask('default', ['clean', 'buildES6', 'copy', 'bundle']);
+
+  grunt.registerTask('default', ['clean', 'buildAMD', 'docs', 'copy', 'requirejs', 'uglify']);
+  // grunt.registerTask('default', ['clean', 'buildES6', 'copy', 'bundle']);
 };
