@@ -61,6 +61,12 @@ module.exports = function(grunt) {
         cwd: 'src/modules/',
         src: ['ace.d.ts'],
         dest: 'dist/'
+      },
+      themes: {
+        expand: true,
+        cwd: 'src/theme/',
+        src: ['**/*.css'],
+        dest: 'lib/theme/'
       }
     },
     connect: {
