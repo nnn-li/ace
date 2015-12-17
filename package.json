@@ -1,6 +1,6 @@
 {
   "name": "ace2018",
-  "version": "0.1.49",
+  "version": "0.1.50",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "directories": {
     "lib": "lib"
@@ -68,6 +68,7 @@
     "jspm": "^0.16.11",
     "q": "~1.2.1",
     "requirejs": "~2.1.0",
-    "servedir": "*"
+    "servedir": "*",
+    "systemjs-builder": "^0.14.15"
   }
 }

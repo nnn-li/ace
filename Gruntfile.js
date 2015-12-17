@@ -4,6 +4,7 @@ module.exports = function(grunt) {
   // Do grunt-related things in here.
 
   var path = require('path');
+  var Builder = require('systemjs-builder');
   var cp = require('child_process');
   var Q = require('q');
 
@@ -16,7 +17,7 @@ module.exports = function(grunt) {
     // Task configuration.
     clean: {
       // Don't clean 'lib' yet until we figure out what to do with the worker-system.js file.
-      src: ['dist', 'es6', 'system', 'lib', 'documentation']
+      src: ['dist', 'system', 'lib', 'documentation']
     },
 
     exec: {
@@ -140,6 +141,9 @@ module.exports = function(grunt) {
     }
   });
 
+  /**
+   * tsc(tsgile: string, options): Promise
+   */
   function tsc(tsfile, option) {
     var command = "node " + path.resolve(path.dirname(require.resolve("typescript")), "tsc ");
     var optArray = Object.keys(option || {}).reduce(function(res, key) {
@@ -181,6 +185,7 @@ module.exports = function(grunt) {
       "src/ace.ts",
       "src/main.ts",
       "src/lib/Sender.ts",
+      "src/lib/dom.ts",
       "src/worker/worker-systemjs.ts",
       "src/mode/HtmlMode.ts",
       "src/mode/HtmlWorker.ts",
@@ -220,13 +225,30 @@ module.exports = function(grunt) {
   args = MODULE(args, 'es6');
   args = removeComments(args);
 
-  grunt.registerTask('tscES6', "Build", function(){
+  grunt.registerTask('tscES6', "Build", function() {
     var done = this.async();
     tsc(outDir('es6', args).join(" "))
     .then(function(){
       done(true);
     })
     .catch(function(){
+      done(false);
+    });
+  });
+
+  function bundle() {
+    var builder = new Builder('.', './config.js');
+    return builder.bundle('es6/ace.js', 'lib/ace.js', {});
+  }
+
+  grunt.registerTask('bundle', "Bundle", function() {
+    var done = this.async();
+    bundle()
+    .then(function(){
+      done(true);
+    })
+    .catch(function(err){
+      console.log(err);
       done(false);
     });
   });
@@ -238,5 +260,5 @@ module.exports = function(grunt) {
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
-  grunt.registerTask('default', ['clean', 'tscES6', 'docs', 'copy']);
+  grunt.registerTask('default', ['clean', 'tscES6', 'copy', 'bundle']);
 };
