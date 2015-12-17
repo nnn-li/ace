@@ -132,7 +132,9 @@ export default class JavaScriptMode extends TextMode {
 
     createWorker(session: EditSession): Promise<WorkerClient> {
         return new Promise<WorkerClient>(function(success, fail) {
-            System.normalize('geometryzen/ace2016/worker/worker-systemjs.js', '', '')
+            //var name = 'geometryzen/ace2016/worker/worker-systemjs.js';
+            var name = '../worker/worker-systemjs.js';
+            System.normalize(name, '', '')
                 .then(function(workerUrl: string) {
                     var worker = new WorkerClient(workerUrl);
 
