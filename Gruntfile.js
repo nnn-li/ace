@@ -174,6 +174,7 @@ module.exports = function(grunt) {
   var compilerSources = [
       "src/ace.ts",
       "src/main.ts",
+      "src/lib/Sender.ts",
       "src/worker/worker-systemjs.ts",
       "src/mode/HtmlMode.ts",
       "src/mode/HtmlWorker.ts",
