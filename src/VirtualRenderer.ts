@@ -1825,10 +1825,17 @@ export default class VirtualRenderer extends EventEmitterClass implements Option
      * @return {void}
      */
     setThemeLink(themeLink: ThemeLink): void {
-        appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, themeLink.href, document);
-        this.addCssClass(themeLink.id);
-        this.setCssClass("ace_dark", themeLink.isDark);
-        this.setPadding(themeLink.padding);
+        var self = this;
+        System.normalize(themeLink.href, '', '')
+            .then(function(href: string) {
+                appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, href, document);
+                self.addCssClass(themeLink.id);
+                self.setCssClass("ace_dark", themeLink.isDark);
+                self.setPadding(themeLink.padding);
+            })
+            .catch(function(e) {
+                console.warn(`${e}`);
+            });
     }
 
     /**
