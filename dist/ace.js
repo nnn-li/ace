@@ -14777,6 +14777,7 @@ define('lib/Sender',["require", "exports", './event_emitter'], function (require
         __extends(Sender, _super);
         function Sender(target) {
             _super.call(this);
+            console.log("Sender constructor");
             this.target = target;
         }
         Sender.prototype.callback = function (data, callbackId) {
@@ -24038,6 +24039,7 @@ define('mode/JavaScriptWorker',["require", "exports", "../lib/oop", "../worker/M
         __extends(JavaScriptWorker, _super);
         function JavaScriptWorker(sender) {
             _super.call(this, sender);
+            console.log("JavaScriptWorker constructor sender => " + typeof sender);
             this.setOptions();
             sender.emit('initAfter');
         }
