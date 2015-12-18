@@ -62,14 +62,11 @@ import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
 import {isDark, cssClass} from "./theme/twilight"
 
-import Sender from "./lib/Sender";
+import CssMode from "./mode/CssMode";
 import HtmlMode from "./mode/HtmlMode";
-import HtmlWorker from "./mode/HtmlWorker";
 import JavaScriptMode from "./mode/JavaScriptMode";
-import JavaScriptWorker from "./mode/JavaScriptWorker";
 import TextMode from "./mode/TextMode";
 import TypeScriptMode from "./mode/TypeScriptMode";
-import TypeScriptWorker from "./mode/TypeScriptWorker";
 import WorkerClient from "./worker/WorkerClient";
 
 var ace = {
@@ -79,11 +76,13 @@ var ace = {
     get Range() { return Range },
     get UndoManager() { return UndoManager },
     get VirtualRenderer() { return VirtualRenderer },
+
     get WorkerClient() { return WorkerClient },
+    get CssMode() { return CssMode },
+    get HtmlMode() { return HtmlMode },
     get TextMode() { return TextMode },
     get JavaScriptMode() { return JavaScriptMode },
-    get Sender() { return Sender },
-    get JavaScriptWorker() { return JavaScriptWorker }
+    get TypeScriptMode() { return TypeScriptMode },
 };
 
 export default ace;

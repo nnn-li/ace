@@ -56,11 +56,23 @@ declare module Ace {
         constructor();
     }
 
-    class TextMode {
+    class CssMode extends TextMode {
+        constructor(workerUrl: string);
+    }
+
+    class HtmlMode extends TextMode {
+        constructor(workerUrl: string);
+    }
+
+    class TextMode implements LanguageMode {
         constructor(workerUrl: string);
     }
 
     class JavaScriptMode extends TextMode {
+        constructor(workerUrl: string);
+    }
+
+    class TypeScriptMode extends TextMode {
         constructor(workerUrl: string);
     }
 }
