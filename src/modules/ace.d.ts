@@ -34,10 +34,6 @@ declare module Ace {
         setFontSize(fontSize: string): void;
     }
 
-    class JavaScriptMode {
-        constructor(workerUrl: string);
-    }
-
     interface LanguageMode {
     }
 
@@ -54,6 +50,14 @@ declare module Ace {
         addCssClass(cssClass: string): void;
         setPadding(padding: number): void;
         setThemeCss(cssClass: string, href: string): void;
+    }
+
+    class TextMode {
+        constructor(workerUrl: string);
+    }
+
+    class JavaScriptMode extends TextMode {
+        constructor(workerUrl: string);
     }
 }
 

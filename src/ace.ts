@@ -78,7 +78,7 @@ var ace = {
     get Range() { return Range },
     get UndoManager() { return UndoManager },
     get VirtualRenderer() { return VirtualRenderer },
-    // FIXME: Make this external. Update ace.d.ts!
+    get TextMode() { return TextMode },
     get JavaScriptMode() { return JavaScriptMode },
     get Sender() { return Sender },
     get JavaScriptWorker() { return JavaScriptWorker }

@@ -3,8 +3,7 @@
  * Remember! This is a Web Worker. SystemJS has not been loaded yet.
  */
 "no use strict";
-;
-(function(window/*: WorkerGlobalScope*/) {
+;(function(window/*: WorkerGlobalScope*/) {
     if (typeof window.window !== 'undefined' && window.document) {
         return;
     }
