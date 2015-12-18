@@ -277,6 +277,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
+  // This creates a bundle in amd format and targeting ES5.
   grunt.registerTask('default', ['clean', 'buildAMD', 'docs', 'copy', 'requirejs', 'uglify']);
+
   // grunt.registerTask('default', ['clean', 'buildES6', 'copy', 'bundle']);
 };

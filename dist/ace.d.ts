@@ -30,6 +30,7 @@ declare module Ace {
         getSession(): EditSession;
         on(eventName: string, callback): void;
         resize(force?: boolean): void;
+        setFontSize(fontSize: string): void;
     }
 
     class Range {

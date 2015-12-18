@@ -65,20 +65,26 @@ var $split: (text: string) => string[] = (function() {
     function bar(text: string): string[] {
         return text.split(/\r\n|\r|\n/);
     }
+    // Determine whether the split function performs as we expect.
+    // Here we attempt to separate a string of three separators.
+    // If all works out, we should get back an array of four (4) empty strings.
     if ("aaa".split(/a/).length === 0) {
         return foo;
     }
     else {
+        // In Chrome, this is the mainline because the result
+        // of the test condition length is 4.
         return bar;
     }
 })();
 
-function $clipPosition(doc: Document, position: { row: number; column: number }) {
+function $clipPosition(doc: Document, position: Position): Position {
     var length = doc.getLength();
     if (position.row >= length) {
         position.row = Math.max(0, length - 1);
         position.column = doc.getLine(length - 1).length;
-    } else if (position.row < 0) {
+    }
+    else if (position.row < 0) {
         position.row = 0;
     }
     return position;
@@ -152,10 +158,11 @@ export default class Document extends EventEmitterClass {
     }
 
     /** 
-     * Splits a string of text on any newline (`\n`) or carriage-return ('\r') characters.
+     * Determines the newline character that is present in the presented text
+     * and caches the result in $autoNewLine.
      *
-     * @method $split
-     * @param {string} text The text to work with
+     * @method $detectNewLine
+     * @param {string} text The text to work with.
      * @return {void}
      * @private
      */

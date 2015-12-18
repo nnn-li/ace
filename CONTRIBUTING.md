@@ -9,16 +9,22 @@ Browser Code Editor targeting ES6 written in TypeScript
 git clone ...
 ```
 
+Install NPM dependencies (most of build).
+
 ```
 npm install
 ```
 
-```
-jspm install
-```
+Install Bower dependencies (use of r.js for AMD packaging).
 
 ```
 bower install
+```
+
+Not currently using JSPM, so this isn't required
+.
+```
+jspm install
 ```
 
 # Development #
