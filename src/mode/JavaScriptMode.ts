@@ -132,7 +132,8 @@ export default class JavaScriptMode extends TextMode {
 
     createWorker(session: EditSession): Promise<WorkerClient> {
         return new Promise<WorkerClient>(function(success, fail) {
-            var name = 'geometryzen/ace2016/worker/worker-systemjs';
+            // This is worth a try...
+            var name = '../worker/worker-systemjs';
             System.normalize(name, '', '')
                 .then(function(workerUrl: string) {
                     var worker = new WorkerClient(workerUrl);

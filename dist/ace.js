@@ -15864,7 +15864,7 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
         ;
         JavaScriptMode.prototype.createWorker = function (session) {
             return new Promise(function (success, fail) {
-                var name = 'geometryzen/ace2016/worker/worker-systemjs';
+                var name = '../worker/worker-systemjs';
                 System.normalize(name, '', '')
                     .then(function (workerUrl) {
                     var worker = new WorkerClient_1.default(workerUrl);

@@ -33,6 +33,13 @@ declare module Ace {
         setFontSize(fontSize: string): void;
     }
 
+    class JavaScriptMode {
+      constructor();
+    }
+
+    interface LangaugeMode {
+    }
+
     class Range {
         constructor(startRow: number, startColumn: number, endRow: number, endColumn);
     }
