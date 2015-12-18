@@ -14592,11 +14592,9 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                 });
             });
         };
-        VirtualRenderer.prototype.setThemeCss = function (themeLink, href) {
-            dom_1.appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, href, document);
-            this.addCssClass(themeLink.id);
-            this.setCssClass("ace_dark", themeLink.isDark);
-            this.setPadding(themeLink.padding);
+        VirtualRenderer.prototype.setThemeCss = function (cssClass, href) {
+            dom_1.appendHTMLLinkElement(cssClass, 'stylesheet', 'text/css', href, document);
+            this.addCssClass(cssClass);
         };
         VirtualRenderer.prototype.getTheme = function () {
             return this.$themeId;

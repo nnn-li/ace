@@ -1826,15 +1826,15 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
 
     /**
      * @method setThemeCss
-     * @param themeLink {ThemeLink}
+     * @param cssClass {string}
      * @param href {string}
      * @return {void}
      */
-    setThemeCss(themeLink: ThemeLink, href: string): void {
-        appendHTMLLinkElement(themeLink.id, themeLink.rel, themeLink.type, href, document);
-        this.addCssClass(themeLink.id);
-        this.setCssClass("ace_dark", themeLink.isDark);
-        this.setPadding(themeLink.padding);
+    setThemeCss(cssClass: string, href: string): void {
+        appendHTMLLinkElement(cssClass, 'stylesheet', 'text/css', href, document);
+        this.addCssClass(cssClass);
+//      this.setCssClass("ace_dark", themeLink.isDark);
+//      this.setPadding(themeLink.padding);
     }
 
     /**

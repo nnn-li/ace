@@ -43,6 +43,9 @@ declare module Ace {
 
     class VirtualRenderer {
         constructor(container: HTMLElement);
+        addCssClass(cssClass: string): void;
+        setPadding(padding: number): void;
+        setThemeCss(cssClass: string, href: string): void;
     }
 }
 

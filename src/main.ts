@@ -70,7 +70,9 @@ var renderer = new VirtualRenderer(element);
 //renderer.setPadding(10);
 renderer.importThemeLink('lib/theme/twilight')
     .then(function(themeLink: ThemeLink) {
-        renderer.setThemeCss(themeLink,'/assets/css/twilight.css')
+        renderer.setThemeCss("ace-twilight", '/assets/css/twilight.css');
+        renderer.addCssClass("ace_dark");
+        renderer.setPadding(4);
     })
     .catch(function(reason) {
         console.warn(`importThemeLink() failed. Reason:  ${reason}`);
