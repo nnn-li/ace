@@ -53,7 +53,7 @@ declare module Ace {
     }
 
     class WorkerClient {
-        constructor();
+        constructor(workerUrl: string);
     }
 
     class CssMode extends TextMode {
@@ -65,6 +65,7 @@ declare module Ace {
     }
 
     class TextMode implements LanguageMode {
+        protected workerUrl: string;
         constructor(workerUrl: string);
     }
 
