@@ -15864,23 +15864,19 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
         ;
         JavaScriptMode.prototype.createWorker = function (session) {
             return new Promise(function (success, fail) {
-                var name = '../worker/worker-systemjs';
-                System.normalize(name, '', '')
-                    .then(function (workerUrl) {
-                    var worker = new WorkerClient_1.default(workerUrl);
-                    worker.on("initAfter", function () {
-                        worker.attachToDocument(session.getDocument());
-                        success(worker);
-                    });
-                    worker.on("errors", function (errors) {
-                        session.setAnnotations(errors.data);
-                    });
-                    worker.on("terminate", function () {
-                        session.clearAnnotations();
-                    });
-                    worker.init("geometryzen/ace2016/mode/JavaScriptWorker");
-                })
-                    .catch(function (e) { return fail(e); });
+                var workerUrl = '../worker/worker-systemjs';
+                var worker = new WorkerClient_1.default(workerUrl);
+                worker.on("initAfter", function () {
+                    worker.attachToDocument(session.getDocument());
+                    success(worker);
+                });
+                worker.on("errors", function (errors) {
+                    session.setAnnotations(errors.data);
+                });
+                worker.on("terminate", function () {
+                    session.clearAnnotations();
+                });
+                worker.init("geometryzen/ace2016/mode/JavaScriptWorker");
             });
         };
         return JavaScriptMode;

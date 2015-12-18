@@ -20,6 +20,7 @@ declare module Ace {
 
     class EditSession {
         constructor(doc: Document);
+        setLanguageMode(mode: LanguageMode): void;
         setMode(modeName: string): void;
         setUndoManager(undoManager: UndoManager): void;
     }
@@ -34,10 +35,10 @@ declare module Ace {
     }
 
     class JavaScriptMode {
-      constructor();
+        constructor();
     }
 
-    interface LangaugeMode {
+    interface LanguageMode {
     }
 
     class Range {

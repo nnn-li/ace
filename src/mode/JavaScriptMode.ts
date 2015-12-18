@@ -133,27 +133,23 @@ export default class JavaScriptMode extends TextMode {
     createWorker(session: EditSession): Promise<WorkerClient> {
         return new Promise<WorkerClient>(function(success, fail) {
             // This is worth a try...
-            var name = '../worker/worker-systemjs';
-            System.normalize(name, '', '')
-                .then(function(workerUrl: string) {
-                    var worker = new WorkerClient(workerUrl);
+            var workerUrl = '../worker/worker-systemjs';
+            var worker = new WorkerClient(workerUrl);
 
-                    worker.on("initAfter", function() {
-                        worker.attachToDocument(session.getDocument());
-                        success(worker);
-                    });
+            worker.on("initAfter", function() {
+                worker.attachToDocument(session.getDocument());
+                success(worker);
+            });
 
-                    worker.on("errors", function(errors: { data: Annotation[] }) {
-                        session.setAnnotations(errors.data);
-                    });
+            worker.on("errors", function(errors: { data: Annotation[] }) {
+                session.setAnnotations(errors.data);
+            });
 
-                    worker.on("terminate", function() {
-                        session.clearAnnotations();
-                    });
+            worker.on("terminate", function() {
+                session.clearAnnotations();
+            });
 
-                    worker.init("geometryzen/ace2016/mode/JavaScriptWorker");
-                })
-                .catch(e => fail(e));
+            worker.init("geometryzen/ace2016/mode/JavaScriptWorker");
         })
     }
 }
