@@ -120,8 +120,9 @@ export default class TextMode implements LanguageMode {
     /**
      * @class TextMode
      * @constructor
+     * @param workerUrl {string}
      */
-    constructor() {
+    constructor(workerUrl: string) {
     }
 
     /**

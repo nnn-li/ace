@@ -90,10 +90,11 @@ export default class HtmlMode extends TextMode {
     /**
      * @class HtmlMode
      * @constructor
+     * @param workerUrl {string}
      * @param [options]
      */
-    constructor(options?: { fragmentContext: string }) {
-        super();
+    constructor(workerUrl: string, options?: { fragmentContext: string }) {
+        super(workerUrl);
         this.fragmentContext = options && options.fragmentContext;
         this.HighlightRules = HtmlHighlightRules;
         this.$behaviour = new HtmlBehaviour();

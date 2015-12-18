@@ -35,7 +35,7 @@ declare module Ace {
     }
 
     class JavaScriptMode {
-        constructor();
+        constructor(workerUrl: string);
     }
 
     interface LanguageMode {

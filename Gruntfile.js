@@ -48,17 +48,23 @@ module.exports = function(grunt) {
       }
     },
     copy: {
-      main: {
+      typings: {
         expand: true,
         cwd: 'src/modules/',
         src: ['ace.d.ts'],
-        dest: 'dist/'
+        dest: 'dist/typings'
       },
       themes: {
         expand: true,
         cwd: 'src/theme/',
         src: ['**/*.css'],
-        dest: 'dist/theme/'
+        dest: 'dist/themes/'
+      },
+      workers: {
+        expand: true,
+        cwd: 'amd/worker/',
+        src: ['**/worker-systemjs.js'],
+        dest: 'dist/workers/'
       }
     },
     connect: {
