@@ -52,6 +52,10 @@ declare module Ace {
         setThemeCss(cssClass: string, href: string): void;
     }
 
+    class WorkerClient {
+        constructor();
+    }
+
     class TextMode {
         constructor(workerUrl: string);
     }

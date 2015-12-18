@@ -24138,7 +24138,7 @@ define('mode/JavaScriptWorker',["require", "exports", "../lib/oop", "../worker/M
     exports.default = JavaScriptWorker;
 });
 
-define('ace',["require", "exports", "./Editor", "./Document", "./EditSession", "./Range", "./UndoManager", "./VirtualRenderer", "./lib/Sender", "./mode/JavaScriptMode", "./mode/JavaScriptWorker", "./mode/TextMode"], function (require, exports, Editor_1, Document_1, EditSession_1, Range_1, UndoManager_1, VirtualRenderer_1, Sender_1, JavaScriptMode_1, JavaScriptWorker_1, TextMode_1) {
+define('ace',["require", "exports", "./Editor", "./Document", "./EditSession", "./Range", "./UndoManager", "./VirtualRenderer", "./lib/Sender", "./mode/JavaScriptMode", "./mode/JavaScriptWorker", "./mode/TextMode", "./worker/WorkerClient"], function (require, exports, Editor_1, Document_1, EditSession_1, Range_1, UndoManager_1, VirtualRenderer_1, Sender_1, JavaScriptMode_1, JavaScriptWorker_1, TextMode_1, WorkerClient_1) {
     var ace = {
         get Document() { return Document_1.default; },
         get EditSession() { return EditSession_1.default; },
@@ -24146,6 +24146,7 @@ define('ace',["require", "exports", "./Editor", "./Document", "./EditSession", "
         get Range() { return Range_1.default; },
         get UndoManager() { return UndoManager_1.default; },
         get VirtualRenderer() { return VirtualRenderer_1.default; },
+        get WorkerClient() { return WorkerClient_1.default; },
         get TextMode() { return TextMode_1.default; },
         get JavaScriptMode() { return JavaScriptMode_1.default; },
         get Sender() { return Sender_1.default; },

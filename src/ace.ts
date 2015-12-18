@@ -70,6 +70,7 @@ import JavaScriptWorker from "./mode/JavaScriptWorker";
 import TextMode from "./mode/TextMode";
 import TypeScriptMode from "./mode/TypeScriptMode";
 import TypeScriptWorker from "./mode/TypeScriptWorker";
+import WorkerClient from "./worker/WorkerClient";
 
 var ace = {
     get Document() { return Document },
@@ -78,6 +79,7 @@ var ace = {
     get Range() { return Range },
     get UndoManager() { return UndoManager },
     get VirtualRenderer() { return VirtualRenderer },
+    get WorkerClient() { return WorkerClient },
     get TextMode() { return TextMode },
     get JavaScriptMode() { return JavaScriptMode },
     get Sender() { return Sender },
