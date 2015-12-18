@@ -132,9 +132,12 @@ export default class JavaScriptMode extends TextMode {
     };
 
     createWorker(session: EditSession): Promise<WorkerClient> {
+
+        var workerUrl = this.workerUrl;
+
+        // FIXME: How do we communicate fail.
         return new Promise<WorkerClient>(function(success, fail) {
-            // This is worth a try...
-            var workerUrl = '../worker/worker-systemjs';
+
             var worker = new WorkerClient(workerUrl);
 
             worker.on("initAfter", function() {

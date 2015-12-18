@@ -118,11 +118,24 @@ export default class TextMode implements LanguageMode {
     public getMatching: (session: EditSession) => Range;
 
     /**
+     * @property workerUrl
+     * @type string
+     * @protected
+     */
+    protected workerUrl: string;
+
+    /**
      * @class TextMode
      * @constructor
      * @param workerUrl {string}
      */
     constructor(workerUrl: string) {
+        if (typeof workerUrl === 'string') {
+            this.workerUrl = workerUrl;
+        }
+        else {
+            throw new TypeError("workerUrl must be a string.");
+        }
     }
 
     /**
@@ -271,6 +284,14 @@ export default class TextMode implements LanguageMode {
         iter(shouldRemove ? uncomment : comment);
     }
 
+    /**
+     * @method toggleBlockComment
+     * @param state {string}
+     * @param session {EditSession}
+     * @param range {Range}
+     * @param cirsor {Position}
+     * @return {void}
+     */
     toggleBlockComment(state: string, session: EditSession, range: Range, cursor: Position): void {
         var comment = this.blockComment;
         if (!comment)

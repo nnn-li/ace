@@ -9635,6 +9635,12 @@ define('mode/TextMode',["require", "exports", "../Tokenizer", "./TextHighlightRu
             this.lineCommentStart = "";
             this.blockComment = "";
             this.$id = "ace/mode/text";
+            if (typeof workerUrl === 'string') {
+                this.workerUrl = workerUrl;
+            }
+            else {
+                throw new TypeError("workerUrl must be a string.");
+            }
         }
         TextMode.prototype.getTokenizer = function () {
             if (!this.$tokenizer) {
@@ -15863,8 +15869,8 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
         };
         ;
         JavaScriptMode.prototype.createWorker = function (session) {
+            var workerUrl = this.workerUrl;
             return new Promise(function (success, fail) {
-                var workerUrl = '../worker/worker-systemjs';
                 var worker = new WorkerClient_1.default(workerUrl);
                 worker.on("initAfter", function () {
                     worker.attachToDocument(session.getDocument());
