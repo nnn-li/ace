@@ -38,7 +38,7 @@
             sender = new ace.Sender(window);
             System.import('ace')
                 .then(function (m) {
-                main = window.main = new m.default(sender);
+                main = window.main = new m['JavaScriptWorker'](sender);
             })
                 .catch(function (error) {
                 console.error(error);

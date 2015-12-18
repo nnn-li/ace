@@ -62,6 +62,7 @@ import UndoManager from "./UndoManager";
 import VirtualRenderer from "./VirtualRenderer";
 import {isDark, cssClass} from "./theme/twilight"
 
+import Sender from "./lib/Sender";
 import HtmlMode from "./mode/HtmlMode";
 import HtmlWorker from "./mode/HtmlWorker";
 import JavaScriptMode from "./mode/JavaScriptMode";
@@ -78,7 +79,9 @@ var ace = {
     get UndoManager() { return UndoManager },
     get VirtualRenderer() { return VirtualRenderer },
     // FIXME: Make this external. Update ace.d.ts!
-    get JavaScriptMode() { return JavaScriptMode }
+    get JavaScriptMode() { return JavaScriptMode },
+    get Sender() { return Sender },
+    get JavaScriptWorker() { return JavaScriptWorker }
 };
 
 export default ace;

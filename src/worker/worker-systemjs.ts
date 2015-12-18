@@ -19,9 +19,7 @@
         window.console.trace = window.console;
 
     // importScripts is synchronous and scripts are loaded in argument order.
-    // importScripts('jspm_packages/system.js', 'config.js');
     importScripts('/jspm_packages/system.js', '/config.js');
-    // importScripts('../../jspm_packages/system.js', '../../config.js');
 
     window.window = window;
 
@@ -59,8 +57,9 @@
                 // This could be somewhere else.
                 System.import('ace')
                     .then(function(m: any/*Module*/) {
-                        // We also need th class name!
-                        main = window.main = new m.default(sender)
+                        // We also need the class name!
+                        // But this also will depend upon the implementation.
+                        main = window.main = new m['JavaScriptWorker'](sender);
                     })
                     .catch(function(error) {
                         console.error(error);
