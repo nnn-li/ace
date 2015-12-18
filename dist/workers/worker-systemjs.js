@@ -33,11 +33,16 @@
         return moduleName;
     };
     function initDelegate(name) {
+        console.log("initDelegate(" + name + ")");
         System.import('ace')
             .then(function (ace) {
+            console.log("ace => " + typeof ace);
+            console.log("ace.Sender => " + typeof ace.Sender);
             sender = new ace.Sender(window);
             System.import('ace')
                 .then(function (m) {
+                console.log("m => " + typeof m);
+                console.log("m.JavaScriptWorker => " + typeof m.JavaScriptWorker);
                 main = window.main = new m['JavaScriptWorker'](sender);
             })
                 .catch(function (error) {

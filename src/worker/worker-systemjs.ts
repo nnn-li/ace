@@ -51,12 +51,17 @@
 
     function initDelegate(name: string): void {
         // FIXME: Pass in the first part...
+        console.log(`initDelegate(${name})`);
         System.import('ace')
             .then(function(ace: any) {
+                console.log(`ace => ${typeof ace}`);
+                console.log(`ace.Sender => ${typeof ace.Sender}`);
                 sender = new ace.Sender(window)
                 // This could be somewhere else.
                 System.import('ace')
                     .then(function(m: any/*Module*/) {
+                        console.log(`m => ${typeof m}`);
+                        console.log(`m.JavaScriptWorker => ${typeof m.JavaScriptWorker}`);
                         // We also need the class name!
                         // But this also will depend upon the implementation.
                         main = window.main = new m['JavaScriptWorker'](sender);
