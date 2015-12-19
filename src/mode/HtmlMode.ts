@@ -127,10 +127,10 @@ export default class HtmlMode extends TextMode {
 
         var workerUrl = this.workerUrl;
         var scriptImports = this.scriptImports;
+        var mode = this;
 
         return new Promise<WorkerClient>(function(resolve, reject) {
             var worker = new WorkerClient(workerUrl);
-            var mode = this;
 
             worker.on("initAfter", function() {
                 worker.attachToDocument(session.getDocument());

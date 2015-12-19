@@ -17179,9 +17179,9 @@ define('mode/HtmlMode',["require", "exports", "../lib/lang", "./TextMode", "./Ja
         HtmlMode.prototype.createWorker = function (session) {
             var workerUrl = this.workerUrl;
             var scriptImports = this.scriptImports;
+            var mode = this;
             return new Promise(function (resolve, reject) {
                 var worker = new WorkerClient_1.default(workerUrl);
-                var mode = this;
                 worker.on("initAfter", function () {
                     worker.attachToDocument(session.getDocument());
                     if (mode.fragmentContext) {
