@@ -134,6 +134,7 @@ export default class JavaScriptMode extends TextMode {
     createWorker(session: EditSession): Promise<WorkerClient> {
 
         var workerUrl = this.workerUrl;
+        var scriptImports = this.scriptImports;
 
         // FIXME: How do we communicate fail.
         return new Promise<WorkerClient>(function(success, fail) {
@@ -150,10 +151,11 @@ export default class JavaScriptMode extends TextMode {
             });
 
             worker.on("terminate", function() {
+                worker.detachFromDocument();
                 session.clearAnnotations();
             });
 
-            worker.init("geometryzen/ace2016/mode/JavaScriptWorker");
+            worker.init(scriptImports, "geometryzen/ace2016/mode/JavaScriptWorker");
         })
     }
 }

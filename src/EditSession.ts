@@ -1181,7 +1181,9 @@ export default class EditSession extends EventEmitterClass {
             // FIXME? Notice that the worker has been created but may not be ready
             // to receive messages yet.
             this.$mode.createWorker(this)
-                .then(worker => this.$worker = worker)
+                .then(worker => {
+                    this.$worker = worker;
+                })
                 .catch(function(e) {
                     console.warn(`${e}`);
                 });
@@ -3564,7 +3566,6 @@ defineOptions(EditSession.prototype, "session", {
     },
     useWorker: {
         set: function(useWorker: boolean) {
-            console.log(`EditSession.setUseWorker(${useWorker})`);
             this.$useWorker = useWorker;
 
             this.$stopWorker();

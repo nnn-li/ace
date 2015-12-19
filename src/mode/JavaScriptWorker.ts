@@ -69,9 +69,7 @@ export default class JavaScriptWorker extends Mirror {
     options: JSHintOptions;
     constructor(sender: WorkerCallback) {
         super(sender);
-        console.log("JavaScriptWorker constructor sender => " + typeof sender);
         this.setOptions();
-        sender.emit('initAfter');
     }
 
     setOptions(options?: {}) {

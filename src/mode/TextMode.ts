@@ -123,6 +123,7 @@ export default class TextMode implements LanguageMode {
      * @protected
      */
     protected workerUrl: string;
+    protected scriptImports: string[] = [];
 
     /**
      * @class TextMode

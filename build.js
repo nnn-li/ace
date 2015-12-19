@@ -19,12 +19,10 @@ requirejs.config({
   // it pulls in the rest of the dependencies automatically.
   include: [
   "ace",
+  "mode/CssMode",
   "mode/HtmlMode",
-  "mode/HtmlWorker",
   "mode/JavaScriptMode",
-  "mode/JavaScriptWorker",
-  "mode/TypeScriptMode",
-  "mode/TypeScriptWorker"
+  "mode/TypeScriptMode"
 ],
 
   // code to wrap around the start / end of the resulting build file

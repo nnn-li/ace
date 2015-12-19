@@ -83,6 +83,9 @@ export default class TypeScriptMode extends JavaScriptMode {
     }
 
     createWorker(session: EditSession): Promise<WorkerClient> {
+
+        var scriptImports = this.scriptImports;
+
         return new Promise<WorkerClient>(function(success, fail) {
             System.normalize('geometryzen/ace2016/worker/worker-systemjs.js', '', '')
                 .then(function(workerUrl: string) {
@@ -94,6 +97,7 @@ export default class TypeScriptMode extends JavaScriptMode {
                     });
 
                     worker.on("terminate", function() {
+                        worker.detachFromDocument();
                         session.clearAnnotations();
                     });
 
@@ -110,7 +114,7 @@ export default class TypeScriptMode extends JavaScriptMode {
                         session._emit("getFileNames", { data: event.data });
                     });
 
-                    worker.init("geometryzen/ace2016/mode/TypeScriptWorker");
+                    worker.init(scriptImports, "geometryzen/ace2016/mode/TypeScriptWorker");
                 })
                 .catch(e => fail(e));
         });

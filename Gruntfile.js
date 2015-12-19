@@ -181,19 +181,11 @@ module.exports = function(grunt) {
   var compilerSources = [
       "src/ace.ts",
       "src/main.ts",
-      "src/lib/Sender.ts",
       "src/lib/dom.ts",
-      "src/worker/worker-systemjs.ts",
       "src/mode/HtmlMode.ts",
-      "src/mode/HtmlWorker.ts",
       "src/mode/JavaScriptMode.ts",
-      "src/mode/JavaScriptWorker.ts",
       "src/mode/TypeScriptMode.ts",
-      "src/mode/TypeScriptWorker.ts",
-      "src/theme/twilight.ts",
       "./node_modules/typescript/lib/lib.es6.d.ts",
-      "./node_modules/typescript/lib/typescriptServices.d.ts",
-      "./typings/tsd.d.ts",
       "./typings/systemjs.d.ts"
   ];
 
