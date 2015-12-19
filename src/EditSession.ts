@@ -255,8 +255,9 @@ export default class EditSession extends EventEmitterClass {
         resetOptions(this);
 
         // Without a mode all hell breaks loose.
-        // We don't care about the workeUrl argument because there is no thread for text.
-        this.setLanguageMode(new TextMode(''));
+        // We don't care about the workeUrl or scriptImports arguments
+        // because there is no thread for text.
+        this.setLanguageMode(new TextMode('', []));
 
         // FIXME: This was a signal to a global config object.
         // _signal("session", this);
@@ -1076,8 +1077,7 @@ export default class EditSession extends EventEmitterClass {
 
         // Set mode to text until loading is finished.
         if (!this.$mode) {
-            // We don't care about the workeUrl argument because there is no thread for text.
-            this.$onChangeMode(new TextMode(''), true);
+            this.$onChangeMode(new TextMode('', []), true);
         }
 
         var self = this;

@@ -75,9 +75,10 @@ export default class JavaScriptMode extends TextMode {
      * @class JavaScriptMode
      * @constructor
      * @param workerUrl {string}
+     * @param scriptImports: {string[]}
      */
-    constructor(workerUrl: string) {
-        super(workerUrl);
+    constructor(workerUrl: string, scriptImports: string[]) {
+        super(workerUrl, scriptImports);
         // The Tokenizer will be built using these rules.
         this.HighlightRules = JavaScriptHighlightRules;
 

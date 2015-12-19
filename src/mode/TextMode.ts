@@ -130,13 +130,14 @@ export default class TextMode implements LanguageMode {
      * @constructor
      * @param workerUrl {string}
      */
-    constructor(workerUrl: string) {
+    constructor(workerUrl: string, scriptImports: string[]) {
         if (typeof workerUrl === 'string') {
             this.workerUrl = workerUrl;
         }
         else {
             throw new TypeError("workerUrl must be a string.");
         }
+        this.scriptImports = scriptImports;
     }
 
     /**

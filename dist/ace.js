@@ -9619,7 +9619,7 @@ define('unicode',["require", "exports"], function (require, exports) {
 define('mode/TextMode',["require", "exports", "../Tokenizer", "./TextHighlightRules", "./Behaviour", "../unicode", "../lib/lang", "../TokenIterator", "../Range"], function (require, exports, Tokenizer_1, TextHighlightRules_1, Behaviour_1, unicode_1, lang_1, TokenIterator_1, Range_1) {
     "use strict";
     var TextMode = (function () {
-        function TextMode(workerUrl) {
+        function TextMode(workerUrl, scriptImports) {
             this.HighlightRules = TextHighlightRules_1.default;
             this.$behaviour = new Behaviour_1.default();
             this.tokenRe = new RegExp("^["
@@ -9642,6 +9642,7 @@ define('mode/TextMode',["require", "exports", "../Tokenizer", "./TextHighlightRu
             else {
                 throw new TypeError("workerUrl must be a string.");
             }
+            this.scriptImports = scriptImports;
         }
         TextMode.prototype.getTokenizer = function () {
             if (!this.$tokenizer) {
@@ -10023,7 +10024,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             this.setDocument(doc);
             this.selection = new Selection_1.default(this);
             config_1.resetOptions(this);
-            this.setLanguageMode(new TextMode_1.default(''));
+            this.setLanguageMode(new TextMode_1.default('', []));
         }
         EditSession.prototype.setDocument = function (doc) {
             if (!(doc instanceof Document_1.default)) {
@@ -10434,7 +10435,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 throw new TypeError("modeName must be a string");
             }
             if (!this.$mode) {
-                this.$onChangeMode(new TextMode_1.default(''), true);
+                this.$onChangeMode(new TextMode_1.default('', []), true);
             }
             var self = this;
             return new Promise(function (success, fail) {
@@ -15663,8 +15664,8 @@ define('mode/CssMode',["require", "exports", "./TextMode", "./CssHighlightRules"
     "use strict";
     var CssMode = (function (_super) {
         __extends(CssMode, _super);
-        function CssMode(workerUrl) {
-            _super.call(this, workerUrl);
+        function CssMode(workerUrl, scriptImports) {
+            _super.call(this, workerUrl, scriptImports);
             this.$id = "ace/mode/css";
             this.blockComment = { start: "/*", end: "*/" };
             this.HighlightRules = CssHighlightRules_1.default;
@@ -16109,8 +16110,8 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
     "use strict";
     var JavaScriptMode = (function (_super) {
         __extends(JavaScriptMode, _super);
-        function JavaScriptMode(workerUrl) {
-            _super.call(this, workerUrl);
+        function JavaScriptMode(workerUrl, scriptImports) {
+            _super.call(this, workerUrl, scriptImports);
             this.HighlightRules = JavaScriptHighlightRules_1.default;
             this.$outdent = new MatchingBraceOutdent_1.default();
             this.$behaviour = new CstyleBehaviour_1.default();
@@ -17150,8 +17151,8 @@ define('mode/HtmlMode',["require", "exports", "../lib/lang", "./TextMode", "./Ja
     var optionalEndTags = ["li", "dt", "dd", "p", "rt", "rp", "optgroup", "option", "colgroup", "td", "th"];
     var HtmlMode = (function (_super) {
         __extends(HtmlMode, _super);
-        function HtmlMode(workerUrl, options) {
-            _super.call(this, workerUrl);
+        function HtmlMode(workerUrl, scriptImports, options) {
+            _super.call(this, workerUrl, scriptImports);
             this.blockComment = { start: "<!--", end: "-->" };
             this.voidElements = lang_1.arrayToMap(voidElements, 1);
             this.$id = "ace/mode/html";
@@ -17271,8 +17272,8 @@ define('mode/TypeScriptMode',["require", "exports", "./JavaScriptMode", "./TypeS
     "use strict";
     var TypeScriptMode = (function (_super) {
         __extends(TypeScriptMode, _super);
-        function TypeScriptMode(workerUrl) {
-            _super.call(this, workerUrl);
+        function TypeScriptMode(workerUrl, scriptImports) {
+            _super.call(this, workerUrl, scriptImports);
             this.$id = "ace/mode/typescript";
             this.HighlightRules = TypeScriptHighlightRules_1.default;
             this.$outdent = new MatchingBraceOutdent_1.default();

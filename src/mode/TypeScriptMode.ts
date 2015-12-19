@@ -72,9 +72,10 @@ export default class TypeScriptMode extends JavaScriptMode {
      * @class TypeScriptMode
      * @constructor
      * @param workerUrl {string}
+     * @param scriptImports {sring[]}
      */
-    constructor(workerUrl: string) {
-        super(workerUrl);
+    constructor(workerUrl: string, scriptImports: string[]) {
+        super(workerUrl, scriptImports);
         this.HighlightRules = TypeScriptHighlightRules;
 
         this.$outdent = new MatchingBraceOutdent();

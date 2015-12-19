@@ -90,24 +90,25 @@ declare module Ace {
     }
 
     class CssMode extends TextMode {
-        constructor(workerUrl: string);
+        constructor(workerUrl: string, scriptImports: string[]);
     }
 
     class HtmlMode extends TextMode {
-        constructor(workerUrl: string);
+        constructor(workerUrl: string, scriptImports: string[]);
     }
 
     class TextMode implements LanguageMode {
         protected workerUrl: string;
-        constructor(workerUrl: string);
+        protected scriptImports: string[];
+        constructor(workerUrl: string, scriptImports: string[]);
     }
 
     class JavaScriptMode extends TextMode {
-        constructor(workerUrl: string);
+        constructor(workerUrl: string, scriptImports: string[]);
     }
 
     class TypeScriptMode extends TextMode {
-        constructor(workerUrl: string);
+        constructor(workerUrl: string, scriptImports: string[]);
     }
 }
 
