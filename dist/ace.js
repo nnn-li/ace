@@ -14974,9 +14974,13 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_
             }
             this.$worker.onmessage = this.onMessage;
         }
-        WorkerClient.prototype.init = function (scriptImports, moduleName) {
-            var tlns = {};
-            this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName });
+        WorkerClient.prototype.init = function (scriptImports, moduleName, className) {
+            this.$worker.postMessage({
+                init: true,
+                scriptImports: scriptImports,
+                moduleName: moduleName,
+                className: className
+            });
         };
         WorkerClient.prototype.onMessage = function (event) {
             var origin = event.origin;
@@ -15687,25 +15691,25 @@ define('mode/CssMode',["require", "exports", "./TextMode", "./CssHighlightRules"
             return this.$outdent.autoOutdent(session, row);
         };
         CssMode.prototype.createWorker = function (session) {
+            var workerUrl = this.workerUrl;
             var scriptImports = this.scriptImports;
-            return new Promise(function (success, fail) {
-                System.normalize('geometryzen/ace2016/worker/worker-systemjs.js', '', '')
-                    .then(function (workerUrl) {
-                    var worker = new WorkerClient_1.default(workerUrl);
-                    worker.on("initAfter", function () {
-                        worker.attachToDocument(session.getDocument());
-                        success(worker);
-                    });
-                    worker.on("errors", function (message) {
-                        session.setAnnotations(message.data);
-                    });
-                    worker.on("terminate", function () {
-                        worker.detachFromDocument();
-                        session.clearAnnotations();
-                    });
-                    worker.init(scriptImports, "geometryzen/ace2016/mode/CssWorker");
-                })
-                    .catch(function (e) { return fail(e); });
+            return new Promise(function (resolve, reject) {
+                var worker = new WorkerClient_1.default(workerUrl);
+                worker.on("initAfter", function () {
+                    worker.attachToDocument(session.getDocument());
+                    resolve(worker);
+                });
+                worker.on("initFail", function (message) {
+                    reject(new Error("" + message));
+                });
+                worker.on("errors", function (message) {
+                    session.setAnnotations(message.data);
+                });
+                worker.on("terminate", function () {
+                    worker.detachFromDocument();
+                    session.clearAnnotations();
+                });
+                worker.init(scriptImports, 'ace', 'CssWorker');
             });
         };
         return CssMode;
@@ -16167,7 +16171,7 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
                     worker.detachFromDocument();
                     session.clearAnnotations();
                 });
-                worker.init(scriptImports, "geometryzen/ace2016/mode/JavaScriptWorker");
+                worker.init(scriptImports, 'ace', 'JavaScriptWorker');
             });
         };
         return JavaScriptMode;
@@ -17171,29 +17175,29 @@ define('mode/HtmlMode',["require", "exports", "../lib/lang", "./TextMode", "./Ja
             return this.$completer.getCompletions(state, session, pos, prefix);
         };
         HtmlMode.prototype.createWorker = function (session) {
+            var workerUrl = this.workerUrl;
             var scriptImports = this.scriptImports;
-            return new Promise(function (success, fail) {
-                System.normalize('geometryzen/ace2016/worker/worker-systemjs.js', '', '')
-                    .then(function (workerUrl) {
-                    var worker = new WorkerClient_1.default(workerUrl);
-                    var mode = this;
-                    worker.on("initAfter", function () {
-                        worker.attachToDocument(session.getDocument());
-                        success(worker);
-                        if (mode.fragmentContext) {
-                            worker.call("setOptions", [{ context: mode.fragmentContext }]);
-                        }
-                    });
-                    worker.on("error", function (message) {
-                        session.setAnnotations(message.data);
-                    });
-                    worker.on("terminate", function () {
-                        worker.detachFromDocument();
-                        session.clearAnnotations();
-                    });
-                    worker.init(scriptImports, "geometryzen/ace2016/mode/HtmlWorker");
-                })
-                    .catch(function (e) { return fail(e); });
+            return new Promise(function (resolve, reject) {
+                var worker = new WorkerClient_1.default(workerUrl);
+                var mode = this;
+                worker.on("initAfter", function () {
+                    worker.attachToDocument(session.getDocument());
+                    if (mode.fragmentContext) {
+                        worker.call("setOptions", [{ context: mode.fragmentContext }]);
+                    }
+                    resolve(worker);
+                });
+                worker.on("initFail", function (message) {
+                    reject(new Error("" + message));
+                });
+                worker.on("error", function (message) {
+                    session.setAnnotations(message.data);
+                });
+                worker.on("terminate", function () {
+                    worker.detachFromDocument();
+                    session.clearAnnotations();
+                });
+                worker.init(scriptImports, 'ace', 'HtmlWorker');
             });
         };
         ;
@@ -17276,32 +17280,32 @@ define('mode/TypeScriptMode',["require", "exports", "./JavaScriptMode", "./TypeS
             this.foldingRules = new CstyleFoldMode_1.default();
         }
         TypeScriptMode.prototype.createWorker = function (session) {
+            var workerUrl = this.workerUrl;
             var scriptImports = this.scriptImports;
-            return new Promise(function (success, fail) {
-                System.normalize('geometryzen/ace2016/worker/worker-systemjs.js', '', '')
-                    .then(function (workerUrl) {
-                    var worker = new WorkerClient_1.default(workerUrl);
-                    worker.on("initAfter", function (event) {
-                        worker.attachToDocument(session.getDocument());
-                        session._emit("initAfter", { data: event.data });
-                    });
-                    worker.on("terminate", function () {
-                        worker.detachFromDocument();
-                        session.clearAnnotations();
-                    });
-                    worker.on("compileErrors", function (event) {
-                        session.setAnnotations(event.data);
-                        session._emit("compileErrors", { data: event.data });
-                    });
-                    worker.on("compiled", function (event) {
-                        session._emit("compiled", { data: event.data });
-                    });
-                    worker.on("getFileNames", function (event) {
-                        session._emit("getFileNames", { data: event.data });
-                    });
-                    worker.init(scriptImports, "geometryzen/ace2016/mode/TypeScriptWorker");
-                })
-                    .catch(function (e) { return fail(e); });
+            return new Promise(function (resolve, reject) {
+                var worker = new WorkerClient_1.default(workerUrl);
+                worker.on("initAfter", function (event) {
+                    worker.attachToDocument(session.getDocument());
+                    resolve(worker);
+                });
+                worker.on("initFail", function (message) {
+                    reject(new Error("" + message));
+                });
+                worker.on("terminate", function () {
+                    worker.detachFromDocument();
+                    session.clearAnnotations();
+                });
+                worker.on("compileErrors", function (event) {
+                    session.setAnnotations(event.data);
+                    session._emit("compileErrors", { data: event.data });
+                });
+                worker.on("compiled", function (event) {
+                    session._emit("compiled", { data: event.data });
+                });
+                worker.on("getFileNames", function (event) {
+                    session._emit("getFileNames", { data: event.data });
+                });
+                worker.init(scriptImports, 'ace', 'TypeScriptWorker');
             });
         };
         ;

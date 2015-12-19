@@ -111,31 +111,31 @@ export default class CssMode extends TextMode {
 
     createWorker(session: EditSession): Promise<WorkerClient> {
 
+        var workerUrl = this.workerUrl;
         var scriptImports = this.scriptImports;
 
-        return new Promise<WorkerClient>(function(success, fail) {
-            System.normalize('geometryzen/ace2016/worker/worker-systemjs.js', '', '')
-                .then(function(workerUrl: string) {
+        return new Promise<WorkerClient>(function(resolve, reject) {
+            var worker = new WorkerClient(workerUrl);
 
-                    var worker = new WorkerClient(workerUrl);
+            worker.on("initAfter", function() {
+                worker.attachToDocument(session.getDocument());
+                resolve(worker);
+            });
 
-                    worker.on("initAfter", function() {
-                        worker.attachToDocument(session.getDocument());
-                        success(worker);
-                    });
+            worker.on("initFail", function(message) {
+                reject(new Error(`${message}`));
+            });
 
-                    worker.on("errors", function(message: { data: Annotation[] }) {
-                        session.setAnnotations(message.data);
-                    });
+            worker.on("errors", function(message: { data: Annotation[] }) {
+                session.setAnnotations(message.data);
+            });
 
-                    worker.on("terminate", function() {
-                        worker.detachFromDocument();
-                        session.clearAnnotations();
-                    });
+            worker.on("terminate", function() {
+                worker.detachFromDocument();
+                session.clearAnnotations();
+            });
 
-                    worker.init(scriptImports, "geometryzen/ace2016/mode/CssWorker");
-                })
-                .catch(e => fail(e));
+            worker.init(scriptImports, 'ace', 'CssWorker');
         });
     }
 }

@@ -155,7 +155,7 @@ export default class JavaScriptMode extends TextMode {
                 session.clearAnnotations();
             });
 
-            worker.init(scriptImports, "geometryzen/ace2016/mode/JavaScriptWorker");
+            worker.init(scriptImports, 'ace', 'JavaScriptWorker');
         })
     }
 }

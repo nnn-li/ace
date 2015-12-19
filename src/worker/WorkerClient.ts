@@ -57,12 +57,17 @@ export default class WorkerClient extends EventEmitterClass {
    *
    * @method init
    * @param moduleName {string}
+   * @param className {string}
    * @return {void}
    */
-  init(scriptImports: string[], moduleName: string): void {
-    var tlns: { [ns: string]: string } = {};
+  init(scriptImports: string[], moduleName: string, className: string): void {
     // Sending a postMessage starts the worker.
-    this.$worker.postMessage({ init: true, tlns: tlns, module: moduleName });
+    this.$worker.postMessage({
+      init: true,
+      scriptImports: scriptImports,
+      moduleName: moduleName,
+      className: className
+    });
   }
 
   /**
