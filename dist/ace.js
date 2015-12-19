@@ -9842,7 +9842,7 @@ define('mode/TextMode',["require", "exports", "../Tokenizer", "./TextHighlightRu
             for (var p in mapping) {
                 if (mapping[p]) {
                     this.$embeds.push(p);
-                    this.$modes[p] = new mapping[p]();
+                    this.$modes[p] = new mapping[p](this.workerUrl, this.scriptImports);
                 }
             }
             var delegations = ['toggleBlockComment', 'toggleCommentLines', 'getNextLineIndent',
@@ -17160,6 +17160,7 @@ define('mode/HtmlMode',["require", "exports", "../lib/lang", "./TextMode", "./Ja
             this.HighlightRules = HtmlHighlightRules_1.default;
             this.$behaviour = new HtmlBehaviour_1.default();
             this.$completer = new HtmlCompletions_1.default();
+            var X = JavaScriptMode_1.default;
             this.createModeDelegates({
                 "js-": JavaScriptMode_1.default,
                 "css-": CssMode_1.default

@@ -101,6 +101,8 @@ export default class HtmlMode extends TextMode {
         this.$behaviour = new HtmlBehaviour();
         this.$completer = new HtmlCompletions();
 
+        var X = JavaScriptMode;
+
         this.createModeDelegates({
             "js-": JavaScriptMode,
             "css-": CssMode

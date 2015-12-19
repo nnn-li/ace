@@ -377,13 +377,16 @@ export default class TextMode implements LanguageMode {
         });
     }
 
-    createModeDelegates(mapping) {
+    createModeDelegates(mapping: { [prefix: string]: any }) {
         this.$embeds = [];
         this.$modes = {};
         for (var p in mapping) {
             if (mapping[p]) {
                 this.$embeds.push(p);
-                this.$modes[p] = new mapping[p]();
+                // May not be ideal that we have to assume the same construction
+                // parameters for delegates but it should work most of the time.
+                // Leave it this way for now.
+                this.$modes[p] = new mapping[p](this.workerUrl, this.scriptImports);
             }
         }
 
