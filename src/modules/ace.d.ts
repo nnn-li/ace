@@ -14,12 +14,42 @@
  */
 declare module Ace {
 
+    interface Annotation {
+
+        /**
+         *
+         */
+        html?: string;
+
+        /**
+         *
+         */
+        row: number;
+
+        /**
+         *
+         */
+        column?: number;
+
+        /**
+         *
+         */
+        text: string;
+        /**
+         * "error", "info", or "warning".
+         */
+        type: string;
+    }
+
     class Document {
         constructor(text: string | string[]);
     }
 
     class EditSession {
         constructor(doc: Document);
+        clearAnnotations(): void;
+        getDocument(): Document;
+        setAnnotations(annotations: Annotation[]): void;
         setLanguageMode(mode: LanguageMode): void;
         setMode(modeName: string): void;
         setUndoManager(undoManager: UndoManager): void;
@@ -54,6 +84,9 @@ declare module Ace {
 
     class WorkerClient {
         constructor(workerUrl: string);
+        attachToDocument(doc: Document): void;
+        init(moduleName: string): void;
+        on(eventName: string, callback: (event: MessageEvent) => any): void;
     }
 
     class CssMode extends TextMode {
