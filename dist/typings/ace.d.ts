@@ -85,7 +85,7 @@ declare module Ace {
     class WorkerClient {
         constructor(workerUrl: string);
         attachToDocument(doc: Document): void;
-        init(moduleName: string): void;
+        init(scriptImports: string[], moduleName: string, className: string): void;
         on(eventName: string, callback: (event: MessageEvent) => any): void;
     }
 
