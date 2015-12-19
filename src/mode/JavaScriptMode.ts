@@ -156,7 +156,7 @@ export default class JavaScriptMode extends TextMode {
                 session.clearAnnotations();
             });
 
-            worker.init(scriptImports, 'ace', 'JavaScriptWorker');
+            worker.init(scriptImports, 'ace-worker-example', 'JavaScriptWorker');
         })
     }
 }

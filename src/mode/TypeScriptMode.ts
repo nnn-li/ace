@@ -118,7 +118,7 @@ export default class TypeScriptMode extends JavaScriptMode {
                 session._emit("getFileNames", { data: event.data });
             });
 
-            worker.init(scriptImports, 'ace', 'TypeScriptWorker');
+            worker.init(scriptImports, 'ace-worker-example', 'TypeScriptWorker');
         });
     };
 }

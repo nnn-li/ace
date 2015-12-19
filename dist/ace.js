@@ -16172,7 +16172,7 @@ define('mode/JavaScriptMode',["require", "exports", "./TextMode", "./JavaScriptH
                     worker.detachFromDocument();
                     session.clearAnnotations();
                 });
-                worker.init(scriptImports, 'ace', 'JavaScriptWorker');
+                worker.init(scriptImports, 'ace-worker-example', 'JavaScriptWorker');
             });
         };
         return JavaScriptMode;
@@ -17198,7 +17198,7 @@ define('mode/HtmlMode',["require", "exports", "../lib/lang", "./TextMode", "./Ja
                     worker.detachFromDocument();
                     session.clearAnnotations();
                 });
-                worker.init(scriptImports, 'ace', 'HtmlWorker');
+                worker.init(scriptImports, 'ace-worker-example', 'HtmlWorker');
             });
         };
         ;
@@ -17306,7 +17306,7 @@ define('mode/TypeScriptMode',["require", "exports", "./JavaScriptMode", "./TypeS
                 worker.on("getFileNames", function (event) {
                     session._emit("getFileNames", { data: event.data });
                 });
-                worker.init(scriptImports, 'ace', 'TypeScriptWorker');
+                worker.init(scriptImports, 'ace-worker-example', 'TypeScriptWorker');
             });
         };
         ;

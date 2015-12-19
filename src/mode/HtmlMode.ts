@@ -151,7 +151,7 @@ export default class HtmlMode extends TextMode {
                 session.clearAnnotations();
             });
 
-            worker.init(scriptImports, 'ace', 'HtmlWorker');
+            worker.init(scriptImports, 'ace-worker-example', 'HtmlWorker');
         });
     };
 }
