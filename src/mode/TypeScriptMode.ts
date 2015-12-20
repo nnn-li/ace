@@ -118,7 +118,8 @@ export default class TypeScriptMode extends JavaScriptMode {
                 session._emit("getFileNames", { data: event.data });
             });
 
-            worker.init(scriptImports, 'ace-worker-example', 'TypeScriptWorker');
+            // FIXME: Must be able to inject the module name.
+            worker.init(scriptImports, 'ace-workers', 'TypeScriptWorker');
         });
     };
 }

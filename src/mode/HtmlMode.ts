@@ -153,7 +153,8 @@ export default class HtmlMode extends TextMode {
                 session.clearAnnotations();
             });
 
-            worker.init(scriptImports, 'ace-worker-example', 'HtmlWorker');
+            // FIXME: Must be able to inject the module name.
+            worker.init(scriptImports, 'ace-workers', 'HtmlWorker');
         });
     };
 }
