@@ -12,7 +12,6 @@
     "inlineSources": true
   },
   "files": [
-    "./src/main.ts",
     "./src/autocomplete/ListViewPopup.ts",
     "./src/autocomplete/text_completer.ts",
     "./src/autocomplete/util.ts",
@@ -82,7 +81,6 @@
 
     "./src/mode/XmlHighlightRules.ts",
 
-    "./src/worker/Mirror.ts",
     "./src/worker/WorkerClient.ts",
 
     "./src/ace.ts",

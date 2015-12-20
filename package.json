@@ -1,12 +1,12 @@
 {
-  "name": "ace2016",
-  "version": "0.1.78",
+  "name": "ace",
+  "version": "0.1.79",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "directories": {
     "lib": "lib"
   },
   "main": "dist/ace.min.js",
-  "homepage": "https://github.com/geometryzen/ace2016",
+  "homepage": "https://github.com/ace2ts/ace",
   "author": "david.geo.holmes@gmail.com",
   "keywords": [
     "editor",
@@ -21,7 +21,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/geometryzen/ace2016.git"
+    "url": "git://github.com/ace2ts/ace.git"
   },
   "scripts": {
     "build": "tsc",

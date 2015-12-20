@@ -14954,7 +14954,7 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_
             _super.call(this);
             this.callbacks = {};
             this.callbackId = 1;
-            this.$sendDeltaQueue = this.$sendDeltaQueue.bind(this);
+            this.sendDeltaQueue = this.sendDeltaQueue.bind(this);
             this.changeListener = this.changeListener.bind(this);
             this.onMessage = this.onMessage.bind(this);
             var workerUrl = net_1.qualifyURL(workerUrl);
@@ -15008,9 +15008,9 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_
         };
         WorkerClient.prototype.terminate = function () {
             this._signal("terminate", {});
-            this.deltaQueue = null;
+            this.deltaQueue = void 0;
             this.$worker.terminate();
-            this.$worker = null;
+            this.$worker = void 0;
         };
         WorkerClient.prototype.send = function (cmd, args) {
             this.$worker.postMessage({ command: cmd, args: args });
@@ -15022,6 +15022,19 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_
                 args.push(id);
             }
             this.send(cmd, args);
+        };
+        WorkerClient.prototype.invoke = function (cmd, args) {
+            var workerClient = this;
+            return new Promise(function (resolve, reject) {
+                workerClient.call(cmd, args, function (retval) {
+                    if (retval.err) {
+                        reject(retval.err);
+                    }
+                    else {
+                        resolve(retval.data);
+                    }
+                });
+            });
         };
         WorkerClient.prototype.emit = function (event, data) {
             try {
@@ -15053,23 +15066,24 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_
         WorkerClient.prototype.changeListener = function (e, doc) {
             if (!this.deltaQueue) {
                 this.deltaQueue = [e.data];
-                setTimeout(this.$sendDeltaQueue, 0);
+                setTimeout(this.sendDeltaQueue, 0);
             }
             else {
                 this.deltaQueue.push(e.data);
             }
         };
-        WorkerClient.prototype.$sendDeltaQueue = function () {
+        WorkerClient.prototype.sendDeltaQueue = function () {
             var doc = this.$doc;
-            var q = this.deltaQueue;
-            if (!q)
+            var queue = this.deltaQueue;
+            if (!queue)
                 return;
-            this.deltaQueue = null;
-            if (q.length > 20 && q.length > doc.getLength() >> 1) {
+            this.deltaQueue = void 0;
+            if (queue.length > 20 && queue.length > doc.getLength() >> 1) {
                 this.call("setValue", [doc.getValue()]);
             }
-            else
-                this.emit("change", { data: q });
+            else {
+                this.emit("change", { data: queue });
+            }
         };
         WorkerClient.prototype.$workerBlob = function (workerUrl) {
             var script = "importScripts('" + net_1.qualifyURL(workerUrl) + "');";

@@ -180,7 +180,6 @@ module.exports = function(grunt) {
 
   var compilerSources = [
       "src/ace.ts",
-      "src/main.ts",
       "src/lib/dom.ts",
       "src/mode/HtmlMode.ts",
       "src/mode/JavaScriptMode.ts",

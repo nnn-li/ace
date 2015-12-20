@@ -21,8 +21,8 @@ Install Bower dependencies (use of r.js for AMD packaging).
 bower install
 ```
 
-Not currently using JSPM, so this isn't required
-.
+Not currently using JSPM, so this isn't required.
+
 ```
 jspm install
 ```
