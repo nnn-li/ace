@@ -91,6 +91,39 @@ declare module Ace {
     }
 
     interface Delta {
+
+        /**
+         *
+         */
+        action: string;
+
+        /**
+         *
+         */
+        lines?: string[];
+
+        /**
+         *
+         */
+        range: Range;
+
+        /**
+         *
+         */
+        text: string;
+
+        /**
+         *
+         */
+        ignore?: boolean;
+
+        group?: string;
+        deltas?: Delta[];
+        folds?: Fold[];
+    }
+
+    interface DeltaEvent {
+        data: Delta;
     }
 
     class Document implements EventBus<Document> {
