@@ -260,7 +260,34 @@ declare module Ace {
     }
 
     class Range {
+        end: Position;
+        start: Position;
         constructor(startRow: number, startColumn: number, endRow: number, endColumn);
+        clipRows(firstRow: number, lastRow: number): Range;
+        clone(): Range;
+        collapseRows(): Range;
+        compare(row: number, column: number): number;
+        compareEnd(row: number, column: number): number;
+        compareInside(row: number, column: number): number;
+        comparePoint(point: Position): number;
+        static comparePoints(p1: Position, p2: Position): number;
+        compareRange(range: Range): number;
+        compareStart(row: number, column: number): number;
+        contains(row: number, column: number): boolean;
+        containsRange(range: Range): boolean;
+        extend(row: number, column: number): Range;
+        inside(row: number, column: number): boolean;
+        insideEnd(row: number, column: number): boolean;
+        insideStart(row: number, column: number): boolean;
+        intersects(range: Range): boolean;
+        isEmpty(): boolean;
+        isEnd(row: number, column: number): boolean;
+        isEqual(range: Range): boolean;
+        isMultiLine(): boolean;
+        isStart(row: number, column: number): boolean;
+        setEnd(row: number, column: number): void;
+        setStart(row: number, column: number): void;
+        toString(): string;
     }
 
     class UndoManager {

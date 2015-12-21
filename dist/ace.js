@@ -1846,8 +1846,8 @@ define('Range',["require", "exports"], function (require, exports) {
                 }
             }
         };
-        Range.prototype.comparePoint = function (p) {
-            return this.compare(p.row, p.column);
+        Range.prototype.comparePoint = function (point) {
+            return this.compare(point.row, point.column);
         };
         Range.prototype.containsRange = function (range) {
             return this.comparePoint(range.start) === 0 && this.comparePoint(range.end) === 0;
@@ -1863,24 +1863,12 @@ define('Range',["require", "exports"], function (require, exports) {
             return this.start.row === row && this.start.column === column;
         };
         Range.prototype.setStart = function (row, column) {
-            if (typeof row === "object") {
-                this.start.column = row['column'];
-                this.start.row = row['row'];
-            }
-            else {
-                this.start.row = row;
-                this.start.column = column;
-            }
+            this.start.row = row;
+            this.start.column = column;
         };
         Range.prototype.setEnd = function (row, column) {
-            if (typeof row === "object") {
-                this.end.column = row['column'];
-                this.end.row = row['row'];
-            }
-            else {
-                this.end.row = row;
-                this.end.column = column;
-            }
+            this.end.row = row;
+            this.end.column = column;
         };
         Range.prototype.inside = function (row, column) {
             if (this.compare(row, column) === 0) {
