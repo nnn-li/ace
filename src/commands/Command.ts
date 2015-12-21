@@ -23,16 +23,60 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-// import Editor = require('../Editor')
+import Editor from '../Editor';
 
+/**
+ * @class Command
+ */
 interface Command {
+
+    /**
+     * @property name
+     * @type string
+     */
     name: string;
+
+    /**
+     * @property exec
+     * @type (editor: Editor, [args]) => void
+     */
     exec: (editor/*: Editor*/, args?) => void;
+
+    /**
+     * @property bindKey
+     */
     bindKey?: any/*: { win: string; mac: string }*/;
+
+    /**
+     * @property aceCommandGroup
+     * @type string
+     */
     aceCommandGroup?: string;
+
+    /**
+     * @property multiSelectAction
+     */
     multiSelectAction?: any;
+
+    /**
+     * @property passEvent
+     * @type boolean
+     * @optional
+     */
     passEvent?: boolean;
+
+    /**
+     * @property readOnly
+     * @type boolean
+     * @optional
+     */
     readOnly?: boolean;
+
+    /**
+     * @property scrollIntoView
+     * @type boolean
+     * @optional
+     */
     scrollIntoView?: string;
 }
 

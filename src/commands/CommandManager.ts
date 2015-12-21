@@ -29,7 +29,11 @@ import EventEmitterClass from "../lib/event_emitter";
 import Command from './Command';
 import Editor from '../Editor';
 
+/**
+ * @class CommandManager
+ */
 export default class CommandManager extends EventEmitterClass implements HashHandler {
+    // We actually contain a HashHandler but implement it like an interface.
     private hashHandler: HashHandler;
     private $inReplay: boolean;
     private recording: boolean;
@@ -39,8 +43,10 @@ export default class CommandManager extends EventEmitterClass implements HashHan
     _buildKeyHash
 
     /**
-     * @param {string} platform Identifier for the platform; must be either `'mac'` or `'win'`
-     * @param {Array} commands A list of commands
+     * @class CommandManager
+     * @constructor
+     * @param platform {string} Identifier for the platform; must be either `'mac'` or `'win'`
+     * @param commands {Command[]} A list of commands
      */
     constructor(platform: string, commands: Command[]) {
         super();

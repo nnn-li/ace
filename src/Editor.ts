@@ -734,7 +734,7 @@ export default class Editor extends EventEmitterClass {
             var column = iterator.getCurrentTokenColumn();
             var range = new Range(row, column, row, column + token.value.length);
 
-            //remove range if different
+            // Remove range if different
             if (session.$tagHighlight && range.compareRange(session.$backMarkers[session.$tagHighlight].range) !== 0) {
                 session.removeMarker(session.$tagHighlight);
                 session.$tagHighlight = null;
@@ -746,7 +746,6 @@ export default class Editor extends EventEmitterClass {
     }
 
     /**
-     *
      * Brings the current `textInput` into focus.
      **/
     focus() {
@@ -1097,7 +1096,7 @@ export default class Editor extends EventEmitterClass {
             text = this.session.getTabString();
         }
 
-        // remove selected text
+        // Remove selected text.
         if (!this.selection.isEmpty()) {
             var range = this.getSelectionRange();
             cursor = this.session.remove(range);
@@ -1444,8 +1443,8 @@ export default class Editor extends EventEmitterClass {
      * A "word" is defined as a string of characters bookended by whitespace.
      *
      * @method remove
-     * @param direction {string} The direction of the deletion to occur, either "left" or "right"
-     *
+     * @param direction {string} The direction of the deletion to occur, either "left" or "right".
+     * @return {void}
      */
     remove(direction: string): void {
         if (this.selection.isEmpty()) {
@@ -1481,10 +1480,14 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Removes the word directly to the right of the current selection.
+     *
+     * @method removeWordRight
+     * @return {void}
      */
-    removeWordRight() {
-        if (this.selection.isEmpty())
+    removeWordRight(): void {
+        if (this.selection.isEmpty()) {
             this.selection.selectWordRight();
+        }
 
         this.session.remove(this.getSelectionRange());
         this.clearSelection();
@@ -1492,7 +1495,10 @@ export default class Editor extends EventEmitterClass {
 
     /**
      * Removes the word directly to the left of the current selection.
-     **/
+     *
+     * @method removeWordLeft
+     * @return {void}
+     */
     removeWordLeft() {
         if (this.selection.isEmpty())
             this.selection.selectWordLeft();

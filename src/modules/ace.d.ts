@@ -58,13 +58,37 @@ declare module Ace {
     class Editor {
         container: HTMLElement;
         constructor(renderer: VirtualRenderer, session: EditSession);
+        blockIndent(): void;
+        clearSelection(): void;
+        getCursorPosition(): Position;
+        getCursorPositionScreen(): Position;
+        getFontSize(): string;
+        getKeyboardHandler(): HashHandler;
+        getSelectionRange(): Range;
         getSession(): EditSession;
+        getValue(): string;
+        indent(): void;
+        insert(text: string, pasted?: boolean): void;
+        jumpToMatching(select: boolean);
+        moveCursorToPosition(position: Position): void;
         on(eventName: string, callback): void;
+        remove(direction: string);
         resize(force?: boolean): void;
+        selectAll(): void;
         setFontSize(fontSize: string): void;
+        setKeyboardHandler(keyboardHandler: string | HashHandler): void;
+        setSession(session: EditSession): void;
+        setValue(text: string, cursorPos?: number): void;
+        splitLine(): void;
+        toggleBlockComment(): void;
+        toggleCommentLines(): void;
     }
 
     interface LanguageMode {
+    }
+
+    interface Position {
+
     }
 
     class Range {

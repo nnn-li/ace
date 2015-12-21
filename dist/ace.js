@@ -1273,7 +1273,128 @@ define('lib/event',["require", "exports", './keys', './useragent'], function (re
     exports.requestAnimationFrame = nextFrameCandidate;
 });
 
-define('keyboard/KeyBinding',["require", "exports", "../lib/keys", "../lib/event"], function (require, exports, keys_1, event_1) {
+define('keyboard/HashHandler',["require", "exports", "../lib/keys", "../lib/keys", "../lib/useragent"], function (require, exports, keys_1, keys_2, useragent_1) {
+    "use strict";
+    var HashHandler = (function () {
+        function HashHandler(config, platform) {
+            this.platform = platform || (useragent_1.isMac ? "mac" : "win");
+            this.commands = {};
+            this.commandKeyBinding = {};
+            this.addCommands(config);
+        }
+        HashHandler.prototype.addCommand = function (command) {
+            if (this.commands[command.name]) {
+                this.removeCommand(command);
+            }
+            this.commands[command.name] = command;
+            if (command.bindKey)
+                this._buildKeyHash(command);
+        };
+        HashHandler.prototype.removeCommand = function (command) {
+            var name = (typeof command === 'string' ? command : command.name);
+            command = this.commands[name];
+            delete this.commands[name];
+            var ckb = this.commandKeyBinding;
+            for (var hashId in ckb) {
+                for (var key in ckb[hashId]) {
+                    if (ckb[hashId][key] == command)
+                        delete ckb[hashId][key];
+                }
+            }
+        };
+        HashHandler.prototype.bindKey = function (key, command) {
+            var self = this;
+            if (!key)
+                return;
+            if (typeof command === "function") {
+                this.addCommand({ exec: command, bindKey: key, name: command.name || key });
+                return;
+            }
+            var ckb = this.commandKeyBinding;
+            key.split("|").forEach(function (keyPart) {
+                var binding = self.parseKeys(keyPart);
+                var hashId = binding.hashId;
+                (ckb[hashId] || (ckb[hashId] = {}))[binding.key] = command;
+            }, self);
+        };
+        HashHandler.prototype.addCommands = function (commands) {
+            commands && Object.keys(commands).forEach(function (name) {
+                var command = commands[name];
+                if (!command) {
+                    return;
+                }
+                if (typeof command === "string") {
+                    return this.bindKey(command, name);
+                }
+                if (typeof command === "function") {
+                    command = { exec: command };
+                }
+                if (typeof command !== "object") {
+                    return;
+                }
+                if (!command.name) {
+                    command.name = name;
+                }
+                this.addCommand(command);
+            }, this);
+        };
+        HashHandler.prototype.removeCommands = function (commands) {
+            Object.keys(commands).forEach(function (name) {
+                this.removeCommand(commands[name]);
+            }, this);
+        };
+        HashHandler.prototype.bindKeys = function (keyList) {
+            var self = this;
+            Object.keys(keyList).forEach(function (key) {
+                self.bindKey(key, keyList[key]);
+            }, self);
+        };
+        HashHandler.prototype._buildKeyHash = function (command) {
+            var binding = command.bindKey;
+            if (!binding)
+                return;
+            var key = typeof binding == "string" ? binding : binding[this.platform];
+            this.bindKey(key, command);
+        };
+        HashHandler.prototype.parseKeys = function (keys) {
+            if (keys.indexOf(" ") != -1)
+                keys = keys.split(/\s+/).pop();
+            var parts = keys.toLowerCase().split(/[\-\+]([\-\+])?/).filter(function (x) { return x; });
+            var key = parts.pop();
+            var keyCode = keys_2.default[key];
+            if (keys_1.FUNCTION_KEYS[keyCode])
+                key = keys_1.FUNCTION_KEYS[keyCode].toLowerCase();
+            else if (!parts.length)
+                return { key: key, hashId: -1 };
+            else if (parts.length == 1 && parts[0] == "shift")
+                return { key: key.toUpperCase(), hashId: -1 };
+            var hashId = 0;
+            for (var i = parts.length; i--;) {
+                var modifier = keys_1.KEY_MODS[parts[i]];
+                if (modifier === null) {
+                    throw new Error("invalid modifier " + parts[i] + " in " + keys);
+                }
+                hashId |= modifier;
+            }
+            return { key: key, hashId: hashId };
+        };
+        HashHandler.prototype.findKeyCommand = function (hashId, keyString) {
+            var ckbr = this.commandKeyBinding;
+            return ckbr[hashId] && ckbr[hashId][keyString];
+        };
+        HashHandler.prototype.handleKeyboard = function (dataUnused, hashId, keyString, keyCodeUnused, e) {
+            var response = {
+                command: this.findKeyCommand(hashId, keyString)
+            };
+            return response;
+        };
+        return HashHandler;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HashHandler;
+});
+
+define('keyboard/KeyBinding',["require", "exports", "../lib/keys", "../lib/event", "./HashHandler"], function (require, exports, keys_1, event_1, HashHandler_1) {
     "use strict";
     var KeyBinding = (function () {
         function KeyBinding(editor) {
@@ -1298,22 +1419,27 @@ define('keyboard/KeyBinding',["require", "exports", "../lib/keys", "../lib/event
         KeyBinding.prototype.addKeyboardHandler = function (kb, pos) {
             if (!kb)
                 return;
-            if (typeof kb == "function" && !kb.handleKeyboard)
+            if (typeof kb === "function" && !kb.handleKeyboard) {
                 kb.handleKeyboard = kb;
-            var i = this.$handlers.indexOf(kb);
-            if (i != -1)
-                this.$handlers.splice(i, 1);
-            if (pos === void 0)
-                this.$handlers.push(kb);
-            else
-                this.$handlers.splice(pos, 0, kb);
-            if (i == -1 && kb.attach)
-                kb.attach(this.$editor);
+            }
+            else if (kb instanceof HashHandler_1.default) {
+                var i = this.$handlers.indexOf(kb);
+                if (i !== -1)
+                    this.$handlers.splice(i, 1);
+                if (pos === void 0)
+                    this.$handlers.push(kb);
+                else
+                    this.$handlers.splice(pos, 0, kb);
+                if (i === -1 && kb.attach) {
+                    kb.attach(this.$editor);
+                }
+            }
         };
         KeyBinding.prototype.removeKeyboardHandler = function (kb) {
             var i = this.$handlers.indexOf(kb);
-            if (i == -1)
+            if (i === -1) {
                 return false;
+            }
             this.$handlers.splice(i, 1);
             kb.detach && kb.detach(this.$editor);
             return true;
@@ -1364,7 +1490,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
     var BROKEN_SETDATA = useragent_1.isChrome < 18;
     var USE_IE_MIME_TYPE = useragent_1.isIE;
     var TextInput = (function () {
-        function TextInput(parentNode, host) {
+        function TextInput(container, editor) {
             var text = dom_1.createElement("textarea");
             text.className = "ace_text-input";
             if (useragent_1.isTouchPad) {
@@ -1375,7 +1501,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
             text['autocapitalize'] = "off";
             text.spellcheck = false;
             text.style.opacity = "0";
-            parentNode.insertBefore(text, parentNode.firstChild);
+            container.insertBefore(text, container.firstChild);
             var PLACEHOLDER = "\x01\x01";
             var copied = false;
             var pasted = false;
@@ -1387,12 +1513,12 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
             }
             catch (e) { }
             event_1.addListener(text, "blur", function () {
-                host.onBlur();
+                editor.onBlur();
                 isFocused = false;
             });
             event_1.addListener(text, "focus", function () {
                 isFocused = true;
-                host.onFocus();
+                editor.onFocus();
                 resetSelection();
             });
             this.focus = function () { text.focus(); };
@@ -1432,15 +1558,15 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 if (useragent_1.isWebKit)
                     syncValue.schedule();
             }
-            useragent_1.isWebKit || host.on('changeSelection', function (event, editor) {
-                if (host.selection.isEmpty() != isSelectionEmpty) {
+            useragent_1.isWebKit || editor.on('changeSelection', function (event, editor) {
+                if (editor.selection.isEmpty() != isSelectionEmpty) {
                     isSelectionEmpty = !isSelectionEmpty;
                     syncSelection.schedule();
                 }
             });
             resetValue();
             if (isFocused)
-                host.onFocus();
+                editor.onFocus();
             var isAllSelected = function (text) {
                 return text.selectionStart === 0 && text.selectionEnd === text.value.length;
             };
@@ -1498,11 +1624,11 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                     copied = false;
                 }
                 else if (isAllSelected(text)) {
-                    host.selectAll();
+                    editor.selectAll();
                     resetSelection();
                 }
                 else if (inputHandler) {
-                    resetSelection(host.selection.isEmpty());
+                    resetSelection(editor.selection.isEmpty());
                 }
             };
             var inputHandler = null;
@@ -1517,14 +1643,14 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 if (pasted) {
                     resetSelection();
                     if (data)
-                        host.onPaste(data);
+                        editor.onPaste(data);
                     pasted = false;
                 }
                 else if (data == PLACEHOLDER.charAt(0)) {
                     if (afterContextMenu)
-                        host.execCommand("del", { source: "ace" });
+                        editor.execCommand("del", { source: "ace" });
                     else
-                        host.execCommand("backspace", { source: "ace" });
+                        editor.execCommand("backspace", { source: "ace" });
                 }
                 else {
                     if (data.substring(0, 2) == PLACEHOLDER)
@@ -1536,7 +1662,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                     if (data.charAt(data.length - 1) == PLACEHOLDER.charAt(0))
                         data = data.slice(0, -1);
                     if (data)
-                        host.onTextInput(data);
+                        editor.onTextInput(data);
                 }
                 if (afterContextMenu)
                     afterContextMenu = false;
@@ -1561,11 +1687,11 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 }
             };
             var doCopy = function (e, isCut) {
-                var data = host.getCopyText();
+                var data = editor.getCopyText();
                 if (!data)
                     return event_1.preventDefault(e);
                 if (handleClipboardData(e, data)) {
-                    isCut ? host.onCut() : host.onCopy();
+                    isCut ? editor.onCut() : editor.onCopy();
                     event_1.preventDefault(e);
                 }
                 else {
@@ -1576,7 +1702,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                         copied = false;
                         resetValue();
                         resetSelection();
-                        isCut ? host.onCut() : host.onCopy();
+                        isCut ? editor.onCut() : editor.onCopy();
                     });
                 }
             };
@@ -1590,7 +1716,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 var data = handleClipboardData(e);
                 if (typeof data === "string") {
                     if (data)
-                        host.onPaste(data);
+                        editor.onPaste(data);
                     if (useragent_1.isIE)
                         setTimeout(resetSelection);
                     event_1.preventDefault(e);
@@ -1600,14 +1726,14 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                     pasted = true;
                 }
             };
-            event_1.addCommandKeyListener(text, host.onCommandKey.bind(host));
+            event_1.addCommandKeyListener(text, editor.onCommandKey.bind(editor));
             event_1.addListener(text, "select", onSelect);
             event_1.addListener(text, "input", onInput);
             event_1.addListener(text, "cut", onCut);
             event_1.addListener(text, "copy", onCopy);
             event_1.addListener(text, "paste", onPaste);
             if (!('oncut' in text) || !('oncopy' in text) || !('onpaste' in text)) {
-                event_1.addListener(parentNode, "keydown", function (e) {
+                event_1.addListener(container, "keydown", function (e) {
                     if ((useragent_1.isMac && !e.metaKey) || !e.ctrlKey)
                         return;
                     switch (e.keyCode) {
@@ -1624,40 +1750,40 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 });
             }
             var onCompositionStart = function () {
-                if (inComposition || !host.onCompositionStart || host.$readOnly)
+                if (inComposition || !editor.onCompositionStart || editor.$readOnly)
                     return;
                 inComposition = {};
-                host.onCompositionStart();
+                editor.onCompositionStart();
                 setTimeout(onCompositionUpdate, 0);
-                host.on("mousedown", onCompositionEnd);
-                if (!host.selection.isEmpty()) {
-                    host.insert("", false);
-                    host.getSession().markUndoGroup();
-                    host.selection.clearSelection();
+                editor.on("mousedown", onCompositionEnd);
+                if (!editor.selection.isEmpty()) {
+                    editor.insert("", false);
+                    editor.getSession().markUndoGroup();
+                    editor.selection.clearSelection();
                 }
-                host.getSession().markUndoGroup();
+                editor.getSession().markUndoGroup();
             };
             var onCompositionUpdate = function () {
-                if (!inComposition || !host.onCompositionUpdate || host.$readOnly)
+                if (!inComposition || !editor.onCompositionUpdate || editor.$readOnly)
                     return;
                 var val = text.value.replace(/\x01/g, "");
                 if (inComposition.lastValue === val)
                     return;
-                host.onCompositionUpdate(val);
+                editor.onCompositionUpdate(val);
                 if (inComposition.lastValue)
-                    host.undo();
+                    editor.undo();
                 inComposition.lastValue = val;
                 if (inComposition.lastValue) {
-                    var r = host.selection.getRange();
-                    host.insert(inComposition.lastValue, false);
-                    host.getSession().markUndoGroup();
-                    inComposition.range = host.selection.getRange();
-                    host.selection.setRange(r);
-                    host.selection.clearSelection();
+                    var r = editor.selection.getRange();
+                    editor.insert(inComposition.lastValue, false);
+                    editor.getSession().markUndoGroup();
+                    inComposition.range = editor.selection.getRange();
+                    editor.selection.setRange(r);
+                    editor.selection.clearSelection();
                 }
             };
             var onCompositionEnd = function (e, editor) {
-                if (!host.onCompositionEnd || host.$readOnly)
+                if (!editor.onCompositionEnd || editor.$readOnly)
                     return;
                 var c = inComposition;
                 inComposition = false;
@@ -1680,13 +1806,13 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                     if (str == c.lastValue)
                         return "";
                     if (c.lastValue && timer)
-                        host.undo();
+                        editor.undo();
                     return str;
                 };
-                host.onCompositionEnd();
-                host.off("mousedown", onCompositionEnd);
+                editor.onCompositionEnd();
+                editor.off("mousedown", onCompositionEnd);
                 if (e.type == "compositionend" && c.range) {
-                    host.selection.setRange(c.range);
+                    editor.selection.setRange(c.range);
                 }
             };
             var syncComposition = lang_1.delayedCall(onCompositionUpdate, 50);
@@ -1707,8 +1833,8 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
             };
             this.onContextMenu = function (e) {
                 afterContextMenu = true;
-                resetSelection(host.selection.isEmpty());
-                host._emit("nativecontextmenu", { target: host, domEvent: e });
+                resetSelection(editor.selection.isEmpty());
+                editor._emit("nativecontextmenu", { target: editor, domEvent: e });
                 this.moveToMouse(e, true);
             };
             this.moveToMouse = function (e, bringToFront) {
@@ -1717,8 +1843,8 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 text.style.cssText = (bringToFront ? "z-index:100000;" : "")
                     + "height:" + text.style.height + ";"
                     + (useragent_1.isIE ? "opacity:0.1;" : "");
-                var rect = host.container.getBoundingClientRect();
-                var style = window.getComputedStyle(host.container);
+                var rect = editor.container.getBoundingClientRect();
+                var style = window.getComputedStyle(editor.container);
                 var top = rect.top + (parseInt(style.borderTopWidth) || 0);
                 var left = rect.left + (parseInt(style.borderLeftWidth) || 0);
                 var maxTop = rect.bottom - top - text.clientHeight - 2;
@@ -1729,10 +1855,10 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                 move(e);
                 if (e.type != "mousedown")
                     return;
-                if (host.renderer.$keepTextAreaAtCursor)
-                    host.renderer.$keepTextAreaAtCursor = null;
+                if (editor.renderer.$keepTextAreaAtCursor)
+                    editor.renderer.$keepTextAreaAtCursor = null;
                 if (useragent_1.isWin)
-                    event_1.capture(host.container, move, onContextMenuClose);
+                    event_1.capture(editor.container, move, onContextMenuClose);
             };
             this.onContextMenuClose = onContextMenuClose;
             function onContextMenuClose() {
@@ -1741,17 +1867,17 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
                         text.style.cssText = tempStyle;
                         tempStyle = '';
                     }
-                    if (host.renderer.$keepTextAreaAtCursor == null) {
-                        host.renderer.$keepTextAreaAtCursor = true;
-                        host.renderer.$moveTextAreaToCursor();
+                    if (editor.renderer.$keepTextAreaAtCursor == null) {
+                        editor.renderer.$keepTextAreaAtCursor = true;
+                        editor.renderer.$moveTextAreaToCursor();
                     }
                 }, 0);
             }
             var onContextMenu = function (e) {
-                host.textInput.onContextMenu(e);
+                editor.textInput.onContextMenu(e);
                 onContextMenuClose();
             };
-            event_1.addListener(host.renderer.scroller, "contextmenu", onContextMenu);
+            event_1.addListener(editor.renderer.scroller, "contextmenu", onContextMenu);
             event_1.addListener(text, "contextmenu", onContextMenu);
         }
         TextInput.prototype.focus = function () { };
@@ -1772,8 +1898,7 @@ define('keyboard/TextInput',["require", "exports", "../lib/event", "../lib/usera
         ;
         TextInput.prototype.getInputHandler = function () { };
         ;
-        TextInput.prototype.getElement = function () {
-        };
+        TextInput.prototype.getElement = function () { };
         ;
         return TextInput;
     })();
@@ -2409,127 +2534,6 @@ define('lib/mix',["require", "exports"], function (require, exports) {
         });
     }
     exports.applyMixins = applyMixins;
-});
-
-define('keyboard/HashHandler',["require", "exports", "../lib/keys", "../lib/keys", "../lib/useragent"], function (require, exports, keys_1, keys_2, useragent_1) {
-    "use strict";
-    var HashHandler = (function () {
-        function HashHandler(config, platform) {
-            this.platform = platform || (useragent_1.isMac ? "mac" : "win");
-            this.commands = {};
-            this.commandKeyBinding = {};
-            this.addCommands(config);
-        }
-        HashHandler.prototype.addCommand = function (command) {
-            if (this.commands[command.name]) {
-                this.removeCommand(command);
-            }
-            this.commands[command.name] = command;
-            if (command.bindKey)
-                this._buildKeyHash(command);
-        };
-        HashHandler.prototype.removeCommand = function (command) {
-            var name = (typeof command === 'string' ? command : command.name);
-            command = this.commands[name];
-            delete this.commands[name];
-            var ckb = this.commandKeyBinding;
-            for (var hashId in ckb) {
-                for (var key in ckb[hashId]) {
-                    if (ckb[hashId][key] == command)
-                        delete ckb[hashId][key];
-                }
-            }
-        };
-        HashHandler.prototype.bindKey = function (key, command) {
-            var self = this;
-            if (!key)
-                return;
-            if (typeof command === "function") {
-                this.addCommand({ exec: command, bindKey: key, name: command.name || key });
-                return;
-            }
-            var ckb = this.commandKeyBinding;
-            key.split("|").forEach(function (keyPart) {
-                var binding = self.parseKeys(keyPart);
-                var hashId = binding.hashId;
-                (ckb[hashId] || (ckb[hashId] = {}))[binding.key] = command;
-            }, self);
-        };
-        HashHandler.prototype.addCommands = function (commands) {
-            commands && Object.keys(commands).forEach(function (name) {
-                var command = commands[name];
-                if (!command) {
-                    return;
-                }
-                if (typeof command === "string") {
-                    return this.bindKey(command, name);
-                }
-                if (typeof command === "function") {
-                    command = { exec: command };
-                }
-                if (typeof command !== "object") {
-                    return;
-                }
-                if (!command.name) {
-                    command.name = name;
-                }
-                this.addCommand(command);
-            }, this);
-        };
-        HashHandler.prototype.removeCommands = function (commands) {
-            Object.keys(commands).forEach(function (name) {
-                this.removeCommand(commands[name]);
-            }, this);
-        };
-        HashHandler.prototype.bindKeys = function (keyList) {
-            var self = this;
-            Object.keys(keyList).forEach(function (key) {
-                self.bindKey(key, keyList[key]);
-            }, self);
-        };
-        HashHandler.prototype._buildKeyHash = function (command) {
-            var binding = command.bindKey;
-            if (!binding)
-                return;
-            var key = typeof binding == "string" ? binding : binding[this.platform];
-            this.bindKey(key, command);
-        };
-        HashHandler.prototype.parseKeys = function (keys) {
-            if (keys.indexOf(" ") != -1)
-                keys = keys.split(/\s+/).pop();
-            var parts = keys.toLowerCase().split(/[\-\+]([\-\+])?/).filter(function (x) { return x; });
-            var key = parts.pop();
-            var keyCode = keys_2.default[key];
-            if (keys_1.FUNCTION_KEYS[keyCode])
-                key = keys_1.FUNCTION_KEYS[keyCode].toLowerCase();
-            else if (!parts.length)
-                return { key: key, hashId: -1 };
-            else if (parts.length == 1 && parts[0] == "shift")
-                return { key: key.toUpperCase(), hashId: -1 };
-            var hashId = 0;
-            for (var i = parts.length; i--;) {
-                var modifier = keys_1.KEY_MODS[parts[i]];
-                if (modifier === null) {
-                    throw new Error("invalid modifier " + parts[i] + " in " + keys);
-                }
-                hashId |= modifier;
-            }
-            return { key: key, hashId: hashId };
-        };
-        HashHandler.prototype.findKeyCommand = function (hashId, keyString) {
-            var ckbr = this.commandKeyBinding;
-            return ckbr[hashId] && ckbr[hashId][keyString];
-        };
-        HashHandler.prototype.handleKeyboard = function (dataUnused, hashId, keyString, keyCodeUnused, e) {
-            var response = {
-                command: this.findKeyCommand(hashId, keyString)
-            };
-            return response;
-        };
-        return HashHandler;
-    })();
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = HashHandler;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {
@@ -5704,8 +5708,9 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.clearSelection();
         };
         Editor.prototype.removeWordRight = function () {
-            if (this.selection.isEmpty())
+            if (this.selection.isEmpty()) {
                 this.selection.selectWordRight();
+            }
             this.session.remove(this.getSelectionRange());
             this.clearSelection();
         };

@@ -35,12 +35,20 @@ import Editor from "../Editor"
 import HashHandler from "./HashHandler"
 import Command from "../commands/Command";
 
+/**
+ * @class KeyBinding
+ */
 export default class KeyBinding {
     $editor: Editor;
     $data;
     $handlers: HashHandler[];
     $defaultHandler: HashHandler;
 
+    /**
+     * @class KeyBinding
+     * @constructor
+     * @param editor {Editor}
+     */
     constructor(editor: Editor) {
         this.$editor = editor;
         this.$data = { editor: editor };
@@ -48,13 +56,23 @@ export default class KeyBinding {
         this.setDefaultHandler(editor.commands);
     }
 
-    setDefaultHandler(kb: HashHandler) {
+    /**
+     * @method setDefaultHandler
+     * @param kb {HashHandler}
+     * @return {void}
+     */
+    setDefaultHandler(kb: HashHandler): void {
         this.removeKeyboardHandler(this.$defaultHandler);
         this.$defaultHandler = kb;
         this.addKeyboardHandler(kb, 0);
     }
 
-    setKeyboardHandler(kb: HashHandler) {
+    /**
+     * @method setKeyboardHandler
+     * @param kb {HashHandler}
+     * @return {void}
+     */
+    setKeyboardHandler(kb: HashHandler): void {
         var h = this.$handlers;
         if (h[h.length - 1] === kb)
             return;
@@ -65,33 +83,47 @@ export default class KeyBinding {
         this.addKeyboardHandler(kb, 1);
     }
 
-    addKeyboardHandler(kb/*: CommandManager*/, pos?: number) {
+    addKeyboardHandler(kb: any | HashHandler/*: CommandManager*/, pos?: number) {
         if (!kb)
             return;
-        if (typeof kb == "function" && !kb.handleKeyboard)
+        if (typeof kb === "function" && !kb.handleKeyboard) {
             kb.handleKeyboard = kb;
-        var i = this.$handlers.indexOf(kb);
-        if (i != -1)
-            this.$handlers.splice(i, 1);
+        }
+        else if (kb instanceof HashHandler) {
+            var i = this.$handlers.indexOf(kb);
+            if (i !== -1)
+                this.$handlers.splice(i, 1);
 
-        if (pos === void 0)
-            this.$handlers.push(kb);
-        else
-            this.$handlers.splice(pos, 0, kb);
+            if (pos === void 0)
+                this.$handlers.push(kb);
+            else
+                this.$handlers.splice(pos, 0, kb);
 
-        if (i == -1 && kb.attach)
-            kb.attach(this.$editor);
+            if (i === -1 && kb.attach) {
+                kb.attach(this.$editor);
+            }
+        }
     }
 
-    removeKeyboardHandler(kb) {
+    /**
+     * @method removeKeyboardHandler
+     * @param kb
+     * @return {boolean}
+     */
+    removeKeyboardHandler(kb: /*HashHandler*/any): boolean {
         var i = this.$handlers.indexOf(kb);
-        if (i == -1)
+        if (i === -1) {
             return false;
+        }
         this.$handlers.splice(i, 1);
         kb.detach && kb.detach(this.$editor);
         return true;
     }
 
+    /**
+     * @method getKeyboardHandler
+     * @return {HashHandler}
+     */
     getKeyboardHandler(): HashHandler {
         return this.$handlers[this.$handlers.length - 1];
     }
@@ -129,6 +161,11 @@ export default class KeyBinding {
         this.$callKeyboardHandlers(hashId, keyString, keyCode, e);
     }
 
+    /**
+     * @method onTextInput
+     * @param text {string}
+     * @return {void}
+     */
     onTextInput(text: string): void {
         var success = this.$callKeyboardHandlers(-1, text);
         if (!success) {

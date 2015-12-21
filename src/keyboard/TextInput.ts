@@ -38,6 +38,9 @@ import Editor from "../Editor";
 var BROKEN_SETDATA = isChrome < 18;
 var USE_IE_MIME_TYPE = isIE;
 
+/**
+ * @class TextInput
+ */
 export default class TextInput {
     focus() { };
     blur() { };
@@ -48,10 +51,15 @@ export default class TextInput {
     moveToMouse(e, bringToFront) { };
     setInputHandler(cb) { };
     getInputHandler() { };
-    getElement() {
+    getElement() { };
 
-    };
-    constructor(parentNode: Element, host: Editor) {
+    /**
+     * @class TextInput
+     * @constructor
+     * @param container {Element}
+     * @param editor {Editor}
+     */
+    constructor(container: Element, editor: Editor) {
         // FIXME: I'm sure this shuld become a property.
         // Don't know why we have all these monkey patched methods?!.
         var text = <HTMLTextAreaElement>createElement("textarea");
@@ -67,7 +75,7 @@ export default class TextInput {
         text.spellcheck = false;
 
         text.style.opacity = "0";
-        parentNode.insertBefore(text, parentNode.firstChild);
+        container.insertBefore(text, container.firstChild);
 
         var PLACEHOLDER = "\x01\x01";
 
@@ -82,12 +90,12 @@ export default class TextInput {
         try { var isFocused = document.activeElement === text; } catch (e) { }
 
         addListener(text, "blur", function() {
-            host.onBlur();
+            editor.onBlur();
             isFocused = false;
         });
         addListener(text, "focus", function() {
             isFocused = true;
-            host.onFocus();
+            editor.onFocus();
             resetSelection();
         });
         this.focus = function() { text.focus(); };
@@ -132,8 +140,8 @@ export default class TextInput {
                 syncValue.schedule();
         }
 
-        isWebKit || host.on('changeSelection', function(event, editor: Editor) {
-            if (host.selection.isEmpty() != isSelectionEmpty) {
+        isWebKit || editor.on('changeSelection', function(event, editor: Editor) {
+            if (editor.selection.isEmpty() != isSelectionEmpty) {
                 isSelectionEmpty = !isSelectionEmpty;
                 syncSelection.schedule();
             }
@@ -141,7 +149,7 @@ export default class TextInput {
 
         resetValue();
         if (isFocused)
-            host.onFocus();
+            editor.onFocus();
 
 
         var isAllSelected = function(text) {
@@ -207,10 +215,10 @@ export default class TextInput {
             if (copied) {
                 copied = false;
             } else if (isAllSelected(text)) {
-                host.selectAll();
+                editor.selectAll();
                 resetSelection();
             } else if (inputHandler) {
-                resetSelection(host.selection.isEmpty());
+                resetSelection(editor.selection.isEmpty());
             }
         };
 
@@ -227,13 +235,13 @@ export default class TextInput {
             if (pasted) {
                 resetSelection();
                 if (data)
-                    host.onPaste(data);
+                    editor.onPaste(data);
                 pasted = false;
             } else if (data == PLACEHOLDER.charAt(0)) {
                 if (afterContextMenu)
-                    host.execCommand("del", { source: "ace" });
+                    editor.execCommand("del", { source: "ace" });
                 else // some versions of android do not fire keydown when pressing backspace
-                    host.execCommand("backspace", { source: "ace" });
+                    editor.execCommand("backspace", { source: "ace" });
             } else {
                 if (data.substring(0, 2) == PLACEHOLDER)
                     data = data.substr(2);
@@ -246,7 +254,7 @@ export default class TextInput {
                     data = data.slice(0, -1);
 
                 if (data)
-                    host.onTextInput(data);
+                    editor.onTextInput(data);
             }
             if (afterContextMenu)
                 afterContextMenu = false;
@@ -276,12 +284,12 @@ export default class TextInput {
         };
 
         var doCopy = function(e, isCut) {
-            var data = host.getCopyText();
+            var data = editor.getCopyText();
             if (!data)
                 return preventDefault(e);
 
             if (handleClipboardData(e, data)) {
-                isCut ? host.onCut() : host.onCopy();
+                isCut ? editor.onCut() : editor.onCopy();
                 preventDefault(e);
             } else {
                 copied = true;
@@ -291,7 +299,7 @@ export default class TextInput {
                     copied = false;
                     resetValue();
                     resetSelection();
-                    isCut ? host.onCut() : host.onCopy();
+                    isCut ? editor.onCut() : editor.onCopy();
                 });
             }
         };
@@ -308,7 +316,7 @@ export default class TextInput {
             var data = handleClipboardData(e);
             if (typeof data === "string") {
                 if (data)
-                    host.onPaste(data);
+                    editor.onPaste(data);
                 if (isIE)
                     setTimeout(resetSelection);
                 preventDefault(e);
@@ -319,7 +327,7 @@ export default class TextInput {
             }
         };
 
-        addCommandKeyListener(text, host.onCommandKey.bind(host));
+        addCommandKeyListener(text, editor.onCommandKey.bind(editor));
 
         addListener(text, "select", onSelect);
 
@@ -332,7 +340,7 @@ export default class TextInput {
 
         // Opera has no clipboard events
         if (!('oncut' in text) || !('oncopy' in text) || !('onpaste' in text)) {
-            addListener(parentNode, "keydown", function(e) {
+            addListener(container, "keydown", function(e) {
                 if ((isMac && !e.metaKey) || !e.ctrlKey)
                     return;
 
@@ -353,44 +361,44 @@ export default class TextInput {
 
         // COMPOSITION
         var onCompositionStart = function() {
-            if (inComposition || !host.onCompositionStart || host.$readOnly)
+            if (inComposition || !editor.onCompositionStart || editor.$readOnly)
                 return;
 
             inComposition = {};
-            host.onCompositionStart();
+            editor.onCompositionStart();
             setTimeout(onCompositionUpdate, 0);
-            host.on("mousedown", onCompositionEnd);
-            if (!host.selection.isEmpty()) {
-                host.insert("", false);
-                host.getSession().markUndoGroup();
-                host.selection.clearSelection();
+            editor.on("mousedown", onCompositionEnd);
+            if (!editor.selection.isEmpty()) {
+                editor.insert("", false);
+                editor.getSession().markUndoGroup();
+                editor.selection.clearSelection();
             }
-            host.getSession().markUndoGroup();
+            editor.getSession().markUndoGroup();
         };
 
         var onCompositionUpdate = function() {
 
-            if (!inComposition || !host.onCompositionUpdate || host.$readOnly)
+            if (!inComposition || !editor.onCompositionUpdate || editor.$readOnly)
                 return;
             var val = text.value.replace(/\x01/g, "");
             if (inComposition.lastValue === val) return;
 
-            host.onCompositionUpdate(val);
+            editor.onCompositionUpdate(val);
             if (inComposition.lastValue)
-                host.undo();
+                editor.undo();
             inComposition.lastValue = val;
             if (inComposition.lastValue) {
-                var r = host.selection.getRange();
-                host.insert(inComposition.lastValue, false);
-                host.getSession().markUndoGroup();
-                inComposition.range = host.selection.getRange();
-                host.selection.setRange(r);
-                host.selection.clearSelection();
+                var r = editor.selection.getRange();
+                editor.insert(inComposition.lastValue, false);
+                editor.getSession().markUndoGroup();
+                inComposition.range = editor.selection.getRange();
+                editor.selection.setRange(r);
+                editor.selection.clearSelection();
             }
         };
 
         var onCompositionEnd = function(e, editor: Editor) {
-            if (!host.onCompositionEnd || host.$readOnly) return;
+            if (!editor.onCompositionEnd || editor.$readOnly) return;
 
             var c = inComposition;
             inComposition = false;
@@ -415,13 +423,13 @@ export default class TextInput {
                 if (str == c.lastValue)
                     return "";
                 if (c.lastValue && timer)
-                    host.undo();
+                    editor.undo();
                 return str;
             };
-            host.onCompositionEnd();
-            host.off("mousedown", onCompositionEnd);
+            editor.onCompositionEnd();
+            editor.off("mousedown", onCompositionEnd);
             if (e.type == "compositionend" && c.range) {
-                host.selection.setRange(c.range);
+                editor.selection.setRange(c.range);
             }
         };
 
@@ -449,8 +457,8 @@ export default class TextInput {
 
         this.onContextMenu = function(e) {
             afterContextMenu = true;
-            resetSelection(host.selection.isEmpty());
-            host._emit("nativecontextmenu", { target: host, domEvent: e });
+            resetSelection(editor.selection.isEmpty());
+            editor._emit("nativecontextmenu", { target: editor, domEvent: e });
             this.moveToMouse(e, true);
         };
 
@@ -461,8 +469,8 @@ export default class TextInput {
                 + "height:" + text.style.height + ";"
                 + (isIE ? "opacity:0.1;" : "");
 
-            var rect = host.container.getBoundingClientRect();
-            var style = window.getComputedStyle(host.container);
+            var rect = editor.container.getBoundingClientRect();
+            var style = window.getComputedStyle(editor.container);
             var top = rect.top + (parseInt(style.borderTopWidth) || 0);
             var left = rect.left + (parseInt(style.borderLeftWidth) || 0);
             var maxTop = rect.bottom - top - text.clientHeight - 2;
@@ -475,12 +483,12 @@ export default class TextInput {
             if (e.type != "mousedown")
                 return;
 
-            if (host.renderer.$keepTextAreaAtCursor)
-                host.renderer.$keepTextAreaAtCursor = null;
+            if (editor.renderer.$keepTextAreaAtCursor)
+                editor.renderer.$keepTextAreaAtCursor = null;
 
             // on windows context menu is opened after mouseup
             if (isWin)
-                capture(host.container, move, onContextMenuClose);
+                capture(editor.container, move, onContextMenuClose);
         };
 
         this.onContextMenuClose = onContextMenuClose;
@@ -490,18 +498,18 @@ export default class TextInput {
                     text.style.cssText = tempStyle;
                     tempStyle = '';
                 }
-                if (host.renderer.$keepTextAreaAtCursor == null) {
-                    host.renderer.$keepTextAreaAtCursor = true;
-                    host.renderer.$moveTextAreaToCursor();
+                if (editor.renderer.$keepTextAreaAtCursor == null) {
+                    editor.renderer.$keepTextAreaAtCursor = true;
+                    editor.renderer.$moveTextAreaToCursor();
                 }
             }, 0);
         }
 
         var onContextMenu = function(e) {
-            host.textInput.onContextMenu(e);
+            editor.textInput.onContextMenu(e);
             onContextMenuClose();
         };
-        addListener(host.renderer.scroller, "contextmenu", onContextMenu);
+        addListener(editor.renderer.scroller, "contextmenu", onContextMenu);
         addListener(text, "contextmenu", onContextMenu);
     }
 }
