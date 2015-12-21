@@ -12681,16 +12681,18 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
             this.eventBus = new EventEmitterClass_1.default(this);
             this.element.className = "ace_layer ace_text-layer";
             container.appendChild(this.element);
-            this.$updateEolChar = this.$updateEolChar.bind(this);
             this.EOL_CHAR = this.EOL_CHAR_LF;
         }
-        Text.prototype.$updateEolChar = function () {
+        Text.prototype.updateEolChar = function () {
             var EOL_CHAR = this.session.doc.getNewLineCharacter() === "\n"
                 ? this.EOL_CHAR_LF
                 : this.EOL_CHAR_CRLF;
             if (this.EOL_CHAR != EOL_CHAR) {
                 this.EOL_CHAR = EOL_CHAR;
                 return true;
+            }
+            else {
+                return false;
             }
         };
         Text.prototype.setPadding = function (padding) {
@@ -12704,10 +12706,11 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
             return this.$fontMetrics.$characterSize.width || 0;
         };
         Text.prototype.$setFontMetrics = function (measure) {
+            var _this = this;
             this.$fontMetrics = measure;
             this.$fontMetrics.on("changeCharacterSize", function (e) {
-                this._signal("changeCharacterSize", e);
-            }.bind(this));
+                _this.eventBus._signal("changeCharacterSize", e);
+            });
             this.$pollSizeChanges();
         };
         Text.prototype.checkForSizeChanges = function () {
@@ -13114,8 +13117,9 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
         };
         Text.prototype.destroy = function () {
             clearInterval(this.$pollSizeChangesTimer);
-            if (this.$measureNode)
+            if (this.$measureNode) {
                 this.$measureNode.parentNode.removeChild(this.$measureNode);
+            }
             delete this.$measureNode;
         };
         return Text;
@@ -13838,7 +13842,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
         };
         VirtualRenderer.prototype.onChangeNewLineMode = function () {
             this.$loop.schedule(CHANGE_TEXT);
-            this.$textLayer.$updateEolChar();
+            this.$textLayer.updateEolChar();
         };
         VirtualRenderer.prototype.onChangeTabSize = function () {
             if (this.$loop) {

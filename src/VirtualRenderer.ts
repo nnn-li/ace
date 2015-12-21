@@ -479,7 +479,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      */
     private onChangeNewLineMode(): void {
         this.$loop.schedule(CHANGE_TEXT);
-        this.$textLayer.$updateEolChar();
+        this.$textLayer.updateEolChar();
     }
 
     /**

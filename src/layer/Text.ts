@@ -75,7 +75,7 @@ export default class Text implements EventBus<Text> {
     private SPACE_CHAR = "\xB7";
     private $fontMetrics: FontMetrics;
     private session: EditSession;
-    private $pollSizeChangesTimer;
+    private $pollSizeChangesTimer: number;
     private showInvisibles = false;
     private displayIndentGuides: boolean = true;
     private $tabStrings: string[] = [];
@@ -83,7 +83,7 @@ export default class Text implements EventBus<Text> {
     private tabSize: number;
     private $indentGuideRe: RegExp;
     public config;
-    private $measureNode;
+    private $measureNode: Node;
     private eventBus: EventEmitterClass<Text>;
 
     /**
@@ -95,17 +95,23 @@ export default class Text implements EventBus<Text> {
         this.eventBus = new EventEmitterClass<Text>(this);
         this.element.className = "ace_layer ace_text-layer";
         container.appendChild(this.element);
-        this.$updateEolChar = this.$updateEolChar.bind(this);
         this.EOL_CHAR = this.EOL_CHAR_LF;
     }
 
-    $updateEolChar() {
+    /**
+     * @method updateEolChar
+     * @return {boolean}
+     */
+    updateEolChar(): boolean {
         var EOL_CHAR = this.session.doc.getNewLineCharacter() === "\n"
             ? this.EOL_CHAR_LF
             : this.EOL_CHAR_CRLF;
         if (this.EOL_CHAR != EOL_CHAR) {
             this.EOL_CHAR = EOL_CHAR;
             return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -124,9 +130,12 @@ export default class Text implements EventBus<Text> {
 
     public $setFontMetrics(measure: FontMetrics) {
         this.$fontMetrics = measure;
-        this.$fontMetrics.on("changeCharacterSize", function(e) {
-            this._signal("changeCharacterSize", e);
-        }.bind(this));
+        this.$fontMetrics.on("changeCharacterSize", (e) => {
+            /**
+             * @event changeCharacterSize
+             */
+            this.eventBus._signal("changeCharacterSize", e);
+        });
         this.$pollSizeChanges();
     }
 
@@ -642,8 +651,9 @@ export default class Text implements EventBus<Text> {
      */
     public destroy(): void {
         clearInterval(this.$pollSizeChangesTimer);
-        if (this.$measureNode)
+        if (this.$measureNode) {
             this.$measureNode.parentNode.removeChild(this.$measureNode);
+        }
         delete this.$measureNode;
     }
 }
