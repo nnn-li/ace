@@ -5358,31 +5358,33 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         Editor.prototype.$cursorChange = function () {
             this.renderer.updateCursor();
         };
-        Editor.prototype.onDocumentChange = function (e, editSession) {
-            var delta = e.data;
+        Editor.prototype.onDocumentChange = function (event, session) {
+            var delta = event.data;
             var range = delta.range;
             var lastRow;
-            if (range.start.row == range.end.row && delta.action != "insertLines" && delta.action != "removeLines")
+            if (range.start.row === range.end.row && delta.action !== "insertLines" && delta.action !== "removeLines") {
                 lastRow = range.end.row;
-            else
+            }
+            else {
                 lastRow = Infinity;
-            var r = this.renderer;
-            r.updateLines(range.start.row, lastRow, this.session.$useWrapMode);
-            this.eventBus._signal("change", e);
+            }
+            var renderer = this.renderer;
+            renderer.updateLines(range.start.row, lastRow, session.$useWrapMode);
+            this.eventBus._signal("change", event);
             this.$cursorChange();
             this.$updateHighlightActiveLine();
         };
-        Editor.prototype.onTokenizerUpdate = function (event, editSession) {
+        Editor.prototype.onTokenizerUpdate = function (event, session) {
             var rows = event.data;
             this.renderer.updateLines(rows.first, rows.last);
         };
-        Editor.prototype.onScrollTopChange = function (event, editSession) {
-            this.renderer.scrollToY(this.session.getScrollTop());
+        Editor.prototype.onScrollTopChange = function (event, session) {
+            this.renderer.scrollToY(session.getScrollTop());
         };
-        Editor.prototype.onScrollLeftChange = function (event, editSession) {
-            this.renderer.scrollToX(this.session.getScrollLeft());
+        Editor.prototype.onScrollLeftChange = function (event, session) {
+            this.renderer.scrollToX(session.getScrollLeft());
         };
-        Editor.prototype.onCursorChange = function (event, editSession) {
+        Editor.prototype.onCursorChange = function (event, session) {
             this.$cursorChange();
             if (!this.$blockScrolling) {
                 this.renderer.scrollCursorIntoView();

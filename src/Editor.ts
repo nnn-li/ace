@@ -60,6 +60,8 @@ import Gutter from "./layer/Gutter";
 import HashHandler from "./keyboard/HashHandler";
 import KeyBinding from "./keyboard/KeyBinding";
 import TextInput from "./keyboard/TextInput";
+import Delta from "./Delta";
+import DeltaEvent from "./DeltaEvent";
 import EditSession from "./EditSession";
 import Search from "./Search";
 import FirstAndLast from "./FirstAndLast";
@@ -760,8 +762,11 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * Brings the current `textInput` into focus.
-     **/
-    focus() {
+     *
+     * @method focus
+     * @return {void}
+     */
+    focus(): void {
         // Safari needs the timeout
         // iOS and Firefox need it called immediately
         // to be on the save side we do both
@@ -774,48 +779,58 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * Returns `true` if the current `textInput` is in focus.
-     * @return {Boolean}
-     **/
+     *
+     * @method isFocused
+     * @return {boolean}
+     */
     isFocused(): boolean {
         return this.textInput.isFocused();
     }
 
     /**
-     *
      * Blurs the current `textInput`.
-     **/
-    blur() {
+     *
+     * @method blur
+     * @return {void}
+     */
+    blur(): void {
         this.textInput.blur();
     }
 
     /**
      * Emitted once the editor comes into focus.
-     * @event focus
      *
-     **/
-    onFocus() {
+     * @method onFocus
+     * @return {void}
+     */
+    onFocus(): void {
         if (this.$isFocused) {
             return;
         }
         this.$isFocused = true;
         this.renderer.showCursor();
         this.renderer.visualizeFocus();
+        /**
+         * @event focus
+         */
         this.eventBus._emit("focus");
     }
 
     /**
      * Emitted once the editor has been blurred.
-     * @event blur
-     *
-     *
-     **/
-    onBlur() {
+     * @method onBlur
+     * @return {void}
+     */
+    onBlur(): void {
         if (!this.$isFocused) {
             return;
         }
         this.$isFocused = false;
         this.renderer.hideCursor();
         this.renderer.visualizeBlur();
+        /**
+         * @event blur
+         */
         this.eventBus._emit("blur");
     }
 
@@ -825,48 +840,57 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * Emitted whenever the document is changed.
-     * @event change
-     * @param {Object} e Contains a single property, `data`, which has the delta of changes
      *
-     **/
-    onDocumentChange(e, editSession: EditSession) {
-        var delta = e.data;
+     * @method onDocumentChange
+     * @param event {DeltaEvent} Contains a single property, `data`, which has the delta of changes
+     * @param session {EditSession}
+     * @return {void}
+     * @private
+     */
+    private onDocumentChange(event: DeltaEvent, session: EditSession): void {
+        var delta: Delta = event.data;
         var range = delta.range;
         var lastRow: number;
 
-        if (range.start.row == range.end.row && delta.action != "insertLines" && delta.action != "removeLines")
+        if (range.start.row === range.end.row && delta.action !== "insertLines" && delta.action !== "removeLines") {
             lastRow = range.end.row;
-        else
+        }
+        else {
             lastRow = Infinity;
+        }
 
-        var r: VirtualRenderer = this.renderer;
-        r.updateLines(range.start.row, lastRow, this.session.$useWrapMode);
+        var renderer: VirtualRenderer = this.renderer;
+        renderer.updateLines(range.start.row, lastRow, session.$useWrapMode);
 
-        this.eventBus._signal("change", e);
+        /**
+         * @event change
+         * @param event {DeltaEvent}
+         */
+        this.eventBus._signal("change", event);
 
         // update cursor because tab characters can influence the cursor position
         this.$cursorChange();
         this.$updateHighlightActiveLine();
     }
 
-    onTokenizerUpdate(event, editSession: EditSession) {
+    private onTokenizerUpdate(event, session: EditSession) {
         var rows = event.data;
         this.renderer.updateLines(rows.first, rows.last);
     }
 
 
-    onScrollTopChange(event, editSession: EditSession) {
-        this.renderer.scrollToY(this.session.getScrollTop());
+    private onScrollTopChange(event, session: EditSession) {
+        this.renderer.scrollToY(session.getScrollTop());
     }
 
-    onScrollLeftChange(event, editSession: EditSession) {
-        this.renderer.scrollToX(this.session.getScrollLeft());
+    private onScrollLeftChange(event, session: EditSession) {
+        this.renderer.scrollToX(session.getScrollLeft());
     }
 
     /**
      * Handler for cursor or selection changes.
      */
-    onCursorChange(event, editSession: EditSession) {
+    private onCursorChange(event, session: EditSession) {
         this.$cursorChange();
 
         if (!this.$blockScrolling) {
@@ -877,6 +901,9 @@ export default class Editor implements EventBus<Editor> {
         this.$highlightTags();
         this.$updateHighlightActiveLine();
         // TODO; How is signal different from emit?
+        /**
+         * @event changeSelection
+         */
         this.eventBus._signal("changeSelection");
     }
 
