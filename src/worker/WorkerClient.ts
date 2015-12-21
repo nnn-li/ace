@@ -3,6 +3,7 @@
 import {qualifyURL} from '../lib/net';
 import Delta from "../Delta";
 import Document from "../Document";
+import EventBus from "../EventBus";
 import EventEmitterClass from '../lib/EventEmitterClass';
 import {get} from "../config";
 
@@ -36,7 +37,7 @@ import {get} from "../config";
  * @class WorkerClient
  * @extends EventEmitter
  */
-export default class WorkerClient extends EventEmitterClass {
+export default class WorkerClient implements EventBus<WorkerClient> {
 
     /**
      * The underlying Web Worker.
@@ -71,13 +72,15 @@ export default class WorkerClient extends EventEmitterClass {
      */
     private $doc: Document;
 
+    private eventBus: EventEmitterClass<WorkerClient>;
+
     /**
      * @class WorkerClient
      * @constructor
      * @param workerUrl {string}
      */
     constructor(workerUrl: string) {
-        super();
+        this.eventBus = new EventEmitterClass<WorkerClient>(this);
         this.sendDeltaQueue = this.sendDeltaQueue.bind(this);
         this.changeListener = this.changeListener.bind(this);
         this.onMessage = this.onMessage.bind(this);
@@ -145,8 +148,11 @@ export default class WorkerClient extends EventEmitterClass {
                 // TODO: Enumerate the event names for documentation purposes.
                 // Some will be standard becuase they are associated with the
                 // WorkerClient protocol. Others will be undocumented and custom
-                // because they are specific to the particular implementation. 
-                this._signal(msg.name, { data: msg.data });
+                // because they are specific to the particular implementation.
+                /**
+                 * @event TODO
+                 */
+                this.eventBus._signal(msg.name, { data: msg.data });
                 break;
 
             case "call":
@@ -174,7 +180,10 @@ export default class WorkerClient extends EventEmitterClass {
      * @return {void}
      */
     terminate(): void {
-        this._signal("terminate", {});
+        /**
+         * @event terminate
+         */
+        this.eventBus._signal("terminate", {});
         this.deltaQueue = void 0;
         this.$worker.terminate();
         this.$worker = void 0;
@@ -323,6 +332,26 @@ export default class WorkerClient extends EventEmitterClass {
         else {
             this.deltaQueue.push(e.data);
         }
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: WorkerClient) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: WorkerClient) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: WorkerClient) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: WorkerClient) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     /**

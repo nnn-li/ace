@@ -29,19 +29,21 @@ import VirtualRenderer from "./VirtualRenderer";
 
 /**
  * Represents a horizontal scroll bar.
+ *
  * @class HScrollBar
- **/
+ */
 export default class HScrollBar extends ScrollBar {
 
     private _scrollLeft = 0;
     private _height: number;
     /**
      * Creates a new `HScrollBar`. `parent` is the owner of the scroll bar.
-     * @param {DOMElement} parent A DOM element
-     * @param {Object} renderer An editor renderer
      *
+     * @class HScrollBar
      * @constructor
-     **/
+     * @param parent {HTMLElement} A DOM element.
+     * @param renderer {VirtualRenderer} An editor renderer.
+     */
     constructor(parent: HTMLElement, renderer: VirtualRenderer) {
         super(parent, '-h');
 
@@ -59,11 +61,15 @@ export default class HScrollBar extends ScrollBar {
      * Emitted when the scroll bar, well, scrolls.
      * @event scroll
      * @param {Object} e Contains one property, `"data"`, which indicates the current scroll left position
-     **/
+     */
     onScroll(): void {
         if (!this.skipEvent) {
             this._scrollLeft = this.element.scrollLeft;
-            this._emit("scroll", { data: this._scrollLeft });
+            /**
+             * @event scroll
+             * @param TODO
+             */
+            this.eventBus._emit("scroll", { data: this._scrollLeft });
         }
         this.skipEvent = false;
     }

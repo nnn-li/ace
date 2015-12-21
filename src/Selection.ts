@@ -61,6 +61,7 @@ import Range from "./Range";
 import {RangeList} from "./range_list";
 import EditSession from "./EditSession";
 import Anchor from "./Anchor";
+import EventBus from "./EventBus";
 
 /**
  * Contains the cursor position and the text selection of an edit session.
@@ -69,9 +70,8 @@ import Anchor from "./Anchor";
  * the coordinates as they appear in the document before applying soft wrap and folding.
  *
  * @class Selection
- * @extends EventEmitterClass
  */
-export default class Selection extends EventEmitterClass {
+export default class Selection implements EventBus<Selection> {
     private session: EditSession;
     // FIXME: Maybe Selection should only couple to the EditSession?
     private doc: Document;
@@ -86,6 +86,7 @@ export default class Selection extends EventEmitterClass {
     public rangeCount: number;
     public ranges;
     public rangeList: RangeList;
+    private eventBus: EventEmitterClass<Selection>;
 
     /**
      * Creates a new `Selection` object.
@@ -95,7 +96,7 @@ export default class Selection extends EventEmitterClass {
      * @param session {EditSession} The session to use.
      */
     constructor(session: EditSession) {
-        super();
+        this.eventBus = new EventEmitterClass<Selection>(this);
         this.session = session;
         this.doc = session.getDocument();
 
@@ -105,16 +106,26 @@ export default class Selection extends EventEmitterClass {
 
         var self = this;
         this.lead.on("change", function(e) {
-            self._emit("changeCursor");
-            if (!self.$isEmpty)
-                self._emit("changeSelection");
+            /**
+             * @event changeCursor
+             */
+            self.eventBus._emit("changeCursor");
+            if (!self.$isEmpty) {
+                /**
+                 * @event changeSelection
+                 */
+                self.eventBus._emit("changeSelection");
+            }
             if (!self.$keepDesiredColumnOnChange && e.old.column != e.value.column)
                 self.$desiredColumn = null;
         });
 
         this.selectionAnchor.on("change", function() {
             if (!self.$isEmpty) {
-                self._emit("changeSelection");
+                /**
+                 * @event changeSelection
+                 */
+                self.eventBus._emit("changeSelection");
             }
         });
     }
@@ -171,7 +182,10 @@ export default class Selection extends EventEmitterClass {
 
         if (this.$isEmpty) {
             this.$isEmpty = false;
-            this._emit("changeSelection");
+            /**
+             * @event changeSelection
+             */
+            this.eventBus._emit("changeSelection");
         }
     }
 
@@ -272,7 +286,10 @@ export default class Selection extends EventEmitterClass {
     clearSelection(): void {
         if (!this.$isEmpty) {
             this.$isEmpty = true;
-            this._emit("changeSelection");
+            /**
+             * @event changeSelection
+             */
+            this.eventBus._emit("changeSelection");
         }
     }
 
@@ -921,6 +938,26 @@ export default class Selection extends EventEmitterClass {
     moveCursorToScreen(row, column, keepDesiredColumn) {
         var pos = this.session.screenToDocumentPosition(row, column);
         this.moveCursorTo(pos.row, pos.column, keepDesiredColumn);
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: Selection) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: Selection) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: Selection) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: Selection) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     // remove listeners from document

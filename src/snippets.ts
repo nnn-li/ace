@@ -60,6 +60,7 @@ import Anchor from "./Anchor";
 import HashHandler from "./keyboard/HashHandler";
 import Tokenizer from "./Tokenizer";
 import Editor from './Editor';
+import EventBus from './EventBus';
 import Change from "./Change";
 
 var TABSTOP_MANAGER = 'tabstopManager';
@@ -76,13 +77,21 @@ function TabstopToken(str, _, stack): any[] {
     return [{ text: str }];
 }
 
-export class SnippetManager extends EventEmitterClass {
+/**
+ * @class SnippetManager
+ */
+export class SnippetManager implements EventBus<SnippetManager> {
     public snippetMap = {};
     private snippetNameMap = {};
     private variables = {};
+    private eventBus: EventEmitterClass<SnippetManager>;
 
+    /**
+     * @class SnippetManager
+     * @constructor
+     */
     constructor() {
-        super();
+        this.eventBus = new EventEmitterClass<SnippetManager>(this);
     }
 
     private static $tokenizer = new Tokenizer({
@@ -553,6 +562,26 @@ export class SnippetManager extends EventEmitterClass {
         }
     }
 
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: SnippetManager) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: SnippetManager) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: SnippetManager) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: SnippetManager) => any): void {
+        this.eventBus.off(eventName, callback);
+    }
+
     public register(snippets, scope) {
         var snippetMap = this.snippetMap;
         var snippetNameMap = this.snippetNameMap;
@@ -614,7 +643,10 @@ export class SnippetManager extends EventEmitterClass {
         else if (Array.isArray(snippets))
             snippets.forEach(addSnippet);
 
-        this._signal("registerSnippets", { scope: scope });
+        /**
+         * @event registerSnippets
+         */
+        this.eventBus._signal("registerSnippets", { scope: scope });
     }
 
     private unregister(snippets, scope?) {

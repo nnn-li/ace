@@ -32,7 +32,7 @@ import Editor from '../Editor';
 /**
  * @class CommandManager
  */
-export default class CommandManager extends EventEmitterClass implements HashHandler {
+export default class CommandManager extends EventEmitterClass<CommandManager> implements HashHandler {
     // We actually contain a HashHandler but implement it like an interface.
     private hashHandler: HashHandler;
     private $inReplay: boolean;
@@ -49,7 +49,7 @@ export default class CommandManager extends EventEmitterClass implements HashHan
      * @param commands {Command[]} A list of commands
      */
     constructor(platform: string, commands: Command[]) {
-        super();
+        super(this);
         this.hashHandler = new HashHandler(commands, platform)
         this.setDefaultHandler("exec", function(e: { command: Command; editor: Editor; args }) {
             return e.command.exec(e.editor, e.args || {});

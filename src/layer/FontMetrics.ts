@@ -26,6 +26,7 @@
 import { createElement } from "../lib/dom";
 import { stringRepeat } from "../lib/lang";
 import { isIE } from "../lib/useragent";
+import EventBus from "../EventBus";
 import EventEmitterClass from "../lib/EventEmitterClass";
 
 var CHAR_COUNT = 0;
@@ -33,7 +34,7 @@ var CHAR_COUNT = 0;
 /**
  * @class FontMetrics
  */
-export default class FontMetrics extends EventEmitterClass {
+export default class FontMetrics implements EventBus<FontMetrics> {
     private el: HTMLDivElement;
     private $main: HTMLDivElement;
     private $measureNode: HTMLDivElement;
@@ -41,6 +42,7 @@ export default class FontMetrics extends EventEmitterClass {
     private charSizes: { [ch: string]: number };
     private allowBoldFonts: boolean;
     private $pollSizeChangesTimer: number;
+    private eventBus: EventEmitterClass<FontMetrics>;
 
     /**
      * @class FontMetrics
@@ -50,7 +52,7 @@ export default class FontMetrics extends EventEmitterClass {
      */
     // FIXME: The interval should be being used to configure the polling interval (normally 500ms)
     constructor(container: HTMLElement, pollingInterval: number) {
-        super();
+        this.eventBus = new EventEmitterClass<FontMetrics>(this);
         this.el = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(this.el.style, true);
 
@@ -71,6 +73,26 @@ export default class FontMetrics extends EventEmitterClass {
 
         this.$characterSize = { width: 0, height: 0 };
         this.checkForSizeChanges();
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: FontMetrics) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: FontMetrics) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: FontMetrics) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: FontMetrics) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     private $testFractionalRect(): void {
@@ -114,7 +136,10 @@ export default class FontMetrics extends EventEmitterClass {
             this.$characterSize = size;
             this.charSizes = Object.create(null);
             this.allowBoldFonts = boldSize && boldSize.width === size.width && boldSize.height === size.height;
-            this._emit("changeCharacterSize", { data: size });
+            /**
+             * @event changeCharacterSize
+             */
+            this.eventBus._emit("changeCharacterSize", { data: size });
         }
     }
 

@@ -55,6 +55,7 @@
 import {createElement} from "../lib/dom";
 import {stringRepeat} from "../lib/lang";
 import EditSession from "../EditSession";
+import EventBus from "./EventBus";
 import EventEmitterClass from "../lib/EventEmitterClass";
 import FoldLine from "../FoldLine";
 import FontMetrics from "../layer/FontMetrics";
@@ -62,9 +63,8 @@ import Token from "../Token";
 
 /**
  * @class Text
- * @extends EventEmitterClass
  */
-export default class Text extends EventEmitterClass {
+export default class Text implements EventBus<Text> {
     public element = <HTMLDivElement>createElement("div");
     private $padding = 0;
     private EOF_CHAR = "\xB6";
@@ -84,6 +84,7 @@ export default class Text extends EventEmitterClass {
     private $indentGuideRe: RegExp;
     public config;
     private $measureNode;
+    private eventBus: EventEmitterClass<Text>;
 
     /**
      * @class Text
@@ -91,7 +92,7 @@ export default class Text extends EventEmitterClass {
      * @param container {HTMLElement}
      */
     constructor(container: HTMLElement) {
-        super();
+        this.eventBus = new EventEmitterClass<Text>(this);
         this.element.className = "ace_layer ace_text-layer";
         container.appendChild(this.element);
         this.$updateEolChar = this.$updateEolChar.bind(this);
@@ -162,6 +163,26 @@ export default class Text extends EventEmitterClass {
             this.$computeTabString();
             return true;
         }
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: Text) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: Text) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: Text) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: Text) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     // FIXME: DGH Check that this is consistent with ACE

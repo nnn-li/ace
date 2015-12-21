@@ -44,25 +44,25 @@ declare module Ace {
     interface Command {
     }
 
-    class Document implements EventBus {
+    class Document implements EventBus<Document> {
         constructor(text: string | string[]);
-        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
-        off(eventName: string, callback: (event: any) => any): void;
+        on(eventName: string, callback: (event: any, source: Document) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any, source: Document) => any): void;
     }
 
-    class EditSession implements EventBus {
+    class EditSession implements EventBus<EditSession> {
         constructor(doc: Document);
         clearAnnotations(): void;
         getDocument(): Document;
-        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
-        off(eventName: string, callback: (event: any) => any): void;
+        on(eventName: string, callback: (event: any, source: EditSession) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any, source: EditSession) => any): void;
         setAnnotations(annotations: Annotation[]): void;
         setLanguageMode(mode: LanguageMode): void;
         setMode(modeName: string): void;
         setUndoManager(undoManager: UndoManager): void;
     }
 
-    class Editor implements EventBus {
+    class Editor implements EventBus<Editor> {
         container: HTMLElement;
         constructor(renderer: VirtualRenderer, session: EditSession);
         blockIndent(): void;
@@ -78,8 +78,8 @@ declare module Ace {
         insert(text: string, pasted?: boolean): void;
         jumpToMatching(select: boolean);
         moveCursorToPosition(position: Position): void;
-        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
-        off(eventName: string, callback: (event: any) => any): void;
+        on(eventName: string, callback: (event: any, source: Editor) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any, source: Editor) => any): void;
         remove(direction: string);
         resize(force?: boolean): void;
         selectAll(): void;
@@ -92,9 +92,9 @@ declare module Ace {
         toggleCommentLines(): void;
     }
 
-    interface EventBus {
-        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
-        off(eventName: string, callback: (event: any) => any): void;
+    interface EventBus<T> {
+        on(eventName: string, callback: (event: any, source: T) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any, source: T) => any): void;
     }
 
     class HashHandler {
@@ -117,18 +117,21 @@ declare module Ace {
         constructor();
     }
 
-    class VirtualRenderer {
+    class VirtualRenderer implements EventBus<VirtualRenderer> {
         constructor(container: HTMLElement);
         addCssClass(cssClass: string): void;
         setPadding(padding: number): void;
         setThemeCss(cssClass: string, href: string): void;
+        on(eventName: string, callback: (event: MessageEvent, source: VirtualRenderer) => any): void;
+        off(eventName: string, callback: (event: MessageEvent, source: VirtualRenderer) => any): void;
     }
 
-    class WorkerClient {
+    class WorkerClient implements EventBus<WorkerClient> {
         constructor(workerUrl: string);
         attachToDocument(doc: Document): void;
         init(scriptImports: string[], moduleName: string, className: string): void;
-        on(eventName: string, callback: (event: MessageEvent) => any): void;
+        on(eventName: string, callback: (event: MessageEvent, source: WorkerClient) => any): void;
+        off(eventName: string, callback: (event: MessageEvent, source: WorkerClient) => any): void;
     }
 
     class CssMode extends TextMode {

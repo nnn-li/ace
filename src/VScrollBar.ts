@@ -63,7 +63,11 @@ export default class VScrollBar extends ScrollBar {
     onScroll() {
         if (!this.skipEvent) {
             this._scrollTop = this.element.scrollTop;
-            this._emit("scroll", { data: this._scrollTop });
+            /**
+             * @event scroll
+             * @param TODO
+             */
+            this.eventBus._emit("scroll", { data: this._scrollTop });
         }
         this.skipEvent = false;
     }

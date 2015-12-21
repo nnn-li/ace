@@ -55,18 +55,25 @@
 import { createElement } from "./lib/dom";
 import { addListener, preventDefault } from "./lib/event";
 import EventEmitterClass from "./lib/EventEmitterClass";
+import EventBus from "./EventBus";
 
 /**
  * An abstract class representing a native scrollbar control.
  *
  * @class ScrollBar
- * @extends EventEmitterClass
  */
-export default class ScrollBar extends EventEmitterClass {
+export default class ScrollBar implements EventBus<ScrollBar> {
     public element: HTMLDivElement;
     public inner: HTMLDivElement;
     public isVisible: boolean;
     public skipEvent: boolean;
+
+    /**
+     * @property eventBus
+     * @type EventEmitterClass<ScrollBar>
+     * @protected
+     */
+    protected eventBus: EventEmitterClass<ScrollBar>;
 
     /**
      * Creates a new `ScrollBar`.
@@ -77,7 +84,7 @@ export default class ScrollBar extends EventEmitterClass {
      * @param classSuffix {string}
      */
     constructor(parent: HTMLElement, classSuffix: string) {
-        super();
+        this.eventBus = new EventEmitterClass<ScrollBar>(this);
         this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_scrollbar ace_scrollbar" + classSuffix;
 
@@ -91,6 +98,26 @@ export default class ScrollBar extends EventEmitterClass {
         this.skipEvent = false;
 
         addListener(this.element, "mousedown", preventDefault);
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: ScrollBar) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: ScrollBar) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: ScrollBar) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: ScrollBar) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     /**

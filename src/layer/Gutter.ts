@@ -60,14 +60,14 @@ removeCssClass} from "../lib/dom";
 import {escapeHTML} from "../lib/lang";
 import EventEmitterClass from "../lib/EventEmitterClass";
 import EditSession from "../EditSession";
+import EventBus from "../EventBus";
 import Annotation from "../Annotation";
 import GutterConfig from "./GutterConfig";
 
 /**
  * @class Gutter
- * @extends EventEmitterClass
  */
-export default class Gutter extends EventEmitterClass {
+export default class Gutter implements EventBus<Gutter> {
     public element: HTMLDivElement;
     public gutterWidth = 0;
     public $annotations: any[] = [];
@@ -78,6 +78,7 @@ export default class Gutter extends EventEmitterClass {
     private session: EditSession;
     private $showFoldWidgets = true;
     public $padding;
+    private eventBus: EventEmitterClass<Gutter>;
 
     /**
      * @class Gutter
@@ -85,7 +86,7 @@ export default class Gutter extends EventEmitterClass {
      * @param container {HTMLElement}
      */
     constructor(container: HTMLElement) {
-        super();
+        this.eventBus = new EventEmitterClass<Gutter>(this);
         this.element = <HTMLDivElement>createElement("div");
         this.element.className = "ace_layer ace_gutter-layer";
         container.appendChild(this.element);
@@ -93,7 +94,32 @@ export default class Gutter extends EventEmitterClass {
         this.$updateAnnotations = this.$updateAnnotations.bind(this);
     }
 
-    setSession(session: EditSession) {
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: Gutter) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: Gutter) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: Gutter) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: Gutter) => any): void {
+        this.eventBus.off(eventName, callback);
+    }
+
+    /**
+     * @method setSession
+     * @param session {EditSession}
+     * @return {void}
+     */
+    setSession(session: EditSession): void {
         if (this.session) {
             this.session.off("change", this.$updateAnnotations);
         }
@@ -101,7 +127,12 @@ export default class Gutter extends EventEmitterClass {
         session.on("change", this.$updateAnnotations);
     }
 
-    setAnnotations(annotations: Annotation[]) {
+    /**
+     * @method setAnnotations
+     * @param annotations {Annotation[]}
+     * @return {void}
+     */
+    setAnnotations(annotations: Annotation[]): void {
         // iterate over sparse array
         this.$annotations = [];
         for (var i = 0; i < annotations.length; i++) {
@@ -128,7 +159,7 @@ export default class Gutter extends EventEmitterClass {
         }
     }
 
-    $updateAnnotations(e, session: EditSession) {
+    private $updateAnnotations(e, session: EditSession) {
         if (!this.$annotations.length)
             return;
         var delta = e.data;
@@ -148,7 +179,12 @@ export default class Gutter extends EventEmitterClass {
         }
     }
 
-    update(config: GutterConfig) {
+    /**
+     * @method update
+     * @param config {GutterConfig}
+     * @return {void}
+     */
+    update(config: GutterConfig): void {
         var session = this.session;
         var firstRow = config.firstRow;
         var lastRow = Math.min(config.lastRow + config.gutterOffset,  // needed to compensate for hor scollbar
@@ -257,21 +293,38 @@ export default class Gutter extends EventEmitterClass {
         if (gutterWidth !== this.gutterWidth && !isNaN(gutterWidth)) {
             this.gutterWidth = gutterWidth;
             this.element.style.width = Math.ceil(this.gutterWidth) + "px";
-            this._emit("changeGutterWidth", gutterWidth);
+            /**
+             * @event changeGutterWidth
+             */
+            this.eventBus._emit("changeGutterWidth", gutterWidth);
         }
     }
 
-    setShowLineNumbers(show) {
+    /**
+     * @method setShowLineNumbers
+     * @param show {boolean}
+     * @return {void}
+     */
+    setShowLineNumbers(show: boolean): void {
         this.$renderer = !show && {
             getWidth: function() { return "" },
             getText: function() { return "" }
         };
     }
 
+    /**
+     * @method getShowLineNumbers
+     * @return {boolean}
+     */
     getShowLineNumbers(): boolean {
         return this.$showLineNumbers;
     }
 
+    /**
+     * @method setShowFoldWidgets
+     * @param show {boolean}
+     * @return {void}
+     */
     setShowFoldWidgets(show: boolean): void {
         if (show)
             addCssClass(this.element, "ace_folding-enabled");
@@ -282,7 +335,11 @@ export default class Gutter extends EventEmitterClass {
         this.$padding = null;
     }
 
-    getShowFoldWidgets() {
+    /**
+     * @method getShowFoldWidgets
+     * @return {boolean}
+     */
+    getShowFoldWidgets(): boolean {
         return this.$showFoldWidgets;
     }
 
@@ -300,8 +357,12 @@ export default class Gutter extends EventEmitterClass {
 
     /**
      * Returns either "markers", "foldWidgets", or undefined.
+     *
+     * @method getRegion
+     * @param point {TODO}
+     * @return {string}
      */
-    getRegion(point: { clientX: number }): string {
+    getRegion(point: { clientX: number; clientY: number }): string {
         var padding = this.$padding || this.$computePadding();
         var rect = this.element.getBoundingClientRect();
         if (point.clientX < padding.left + rect.left) {

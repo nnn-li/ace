@@ -66,6 +66,7 @@ import RenderLoop from "./RenderLoop";
 import FontMetrics from "./layer/FontMetrics";
 import EventEmitterClass from "./lib/EventEmitterClass";
 import EditSession from './EditSession';
+import EventBus from './EventBus';
 import OptionsProvider from "./OptionsProvider";
 import Position from './Position';
 import ThemeLink from './ThemeLink';
@@ -109,7 +110,7 @@ function changesToString(changes: number): string {
  *
  * @class VirtualRenderer
  */
-export default class VirtualRenderer extends EventEmitterClass implements EditorRenderer, OptionsProvider {
+export default class VirtualRenderer implements EventBus<VirtualRenderer>, EditorRenderer, OptionsProvider {
     public textarea: HTMLTextAreaElement;
     public container: HTMLElement;
     public scrollLeft = 0;
@@ -160,6 +161,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
     private $scrollAnimation: { from: number; to: number; steps: number[] };
     public $scrollbarWidth: number;
     private session: EditSession;
+    private eventBus: EventEmitterClass<VirtualRenderer>;
 
     private scrollMargin = {
         left: 0,
@@ -224,7 +226,7 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
      * @param container {HTMLElement} The root element of the editor.
      */
     constructor(container: HTMLElement) {
-        super();
+        this.eventBus = new EventEmitterClass<VirtualRenderer>(this);
 
         var _self = this;
 
@@ -290,7 +292,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
         this.$textLayer.on("changeCharacterSize", function(event, text: Text) {
             _self.updateCharacterSize();
             _self.onResize(true, _self.gutterWidth, _self.$size.width, _self.$size.height);
-            _self._signal("changeCharacterSize", event);
+            /**
+             * @event changeCharacterSize
+             */
+            _self.eventBus._signal("changeCharacterSize", event);
         });
 
         this.$size = {
@@ -310,6 +315,26 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
         // FIXME: This was a signal to a global config object.
         // Why do Editor and EditSession signal while this emits?
         //_emit("renderer", this);
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: VirtualRenderer) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: VirtualRenderer) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: VirtualRenderer) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: VirtualRenderer) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     /**
@@ -618,8 +643,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
 
         size.$dirty = !width || !height;
 
-        if (changes)
-            this._signal("resize", oldSize);
+        if (changes) {
+            /**
+             * @event resize
+             */
+            this.eventBus._signal("resize", oldSize);
+        }
 
         return changes;
     }
@@ -631,9 +660,11 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
 
         if (this.session.getUseWrapMode() && this.adjustWrapLimit()) {
             this.$loop.schedule(CHANGE_FULL);
-        } else if (this.$size.$dirty) {
+        }
+        else if (this.$size.$dirty) {
             this.$loop.schedule(CHANGE_FULL);
-        } else {
+        }
+        else {
             this.$computeLayerConfig();
             this.$loop.schedule(CHANGE_MARKER);
         }
@@ -1061,7 +1092,11 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
             this.$textLayer.checkForSizeChanges();
         }
 
-        this._signal("beforeRender");
+        /**
+         * @event beforeRender
+         */
+        this.eventBus._signal("beforeRender");
+
         var config = this.layerConfig;
         // text, scrolling and resize changes can cause the view port size to change
         if (changes & CHANGE_FULL ||
@@ -1109,7 +1144,12 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
             this.$cursorLayer.update(config);
             this.$moveTextAreaToCursor();
             this.$highlightGutterLine && this.$updateGutterLineHighlight();
-            this._signal("afterRender");
+
+            /**
+             * @event afterRender
+             */
+            this.eventBus._signal("afterRender");
+
             return;
         }
 
@@ -1127,7 +1167,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
             this.$cursorLayer.update(config);
             this.$highlightGutterLine && this.$updateGutterLineHighlight();
             this.$moveTextAreaToCursor();
-            this._signal("afterRender");
+            /**
+             * @event afterRender
+             */
+            this.eventBus._signal("afterRender");
             return;
         }
 
@@ -1159,7 +1202,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
             this.$markerBack.update(config);
         }
 
-        this._signal("afterRender");
+        /**
+         * @event afterRender
+         */
+        this.eventBus._signal("afterRender");
     }
 
     private $autosize() {
@@ -1263,7 +1309,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
         // the client height of the scroller
         if (hScrollChanged || vScrollChanged) {
             changes = this.$updateCachedSize(true, this.gutterWidth, size.width, size.height);
-            this._signal("scrollbarVisibilityChanged");
+            /**
+             * @event scrollbarVisibilityChanged
+             */
+            this.eventBus._signal("scrollbarVisibilityChanged");
             if (vScrollChanged)
                 longestLine = this.$getLongestLine();
         }
@@ -1762,7 +1811,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
             this.$updateSizeAsync();
         }
 
-        this._emit('themeLoaded', { theme: modJs });
+        /**
+         * @event themeLoaded
+         */
+        this.eventBus._emit('themeLoaded', { theme: modJs });
     }
 
     /**
@@ -1803,7 +1855,10 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
         this.$themeId = themeName;
 
         // TODO: Is this the right place to emit the event?
-        _self._emit('themeChange', { theme: themeName });
+        /**
+         * @event themeChange
+         */
+        _self.eventBus._emit('themeChange', { theme: themeName });
 
         return new Promise<ThemeLink>(function(success, fail) {
             // We take advantage of the configurability of the System Loader.

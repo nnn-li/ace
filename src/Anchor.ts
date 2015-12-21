@@ -57,12 +57,12 @@ import Position from "./Position";
 import Range from "./Range";
 import EventEmitterClass from './lib/EventEmitterClass';
 import { assert } from './lib/asserts';
+import EventBus from "./EventBus";
 
 /**
  * @class Anchor
- * @extends EventEmitterClass
  */
-export default class Anchor extends EventEmitterClass {
+export default class Anchor implements EventBus<Anchor> {
 
     /**
      * @property row
@@ -92,6 +92,8 @@ export default class Anchor extends EventEmitterClass {
      */
     private $insertRight: boolean;
 
+    private eventBus: EventEmitterClass<Anchor>;
+
     /**
      * <p>
      * Defines the floating pointer in the document.
@@ -108,9 +110,9 @@ export default class Anchor extends EventEmitterClass {
      * @param column {number} The starting column position.
      */
     constructor(doc: Document, row: number, column: number) {
-        super();
         assert(typeof row === 'number', "row must be a number");
         assert(typeof column === 'number', "column must be a number");
+        this.eventBus = new EventEmitterClass<Anchor>(this);
         this.$onChange = this.onChange.bind(this);
         this.attach(doc);
         this.setPosition(row, column);
@@ -261,7 +263,7 @@ export default class Anchor extends EventEmitterClass {
          * @event change
          * @param msg {{old: Position; value: Position}}
          */
-        this._signal("change", { old: old, value: pos });
+        this.eventBus._signal("change", { old: old, value: pos });
     }
 
     /**
@@ -282,6 +284,26 @@ export default class Anchor extends EventEmitterClass {
     attach(doc: Document): void {
         this.document = doc || this.document;
         this.document.on("change", this.$onChange);
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: Anchor) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: Anchor) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: Anchor) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: Anchor) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     /**

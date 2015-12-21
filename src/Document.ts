@@ -94,7 +94,7 @@ function $clipPosition(doc: Document, position: Position): Position {
 /**
  * @class Document
  */
-export default class Document implements EventBus {
+export default class Document implements EventBus<Document> {
 
     /**
      * @property $lines
@@ -122,7 +122,7 @@ export default class Document implements EventBus {
      * @type EventEmitterClass
      * @private
      */
-    private eventBus = new EventEmitterClass();
+    private eventBus: EventEmitterClass<Document>;
 
     /**
      * Creates a new Document.
@@ -133,6 +133,9 @@ export default class Document implements EventBus {
      * @param text {string | Array<string>}
      */
     constructor(text: string | Array<string>) {
+
+        this.eventBus = new EventEmitterClass<Document>(this);
+
         // There has to be one line at least in the document. If you pass an empty
         // string to the insert function, nothing will happen. Workaround.
         if (text.length === 0) {
@@ -508,20 +511,20 @@ export default class Document implements EventBus {
     /**
      * @method on
      * @param eventName {string}
-     * @param callback {(event, doc: Document) => any}
+     * @param callback {(event, source: Document) => any}
      * @return {void}
      */
-    on(eventName: string, callback: (event: any, doc: Document) => any): void {
+    on(eventName: string, callback: (event: any, source: Document) => any): void {
         this.eventBus.on(eventName, callback, false);
     }
 
     /**
      * @method off
      * @param eventName {string}
-     * @param callback {(event, doc: Document) => any}
+     * @param callback {(event, source: Document) => any}
      * @return {void}
      */
-    off(eventName: string, callback: (event: any, doc: Document) => any): void {
+    off(eventName: string, callback: (event: any, source: Document) => any): void {
         this.eventBus.off(eventName, callback);
     }
 

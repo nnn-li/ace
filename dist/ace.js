@@ -2275,7 +2275,8 @@ define('lib/EventEmitterClass',["require", "exports"], function (require, export
     var stopPropagation = function () { this.propagationStopped = true; };
     var preventDefault = function () { this.defaultPrevented = true; };
     var EventEmitterClass = (function () {
-        function EventEmitterClass() {
+        function EventEmitterClass(owner) {
+            this.owner = owner;
         }
         EventEmitterClass.prototype._dispatchEvent = function (eventName, event) {
             this._eventRegistry || (this._eventRegistry = {});
@@ -2298,13 +2299,13 @@ define('lib/EventEmitterClass',["require", "exports"], function (require, export
             }
             listeners = listeners.slice();
             for (var i = 0; i < listeners.length; i++) {
-                listeners[i](event, this);
+                listeners[i](event, this.owner);
                 if (event['propagationStopped']) {
                     break;
                 }
             }
             if (defaultHandler && !event.defaultPrevented) {
-                return defaultHandler(event, this);
+                return defaultHandler(event, this.owner);
             }
         };
         EventEmitterClass.prototype.hasListeners = function (eventName) {
@@ -2322,7 +2323,7 @@ define('lib/EventEmitterClass',["require", "exports"], function (require, export
             }
             listeners = listeners.slice();
             for (var i = 0, iLength = listeners.length; i < iLength; i++) {
-                listeners[i](e, this);
+                listeners[i](e, this.owner);
             }
         };
         EventEmitterClass.prototype.once = function (eventName, callback) {
@@ -2553,7 +2554,7 @@ define('commands/CommandManager',["require", "exports", "../lib/mix", "../keyboa
     var CommandManager = (function (_super) {
         __extends(CommandManager, _super);
         function CommandManager(platform, commands) {
-            _super.call(this);
+            _super.call(this, this);
             this.hashHandler = new HashHandler_1.default(commands, platform);
             this.setDefaultHandler("exec", function (e) {
                 return e.command.exec(e.editor, e.args || {});
@@ -4932,7 +4933,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
     "use strict";
     var Editor = (function () {
         function Editor(renderer, session) {
-            this.eventBus = new EventEmitterClass_1.default();
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.curOp = null;
             this.prevOp = {};
             this.$mergeableCommands = ["backspace", "del", "insertstring"];
@@ -7246,19 +7247,13 @@ define('lib/asserts',["require", "exports"], function (require, exports) {
     ;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('Anchor',["require", "exports", './lib/EventEmitterClass', './lib/asserts'], function (require, exports, EventEmitterClass_1, asserts_1) {
     "use strict";
-    var Anchor = (function (_super) {
-        __extends(Anchor, _super);
+    var Anchor = (function () {
         function Anchor(doc, row, column) {
-            _super.call(this);
             asserts_1.assert(typeof row === 'number', "row must be a number");
             asserts_1.assert(typeof column === 'number', "column must be a number");
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.$onChange = this.onChange.bind(this);
             this.attach(doc);
             this.setPosition(row, column);
@@ -7349,7 +7344,7 @@ define('Anchor',["require", "exports", './lib/EventEmitterClass', './lib/asserts
             var old = { row: this.row, column: this.column };
             this.row = pos.row;
             this.column = pos.column;
-            this._signal("change", { old: old, value: pos });
+            this.eventBus._signal("change", { old: old, value: pos });
         };
         Anchor.prototype.detach = function () {
             this.document.off("change", this.$onChange);
@@ -7357,6 +7352,12 @@ define('Anchor',["require", "exports", './lib/EventEmitterClass', './lib/asserts
         Anchor.prototype.attach = function (doc) {
             this.document = doc || this.document;
             this.document.on("change", this.$onChange);
+        };
+        Anchor.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        Anchor.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
         };
         Anchor.prototype.$clipPositionToDocument = function (row, column) {
             var pos = { row: 0, column: 0 };
@@ -7378,7 +7379,7 @@ define('Anchor',["require", "exports", './lib/EventEmitterClass', './lib/asserts
             return pos;
         };
         return Anchor;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Anchor;
 });
@@ -7415,7 +7416,7 @@ define('Document',["require", "exports", './Anchor', './lib/EventEmitterClass', 
             this.$lines = [];
             this.$autoNewLine = "";
             this.$newLineMode = "auto";
-            this.eventBus = new EventEmitterClass_1.default();
+            this.eventBus = new EventEmitterClass_1.default(this);
             if (text.length === 0) {
                 this.$lines = [""];
             }
@@ -8194,17 +8195,11 @@ define('Fold',["require", "exports", "./range_list"], function (require, exports
     }
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass", "./Range"], function (require, exports, lang_1, EventEmitterClass_1, Range_1) {
     "use strict";
-    var Selection = (function (_super) {
-        __extends(Selection, _super);
+    var Selection = (function () {
         function Selection(session) {
-            _super.call(this);
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.session = session;
             this.doc = session.getDocument();
             this.clearSelection();
@@ -8212,15 +8207,16 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass
             this.anchor = this.selectionAnchor = this.doc.createAnchor(0, 0);
             var self = this;
             this.lead.on("change", function (e) {
-                self._emit("changeCursor");
-                if (!self.$isEmpty)
-                    self._emit("changeSelection");
+                self.eventBus._emit("changeCursor");
+                if (!self.$isEmpty) {
+                    self.eventBus._emit("changeSelection");
+                }
                 if (!self.$keepDesiredColumnOnChange && e.old.column != e.value.column)
                     self.$desiredColumn = null;
             });
             this.selectionAnchor.on("change", function () {
                 if (!self.$isEmpty) {
-                    self._emit("changeSelection");
+                    self.eventBus._emit("changeSelection");
                 }
             });
         }
@@ -8241,7 +8237,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass
             this.anchor.setPosition(row, column);
             if (this.$isEmpty) {
                 this.$isEmpty = false;
-                this._emit("changeSelection");
+                this.eventBus._emit("changeSelection");
             }
         };
         Selection.prototype.getSelectionAnchor = function () {
@@ -8291,7 +8287,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass
         Selection.prototype.clearSelection = function () {
             if (!this.$isEmpty) {
                 this.$isEmpty = true;
-                this._emit("changeSelection");
+                this.eventBus._emit("changeSelection");
             }
         };
         Selection.prototype.selectAll = function () {
@@ -8670,6 +8666,12 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass
             var pos = this.session.screenToDocumentPosition(row, column);
             this.moveCursorTo(pos.row, pos.column, keepDesiredColumn);
         };
+        Selection.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        Selection.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
         Selection.prototype.detach = function () {
             this.lead.detach();
             this.anchor.detach();
@@ -8759,26 +8761,20 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass
             return true;
         };
         return Selection;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Selection;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('BackgroundTokenizer',["require", "exports", "./lib/EventEmitterClass"], function (require, exports, EventEmitterClass_1) {
     "use strict";
-    var BackgroundTokenizer = (function (_super) {
-        __extends(BackgroundTokenizer, _super);
+    var BackgroundTokenizer = (function () {
         function BackgroundTokenizer(tokenizer, session) {
-            _super.call(this);
             this.running = 0;
             this.lines = [];
             this.states = [];
             this.currentLine = 0;
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.tokenizer = tokenizer;
             var self = this;
             this.$worker = function () {
@@ -8814,7 +8810,13 @@ define('BackgroundTokenizer',["require", "exports", "./lib/EventEmitterClass"], 
         }
         BackgroundTokenizer.prototype.fireUpdateEvent = function (firstRow, lastRow) {
             var data = { first: firstRow, last: lastRow };
-            this._signal("update", { data: data });
+            this.eventBus._signal("update", { data: data });
+        };
+        BackgroundTokenizer.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        BackgroundTokenizer.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
         };
         BackgroundTokenizer.prototype.getState = function (row) {
             if (this.currentLine == row) {
@@ -8891,7 +8893,7 @@ define('BackgroundTokenizer',["require", "exports", "./lib/EventEmitterClass"], 
             return this.lines[row] = data.tokens;
         };
         return BackgroundTokenizer;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = BackgroundTokenizer;
 });
@@ -10014,7 +10016,6 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/Eve
             this.$undoSelect = true;
             this.$defaultUndoManager = { undo: function () { }, redo: function () { }, reset: function () { } };
             this.$overwrite = false;
-            this.eventBus = new EventEmitterClass_1.default();
             this.$modes = {};
             this.$mode = null;
             this.$modeId = null;
@@ -10039,6 +10040,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/Eve
             if (!(doc instanceof Document_1.default)) {
                 throw new TypeError('doc must be an Document');
             }
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.$foldData = [];
             this.$foldData.toString = function () {
                 return this.join("\n");
@@ -12321,17 +12323,10 @@ define('UndoManager',["require", "exports"], function (require, exports) {
     exports.default = UndoManager;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../lib/EventEmitterClass"], function (require, exports, dom_1, lang_1, EventEmitterClass_1) {
     "use strict";
-    var Gutter = (function (_super) {
-        __extends(Gutter, _super);
+    var Gutter = (function () {
         function Gutter(container) {
-            _super.call(this);
             this.gutterWidth = 0;
             this.$annotations = [];
             this.$cells = [];
@@ -12339,12 +12334,19 @@ define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../li
             this.$showLineNumbers = true;
             this.$renderer = "";
             this.$showFoldWidgets = true;
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.element = dom_1.createElement("div");
             this.element.className = "ace_layer ace_gutter-layer";
             container.appendChild(this.element);
             this.setShowFoldWidgets(this.$showFoldWidgets);
             this.$updateAnnotations = this.$updateAnnotations.bind(this);
         }
+        Gutter.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        Gutter.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
         Gutter.prototype.setSession = function (session) {
             if (this.session) {
                 this.session.off("change", this.$updateAnnotations);
@@ -12486,7 +12488,7 @@ define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../li
             if (gutterWidth !== this.gutterWidth && !isNaN(gutterWidth)) {
                 this.gutterWidth = gutterWidth;
                 this.element.style.width = Math.ceil(this.gutterWidth) + "px";
-                this._emit("changeGutterWidth", gutterWidth);
+                this.eventBus._emit("changeGutterWidth", gutterWidth);
             }
         };
         Gutter.prototype.setShowLineNumbers = function (show) {
@@ -12530,7 +12532,7 @@ define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../li
             }
         };
         return Gutter;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Gutter;
 });
@@ -12661,17 +12663,10 @@ define('layer/Marker',["require", "exports", "../Range", "../lib/dom"], function
     exports.default = Marker;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/EventEmitterClass"], function (require, exports, dom_1, lang_1, EventEmitterClass_1) {
     "use strict";
-    var Text = (function (_super) {
-        __extends(Text, _super);
+    var Text = (function () {
         function Text(container) {
-            _super.call(this);
             this.element = dom_1.createElement("div");
             this.$padding = 0;
             this.EOF_CHAR = "\xB6";
@@ -12683,6 +12678,7 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
             this.displayIndentGuides = true;
             this.$tabStrings = [];
             this.$textToken = { "text": true, "rparen": true, "lparen": true };
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.element.className = "ace_layer ace_text-layer";
             container.appendChild(this.element);
             this.$updateEolChar = this.$updateEolChar.bind(this);
@@ -12743,6 +12739,12 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
                 this.$computeTabString();
                 return true;
             }
+        };
+        Text.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        Text.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
         };
         Text.prototype.onChangeTabSize = function () {
             this.$computeTabString();
@@ -13117,7 +13119,7 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
             delete this.$measureNode;
         };
         return Text;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Text;
 });
@@ -13297,17 +13299,11 @@ define('layer/Cursor',["require", "exports", "../lib/dom"], function (require, e
     exports.default = Cursor;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/EventEmitterClass"], function (require, exports, dom_1, event_1, EventEmitterClass_1) {
     "use strict";
-    var ScrollBar = (function (_super) {
-        __extends(ScrollBar, _super);
+    var ScrollBar = (function () {
         function ScrollBar(parent, classSuffix) {
-            _super.call(this);
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.element = dom_1.createElement("div");
             this.element.className = "ace_scrollbar ace_scrollbar" + classSuffix;
             this.inner = dom_1.createElement("div");
@@ -13318,13 +13314,19 @@ define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/Eve
             this.skipEvent = false;
             event_1.addListener(this.element, "mousedown", event_1.preventDefault);
         }
+        ScrollBar.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        ScrollBar.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
         ScrollBar.prototype.setVisible = function (isVisible) {
             this.element.style.display = isVisible ? "" : "none";
             this.isVisible = isVisible;
             return this;
         };
         return ScrollBar;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = ScrollBar;
 });
@@ -13348,7 +13350,7 @@ define('VScrollBar',["require", "exports", "./lib/event", './ScrollBar', "./lib/
         VScrollBar.prototype.onScroll = function () {
             if (!this.skipEvent) {
                 this._scrollTop = this.element.scrollTop;
-                this._emit("scroll", { data: this._scrollTop });
+                this.eventBus._emit("scroll", { data: this._scrollTop });
             }
             this.skipEvent = false;
         };
@@ -13406,7 +13408,7 @@ define('HScrollBar',["require", "exports", "./lib/event", './ScrollBar'], functi
         HScrollBar.prototype.onScroll = function () {
             if (!this.skipEvent) {
                 this._scrollLeft = this.element.scrollLeft;
-                this._emit("scroll", { data: this._scrollLeft });
+                this.eventBus._emit("scroll", { data: this._scrollLeft });
             }
             this.skipEvent = false;
         };
@@ -13469,19 +13471,13 @@ define('RenderLoop',["require", "exports", './lib/event'], function (require, ex
     exports.default = RenderLoop;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "../lib/useragent", "../lib/EventEmitterClass"], function (require, exports, dom_1, lang_1, useragent_1, EventEmitterClass_1) {
     "use strict";
     var CHAR_COUNT = 0;
-    var FontMetrics = (function (_super) {
-        __extends(FontMetrics, _super);
+    var FontMetrics = (function () {
         function FontMetrics(container, pollingInterval) {
-            _super.call(this);
             this.$characterSize = { width: 0, height: 0 };
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.el = dom_1.createElement("div");
             this.$setMeasureNodeStyles(this.el.style, true);
             this.$main = dom_1.createElement("div");
@@ -13498,6 +13494,12 @@ define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "
             this.$characterSize = { width: 0, height: 0 };
             this.checkForSizeChanges();
         }
+        FontMetrics.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        FontMetrics.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
         FontMetrics.prototype.$testFractionalRect = function () {
             var el = dom_1.createElement("div");
             this.$setMeasureNodeStyles(el.style);
@@ -13535,7 +13537,7 @@ define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "
                 this.$characterSize = size;
                 this.charSizes = Object.create(null);
                 this.allowBoldFonts = boldSize && boldSize.width === size.width && boldSize.height === size.height;
-                this._emit("changeCharacterSize", { data: size });
+                this.eventBus._emit("changeCharacterSize", { data: size });
             }
         };
         FontMetrics.prototype.$pollSizeChanges = function () {
@@ -13595,7 +13597,7 @@ define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "
             }
         };
         return FontMetrics;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = FontMetrics;
 });
@@ -13619,11 +13621,6 @@ define('ThemeLink',["require", "exports"], function (require, exports) {
     exports.default = ThemeLink;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./layer/Gutter", "./layer/Marker", "./layer/Text", "./layer/Cursor", "./VScrollBar", "./HScrollBar", "./RenderLoop", "./layer/FontMetrics", "./lib/EventEmitterClass", './ThemeLink'], function (require, exports, dom_1, config_1, useragent_1, Gutter_1, Marker_1, Text_1, Cursor_1, VScrollBar_1, HScrollBar_1, RenderLoop_1, FontMetrics_1, EventEmitterClass_1, ThemeLink_1) {
     "use strict";
     var CHANGE_CURSOR = 1;
@@ -13663,10 +13660,8 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             a += " h_scroll";
         return a.trim();
     }
-    var VirtualRenderer = (function (_super) {
-        __extends(VirtualRenderer, _super);
+    var VirtualRenderer = (function () {
         function VirtualRenderer(container) {
-            _super.call(this);
             this.scrollLeft = 0;
             this.scrollTop = 0;
             this.layerConfig = {
@@ -13695,6 +13690,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                 h: 0
             };
             this.$changes = 0;
+            this.eventBus = new EventEmitterClass_1.default(this);
             var _self = this;
             this.container = container || dom_1.createElement("div");
             this.$keepTextAreaAtCursor = !useragent_1.isOldIE;
@@ -13738,7 +13734,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             this.$textLayer.on("changeCharacterSize", function (event, text) {
                 _self.updateCharacterSize();
                 _self.onResize(true, _self.gutterWidth, _self.$size.width, _self.$size.height);
-                _self._signal("changeCharacterSize", event);
+                _self.eventBus._signal("changeCharacterSize", event);
             });
             this.$size = {
                 width: 0,
@@ -13753,6 +13749,12 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             this.setPadding(4);
             config_1.resetOptions(this);
         }
+        VirtualRenderer.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        VirtualRenderer.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
         Object.defineProperty(VirtualRenderer.prototype, "maxLines", {
             set: function (maxLines) {
                 this.$maxLines = maxLines;
@@ -13937,8 +13939,9 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                     changes |= CHANGE_FULL;
             }
             size.$dirty = !width || !height;
-            if (changes)
-                this._signal("resize", oldSize);
+            if (changes) {
+                this.eventBus._signal("resize", oldSize);
+            }
             return changes;
         };
         VirtualRenderer.prototype.onGutterResize = function () {
@@ -14162,7 +14165,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             if (!this.lineHeight) {
                 this.$textLayer.checkForSizeChanges();
             }
-            this._signal("beforeRender");
+            this.eventBus._signal("beforeRender");
             var config = this.layerConfig;
             if (changes & CHANGE_FULL ||
                 changes & CHANGE_SIZE ||
@@ -14199,7 +14202,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                 this.$cursorLayer.update(config);
                 this.$moveTextAreaToCursor();
                 this.$highlightGutterLine && this.$updateGutterLineHighlight();
-                this._signal("afterRender");
+                this.eventBus._signal("afterRender");
                 return;
             }
             if (changes & CHANGE_SCROLL) {
@@ -14214,7 +14217,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                 this.$cursorLayer.update(config);
                 this.$highlightGutterLine && this.$updateGutterLineHighlight();
                 this.$moveTextAreaToCursor();
-                this._signal("afterRender");
+                this.eventBus._signal("afterRender");
                 return;
             }
             if (changes & CHANGE_TEXT) {
@@ -14241,7 +14244,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             if (changes & (CHANGE_MARKER | CHANGE_MARKER_BACK)) {
                 this.$markerBack.update(config);
             }
-            this._signal("afterRender");
+            this.eventBus._signal("afterRender");
         };
         VirtualRenderer.prototype.$autosize = function () {
             var height = this.session.getScreenLength() * this.lineHeight;
@@ -14312,7 +14315,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                 changes = CHANGE_H_SCROLL;
             if (hScrollChanged || vScrollChanged) {
                 changes = this.$updateCachedSize(true, this.gutterWidth, size.width, size.height);
-                this._signal("scrollbarVisibilityChanged");
+                this.eventBus._signal("scrollbarVisibilityChanged");
                 if (vScrollChanged)
                     longestLine = this.$getLongestLine();
             }
@@ -14609,7 +14612,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
                 this.$size.width = 0;
                 this.$updateSizeAsync();
             }
-            this._emit('themeLoaded', { theme: modJs });
+            this.eventBus._emit('themeLoaded', { theme: modJs });
         };
         VirtualRenderer.prototype.addCssClass = function (cssClass) {
             dom_1.addCssClass(this.container, cssClass);
@@ -14623,7 +14626,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             }
             var _self = this;
             this.$themeId = themeName;
-            _self._emit('themeChange', { theme: themeName });
+            _self.eventBus._emit('themeChange', { theme: themeName });
             return new Promise(function (success, fail) {
                 System.import(themeName)
                     .then(function (m) {
@@ -14666,7 +14669,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             this.$cursorLayer.destroy();
         };
         return VirtualRenderer;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = VirtualRenderer;
     config_1.defineOptions(VirtualRenderer.prototype, "renderer", {
@@ -14980,19 +14983,13 @@ define('mode/MatchingBraceOutdent',["require", "exports", "../Range"], function 
     exports.default = MatchingBraceOutdent;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/EventEmitterClass'], function (require, exports, net_1, EventEmitterClass_1) {
     "use strict";
-    var WorkerClient = (function (_super) {
-        __extends(WorkerClient, _super);
+    var WorkerClient = (function () {
         function WorkerClient(workerUrl) {
-            _super.call(this);
             this.callbacks = {};
             this.callbackId = 1;
+            this.eventBus = new EventEmitterClass_1.default(this);
             this.sendDeltaQueue = this.sendDeltaQueue.bind(this);
             this.changeListener = this.changeListener.bind(this);
             this.onMessage = this.onMessage.bind(this);
@@ -15031,7 +15028,7 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/EventE
                     window.console && console.log && console.log.apply(console, msg.data);
                     break;
                 case "event":
-                    this._signal(msg.name, { data: msg.data });
+                    this.eventBus._signal(msg.name, { data: msg.data });
                     break;
                 case "call":
                     var callback = this.callbacks[msg.id];
@@ -15046,7 +15043,7 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/EventE
             return net_1.qualifyURL(path);
         };
         WorkerClient.prototype.terminate = function () {
-            this._signal("terminate", {});
+            this.eventBus._signal("terminate", {});
             this.deltaQueue = void 0;
             this.$worker.terminate();
             this.$worker = void 0;
@@ -15111,6 +15108,12 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/EventE
                 this.deltaQueue.push(e.data);
             }
         };
+        WorkerClient.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        WorkerClient.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
         WorkerClient.prototype.sendDeltaQueue = function () {
             var doc = this.$doc;
             var queue = this.deltaQueue;
@@ -15137,7 +15140,7 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/EventE
             }
         };
         return WorkerClient;
-    })(EventEmitterClass_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = WorkerClient;
 });

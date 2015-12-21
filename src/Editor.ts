@@ -88,9 +88,8 @@ import Tooltip from "./Tooltip";
  * The `Editor` acts as a controller, mediating between the editSession and renderer.
  *
  * @class Editor
- * extends EventEmitterClass
  */
-export default class Editor implements EventBus {
+export default class Editor implements EventBus<Editor> {
 
     /**
      * @property renderer
@@ -110,7 +109,7 @@ export default class Editor implements EventBus {
      * @type EventEmitterClass
      * @private
      */
-    private eventBus = new EventEmitterClass();
+    private eventBus: EventEmitterClass<Editor>;
 
     private $touchHandler: IGestureHandler;
     private $mouseHandler: IGestureHandler;
@@ -184,6 +183,7 @@ export default class Editor implements EventBus {
      * @param session {EditSession} The model.
      */
     constructor(renderer: VirtualRenderer, session: EditSession) {
+        this.eventBus = new EventEmitterClass<Editor>(this);
         this.curOp = null;
         this.prevOp = {};
         this.$mergeableCommands = ["backspace", "del", "insertstring"];
@@ -3301,7 +3301,7 @@ class EditorMouseEvent {
     /**
      * Cached text coordinates following getDocumentPosition()
      */
-    private $pos: { row: number; column: number };
+    private $pos: Position;
     private $inSelection;
     private propagationStopped = false;
     private defaultPrevented = false;

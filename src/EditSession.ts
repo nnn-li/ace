@@ -135,9 +135,8 @@ function isFullWidth(c: number): boolean {
 
 /**
  * @class EditSession
- * @extends EventEmitterClass
  */
-export default class EditSession implements EventBus {
+export default class EditSession implements EventBus<EditSession> {
     public $breakpoints: string[] = [];
     public $decorations: string[] = [];
     private $frontMarkers: { [id: number]: DynamicMarker } = {};
@@ -180,7 +179,7 @@ export default class EditSession implements EventBus {
      * @type EventEmitterClass
      * @private
      */
-    private eventBus = new EventEmitterClass();
+    private eventBus: EventEmitterClass<EditSession>;
 
     /**
      * Determines whether the worker will be started.
@@ -254,6 +253,7 @@ export default class EditSession implements EventBus {
         if (!(doc instanceof Document)) {
             throw new TypeError('doc must be an Document');
         }
+        this.eventBus = new EventEmitterClass<EditSession>(this);
         this.$foldData = [];
         this.$foldData.toString = function() {
             return this.join("\n");

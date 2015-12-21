@@ -55,6 +55,7 @@
 import Delta from './Delta';
 import Editor from './Editor';
 import EditSession from './EditSession';
+import EventBus from './EventBus';
 import Document from './Document';
 import EventEmitterClass from "./lib/EventEmitterClass";
 import FirstAndLast from "./FirstAndLast";
@@ -68,9 +69,8 @@ import Token from './Token';
  * If a certain row is changed, everything below that row is re-tokenized.
  *
  * @class BackgroundTokenizer
- * @extends EventEmitterClass
  */
-export default class BackgroundTokenizer extends EventEmitterClass {
+export default class BackgroundTokenizer implements EventBus<BackgroundTokenizer> {
     /**
      * This is the value returned by setTimeout, so it's really a timer handle.
      * There are some conditionals looking for a falsey value, so we use zero where needed.
@@ -85,6 +85,7 @@ export default class BackgroundTokenizer extends EventEmitterClass {
     private tokenizer: Tokenizer;
     private doc: Document;
     private $worker: () => void;
+    private eventBus: EventEmitterClass<BackgroundTokenizer>;
 
     /**
      * Creates a new `BackgroundTokenizer` object.
@@ -95,7 +96,7 @@ export default class BackgroundTokenizer extends EventEmitterClass {
      * @param session {EditSession}
      */
     constructor(tokenizer: Tokenizer, session: EditSession) {
-        super();
+        this.eventBus = new EventEmitterClass<BackgroundTokenizer>(this);
         this.tokenizer = tokenizer;
 
         var self = this;
@@ -154,7 +155,28 @@ export default class BackgroundTokenizer extends EventEmitterClass {
          * @event update
          * @param {data: FirstAndLast}
          */
-        this._signal("update", { data: data });
+        // TODO: FirstAndlastEvent interface.
+        this.eventBus._signal("update", { data: data });
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: BackgroundTokenizer) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: BackgroundTokenizer) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: BackgroundTokenizer) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: BackgroundTokenizer) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     /**
