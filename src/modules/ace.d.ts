@@ -41,6 +41,9 @@ declare module Ace {
         type: string;
     }
 
+    interface Command {
+    }
+
     class Document {
         constructor(text: string | string[]);
     }
@@ -82,6 +85,11 @@ declare module Ace {
         splitLine(): void;
         toggleBlockComment(): void;
         toggleCommentLines(): void;
+    }
+
+    class HashHandler {
+        constructor(config?: {}, platform?: string);
+        addCommand(command: Command): void;
     }
 
     interface LanguageMode {
