@@ -14,6 +14,9 @@
  */
 declare module Ace {
 
+    class Anchor {
+    }
+
     interface Annotation {
 
         /**
@@ -44,10 +47,38 @@ declare module Ace {
     interface Command {
     }
 
+    interface Delta {
+    }
+
     class Document implements EventBus<Document> {
         constructor(text: string | string[]);
-        on(eventName: string, callback: (event: any, source: Document) => any, capturing?: boolean): void;
+        applyDeltas(deltas: Delta[]): void;
+        createAnchor(row: number, column: number): Anchor;
+        getAllLines(): string[];
+        getLength(): number;
+        getLine(row: number): string;
+        getLines(firstRow?: number, lastRow?: number): string[];
+        getNewLineCharacter(): string;
+        getNewLineMode(): string;
+        getTextRange(range: Range): string;
+        getValue(): string;
+        indexToPosition(index: number, startRow: number): Position;
+        insert(position: Position, text: string): Position;
+        insertInLine(position: Position, text: string): Position;
+        insertLines(row: number, lines: string[]): Position;
+        insertNewLine(position: Position): Position;
+        isNewLine(text: string): boolean;
         off(eventName: string, callback: (event: any, source: Document) => any): void;
+        on(eventName: string, callback: (event: any, source: Document) => any, capturing?: boolean): void;
+        positionToIndex(position: Position, startRow: number): number;
+        remove(range: Range): Position;
+        removeInLine(row: number, startColumn: number, endColumn: number): Position;
+        removeLines(firstRow: number, lastRow: number): string;
+        removeNewLine(row: number): void;
+        replace(range: Range, text: string): Position;
+        revertDeltas(deltas: Delta[]): void;
+        setNewLineMode(newLineMode: string): void;
+        setValue(text: string): void;
     }
 
     class EditSession implements EventBus<EditSession> {
@@ -106,7 +137,8 @@ declare module Ace {
     }
 
     interface Position {
-
+        row: number;
+        column: number;
     }
 
     class Range {

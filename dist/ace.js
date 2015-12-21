@@ -7646,10 +7646,12 @@ define('Document',["require", "exports", './Anchor', './lib/EventEmitterClass', 
             this.eventBus._signal("change", { data: delta });
         };
         Document.prototype.replace = function (range, text) {
-            if (text.length == 0 && range.isEmpty())
+            if (text.length === 0 && range.isEmpty()) {
                 return range.start;
-            if (text == this.getTextRange(range))
+            }
+            if (text === this.getTextRange(range)) {
                 return range.end;
+            }
             this.remove(range);
             if (text) {
                 var end = this.insert(range.start, text);

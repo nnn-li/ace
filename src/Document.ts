@@ -176,8 +176,8 @@ export default class Document implements EventBus<Document> {
      * Creates a new `Anchor` to define a floating point in the document.
      *
      * @method createAnchor
-     * @param {number} row The row number to use
-     * @param {number} column The column number to use
+     * @param row {number} The row number to use.
+     * @param column {number} The column number to use.
      * @return {Anchor}
      */
     createAnchor(row: number, column: number): Anchor {
@@ -203,15 +203,14 @@ export default class Document implements EventBus<Document> {
     }
 
     /**
-    * Returns the newline character that's being used, depending on the value of `newLineMode`.
-    *  If `newLineMode == windows`, `\r\n` is returned.  
-    *  If `newLineMode == unix`, `\n` is returned.  
-    *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
-    *
-    * @method getNewLineCharacter
-    * @return {string}
-    *
-    **/
+     * Returns the newline character that's being used, depending on the value of `newLineMode`.
+     *  If `newLineMode == windows`, `\r\n` is returned.  
+     *  If `newLineMode == unix`, `\n` is returned.  
+     *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
+     *
+     * @method getNewLineCharacter
+     * @return {string}
+     */
     getNewLineCharacter(): string {
         switch (this.$newLineMode) {
             case "windows":
@@ -227,7 +226,7 @@ export default class Document implements EventBus<Document> {
      * Sets the new line mode.
      *
      * @method setNewLineMode
-     * @param {string} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #Document.setNewLineMode.param}
+     * @param newLineMode {string} The newline mode to use; can be either `windows`, `unix`, or `auto`.
      * @return {void}
      */
     setNewLineMode(newLineMode: string): void {
@@ -646,7 +645,8 @@ export default class Document implements EventBus<Document> {
 
     /**
      * Removes the new line between `row` and the row immediately following it.
-     *This method also triggers the `'change'` event.
+     * This method also triggers the `'change'` event.
+     *
      * @method removeNewLine
      * @param row {number} The row to check.
      * @return {void}
@@ -679,21 +679,24 @@ export default class Document implements EventBus<Document> {
      * @method replace
      * @param range {Range} A specified Range to replace.
      * @param text {string} The new text to use as a replacement.
-     * @return {Object} Returns an object containing the final row and column, like this:
+     * @return {Postion} Returns an object containing the final row and column, like this:
      *     {row: endRow, column: 0}
      * If the text and range are empty, this function returns an object containing the current `range.start` value.
      * If the text is the exact same as what currently exists, this function returns an object containing the current `range.end` value.
      */
     replace(range: Range, text: string): Position {
-        if (text.length == 0 && range.isEmpty())
+        if (text.length === 0 && range.isEmpty()) {
             return range.start;
+        }
 
         // Shortcut: If the text we want to insert is the same as it is already
         // in the document, we don't have to replace anything.
-        if (text == this.getTextRange(range))
+        if (text === this.getTextRange(range)) {
             return range.end;
+        }
 
         this.remove(range);
+
         if (text) {
             var end = this.insert(range.start, text);
         }
@@ -729,9 +732,14 @@ export default class Document implements EventBus<Document> {
     }
 
     /**
-    * Reverts any changes previously applied. These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
-    **/
-    revertDeltas(deltas: { action: string; range: Range; lines: string[]; text: string }[]) {
+     * Reverts any changes previously applied.
+     * These can be either `'includeText'`, `'insertLines'`, `'removeText'`, and `'removeLines'`.
+     *
+     * @method revertDeltas
+     * @param deltas {Delta[]}
+     * @return {void}
+     */
+    revertDeltas(deltas: Delta[]): void {
         for (var i = deltas.length - 1; i >= 0; i--) {
             var delta = deltas[i];
 
