@@ -1273,128 +1273,7 @@ define('lib/event',["require", "exports", './keys', './useragent'], function (re
     exports.requestAnimationFrame = nextFrameCandidate;
 });
 
-define('keyboard/HashHandler',["require", "exports", "../lib/keys", "../lib/keys", "../lib/useragent"], function (require, exports, keys_1, keys_2, useragent_1) {
-    "use strict";
-    var HashHandler = (function () {
-        function HashHandler(config, platform) {
-            this.platform = platform || (useragent_1.isMac ? "mac" : "win");
-            this.commands = {};
-            this.commandKeyBinding = {};
-            this.addCommands(config);
-        }
-        HashHandler.prototype.addCommand = function (command) {
-            if (this.commands[command.name]) {
-                this.removeCommand(command);
-            }
-            this.commands[command.name] = command;
-            if (command.bindKey)
-                this._buildKeyHash(command);
-        };
-        HashHandler.prototype.removeCommand = function (command) {
-            var name = (typeof command === 'string' ? command : command.name);
-            command = this.commands[name];
-            delete this.commands[name];
-            var ckb = this.commandKeyBinding;
-            for (var hashId in ckb) {
-                for (var key in ckb[hashId]) {
-                    if (ckb[hashId][key] == command)
-                        delete ckb[hashId][key];
-                }
-            }
-        };
-        HashHandler.prototype.bindKey = function (key, command) {
-            var self = this;
-            if (!key)
-                return;
-            if (typeof command === "function") {
-                this.addCommand({ exec: command, bindKey: key, name: command.name || key });
-                return;
-            }
-            var ckb = this.commandKeyBinding;
-            key.split("|").forEach(function (keyPart) {
-                var binding = self.parseKeys(keyPart);
-                var hashId = binding.hashId;
-                (ckb[hashId] || (ckb[hashId] = {}))[binding.key] = command;
-            }, self);
-        };
-        HashHandler.prototype.addCommands = function (commands) {
-            commands && Object.keys(commands).forEach(function (name) {
-                var command = commands[name];
-                if (!command) {
-                    return;
-                }
-                if (typeof command === "string") {
-                    return this.bindKey(command, name);
-                }
-                if (typeof command === "function") {
-                    command = { exec: command };
-                }
-                if (typeof command !== "object") {
-                    return;
-                }
-                if (!command.name) {
-                    command.name = name;
-                }
-                this.addCommand(command);
-            }, this);
-        };
-        HashHandler.prototype.removeCommands = function (commands) {
-            Object.keys(commands).forEach(function (name) {
-                this.removeCommand(commands[name]);
-            }, this);
-        };
-        HashHandler.prototype.bindKeys = function (keyList) {
-            var self = this;
-            Object.keys(keyList).forEach(function (key) {
-                self.bindKey(key, keyList[key]);
-            }, self);
-        };
-        HashHandler.prototype._buildKeyHash = function (command) {
-            var binding = command.bindKey;
-            if (!binding)
-                return;
-            var key = typeof binding == "string" ? binding : binding[this.platform];
-            this.bindKey(key, command);
-        };
-        HashHandler.prototype.parseKeys = function (keys) {
-            if (keys.indexOf(" ") != -1)
-                keys = keys.split(/\s+/).pop();
-            var parts = keys.toLowerCase().split(/[\-\+]([\-\+])?/).filter(function (x) { return x; });
-            var key = parts.pop();
-            var keyCode = keys_2.default[key];
-            if (keys_1.FUNCTION_KEYS[keyCode])
-                key = keys_1.FUNCTION_KEYS[keyCode].toLowerCase();
-            else if (!parts.length)
-                return { key: key, hashId: -1 };
-            else if (parts.length == 1 && parts[0] == "shift")
-                return { key: key.toUpperCase(), hashId: -1 };
-            var hashId = 0;
-            for (var i = parts.length; i--;) {
-                var modifier = keys_1.KEY_MODS[parts[i]];
-                if (modifier === null) {
-                    throw new Error("invalid modifier " + parts[i] + " in " + keys);
-                }
-                hashId |= modifier;
-            }
-            return { key: key, hashId: hashId };
-        };
-        HashHandler.prototype.findKeyCommand = function (hashId, keyString) {
-            var ckbr = this.commandKeyBinding;
-            return ckbr[hashId] && ckbr[hashId][keyString];
-        };
-        HashHandler.prototype.handleKeyboard = function (dataUnused, hashId, keyString, keyCodeUnused, e) {
-            var response = {
-                command: this.findKeyCommand(hashId, keyString)
-            };
-            return response;
-        };
-        return HashHandler;
-    })();
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = HashHandler;
-});
-
-define('keyboard/KeyBinding',["require", "exports", "../lib/keys", "../lib/event", "./HashHandler"], function (require, exports, keys_1, event_1, HashHandler_1) {
+define('keyboard/KeyBinding',["require", "exports", "../lib/keys", "../lib/event"], function (require, exports, keys_1, event_1) {
     "use strict";
     var KeyBinding = (function () {
         function KeyBinding(editor) {
@@ -1417,22 +1296,24 @@ define('keyboard/KeyBinding',["require", "exports", "../lib/keys", "../lib/event
             this.addKeyboardHandler(kb, 1);
         };
         KeyBinding.prototype.addKeyboardHandler = function (kb, pos) {
-            if (!kb)
+            if (!kb) {
                 return;
+            }
             if (typeof kb === "function" && !kb.handleKeyboard) {
                 kb.handleKeyboard = kb;
             }
-            else if (kb instanceof HashHandler_1.default) {
-                var i = this.$handlers.indexOf(kb);
-                if (i !== -1)
-                    this.$handlers.splice(i, 1);
-                if (pos === void 0)
-                    this.$handlers.push(kb);
-                else
-                    this.$handlers.splice(pos, 0, kb);
-                if (i === -1 && kb.attach) {
-                    kb.attach(this.$editor);
-                }
+            var i = this.$handlers.indexOf(kb);
+            if (i !== -1) {
+                this.$handlers.splice(i, 1);
+            }
+            if (pos === void 0) {
+                this.$handlers.push(kb);
+            }
+            else {
+                this.$handlers.splice(pos, 0, kb);
+            }
+            if (i === -1 && kb.attach) {
+                kb.attach(this.$editor);
             }
         };
         KeyBinding.prototype.removeKeyboardHandler = function (kb) {
@@ -2534,6 +2415,127 @@ define('lib/mix',["require", "exports"], function (require, exports) {
         });
     }
     exports.applyMixins = applyMixins;
+});
+
+define('keyboard/HashHandler',["require", "exports", "../lib/keys", "../lib/keys", "../lib/useragent"], function (require, exports, keys_1, keys_2, useragent_1) {
+    "use strict";
+    var HashHandler = (function () {
+        function HashHandler(config, platform) {
+            this.platform = platform || (useragent_1.isMac ? "mac" : "win");
+            this.commands = {};
+            this.commandKeyBinding = {};
+            this.addCommands(config);
+        }
+        HashHandler.prototype.addCommand = function (command) {
+            if (this.commands[command.name]) {
+                this.removeCommand(command);
+            }
+            this.commands[command.name] = command;
+            if (command.bindKey)
+                this._buildKeyHash(command);
+        };
+        HashHandler.prototype.removeCommand = function (command) {
+            var name = (typeof command === 'string' ? command : command.name);
+            command = this.commands[name];
+            delete this.commands[name];
+            var ckb = this.commandKeyBinding;
+            for (var hashId in ckb) {
+                for (var key in ckb[hashId]) {
+                    if (ckb[hashId][key] == command)
+                        delete ckb[hashId][key];
+                }
+            }
+        };
+        HashHandler.prototype.bindKey = function (key, command) {
+            var self = this;
+            if (!key)
+                return;
+            if (typeof command === "function") {
+                this.addCommand({ exec: command, bindKey: key, name: command.name || key });
+                return;
+            }
+            var ckb = this.commandKeyBinding;
+            key.split("|").forEach(function (keyPart) {
+                var binding = self.parseKeys(keyPart);
+                var hashId = binding.hashId;
+                (ckb[hashId] || (ckb[hashId] = {}))[binding.key] = command;
+            }, self);
+        };
+        HashHandler.prototype.addCommands = function (commands) {
+            commands && Object.keys(commands).forEach(function (name) {
+                var command = commands[name];
+                if (!command) {
+                    return;
+                }
+                if (typeof command === "string") {
+                    return this.bindKey(command, name);
+                }
+                if (typeof command === "function") {
+                    command = { exec: command };
+                }
+                if (typeof command !== "object") {
+                    return;
+                }
+                if (!command.name) {
+                    command.name = name;
+                }
+                this.addCommand(command);
+            }, this);
+        };
+        HashHandler.prototype.removeCommands = function (commands) {
+            Object.keys(commands).forEach(function (name) {
+                this.removeCommand(commands[name]);
+            }, this);
+        };
+        HashHandler.prototype.bindKeys = function (keyList) {
+            var self = this;
+            Object.keys(keyList).forEach(function (key) {
+                self.bindKey(key, keyList[key]);
+            }, self);
+        };
+        HashHandler.prototype._buildKeyHash = function (command) {
+            var binding = command.bindKey;
+            if (!binding)
+                return;
+            var key = typeof binding == "string" ? binding : binding[this.platform];
+            this.bindKey(key, command);
+        };
+        HashHandler.prototype.parseKeys = function (keys) {
+            if (keys.indexOf(" ") != -1)
+                keys = keys.split(/\s+/).pop();
+            var parts = keys.toLowerCase().split(/[\-\+]([\-\+])?/).filter(function (x) { return x; });
+            var key = parts.pop();
+            var keyCode = keys_2.default[key];
+            if (keys_1.FUNCTION_KEYS[keyCode])
+                key = keys_1.FUNCTION_KEYS[keyCode].toLowerCase();
+            else if (!parts.length)
+                return { key: key, hashId: -1 };
+            else if (parts.length == 1 && parts[0] == "shift")
+                return { key: key.toUpperCase(), hashId: -1 };
+            var hashId = 0;
+            for (var i = parts.length; i--;) {
+                var modifier = keys_1.KEY_MODS[parts[i]];
+                if (modifier === null) {
+                    throw new Error("invalid modifier " + parts[i] + " in " + keys);
+                }
+                hashId |= modifier;
+            }
+            return { key: key, hashId: hashId };
+        };
+        HashHandler.prototype.findKeyCommand = function (hashId, keyString) {
+            var ckbr = this.commandKeyBinding;
+            return ckbr[hashId] && ckbr[hashId][keyString];
+        };
+        HashHandler.prototype.handleKeyboard = function (dataUnused, hashId, keyString, keyCodeUnused, e) {
+            var response = {
+                command: this.findKeyCommand(hashId, keyString)
+            };
+            return response;
+        };
+        return HashHandler;
+    })();
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = HashHandler;
 });
 
 var __extends = (this && this.__extends) || function (d, b) {

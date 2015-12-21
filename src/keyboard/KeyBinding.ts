@@ -84,24 +84,26 @@ export default class KeyBinding {
     }
 
     addKeyboardHandler(kb: any | HashHandler/*: CommandManager*/, pos?: number) {
-        if (!kb)
+        if (!kb) {
             return;
+        }
         if (typeof kb === "function" && !kb.handleKeyboard) {
             kb.handleKeyboard = kb;
         }
-        else if (kb instanceof HashHandler) {
-            var i = this.$handlers.indexOf(kb);
-            if (i !== -1)
-                this.$handlers.splice(i, 1);
+        var i = this.$handlers.indexOf(kb);
+        if (i !== -1) {
+            this.$handlers.splice(i, 1);
+        }
 
-            if (pos === void 0)
-                this.$handlers.push(kb);
-            else
-                this.$handlers.splice(pos, 0, kb);
+        if (pos === void 0) {
+            this.$handlers.push(kb);
+        }
+        else {
+            this.$handlers.splice(pos, 0, kb);
+        }
 
-            if (i === -1 && kb.attach) {
-                kb.attach(this.$editor);
-            }
+        if (i === -1 && kb.attach) {
+            kb.attach(this.$editor);
         }
     }
 
