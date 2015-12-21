@@ -55,7 +55,7 @@
 import Document from "./Document";
 import Position from "./Position";
 import Range from "./Range";
-import EventEmitterClass from './lib/event_emitter';
+import EventEmitterClass from './lib/EventEmitterClass';
 import { assert } from './lib/asserts';
 
 /**

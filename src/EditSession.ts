@@ -57,9 +57,13 @@ import {delayedCall, stringRepeat} from "./lib/lang";
 import {defineOptions, loadModule, resetOptions} from "./config";
 import Annotation from './Annotation';
 import Delta from "./Delta";
-import EventEmitterClass from "./lib/event_emitter";
+import DeltaEvent from "./DeltaEvent";
+import DynamicMarker from "./DynamicMarker";
+import EventBus from "./EventBus";
+import EventEmitterClass from "./lib/EventEmitterClass";
 import FoldLine from "./FoldLine";
 import Fold from "./Fold";
+import FoldEvent from "./FoldEvent";
 import Selection from "./Selection";
 import LanguageMode from "./LanguageMode";
 import Range from "./Range";
@@ -75,7 +79,7 @@ import TokenIterator from './TokenIterator';
 import FontMetrics from "./layer/FontMetrics";
 import WorkerClient from "./worker/WorkerClient";
 import LineWidget from './LineWidget';
-import LineWidgets from './LineWidgets';
+import LineWidgetManager from './LineWidgetManager';
 import Position from './Position';
 import FoldMode from "./mode/folding/FoldMode";
 import TextMode from "./mode/TextMode";
@@ -133,11 +137,11 @@ function isFullWidth(c: number): boolean {
  * @class EditSession
  * @extends EventEmitterClass
  */
-export default class EditSession extends EventEmitterClass {
+export default class EditSession implements EventBus {
     public $breakpoints: string[] = [];
     public $decorations: string[] = [];
-    private $frontMarkers = {};
-    public $backMarkers = {};
+    private $frontMarkers: { [id: number]: DynamicMarker } = {};
+    public $backMarkers: { [id: number]: DynamicMarker } = {};
     private $markerId = 1;
     private $undoSelect = true;
     private $deltas;
@@ -145,7 +149,7 @@ export default class EditSession extends EventEmitterClass {
     private $deltasFold;
     private $fromUndo;
 
-    public widgetManager: LineWidgets;
+    public widgetManager: LineWidgetManager;
     private $updateFoldWidgets: (event, editSession: EditSession) => any;
     private $foldData: FoldLine[];
     public foldWidgets: any[];
@@ -170,6 +174,13 @@ export default class EditSession extends EventEmitterClass {
     private $autoNewLine;
     private getOption;
     private setOption;
+
+    /**
+     * @property eventBus
+     * @type EventEmitterClass
+     * @private
+     */
+    private eventBus = new EventEmitterClass();
 
     /**
      * Determines whether the worker will be started.
@@ -240,7 +251,6 @@ export default class EditSession extends EventEmitterClass {
      * @param doc {Document}
      */
     constructor(doc: Document) {
-        super();
         if (!(doc instanceof Document)) {
             throw new TypeError('doc must be an Document');
         }
@@ -248,7 +258,7 @@ export default class EditSession extends EventEmitterClass {
         this.$foldData.toString = function() {
             return this.join("\n");
         }
-        this.on("changeFold", this.onChangeFold.bind(this));
+        this.eventBus.on("changeFold", this.onChangeFold.bind(this));
         this.setDocument(doc);
         this.selection = new Selection(this);
 
@@ -261,6 +271,34 @@ export default class EditSession extends EventEmitterClass {
 
         // FIXME: This was a signal to a global config object.
         // _signal("session", this);
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, session: EditSession) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, session: EditSession) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, session: EditSession) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, session: EditSession) => any): void {
+        this.eventBus.off(eventName, callback);
+    }
+
+    _emit(eventName: string, event?: any) {
+        this.eventBus._emit(eventName, event);
+    }
+
+    _signal(eventName: string, event?: any) {
+        this.eventBus._signal(eventName, event);
     }
 
     /**
@@ -351,18 +389,18 @@ export default class EditSession extends EventEmitterClass {
         }
     }
 
-    private onChangeFold(e) {
-        var fold = e.data;
+    private onChangeFold(event: FoldEvent): void {
+        var fold = event.data;
         this.$resetRowCache(fold.start.row);
     }
 
-    private onChange(e, doc: Document) {
-        var delta: Delta = e.data;
+    private onChange(event: DeltaEvent, doc: Document): void {
+        var delta: Delta = event.data;
         this.$modified = true;
 
         this.$resetRowCache(delta.range.start.row);
 
-        var removedFolds = this.$updateInternalDataOnChange(e);
+        var removedFolds = this.$updateInternalDataOnChange(event);
         if (!this.$fromUndo && this.$undoManager && !delta.ignore) {
             this.$deltasDoc.push(delta);
             if (removedFolds && removedFolds.length != 0) {
@@ -378,7 +416,11 @@ export default class EditSession extends EventEmitterClass {
         if (this.bgTokenizer) {
             this.bgTokenizer.updateOnChange(delta);
         }
-        this._signal("change", e);
+        /**
+         * @event change
+         * @param event {DeltaEvent}
+         */
+        this.eventBus._signal("change", event);
     }
 
     /**
@@ -694,7 +736,10 @@ export default class EditSession extends EventEmitterClass {
             this.$decorations[row] = "";
         }
         this.$decorations[row] += " " + className;
-        this._signal("changeBreakpoint", {});
+        /**
+         * @event changeBreakpoint
+         */
+        this.eventBus._signal("changeBreakpoint", {});
     }
 
     /**
@@ -704,14 +749,17 @@ export default class EditSession extends EventEmitterClass {
      */
     public removeGutterDecoration(row: number, className: string): void {
         this.$decorations[row] = (this.$decorations[row] || "").replace(" " + className, "");
-        this._signal("changeBreakpoint", {});
+        /**
+         * @event changeBreakpoint
+         */
+        this.eventBus._signal("changeBreakpoint", {});
     }
 
     /**
     * Returns an array of numbers, indicating which rows have breakpoints.
     * @return {[Number]}
     **/
-    private getBreakpoints() {
+    private getBreakpoints(): string[] {
         return this.$breakpoints;
     }
 
@@ -727,15 +775,21 @@ export default class EditSession extends EventEmitterClass {
         for (var i = 0; i < rows.length; i++) {
             this.$breakpoints[rows[i]] = "ace_breakpoint";
         }
-        this._signal("changeBreakpoint", {});
+        /**
+         * @event changeBreakpoint
+         */
+        this.eventBus._signal("changeBreakpoint", {});
     }
 
     /**
-    * Removes all breakpoints on the rows. This function also emites the `'changeBreakpoint'` event.
-    **/
+     * Removes all breakpoints on the rows. This function also emites the `'changeBreakpoint'` event.
+     */
     private clearBreakpoints() {
         this.$breakpoints = [];
-        this._signal("changeBreakpoint", {});
+        /**
+         * @event changeBreakpoint
+         */
+        this.eventBus._signal("changeBreakpoint", {});
     }
 
     /**
@@ -752,7 +806,10 @@ export default class EditSession extends EventEmitterClass {
             this.$breakpoints[row] = className;
         else
             delete this.$breakpoints[row];
-        this._signal("changeBreakpoint", {});
+        /**
+         * @event changeBreakpoint
+         */
+        this.eventBus._signal("changeBreakpoint", {});
     }
 
     /**
@@ -763,7 +820,10 @@ export default class EditSession extends EventEmitterClass {
     **/
     private clearBreakpoint(row: number): void {
         delete this.$breakpoints[row];
-        this._signal("changeBreakpoint", {});
+        /**
+         * @event changeBreakpoint
+         */
+        this.eventBus._signal("changeBreakpoint", {});
     }
 
     /**
@@ -779,8 +839,7 @@ export default class EditSession extends EventEmitterClass {
     public addMarker(range: Range, clazz: string, type: string, inFront?: boolean): number {
         var id = this.$markerId++;
 
-        // FIXME: Need more type safety here.
-        var marker = {
+        var marker: DynamicMarker = {
             range: range,
             type: type || "line",
             renderer: typeof type === "function" ? type : null,
@@ -791,11 +850,17 @@ export default class EditSession extends EventEmitterClass {
 
         if (inFront) {
             this.$frontMarkers[id] = marker;
-            this._signal("changeFrontMarker");
+            /**
+             * @event changeFrontMarker
+             */
+            this.eventBus._signal("changeFrontMarker");
         }
         else {
             this.$backMarkers[id] = marker;
-            this._signal("changeBackMarker");
+            /**
+             * @event changeBackMarker
+             */
+            this.eventBus._signal("changeBackMarker");
         }
 
         return id;
@@ -803,25 +868,33 @@ export default class EditSession extends EventEmitterClass {
 
     /**
      * Adds a dynamic marker to the session.
-     * @param {Object} marker object with update method
-     * @param {Boolean} inFront Set to `true` to establish a front marker
      *
-     *
-     * @return {Object} The added marker
-     **/
-    private addDynamicMarker(marker, inFront?) {
-        if (!marker.update)
+     * @method addDynamicMarker
+     * @param marker {DynamicMarker} object with update method.
+     * @param [inFront] {boolean} Set to `true` to establish a front marker.
+     * @return {DynamicMarker} The added marker
+     */
+    private addDynamicMarker(marker: DynamicMarker, inFront?: boolean): DynamicMarker {
+        if (!marker.update) {
             return;
+        }
         var id = this.$markerId++;
         marker.id = id;
         marker.inFront = !!inFront;
 
         if (inFront) {
             this.$frontMarkers[id] = marker;
-            this._signal("changeFrontMarker");
-        } else {
+            /**
+             * @event changeFrontMarker
+             */
+            this.eventBus._signal("changeFrontMarker");
+        }
+        else {
             this.$backMarkers[id] = marker;
-            this._signal("changeBackMarker");
+            /**
+             * @event changeBackMarker
+             */
+            this.eventBus._signal("changeBackMarker");
         }
 
         return marker;
@@ -835,31 +908,36 @@ export default class EditSession extends EventEmitterClass {
     *
     **/
     public removeMarker(markerId: number): void {
-        var marker = this.$frontMarkers[markerId] || this.$backMarkers[markerId];
+        var marker: DynamicMarker = this.$frontMarkers[markerId] || this.$backMarkers[markerId];
         if (!marker)
             return;
 
-        var markers = marker.inFront ? this.$frontMarkers : this.$backMarkers;
+        var markers: { [id: number]: DynamicMarker } = marker.inFront ? this.$frontMarkers : this.$backMarkers;
         if (marker) {
             delete (markers[markerId]);
-            this._signal(marker.inFront ? "changeFrontMarker" : "changeBackMarker");
+            this.eventBus._signal(marker.inFront ? "changeFrontMarker" : "changeBackMarker");
         }
     }
 
     /**
-    * Returns an array containing the IDs of all the markers, either front or back.
-    * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers
-    *
-    * @return {Array}
-    **/
-    public getMarkers(inFront: boolean) {
+     * Returns an array containing the IDs of all the markers, either front or back.
+     * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers.
+     * @return {Array}
+     */
+    public getMarkers(inFront: boolean): { [id: number]: DynamicMarker } {
         return inFront ? this.$frontMarkers : this.$backMarkers;
     }
 
-    public highlight(re: RegExp) {
+    /**
+     * @method highlight
+     * @param re {RegExp}
+     * @return {void}
+     */
+    public highlight(re: RegExp): void {
         if (!this.$searchHighlight) {
             var highlight = new SearchHighlight(null, "ace_selected-word", "text");
-            this.$searchHighlight = this.addDynamicMarker(highlight);
+            this.addDynamicMarker(highlight);
+            this.$searchHighlight = highlight;
         }
         this.$searchHighlight.setRegexp(re);
     }
@@ -880,7 +958,10 @@ export default class EditSession extends EventEmitterClass {
      */
     public setAnnotations(annotations: Annotation[]): void {
         this.$annotations = annotations;
-        this._signal("changeAnnotation", {});
+        /**
+         * @event changeAnnotation
+         */
+        this.eventBus._signal("changeAnnotation", {});
     }
 
     /**
@@ -897,17 +978,23 @@ export default class EditSession extends EventEmitterClass {
      * Clears all the annotations for this session.
      * This function also triggers the `'changeAnnotation'` event.
      * This is called by the language modes when the worker terminates.
+     *
+     * @method clearAnnotations
+     * @return {void}
      */
-    public clearAnnotations() {
+    public clearAnnotations(): void {
         this.setAnnotations([]);
     }
 
     /**
-    * If `text` contains either the newline (`\n`) or carriage-return ('\r') characters, `$autoNewLine` stores that value.
-    * @param {String} text A block of text
-    *
-    **/
-    private $detectNewLine(text: string) {
+     * If `text` contains either the newline (`\n`) or carriage-return ('\r') characters, `$autoNewLine` stores that value.
+     *
+     * @method $detectNewLine
+     * @param {String} text A block of text
+     * @return {void}
+     * @private
+     */
+    private $detectNewLine(text: string): void {
         var match = text.match(/^.*?(\r?\n)/m);
         if (match) {
             this.$autoNewLine = match[1];
@@ -918,12 +1005,13 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * Given a starting row and column, this method returns the `Range` of the first word boundary it finds.
-    * @param {Number} row The row to start at
-    * @param {Number} column The column to start at
-    *
-    * @return {Range}
-    **/
+     * Given a starting row and column, this method returns the `Range` of the first word boundary it finds.
+     *
+     * @method getWordRange
+     * @param row {number} The row to start at.
+     * @param column {number} The column to start at.
+     * @return {Range}
+     */
     public getWordRange(row: number, column: number): Range {
         var line: string = this.getLine(row);
 
@@ -959,12 +1047,13 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * Gets the range of a word, including its right whitespace.
-    * @param {Number} row The row number to start from
-    * @param {Number} column The column number to start from
-    *
-    * @return {Range}
-    **/
+     * Gets the range of a word, including its right whitespace.
+     *
+     * @method getAWordRange
+     * @param {Number} row The row number to start from
+     * @param {Number} column The column number to start from
+     * @return {Range}
+     */
     public getAWordRange(row: number, column: number): Range {
         var wordRange = this.getWordRange(row, column);
         var line = this.getLine(wordRange.end.row);
@@ -977,12 +1066,11 @@ export default class EditSession extends EventEmitterClass {
     }
 
     /**
-    * {:Document.setNewLineMode.desc}
-    * @param {String} newLineMode {:Document.setNewLineMode.param}
-    *
-    *
-    * @related Document.setNewLineMode
-    **/
+     * @method setNewLineMode
+     * @param newLineMode {string}
+     * @return {void}
+     * @private
+     */
     private setNewLineMode(newLineMode: string): void {
         this.doc.setNewLineMode(newLineMode);
     }
@@ -1021,10 +1109,14 @@ export default class EditSession extends EventEmitterClass {
      * Reloads all the tokens on the current session.
      * This function calls [[BackgroundTokenizer.start `BackgroundTokenizer.start ()`]] to all the rows; it also emits the `'tokenizerUpdate'` event.
      */
+    // TODO: strontype the event.
     private onReloadTokenizer(e) {
         var rows = e.data;
         this.bgTokenizer.start(rows.first);
-        this._signal("tokenizerUpdate", e);
+        /**
+         * @event tokenizerUpdate
+         */
+        this.eventBus._signal("tokenizerUpdate", e);
     }
 
     /**
@@ -1136,9 +1228,11 @@ export default class EditSession extends EventEmitterClass {
 
         if (!this.bgTokenizer) {
             this.bgTokenizer = new BackgroundTokenizer(tokenizer, this);
-            var _self = this;
-            this.bgTokenizer.on("update", function(event, bg: BackgroundTokenizer) {
-                _self._signal("tokenizerUpdate", event);
+            this.bgTokenizer.on("update", (event, bg: BackgroundTokenizer) => {
+                /**
+                 * @event tokenizerUpdate
+                 */
+                this.eventBus._signal("tokenizerUpdate", event);
             });
         }
         else {
@@ -1155,7 +1249,10 @@ export default class EditSession extends EventEmitterClass {
             this.$options.wrapMethod.set.call(this, this.$wrapMethod);
             this.$setFolding(mode.foldingRules);
             this.bgTokenizer.start(0);
-            this._emit("changeMode");
+            /**
+             * @event changeMode
+             */
+            this.eventBus._emit("changeMode");
         }
     }
 
@@ -1216,7 +1313,10 @@ export default class EditSession extends EventEmitterClass {
             return;
         }
         this.$scrollTop = scrollTop;
-        this._signal("changeScrollTop", scrollTop);
+        /**
+         * @event chageScrollTop
+         */
+        this.eventBus._signal("changeScrollTop", scrollTop);
     }
 
     /**
@@ -1236,7 +1336,10 @@ export default class EditSession extends EventEmitterClass {
             return;
 
         this.$scrollLeft = scrollLeft;
-        this._signal("changeScrollLeft", scrollLeft);
+        /**
+         * @event changeScrollLeft
+         */
+        this.eventBus._signal("changeScrollLeft", scrollLeft);
     }
 
     /**
@@ -1773,7 +1876,10 @@ export default class EditSession extends EventEmitterClass {
                 this.$updateWrapData(0, len - 1);
             }
 
-            this._signal("changeWrapMode");
+            /**
+             * @event changeWrapMode
+             */
+            this.eventBus._signal("changeWrapMode");
         }
     }
 
@@ -1803,8 +1909,11 @@ export default class EditSession extends EventEmitterClass {
                 max: max
             };
             this.$modified = true;
-            // This will force a recalculation of the wrap limit
-            this._signal("changeWrapMode");
+            // This will force a recalculation of the wrap limit.
+            /**
+             * @event changeWrapMode
+             */
+            this.eventBus._signal("changeWrapMode");
         }
     }
 
@@ -1826,7 +1935,10 @@ export default class EditSession extends EventEmitterClass {
             if (this.$useWrapMode) {
                 this.$updateWrapData(0, this.getLength() - 1);
                 this.$resetRowCache(0);
-                this._signal("changeWrapLimit");
+                /**
+                 * @event changeWrapLimit
+                 */
+                this.eventBus._signal("changeWrapLimit");
             }
             return true;
         }
@@ -1876,7 +1988,7 @@ export default class EditSession extends EventEmitterClass {
         };
     }
 
-    private $updateInternalDataOnChange(e) {
+    private $updateInternalDataOnChange(e: DeltaEvent) {
         var useWrapMode = this.$useWrapMode;
         var len;
         var action = e.data.action;
@@ -1889,11 +2001,13 @@ export default class EditSession extends EventEmitterClass {
         if (action.indexOf("Lines") != -1) {
             if (action == "insertLines") {
                 lastRow = firstRow + (e.data.lines.length);
-            } else {
+            }
+            else {
                 lastRow = firstRow;
             }
             len = e.data.lines ? e.data.lines.length : lastRow - firstRow;
-        } else {
+        }
+        else {
             len = lastRow - firstRow;
         }
 
@@ -1964,7 +2078,8 @@ export default class EditSession extends EventEmitterClass {
                     }
                 }
             }
-        } else {
+        }
+        else {
             // Realign folds. E.g. if you add some new chars before a fold, the
             // fold should "move" to the right.
             len = Math.abs(e.data.range.start.column - e.data.range.end.column);
@@ -2695,7 +2810,8 @@ export default class EditSession extends EventEmitterClass {
             if (fold.range.contains(row, column)) {
                 if (side === 1 && fold.range.isEnd(row, column)) {
                     continue;
-                } else if (side === -1 && fold.range.isStart(row, column)) {
+                }
+                else if (side === -1 && fold.range.isStart(row, column)) {
                     continue;
                 }
                 return fold;
@@ -2991,7 +3107,12 @@ export default class EditSession extends EventEmitterClass {
 
         // Notify that fold data has changed.
         this.setModified(true);
-        this._emit("changeFold", { data: fold, action: "add" });
+        /**
+         * @event changeFold
+         * @param foldEvent {FoldEvent}
+         */
+        var foldEvent: FoldEvent = { data: fold, action: "add" };
+        this.eventBus._emit("changeFold", foldEvent);
 
         return fold;
     }
@@ -3059,7 +3180,12 @@ export default class EditSession extends EventEmitterClass {
         
         // Notify that fold data has changed.
         this.setModified(true);
-        this._emit("changeFold", { data: fold, action: "remove" });
+        /**
+         * @event changeFold
+         * @param foldEvent {FoldEvent}
+         */
+        var foldEvent: FoldEvent = { data: fold, action: "remove" };
+        this.eventBus._emit("changeFold", foldEvent);
     }
 
     removeFolds(folds: Fold[]): void {
@@ -3231,12 +3357,14 @@ export default class EditSession extends EventEmitterClass {
             } else {
                 range = this.getCommentFoldRange(cursor.row, cursor.column) || range;
             }
-        } else {
+        }
+        else {
             var folds = this.getFoldsInRange(range);
             if (tryToUnfold && folds.length) {
                 this.expandFolds(folds);
                 return;
-            } else if (folds.length == 1) {
+            }
+            else if (folds.length == 1) {
                 fold = folds[0];
             }
         }
@@ -3348,8 +3476,8 @@ export default class EditSession extends EventEmitterClass {
 
         this.$foldMode = foldMode;
 
-        this.off('change', this.$updateFoldWidgets);
-        this._emit("changeAnnotation");
+        this.eventBus.off('change', this.$updateFoldWidgets);
+        this.eventBus._emit("changeAnnotation");
 
         if (!foldMode || this.$foldStyle === "manual") {
             this.foldWidgets = null;
@@ -3361,7 +3489,7 @@ export default class EditSession extends EventEmitterClass {
         this.getFoldWidgetRange = foldMode.getFoldWidgetRange.bind(foldMode, this, this.$foldStyle);
 
         this.$updateFoldWidgets = this.updateFoldWidgets.bind(this);
-        this.on('change', this.$updateFoldWidgets);
+        this.eventBus.on('change', this.$updateFoldWidgets);
 
     }
 

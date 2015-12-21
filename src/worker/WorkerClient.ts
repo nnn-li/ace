@@ -3,7 +3,7 @@
 import {qualifyURL} from '../lib/net';
 import Delta from "../Delta";
 import Document from "../Document";
-import EventEmitterClass from '../lib/event_emitter';
+import EventEmitterClass from '../lib/EventEmitterClass';
 import {get} from "../config";
 
 // FIXME: This class is begging to be written using the functional constructor

@@ -54,7 +54,7 @@
 
 import Document from "./Document";
 import {stringReverse} from "./lib/lang";
-import EventEmitterClass from "./lib/event_emitter";
+import EventEmitterClass from "./lib/EventEmitterClass";
 import OrientedRange from "./OrientedRange";
 import Position from "./Position";
 import Range from "./Range";

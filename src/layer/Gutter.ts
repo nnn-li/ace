@@ -58,7 +58,7 @@ computedStyle,
 createElement,
 removeCssClass} from "../lib/dom";
 import {escapeHTML} from "../lib/lang";
-import EventEmitterClass from "../lib/event_emitter";
+import EventEmitterClass from "../lib/EventEmitterClass";
 import EditSession from "../EditSession";
 import Annotation from "../Annotation";
 import GutterConfig from "./GutterConfig";

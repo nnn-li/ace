@@ -64,7 +64,7 @@ import VScrollBar from "./VScrollBar";
 import HScrollBar from "./HScrollBar";
 import RenderLoop from "./RenderLoop";
 import FontMetrics from "./layer/FontMetrics";
-import EventEmitterClass from "./lib/event_emitter";
+import EventEmitterClass from "./lib/EventEmitterClass";
 import EditSession from './EditSession';
 import OptionsProvider from "./OptionsProvider";
 import Position from './Position';
@@ -1833,8 +1833,8 @@ export default class VirtualRenderer extends EventEmitterClass implements Editor
     setThemeCss(cssClass: string, href: string): void {
         appendHTMLLinkElement(cssClass, 'stylesheet', 'text/css', href, document);
         this.addCssClass(cssClass);
-//      this.setCssClass("ace_dark", themeLink.isDark);
-//      this.setPadding(themeLink.padding);
+        //      this.setCssClass("ace_dark", themeLink.isDark);
+        //      this.setPadding(themeLink.padding);
     }
 
     /**

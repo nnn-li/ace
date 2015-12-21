@@ -25,7 +25,7 @@
 
 import {applyMixins} from "../lib/mix";
 import HashHandler from "../keyboard/HashHandler";
-import EventEmitterClass from "../lib/event_emitter";
+import EventEmitterClass from "../lib/EventEmitterClass";
 import Command from './Command';
 import Editor from '../Editor';
 

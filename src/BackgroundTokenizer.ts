@@ -56,7 +56,7 @@ import Delta from './Delta';
 import Editor from './Editor';
 import EditSession from './EditSession';
 import Document from './Document';
-import EventEmitterClass from "./lib/event_emitter";
+import EventEmitterClass from "./lib/EventEmitterClass";
 import FirstAndLast from "./FirstAndLast";
 import Range from './Range';
 import Tokenizer from './Tokenizer';

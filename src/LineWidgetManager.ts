@@ -61,7 +61,10 @@ import VirtualRenderer from "./VirtualRenderer";
 import LineWidget from "./LineWidget";
 import Change from './Change';
 
-export default class LineWidgets {
+/**
+ * @class LineWidgetManager
+ */
+export default class LineWidgetManager {
     session: EditSession;
     editor: Editor;
     firstRow: number;
@@ -71,6 +74,12 @@ export default class LineWidgets {
     $wrapData: number[][];
     // FIXME: I think this should be coming from the session.
     $useWrapMode: boolean;
+
+    /**
+     * @class LineWidgetManager
+     * @constructor
+     * @param session {EditSession}
+     */
     constructor(session: EditSession) {
         this.session = session;
         this.session.widgetManager = this;
@@ -86,6 +95,12 @@ export default class LineWidgets {
         this.session.on("changeFold", this.updateOnFold);
         this.session.on("changeEditor", this.$onChangeEditor);
     }
+
+    /**
+     * @method getRowLength
+     * @param row {number}
+     * @return {number}
+     */
     getRowLength(row: number): number {
         var h: number;
 
@@ -115,6 +130,11 @@ export default class LineWidgets {
         this.attach(e.editor);
     }
 
+    /**
+     * @method attach
+     * @param editor {Editor}
+     * @return {void}
+     */
     attach(editor: Editor): void {
         if (editor && editor.widgetManager && editor.widgetManager != this)
             editor.widgetManager.detach();
@@ -131,10 +151,16 @@ export default class LineWidgets {
             editor.renderer.on("afterRender", this.renderWidgets);
         }
     }
-    detach(e?): void {
+
+    /**
+     * @method detach
+     * @return {void}
+     */
+    detach(unused?: any): void {
         var editor = this.editor;
-        if (!editor)
+        if (!editor) {
             return;
+        }
 
         this.editor = null;
         editor.widgetManager = null;
@@ -142,7 +168,7 @@ export default class LineWidgets {
         editor.renderer.off("beforeRender", this.measureWidgets);
         editor.renderer.off("afterRender", this.renderWidgets);
         var lineWidgets = this.session.lineWidgets;
-        lineWidgets && lineWidgets.forEach(function(w) {
+        lineWidgets && lineWidgets.forEach(function(w: LineWidget) {
             if (w && w.el && w.el.parentNode) {
                 w._inDocument = false;
                 w.el.parentNode.removeChild(w.el);
@@ -150,7 +176,13 @@ export default class LineWidgets {
         });
     }
 
-    updateOnFold(e: Change, session: EditSession) {
+    /**
+     * @method updateOnFold
+     * @param e {Change}
+     * @param session {EditSession}
+     * @return {void}
+     */
+    updateOnFold(e: Change, session: EditSession): void {
         var lineWidgets = session.lineWidgets;
         if (!lineWidgets || !e.action)
             return;
@@ -177,7 +209,13 @@ export default class LineWidgets {
     }
 
     // FIXME: Appears to be using a different format from the standard Change.
-    updateOnChange(delta: { action: string; start: Position; end: Position }, session: EditSession) {
+    /**
+     * @method updateOnChange
+     * @param delta
+     * @param session {EditSession}
+     * @return {void}
+     */
+    updateOnChange(delta: { action: string; start: Position; end: Position }, session: EditSession): void {
         var lineWidgets = this.session.lineWidgets;
         if (!lineWidgets) return;
 
@@ -220,9 +258,14 @@ export default class LineWidgets {
             this.session.lineWidgets = null;
     }
 
+    /**
+     * @method addLineWidget
+     * @param w {LineWidget}
+     * @return {LineWidget}
+     */
     addLineWidget(w: LineWidget): LineWidget {
         if (!this.session.lineWidgets) {
-            this.session.lineWidgets = new Array(this.session.getLength());
+            this.session.lineWidgets = new Array<LineWidget>(this.session.getLength());
         }
 
         var old: LineWidget = this.session.lineWidgets[w.row];
@@ -279,6 +322,11 @@ export default class LineWidgets {
         return w;
     };
 
+    /**
+     * @method removeLineWidget
+     * @param w {LineWidget}
+     * @return {void}
+     */
     removeLineWidget(w: LineWidget): void {
         w._inDocument = false;
         w.session = null;
@@ -307,6 +355,11 @@ export default class LineWidgets {
         this.$updateRows();
     }
 
+    /**
+     * @method getWidgetsAtRow
+     * @param row {number}
+     * @return {LineWidget[]}
+     */
     getWidgetsAtRow(row: number): LineWidget[] {
         var lineWidgets = this.session.lineWidgets;
         var w = lineWidgets && lineWidgets[row];
@@ -316,14 +369,28 @@ export default class LineWidgets {
             w = w.$oldWidget;
         }
         return list;
-    };
+    }
 
-    onWidgetChanged(w: LineWidget): void {
+    /**
+     * @method onWidgetChanged
+     * @param w {LineWidget}
+     * @return {void}
+     */
+    private onWidgetChanged(w: LineWidget): void {
         this.session._changedWidgets.push(w);
         this.editor && this.editor.renderer.updateFull();
     };
 
-    measureWidgets(unused: any, renderer: VirtualRenderer): void {
+    /**
+     * This method is used as an event handler connected to the <code>VirtualRenderer</code>.
+     * It is called in response to the 'beforeRender' event.
+     *
+     * @method measureWidgets
+     * @param event {any}
+     * @param renderer {VirtualRenderer}
+     * @return {void}
+     */
+    measureWidgets(event: any, renderer: VirtualRenderer): void {
         var changedWidgets = this.session._changedWidgets;
         var config = renderer.layerConfig;
 
@@ -366,7 +433,16 @@ export default class LineWidgets {
         this.session._changedWidgets = [];
     }
 
-    renderWidgets(e, renderer: VirtualRenderer) {
+    /**
+     * This method is used as an event handler connected to the <code>VirtualRenderer</code>.
+     * It is called in response to the 'afterRender' event.
+     *
+     * @method renderWidgets
+     * @param event {any}
+     * @param renderer {VirtualRenderer}
+     * @return {void}
+     */
+    renderWidgets(event: any, renderer: VirtualRenderer): void {
         var config = renderer.layerConfig;
         var lineWidgets = this.session.lineWidgets;
         if (!lineWidgets) {

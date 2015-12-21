@@ -54,7 +54,8 @@
 
 import Anchor from './Anchor';
 import Delta from './Delta';
-import EventEmitterClass from './lib/event_emitter';
+import EventBus from './EventBus';
+import EventEmitterClass from './lib/EventEmitterClass';
 import Position from './Position';
 import Range from './Range';
 
@@ -93,10 +94,35 @@ function $clipPosition(doc: Document, position: Position): Position {
 /**
  * @class Document
  */
-export default class Document extends EventEmitterClass {
+export default class Document implements EventBus {
+
+    /**
+     * @property $lines
+     * @type string[]
+     * @private
+     */
     private $lines: string[] = [];
+
+    /**
+     * @propert $autoNewLine
+     * @type string
+     * @private
+     */
     private $autoNewLine: string = "";
+
+    /**
+     * @property $newLineMode
+     * @type string
+     * @private
+     */
     private $newLineMode: string = "auto";
+
+    /**
+     * @property eventBus
+     * @type EventEmitterClass
+     * @private
+     */
+    private eventBus = new EventEmitterClass();
 
     /**
      * Creates a new Document.
@@ -107,8 +133,6 @@ export default class Document extends EventEmitterClass {
      * @param text {string | Array<string>}
      */
     constructor(text: string | Array<string>) {
-        super();
-
         // There has to be one line at least in the document. If you pass an empty
         // string to the insert function, nothing will happen. Workaround.
         if (text.length === 0) {
@@ -169,7 +193,10 @@ export default class Document extends EventEmitterClass {
     private $detectNewLine(text: string): void {
         var match = text.match(/^.*?(\r\n|\r|\n)/m);
         this.$autoNewLine = match ? match[1] : "\n";
-        this._signal("changeNewLineMode");
+        /**
+         * @event changeNewLineMode
+         */
+        this.eventBus._signal("changeNewLineMode");
     }
 
     /**
@@ -205,7 +232,10 @@ export default class Document extends EventEmitterClass {
             return;
         }
         this.$newLineMode = newLineMode;
-        this._signal("changeNewLineMode");
+        /**
+         * @event changeNewLineMode
+         */
+        this.eventBus._signal("changeNewLineMode");
     }
 
     /**
@@ -349,6 +379,7 @@ export default class Document extends EventEmitterClass {
      * @param {Object} e Contains at least one property called `"action"`. `"action"` indicates the action that triggered the change. Each action also has a set of additional properties.
      *
      **/
+
     /**
      * Inserts the elements in `lines` into the document, starting at the row index given by `row`.
      * This method also triggers the `'change'` event.
@@ -393,7 +424,11 @@ export default class Document extends EventEmitterClass {
             range: range,
             lines: lines
         };
-        this._signal("change", { data: delta });
+
+        /**
+         * @event change
+         */
+        this.eventBus._signal("change", { data: delta });
         return range.end;
     }
 
@@ -415,7 +450,7 @@ export default class Document extends EventEmitterClass {
         this.$lines[position.row] = line.substring(0, position.column);
         this.$lines.splice(position.row + 1, 0, line.substring(position.column, line.length));
 
-        var end = {
+        var end: Position = {
             row: position.row + 1,
             column: 0
         };
@@ -425,29 +460,36 @@ export default class Document extends EventEmitterClass {
             range: Range.fromPoints(position, end),
             text: this.getNewLineCharacter()
         };
-        this._signal("change", { data: delta });
+
+        /**
+         * @event change
+         * @param delta {Delta}
+         */
+        this.eventBus._signal("change", { data: delta });
 
         return end;
     }
 
     /**
      * Inserts `text` into the `position` at the current row.
+     * This method also triggers the `'change'` event.
      *
      * @method insertInLine
-     * This method also triggers the `'change'` event.
      * @param position {Position} The position to insert at.
      * @param {String} text A chunk of text
      * @return {Position} Returns an object containing the final row and column.
      */
     insertInLine(position: Position, text: string): Position {
-        if (text.length == 0)
+
+        if (text.length === 0) {
             return position;
+        }
 
         var line = this.$lines[position.row] || "";
 
         this.$lines[position.row] = line.substring(0, position.column) + text + line.substring(position.column);
 
-        var end = {
+        var end: Position = {
             row: position.row,
             column: position.column + text.length
         };
@@ -458,9 +500,29 @@ export default class Document extends EventEmitterClass {
          * @event change
          * @param delta {Delta}
          */
-        this._signal("change", { data: delta });
+        this.eventBus._signal("change", { data: delta });
 
         return end;
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, doc: Document) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, doc: Document) => any): void {
+        this.eventBus.on(eventName, callback, false);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, doc: Document) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, doc: Document) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 
     /**
@@ -514,10 +576,10 @@ export default class Document extends EventEmitterClass {
      * @param {Number} row The row to remove from
      * @param {Number} startColumn The column to start removing at 
      * @param {Number} endColumn The column to stop removing at
-     * @return {Object} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
+     * @return {Position} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
      *
      */
-    removeInLine(row: number, startColumn: number, endColumn: number) {
+    removeInLine(row: number, startColumn: number, endColumn: number): Position {
         if (startColumn === endColumn)
             return;
 
@@ -532,7 +594,12 @@ export default class Document extends EventEmitterClass {
             range: range,
             text: removed
         };
-        this._signal("change", { data: delta });
+
+        /**
+         * @event change
+         * @param delta {Delta}
+         */
+        this.eventBus._signal("change", { data: delta });
         return range.start;
     }
 
@@ -565,7 +632,12 @@ export default class Document extends EventEmitterClass {
             nl: this.getNewLineCharacter(),
             lines: removed
         };
-        this._signal("change", { data: delta });
+
+        /**
+         * @event change
+         * @param delta {Delta}
+         */
+        this.eventBus._signal("change", { data: delta });
         return removed;
     }
 
@@ -590,7 +662,12 @@ export default class Document extends EventEmitterClass {
             range: range,
             text: this.getNewLineCharacter()
         };
-        this._signal("change", { data: delta });
+
+        /**
+         * @event change
+         * @param delta {Delta}
+         */
+        this.eventBus._signal("change", { data: delta });
     }
 
     /**

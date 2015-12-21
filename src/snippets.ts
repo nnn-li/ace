@@ -52,7 +52,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 import {ensureHTMLStyleElement} from "./lib/dom";
-import EventEmitterClass from "./lib/event_emitter";
+import EventEmitterClass from "./lib/EventEmitterClass";
 import {delayedCall, escapeRegExp} from "./lib/lang";
 import Range from "./Range";
 import comparePoints from "./comparePoints"

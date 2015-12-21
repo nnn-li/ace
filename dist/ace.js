@@ -2270,7 +2270,7 @@ define('Search',["require", "exports", "./lib/lang", "./lib/oop", "./Range"], fu
     exports.default = Search;
 });
 
-define('lib/event_emitter',["require", "exports"], function (require, exports) {
+define('lib/EventEmitterClass',["require", "exports"], function (require, exports) {
     "use strict";
     var stopPropagation = function () { this.propagationStopped = true; };
     var preventDefault = function () { this.defaultPrevented = true; };
@@ -2306,6 +2306,11 @@ define('lib/event_emitter',["require", "exports"], function (require, exports) {
             if (defaultHandler && !event.defaultPrevented) {
                 return defaultHandler(event, this);
             }
+        };
+        EventEmitterClass.prototype.hasListeners = function (eventName) {
+            var registry = this._eventRegistry;
+            var listeners = registry && registry[eventName];
+            return listeners && listeners.length > 0;
         };
         EventEmitterClass.prototype._emit = function (eventName, event) {
             return this._dispatchEvent(eventName, event);
@@ -2378,7 +2383,7 @@ define('lib/event_emitter',["require", "exports"], function (require, exports) {
             return callback;
         };
         EventEmitterClass.prototype.on = function (eventName, callback, capturing) {
-            return this.addEventListener(eventName, callback, capturing);
+            this.addEventListener(eventName, callback, capturing);
         };
         EventEmitterClass.prototype.removeEventListener = function (eventName, callback) {
             this._eventRegistry = this._eventRegistry || {};
@@ -2543,7 +2548,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('commands/CommandManager',["require", "exports", "../lib/mix", "../keyboard/HashHandler", "../lib/event_emitter"], function (require, exports, mix_1, HashHandler_1, event_emitter_1) {
+define('commands/CommandManager',["require", "exports", "../lib/mix", "../keyboard/HashHandler", "../lib/EventEmitterClass"], function (require, exports, mix_1, HashHandler_1, EventEmitterClass_1) {
     "use strict";
     var CommandManager = (function (_super) {
         __extends(CommandManager, _super);
@@ -2666,7 +2671,7 @@ define('commands/CommandManager',["require", "exports", "../lib/mix", "../keyboa
             });
         };
         return CommandManager;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = CommandManager;
     mix_1.applyMixins(CommandManager, [HashHandler_1.default]);
@@ -4923,12 +4928,11 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "./lib/useragent", "./keyboard/KeyBinding", "./keyboard/TextInput", "./Search", "./Range", "./lib/event_emitter", "./commands/CommandManager", "./commands/default_commands", "./config", "./TokenIterator", './editor_protocol', "./lib/event", './touch/touch', "./Tooltip"], function (require, exports, oop_1, dom_1, lang_1, useragent_1, KeyBinding_1, TextInput_1, Search_1, Range_1, event_emitter_1, CommandManager_1, default_commands_1, config_1, TokenIterator_1, editor_protocol_1, event_1, touch_1, Tooltip_1) {
+define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "./lib/useragent", "./keyboard/KeyBinding", "./keyboard/TextInput", "./Search", "./Range", "./lib/EventEmitterClass", "./commands/CommandManager", "./commands/default_commands", "./config", "./TokenIterator", './editor_protocol', "./lib/event", './touch/touch', "./Tooltip"], function (require, exports, oop_1, dom_1, lang_1, useragent_1, KeyBinding_1, TextInput_1, Search_1, Range_1, EventEmitterClass_1, CommandManager_1, default_commands_1, config_1, TokenIterator_1, editor_protocol_1, event_1, touch_1, Tooltip_1) {
     "use strict";
-    var Editor = (function (_super) {
-        __extends(Editor, _super);
+    var Editor = (function () {
         function Editor(renderer, session) {
-            _super.call(this);
+            this.eventBus = new EventEmitterClass_1.default();
             this.curOp = null;
             this.prevOp = {};
             this.$mergeableCommands = ["backspace", "del", "insertstring"];
@@ -4977,6 +4981,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             configurable: true
         });
         Editor.prototype.$initOperationListeners = function () {
+            var _this = this;
             function last(a) { return a[a.length - 1]; }
             this.selections = [];
             this.commands.on("exec", function (e) {
@@ -4995,36 +5000,36 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.commands.on("afterExec", function (e) {
                 var command = e.command;
                 if (command.aceCommandGroup == "fileJump") {
-                    if (this.lastFileJumpPos && !this.curOp.selectionChanged) {
-                        this.selection.fromJSON(this.lastFileJumpPos);
+                    if (_this.lastFileJumpPos && !_this.curOp.selectionChanged) {
+                        _this.selection.fromJSON(_this.lastFileJumpPos);
                     }
                 }
-                this.endOperation(e);
-            }.bind(this), true);
+                _this.endOperation(e);
+            }, true);
             this.$opResetTimer = lang_1.delayedCall(this.endOperation.bind(this));
-            this.on("change", function () {
-                this.curOp || this.startOperation();
-                this.curOp.docChanged = true;
-            }.bind(this), true);
-            this.on("changeSelection", function () {
-                this.curOp || this.startOperation();
-                this.curOp.selectionChanged = true;
-            }.bind(this), true);
+            this.eventBus.on("change", function () {
+                _this.curOp || _this.startOperation();
+                _this.curOp.docChanged = true;
+            }, true);
+            this.eventBus.on("changeSelection", function () {
+                _this.curOp || _this.startOperation();
+                _this.curOp.selectionChanged = true;
+            }, true);
         };
-        Editor.prototype.startOperation = function (commadEvent) {
+        Editor.prototype.startOperation = function (commandEvent) {
             if (this.curOp) {
-                if (!commadEvent || this.curOp.command)
+                if (!commandEvent || this.curOp.command)
                     return;
                 this.prevOp = this.curOp;
             }
-            if (!commadEvent) {
+            if (!commandEvent) {
                 this.previousCommand = null;
-                commadEvent = {};
+                commandEvent = {};
             }
             this.$opResetTimer.schedule();
             this.curOp = {
-                command: commadEvent.command || {},
-                args: commadEvent.args,
+                command: commandEvent.command || {},
+                args: commandEvent.args,
                 scrollTop: this.renderer.scrollTop
             };
             var command = this.curOp.command;
@@ -5032,7 +5037,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 this.$blockScrolling++;
             this.selections.push(this.selection.toJSON());
         };
-        Editor.prototype.endOperation = function () {
+        Editor.prototype.endOperation = function (unused) {
             if (this.curOp) {
                 var command = this.curOp.command;
                 if (command && command.scrollIntoView) {
@@ -5183,7 +5188,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 session.getUseWrapMode() && this.renderer.adjustWrapLimit();
                 this.renderer.updateFull();
             }
-            this._signal("changeSession", {
+            this.eventBus._signal("changeSession", {
                 session: session,
                 oldSession: oldSession
             });
@@ -5338,7 +5343,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.$isFocused = true;
             this.renderer.showCursor();
             this.renderer.visualizeFocus();
-            this._emit("focus");
+            this.eventBus._emit("focus");
         };
         Editor.prototype.onBlur = function () {
             if (!this.$isFocused) {
@@ -5347,7 +5352,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.$isFocused = false;
             this.renderer.hideCursor();
             this.renderer.visualizeBlur();
-            this._emit("blur");
+            this.eventBus._emit("blur");
         };
         Editor.prototype.$cursorChange = function () {
             this.renderer.updateCursor();
@@ -5362,7 +5367,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
                 lastRow = Infinity;
             var r = this.renderer;
             r.updateLines(range.start.row, lastRow, this.session.$useWrapMode);
-            this._signal("change", e);
+            this.eventBus._signal("change", e);
             this.$cursorChange();
             this.$updateHighlightActiveLine();
         };
@@ -5384,7 +5389,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.$highlightBrackets();
             this.$highlightTags();
             this.$updateHighlightActiveLine();
-            this._signal("changeSelection");
+            this.eventBus._signal("changeSelection");
         };
         Editor.prototype.$updateHighlightActiveLine = function () {
             var session = this.session;
@@ -5430,7 +5435,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             }
             var re = this.$highlightSelectedWord && this.$getSelectionHighLightRegexp();
             this.session.highlight(re);
-            this._signal("changeSelection");
+            this.eventBus._signal("changeSelection");
         };
         Editor.prototype.$getSelectionHighLightRegexp = function () {
             var session = this.session;
@@ -5463,15 +5468,15 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         Editor.prototype.onChangeBreakpoint = function (event, editSession) {
             this.renderer.updateBreakpoints();
-            this._emit("changeBreakpoint", event);
+            this.eventBus._emit("changeBreakpoint", event);
         };
         Editor.prototype.onChangeAnnotation = function (event, editSession) {
             this.renderer.setAnnotations(editSession.getAnnotations());
-            this._emit("changeAnnotation", event);
+            this.eventBus._emit("changeAnnotation", event);
         };
         Editor.prototype.onChangeMode = function (event, editSession) {
             this.renderer.updateText();
-            this._emit("changeMode", event);
+            this.eventBus._emit("changeMode", event);
         };
         Editor.prototype.onChangeWrapLimit = function (event, editSession) {
             this.renderer.updateFull();
@@ -5488,7 +5493,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
         };
         Editor.prototype.getCopyText = function () {
             var text = this.getSelectedText();
-            this._signal("copy", text);
+            this.eventBus._signal("copy", text);
             return text;
         };
         Editor.prototype.onCopy = function () {
@@ -5501,7 +5506,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             if (this.$readOnly)
                 return;
             var e = { text: text };
-            this._signal("paste", e);
+            this.eventBus._signal("paste", e);
             this.insert(e.text, true);
         };
         Editor.prototype.execCommand = function (command, args) {
@@ -5563,6 +5568,24 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             if (shouldOutdent) {
                 mode.autoOutdent(lineState, session, cursor.row);
             }
+        };
+        Editor.prototype.on = function (eventName, callback, capturing) {
+            this.eventBus.on(eventName, callback, capturing);
+        };
+        Editor.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
+        Editor.prototype.setDefaultHandler = function (eventName, callback) {
+            this.eventBus.setDefaultHandler(eventName, callback);
+        };
+        Editor.prototype._emit = function (eventName, event) {
+            this.eventBus._emit(eventName, event);
+        };
+        Editor.prototype._signal = function (eventName, event) {
+            this.eventBus._signal(eventName, event);
+        };
+        Editor.prototype.hasListeners = function (eventName) {
+            return this.eventBus.hasListeners(eventName);
         };
         Editor.prototype.onTextInput = function (text) {
             this.keyBinding.onTextInput(text);
@@ -6493,7 +6516,7 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             dom_1.setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
         };
         return Editor;
-    })(event_emitter_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Editor;
     config_1.defineOptions(Editor.prototype, "editor", {
@@ -6702,11 +6725,9 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             this.editor._emit(name, new EditorMouseEvent(e, this.editor));
         };
         MouseHandler.prototype.onMouseMove = function (name, e) {
-            var listeners = this.editor._eventRegistry && this.editor._eventRegistry['mousemove'];
-            if (!listeners || !listeners.length) {
-                return;
+            if (this.editor.hasListeners('mousemove')) {
+                this.editor._emit(name, new EditorMouseEvent(e, this.editor));
             }
-            this.editor._emit(name, new EditorMouseEvent(e, this.editor));
         };
         MouseHandler.prototype.emitEditorMouseWheelEvent = function (name, e) {
             var mouseEvent = new EditorMouseEvent(e, this.editor);
@@ -7230,7 +7251,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('Anchor',["require", "exports", './lib/event_emitter', './lib/asserts'], function (require, exports, event_emitter_1, asserts_1) {
+define('Anchor',["require", "exports", './lib/EventEmitterClass', './lib/asserts'], function (require, exports, EventEmitterClass_1, asserts_1) {
     "use strict";
     var Anchor = (function (_super) {
         __extends(Anchor, _super);
@@ -7357,17 +7378,12 @@ define('Anchor',["require", "exports", './lib/event_emitter', './lib/asserts'], 
             return pos;
         };
         return Anchor;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Anchor;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define('Document',["require", "exports", './Anchor', './lib/event_emitter', './Range'], function (require, exports, Anchor_1, event_emitter_1, Range_1) {
+define('Document',["require", "exports", './Anchor', './lib/EventEmitterClass', './Range'], function (require, exports, Anchor_1, EventEmitterClass_1, Range_1) {
     "use strict";
     var $split = (function () {
         function foo(text) {
@@ -7394,13 +7410,12 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
         }
         return position;
     }
-    var Document = (function (_super) {
-        __extends(Document, _super);
+    var Document = (function () {
         function Document(text) {
-            _super.call(this);
             this.$lines = [];
             this.$autoNewLine = "";
             this.$newLineMode = "auto";
+            this.eventBus = new EventEmitterClass_1.default();
             if (text.length === 0) {
                 this.$lines = [""];
             }
@@ -7425,7 +7440,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
         Document.prototype.$detectNewLine = function (text) {
             var match = text.match(/^.*?(\r\n|\r|\n)/m);
             this.$autoNewLine = match ? match[1] : "\n";
-            this._signal("changeNewLineMode");
+            this.eventBus._signal("changeNewLineMode");
         };
         Document.prototype.getNewLineCharacter = function () {
             switch (this.$newLineMode) {
@@ -7442,7 +7457,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 return;
             }
             this.$newLineMode = newLineMode;
-            this._signal("changeNewLineMode");
+            this.eventBus._signal("changeNewLineMode");
         };
         Document.prototype.getNewLineMode = function () {
             return this.$newLineMode;
@@ -7515,7 +7530,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 range: range,
                 lines: lines
             };
-            this._signal("change", { data: delta });
+            this.eventBus._signal("change", { data: delta });
             return range.end;
         };
         Document.prototype.insertNewLine = function (position) {
@@ -7532,12 +7547,13 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 range: Range_1.default.fromPoints(position, end),
                 text: this.getNewLineCharacter()
             };
-            this._signal("change", { data: delta });
+            this.eventBus._signal("change", { data: delta });
             return end;
         };
         Document.prototype.insertInLine = function (position, text) {
-            if (text.length == 0)
+            if (text.length === 0) {
                 return position;
+            }
             var line = this.$lines[position.row] || "";
             this.$lines[position.row] = line.substring(0, position.column) + text + line.substring(position.column);
             var end = {
@@ -7545,8 +7561,14 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 column: position.column + text.length
             };
             var delta = { action: "insertText", range: Range_1.default.fromPoints(position, end), text: text };
-            this._signal("change", { data: delta });
+            this.eventBus._signal("change", { data: delta });
             return end;
+        };
+        Document.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        Document.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
         };
         Document.prototype.remove = function (range) {
             if (!(range instanceof Range_1.default)) {
@@ -7588,7 +7610,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 range: range,
                 text: removed
             };
-            this._signal("change", { data: delta });
+            this.eventBus._signal("change", { data: delta });
             return range.start;
         };
         Document.prototype.removeLines = function (firstRow, lastRow) {
@@ -7606,7 +7628,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 nl: this.getNewLineCharacter(),
                 lines: removed
             };
-            this._signal("change", { data: delta });
+            this.eventBus._signal("change", { data: delta });
             return removed;
         };
         Document.prototype.removeNewLine = function (row) {
@@ -7620,7 +7642,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
                 range: range,
                 text: this.getNewLineCharacter()
             };
-            this._signal("change", { data: delta });
+            this.eventBus._signal("change", { data: delta });
         };
         Document.prototype.replace = function (range, text) {
             if (text.length == 0 && range.isEmpty())
@@ -7684,7 +7706,7 @@ define('Document',["require", "exports", './Anchor', './lib/event_emitter', './R
             return index + pos.column;
         };
         return Document;
-    })(event_emitter_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Document;
 });
@@ -8177,7 +8199,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "./Range"], function (require, exports, lang_1, event_emitter_1, Range_1) {
+define('Selection',["require", "exports", "./lib/lang", "./lib/EventEmitterClass", "./Range"], function (require, exports, lang_1, EventEmitterClass_1, Range_1) {
     "use strict";
     var Selection = (function (_super) {
         __extends(Selection, _super);
@@ -8737,7 +8759,7 @@ define('Selection',["require", "exports", "./lib/lang", "./lib/event_emitter", "
             return true;
         };
         return Selection;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Selection;
 });
@@ -8747,7 +8769,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('BackgroundTokenizer',["require", "exports", "./lib/event_emitter"], function (require, exports, event_emitter_1) {
+define('BackgroundTokenizer',["require", "exports", "./lib/EventEmitterClass"], function (require, exports, EventEmitterClass_1) {
     "use strict";
     var BackgroundTokenizer = (function (_super) {
         __extends(BackgroundTokenizer, _super);
@@ -8869,7 +8891,7 @@ define('BackgroundTokenizer',["require", "exports", "./lib/event_emitter"], func
             return this.lines[row] = data.tokens;
         };
         return BackgroundTokenizer;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = BackgroundTokenizer;
 });
@@ -9944,12 +9966,7 @@ define('mode/TextMode',["require", "exports", "../Tokenizer", "./TextHighlightRu
     exports.default = TextMode;
 });
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/event_emitter", "./FoldLine", "./Fold", "./Selection", "./Range", "./Document", "./BackgroundTokenizer", "./SearchHighlight", './lib/asserts', "./BracketMatch", './TokenIterator', "./mode/TextMode"], function (require, exports, lang_1, config_1, event_emitter_1, FoldLine_1, Fold_1, Selection_1, Range_1, Document_1, BackgroundTokenizer_1, SearchHighlight_1, asserts_1, BracketMatch_1, TokenIterator_1, TextMode_1) {
+define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/EventEmitterClass", "./FoldLine", "./Fold", "./Selection", "./Range", "./Document", "./BackgroundTokenizer", "./SearchHighlight", './lib/asserts', "./BracketMatch", './TokenIterator', "./mode/TextMode"], function (require, exports, lang_1, config_1, EventEmitterClass_1, FoldLine_1, Fold_1, Selection_1, Range_1, Document_1, BackgroundTokenizer_1, SearchHighlight_1, asserts_1, BracketMatch_1, TokenIterator_1, TextMode_1) {
     var CHAR = 1, CHAR_EXT = 2, PLACEHOLDER_START = 3, PLACEHOLDER_BODY = 4, PUNCTUATION = 9, SPACE = 10, TAB = 11, TAB_SPACE = 12;
     function isFullWidth(c) {
         if (c < 0x1100)
@@ -9987,10 +10004,8 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             c >= 0xFF01 && c <= 0xFF60 ||
             c >= 0xFFE0 && c <= 0xFFE6;
     }
-    var EditSession = (function (_super) {
-        __extends(EditSession, _super);
+    var EditSession = (function () {
         function EditSession(doc) {
-            _super.call(this);
             this.$breakpoints = [];
             this.$decorations = [];
             this.$frontMarkers = {};
@@ -9999,6 +10014,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             this.$undoSelect = true;
             this.$defaultUndoManager = { undo: function () { }, redo: function () { }, reset: function () { } };
             this.$overwrite = false;
+            this.eventBus = new EventEmitterClass_1.default();
             this.$modes = {};
             this.$mode = null;
             this.$modeId = null;
@@ -10027,12 +10043,24 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             this.$foldData.toString = function () {
                 return this.join("\n");
             };
-            this.on("changeFold", this.onChangeFold.bind(this));
+            this.eventBus.on("changeFold", this.onChangeFold.bind(this));
             this.setDocument(doc);
             this.selection = new Selection_1.default(this);
             config_1.resetOptions(this);
             this.setLanguageMode(new TextMode_1.default('', []));
         }
+        EditSession.prototype.on = function (eventName, callback) {
+            this.eventBus.on(eventName, callback, false);
+        };
+        EditSession.prototype.off = function (eventName, callback) {
+            this.eventBus.off(eventName, callback);
+        };
+        EditSession.prototype._emit = function (eventName, event) {
+            this.eventBus._emit(eventName, event);
+        };
+        EditSession.prototype._signal = function (eventName, event) {
+            this.eventBus._signal(eventName, event);
+        };
         EditSession.prototype.setDocument = function (doc) {
             if (!(doc instanceof Document_1.default)) {
                 throw new Error("doc must be a Document");
@@ -10090,15 +10118,15 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 this.bgTokenizer.start(0);
             }
         };
-        EditSession.prototype.onChangeFold = function (e) {
-            var fold = e.data;
+        EditSession.prototype.onChangeFold = function (event) {
+            var fold = event.data;
             this.$resetRowCache(fold.start.row);
         };
-        EditSession.prototype.onChange = function (e, doc) {
-            var delta = e.data;
+        EditSession.prototype.onChange = function (event, doc) {
+            var delta = event.data;
             this.$modified = true;
             this.$resetRowCache(delta.range.start.row);
-            var removedFolds = this.$updateInternalDataOnChange(e);
+            var removedFolds = this.$updateInternalDataOnChange(event);
             if (!this.$fromUndo && this.$undoManager && !delta.ignore) {
                 this.$deltasDoc.push(delta);
                 if (removedFolds && removedFolds.length != 0) {
@@ -10112,7 +10140,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             if (this.bgTokenizer) {
                 this.bgTokenizer.updateOnChange(delta);
             }
-            this._signal("change", e);
+            this.eventBus._signal("change", event);
         };
         EditSession.prototype.setValue = function (text) {
             this.doc.setValue(text);
@@ -10263,11 +10291,11 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 this.$decorations[row] = "";
             }
             this.$decorations[row] += " " + className;
-            this._signal("changeBreakpoint", {});
+            this.eventBus._signal("changeBreakpoint", {});
         };
         EditSession.prototype.removeGutterDecoration = function (row, className) {
             this.$decorations[row] = (this.$decorations[row] || "").replace(" " + className, "");
-            this._signal("changeBreakpoint", {});
+            this.eventBus._signal("changeBreakpoint", {});
         };
         EditSession.prototype.getBreakpoints = function () {
             return this.$breakpoints;
@@ -10277,11 +10305,11 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             for (var i = 0; i < rows.length; i++) {
                 this.$breakpoints[rows[i]] = "ace_breakpoint";
             }
-            this._signal("changeBreakpoint", {});
+            this.eventBus._signal("changeBreakpoint", {});
         };
         EditSession.prototype.clearBreakpoints = function () {
             this.$breakpoints = [];
-            this._signal("changeBreakpoint", {});
+            this.eventBus._signal("changeBreakpoint", {});
         };
         EditSession.prototype.setBreakpoint = function (row, className) {
             if (className === undefined)
@@ -10290,11 +10318,11 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 this.$breakpoints[row] = className;
             else
                 delete this.$breakpoints[row];
-            this._signal("changeBreakpoint", {});
+            this.eventBus._signal("changeBreakpoint", {});
         };
         EditSession.prototype.clearBreakpoint = function (row) {
             delete this.$breakpoints[row];
-            this._signal("changeBreakpoint", {});
+            this.eventBus._signal("changeBreakpoint", {});
         };
         EditSession.prototype.addMarker = function (range, clazz, type, inFront) {
             var id = this.$markerId++;
@@ -10308,27 +10336,28 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             };
             if (inFront) {
                 this.$frontMarkers[id] = marker;
-                this._signal("changeFrontMarker");
+                this.eventBus._signal("changeFrontMarker");
             }
             else {
                 this.$backMarkers[id] = marker;
-                this._signal("changeBackMarker");
+                this.eventBus._signal("changeBackMarker");
             }
             return id;
         };
         EditSession.prototype.addDynamicMarker = function (marker, inFront) {
-            if (!marker.update)
+            if (!marker.update) {
                 return;
+            }
             var id = this.$markerId++;
             marker.id = id;
             marker.inFront = !!inFront;
             if (inFront) {
                 this.$frontMarkers[id] = marker;
-                this._signal("changeFrontMarker");
+                this.eventBus._signal("changeFrontMarker");
             }
             else {
                 this.$backMarkers[id] = marker;
-                this._signal("changeBackMarker");
+                this.eventBus._signal("changeBackMarker");
             }
             return marker;
         };
@@ -10339,7 +10368,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             var markers = marker.inFront ? this.$frontMarkers : this.$backMarkers;
             if (marker) {
                 delete (markers[markerId]);
-                this._signal(marker.inFront ? "changeFrontMarker" : "changeBackMarker");
+                this.eventBus._signal(marker.inFront ? "changeFrontMarker" : "changeBackMarker");
             }
         };
         EditSession.prototype.getMarkers = function (inFront) {
@@ -10348,7 +10377,8 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         EditSession.prototype.highlight = function (re) {
             if (!this.$searchHighlight) {
                 var highlight = new SearchHighlight_1.default(null, "ace_selected-word", "text");
-                this.$searchHighlight = this.addDynamicMarker(highlight);
+                this.addDynamicMarker(highlight);
+                this.$searchHighlight = highlight;
             }
             this.$searchHighlight.setRegexp(re);
         };
@@ -10360,7 +10390,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         };
         EditSession.prototype.setAnnotations = function (annotations) {
             this.$annotations = annotations;
-            this._signal("changeAnnotation", {});
+            this.eventBus._signal("changeAnnotation", {});
         };
         EditSession.prototype.getAnnotations = function () {
             return this.$annotations || [];
@@ -10424,7 +10454,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
         EditSession.prototype.onReloadTokenizer = function (e) {
             var rows = e.data;
             this.bgTokenizer.start(rows.first);
-            this._signal("tokenizerUpdate", e);
+            this.eventBus._signal("tokenizerUpdate", e);
         };
         EditSession.prototype.setLanguageMode = function (mode) {
             return this.$onChangeMode(mode, false);
@@ -10469,6 +10499,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             });
         };
         EditSession.prototype.$onChangeMode = function (mode, isPlaceholder) {
+            var _this = this;
             if (!isPlaceholder) {
                 this.$modeId = mode.$id;
             }
@@ -10487,9 +10518,8 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             }
             if (!this.bgTokenizer) {
                 this.bgTokenizer = new BackgroundTokenizer_1.default(tokenizer, this);
-                var _self = this;
                 this.bgTokenizer.on("update", function (event, bg) {
-                    _self._signal("tokenizerUpdate", event);
+                    _this.eventBus._signal("tokenizerUpdate", event);
                 });
             }
             else {
@@ -10502,7 +10532,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 this.$options.wrapMethod.set.call(this, this.$wrapMethod);
                 this.$setFolding(mode.foldingRules);
                 this.bgTokenizer.start(0);
-                this._emit("changeMode");
+                this.eventBus._emit("changeMode");
             }
         };
         EditSession.prototype.$stopWorker = function () {
@@ -10534,7 +10564,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 return;
             }
             this.$scrollTop = scrollTop;
-            this._signal("changeScrollTop", scrollTop);
+            this.eventBus._signal("changeScrollTop", scrollTop);
         };
         EditSession.prototype.getScrollTop = function () {
             return this.$scrollTop;
@@ -10543,7 +10573,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             if (this.$scrollLeft === scrollLeft || isNaN(scrollLeft))
                 return;
             this.$scrollLeft = scrollLeft;
-            this._signal("changeScrollLeft", scrollLeft);
+            this.eventBus._signal("changeScrollLeft", scrollLeft);
         };
         EditSession.prototype.getScrollLeft = function () {
             return this.$scrollLeft;
@@ -10884,7 +10914,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                     this.$wrapData = Array(len);
                     this.$updateWrapData(0, len - 1);
                 }
-                this._signal("changeWrapMode");
+                this.eventBus._signal("changeWrapMode");
             }
         };
         EditSession.prototype.getUseWrapMode = function () {
@@ -10897,7 +10927,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                     max: max
                 };
                 this.$modified = true;
-                this._signal("changeWrapMode");
+                this.eventBus._signal("changeWrapMode");
             }
         };
         EditSession.prototype.adjustWrapLimit = function (desiredLimit, $printMargin) {
@@ -10911,7 +10941,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                 if (this.$useWrapMode) {
                     this.$updateWrapData(0, this.getLength() - 1);
                     this.$resetRowCache(0);
-                    this._signal("changeWrapLimit");
+                    this.eventBus._signal("changeWrapLimit");
                 }
                 return true;
             }
@@ -11709,7 +11739,8 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             else
                 this.$updateRowLengthCache(foldLine.start.row, foldLine.start.row);
             this.setModified(true);
-            this._emit("changeFold", { data: fold, action: "add" });
+            var foldEvent = { data: fold, action: "add" };
+            this.eventBus._emit("changeFold", foldEvent);
             return fold;
         };
         EditSession.prototype.setModified = function (modified) {
@@ -11755,7 +11786,8 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
                     this.$updateRowLengthCache(startRow, endRow);
             }
             this.setModified(true);
-            this._emit("changeFold", { data: fold, action: "remove" });
+            var foldEvent = { data: fold, action: "remove" };
+            this.eventBus._emit("changeFold", foldEvent);
         };
         EditSession.prototype.removeFolds = function (folds) {
             var cloneFolds = [];
@@ -11999,8 +12031,8 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             if (this.$foldMode == foldMode)
                 return;
             this.$foldMode = foldMode;
-            this.off('change', this.$updateFoldWidgets);
-            this._emit("changeAnnotation");
+            this.eventBus.off('change', this.$updateFoldWidgets);
+            this.eventBus._emit("changeAnnotation");
             if (!foldMode || this.$foldStyle === "manual") {
                 this.foldWidgets = null;
                 return;
@@ -12009,7 +12041,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             this.getFoldWidget = foldMode.getFoldWidget.bind(foldMode, this, this.$foldStyle);
             this.getFoldWidgetRange = foldMode.getFoldWidgetRange.bind(foldMode, this, this.$foldStyle);
             this.$updateFoldWidgets = this.updateFoldWidgets.bind(this);
-            this.on('change', this.$updateFoldWidgets);
+            this.eventBus.on('change', this.$updateFoldWidgets);
         };
         EditSession.prototype.getParentFoldRangeData = function (row, ignoreCurrent) {
             var fw = this.foldWidgets;
@@ -12129,7 +12161,7 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/eve
             }
         };
         return EditSession;
-    })(event_emitter_1.default);
+    })();
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = EditSession;
     config_1.defineOptions(EditSession.prototype, "session", {
@@ -12294,7 +12326,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../lib/event_emitter"], function (require, exports, dom_1, lang_1, event_emitter_1) {
+define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../lib/EventEmitterClass"], function (require, exports, dom_1, lang_1, EventEmitterClass_1) {
     "use strict";
     var Gutter = (function (_super) {
         __extends(Gutter, _super);
@@ -12498,7 +12530,7 @@ define('layer/Gutter',["require", "exports", "../lib/dom", "../lib/lang", "../li
             }
         };
         return Gutter;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Gutter;
 });
@@ -12634,7 +12666,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/event_emitter"], function (require, exports, dom_1, lang_1, event_emitter_1) {
+define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/EventEmitterClass"], function (require, exports, dom_1, lang_1, EventEmitterClass_1) {
     "use strict";
     var Text = (function (_super) {
         __extends(Text, _super);
@@ -13085,7 +13117,7 @@ define('layer/Text',["require", "exports", "../lib/dom", "../lib/lang", "../lib/
             delete this.$measureNode;
         };
         return Text;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Text;
 });
@@ -13270,7 +13302,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/event_emitter"], function (require, exports, dom_1, event_1, event_emitter_1) {
+define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/EventEmitterClass"], function (require, exports, dom_1, event_1, EventEmitterClass_1) {
     "use strict";
     var ScrollBar = (function (_super) {
         __extends(ScrollBar, _super);
@@ -13292,7 +13324,7 @@ define('ScrollBar',["require", "exports", "./lib/dom", "./lib/event", "./lib/eve
             return this;
         };
         return ScrollBar;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = ScrollBar;
 });
@@ -13442,7 +13474,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "../lib/useragent", "../lib/event_emitter"], function (require, exports, dom_1, lang_1, useragent_1, event_emitter_1) {
+define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "../lib/useragent", "../lib/EventEmitterClass"], function (require, exports, dom_1, lang_1, useragent_1, EventEmitterClass_1) {
     "use strict";
     var CHAR_COUNT = 0;
     var FontMetrics = (function (_super) {
@@ -13563,7 +13595,7 @@ define('layer/FontMetrics',["require", "exports", "../lib/dom", "../lib/lang", "
             }
         };
         return FontMetrics;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = FontMetrics;
 });
@@ -13592,7 +13624,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./layer/Gutter", "./layer/Marker", "./layer/Text", "./layer/Cursor", "./VScrollBar", "./HScrollBar", "./RenderLoop", "./layer/FontMetrics", "./lib/event_emitter", './ThemeLink'], function (require, exports, dom_1, config_1, useragent_1, Gutter_1, Marker_1, Text_1, Cursor_1, VScrollBar_1, HScrollBar_1, RenderLoop_1, FontMetrics_1, event_emitter_1, ThemeLink_1) {
+define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/useragent", "./layer/Gutter", "./layer/Marker", "./layer/Text", "./layer/Cursor", "./VScrollBar", "./HScrollBar", "./RenderLoop", "./layer/FontMetrics", "./lib/EventEmitterClass", './ThemeLink'], function (require, exports, dom_1, config_1, useragent_1, Gutter_1, Marker_1, Text_1, Cursor_1, VScrollBar_1, HScrollBar_1, RenderLoop_1, FontMetrics_1, EventEmitterClass_1, ThemeLink_1) {
     "use strict";
     var CHANGE_CURSOR = 1;
     var CHANGE_MARKER = 2;
@@ -14634,7 +14666,7 @@ define('VirtualRenderer',["require", "exports", "./lib/dom", "./config", "./lib/
             this.$cursorLayer.destroy();
         };
         return VirtualRenderer;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = VirtualRenderer;
     config_1.defineOptions(VirtualRenderer.prototype, "renderer", {
@@ -14953,7 +14985,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_emitter'], function (require, exports, net_1, event_emitter_1) {
+define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/EventEmitterClass'], function (require, exports, net_1, EventEmitterClass_1) {
     "use strict";
     var WorkerClient = (function (_super) {
         __extends(WorkerClient, _super);
@@ -15105,7 +15137,7 @@ define('worker/WorkerClient',["require", "exports", '../lib/net', '../lib/event_
             }
         };
         return WorkerClient;
-    })(event_emitter_1.default);
+    })(EventEmitterClass_1.default);
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = WorkerClient;
 });

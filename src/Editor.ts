@@ -66,8 +66,9 @@ import FirstAndLast from "./FirstAndLast";
 import Position from "./Position";
 import Range from "./Range";
 import TextAndSelection from "./TextAndSelection";
-import CursorRange from './CursorRange'
-import EventEmitterClass from "./lib/event_emitter";
+import CursorRange from './CursorRange';
+import EventBus from "./EventBus";
+import EventEmitterClass from "./lib/EventEmitterClass";
 import CommandManager from "./commands/CommandManager";
 import defaultCommands from "./commands/default_commands";
 import {defineOptions, loadModule, resetOptions} from "./config";
@@ -87,9 +88,9 @@ import Tooltip from "./Tooltip";
  * The `Editor` acts as a controller, mediating between the editSession and renderer.
  *
  * @class Editor
- * @extends EventEmitterClass
+ * extends EventEmitterClass
  */
-export default class Editor extends EventEmitterClass {
+export default class Editor implements EventBus {
 
     /**
      * @property renderer
@@ -103,6 +104,13 @@ export default class Editor extends EventEmitterClass {
      * @private
      */
     private session: EditSession;
+
+    /**
+     * @property eventBus
+     * @type EventEmitterClass
+     * @private
+     */
+    private eventBus = new EventEmitterClass();
 
     private $touchHandler: IGestureHandler;
     private $mouseHandler: IGestureHandler;
@@ -143,6 +151,7 @@ export default class Editor extends EventEmitterClass {
     private $opResetTimer;
     private curOp;
     private prevOp: { command?; args?};
+    private lastFileJumpPos;
     private previousCommand;
     private $mergeableCommands: string[];
     private mergeNextCommand;
@@ -175,7 +184,6 @@ export default class Editor extends EventEmitterClass {
      * @param session {EditSession} The model.
      */
     constructor(renderer: VirtualRenderer, session: EditSession) {
-        super();
         this.curOp = null;
         this.prevOp = {};
         this.$mergeableCommands = ["backspace", "del", "insertstring"];
@@ -238,7 +246,8 @@ export default class Editor extends EventEmitterClass {
     }
 
     $initOperationListeners() {
-        function last(a) { return a[a.length - 1] }
+
+        function last<T>(a: T[]): T { return a[a.length - 1] }
 
         this.selections = [];
         this.commands.on("exec", function(e) {
@@ -255,7 +264,7 @@ export default class Editor extends EventEmitterClass {
             }
         }.bind(this), true);
 
-        this.commands.on("afterExec", function(e) {
+        this.commands.on("afterExec", (e) => {
             var command = e.command;
 
             if (command.aceCommandGroup == "fileJump") {
@@ -264,36 +273,39 @@ export default class Editor extends EventEmitterClass {
                 }
             }
             this.endOperation(e);
-        }.bind(this), true);
+        }, true);
 
         this.$opResetTimer = delayedCall(this.endOperation.bind(this));
 
-        this.on("change", function() {
+        this.eventBus.on("change", () => {
             this.curOp || this.startOperation();
             this.curOp.docChanged = true;
-        }.bind(this), true);
+        }, true);
 
-        this.on("changeSelection", function() {
+        this.eventBus.on("changeSelection", () => {
             this.curOp || this.startOperation();
             this.curOp.selectionChanged = true;
-        }.bind(this), true);
+        }, true);
     }
 
-    startOperation(commadEvent) {
+    /**
+     *
+     */
+    private startOperation(commandEvent?) {
         if (this.curOp) {
-            if (!commadEvent || this.curOp.command)
+            if (!commandEvent || this.curOp.command)
                 return;
             this.prevOp = this.curOp;
         }
-        if (!commadEvent) {
+        if (!commandEvent) {
             this.previousCommand = null;
-            commadEvent = {};
+            commandEvent = {};
         }
 
         this.$opResetTimer.schedule();
         this.curOp = {
-            command: commadEvent.command || {},
-            args: commadEvent.args,
+            command: commandEvent.command || {},
+            args: commandEvent.args,
             scrollTop: this.renderer.scrollTop
         };
 
@@ -304,7 +316,8 @@ export default class Editor extends EventEmitterClass {
         this.selections.push(this.selection.toJSON());
     }
 
-    endOperation() {
+    // FIXME: This probably doesn't require the argument.
+    endOperation(unused?: any) {
         if (this.curOp) {
             var command = this.curOp.command;
             if (command && command.scrollIntoView) {
@@ -512,7 +525,7 @@ export default class Editor extends EventEmitterClass {
             this.renderer.updateFull();
         }
 
-        this._signal("changeSession", {
+        this.eventBus._signal("changeSession", {
             session: session,
             oldSession: oldSession
         });
@@ -787,7 +800,7 @@ export default class Editor extends EventEmitterClass {
         this.$isFocused = true;
         this.renderer.showCursor();
         this.renderer.visualizeFocus();
-        this._emit("focus");
+        this.eventBus._emit("focus");
     }
 
     /**
@@ -803,7 +816,7 @@ export default class Editor extends EventEmitterClass {
         this.$isFocused = false;
         this.renderer.hideCursor();
         this.renderer.visualizeBlur();
-        this._emit("blur");
+        this.eventBus._emit("blur");
     }
 
     $cursorChange() {
@@ -829,7 +842,7 @@ export default class Editor extends EventEmitterClass {
         var r: VirtualRenderer = this.renderer;
         r.updateLines(range.start.row, lastRow, this.session.$useWrapMode);
 
-        this._signal("change", e);
+        this.eventBus._signal("change", e);
 
         // update cursor because tab characters can influence the cursor position
         this.$cursorChange();
@@ -864,7 +877,7 @@ export default class Editor extends EventEmitterClass {
         this.$highlightTags();
         this.$updateHighlightActiveLine();
         // TODO; How is signal different from emit?
-        this._signal("changeSelection");
+        this.eventBus._signal("changeSelection");
     }
 
     public $updateHighlightActiveLine() {
@@ -920,7 +933,7 @@ export default class Editor extends EventEmitterClass {
         var re = this.$highlightSelectedWord && this.$getSelectionHighLightRegexp();
         this.session.highlight(re);
 
-        this._signal("changeSelection");
+        this.eventBus._signal("changeSelection");
     }
 
     $getSelectionHighLightRegexp() {
@@ -967,18 +980,18 @@ export default class Editor extends EventEmitterClass {
 
     onChangeBreakpoint(event, editSession: EditSession) {
         this.renderer.updateBreakpoints();
-        this._emit("changeBreakpoint", event);
+        this.eventBus._emit("changeBreakpoint", event);
     }
 
     onChangeAnnotation(event, editSession: EditSession) {
         this.renderer.setAnnotations(editSession.getAnnotations());
-        this._emit("changeAnnotation", event);
+        this.eventBus._emit("changeAnnotation", event);
     }
 
 
     onChangeMode(event, editSession: EditSession) {
         this.renderer.updateText();
-        this._emit("changeMode", event);
+        this.eventBus._emit("changeMode", event);
     }
 
 
@@ -1020,7 +1033,7 @@ export default class Editor extends EventEmitterClass {
      **/
     getCopyText() {
         var text = this.getSelectedText();
-        this._signal("copy", text);
+        this.eventBus._signal("copy", text);
         return text;
     }
 
@@ -1056,7 +1069,7 @@ export default class Editor extends EventEmitterClass {
         if (this.$readOnly)
             return;
         var e = { text: text };
-        this._signal("paste", e);
+        this.eventBus._signal("paste", e);
         this.insert(e.text, true);
     }
 
@@ -1147,6 +1160,43 @@ export default class Editor extends EventEmitterClass {
         if (shouldOutdent) {
             mode.autoOutdent(lineState, session, cursor.row);
         }
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, editor) => any}
+     * @param [capturing] boolean
+     * @return {void}
+     */
+    on(eventName: string, callback: (data: any, editor: Editor) => any, capturing?: boolean): void {
+        this.eventBus.on(eventName, callback, capturing)
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback
+     * @return {void}
+     */
+    off(eventName: string, callback: (data: any, source: Editor) => any): void {
+        this.eventBus.off(eventName, callback)
+    }
+
+    setDefaultHandler(eventName: string, callback: (data: any, source: Editor) => any) {
+        this.eventBus.setDefaultHandler(eventName, callback)
+    }
+
+    _emit(eventName: string, event?: any): void {
+        this.eventBus._emit(eventName, event);
+    }
+
+    _signal(eventName: string, event?: any): void {
+        this.eventBus._signal(eventName, event);
+    }
+
+    hasListeners(eventName: string): boolean {
+        return this.eventBus.hasListeners(eventName);
     }
 
     onTextInput(text: string): void {
@@ -3055,12 +3105,9 @@ class MouseHandler {
     onMouseMove(name: string, e: MouseEvent) {
         // If nobody is listening, avoid the creation of the temporary wrapper.
         // optimization, because mousemove doesn't have a default handler.
-        var listeners = this.editor._eventRegistry && this.editor._eventRegistry['mousemove'];
-        if (!listeners || !listeners.length) {
-            return;
+        if (this.editor.hasListeners('mousemove')) {
+            this.editor._emit(name, new EditorMouseEvent(e, this.editor));
         }
-
-        this.editor._emit(name, new EditorMouseEvent(e, this.editor));
     }
 
     emitEditorMouseWheelEvent(name: string, e: MouseWheelEvent) {

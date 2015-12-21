@@ -44,21 +44,25 @@ declare module Ace {
     interface Command {
     }
 
-    class Document {
+    class Document implements EventBus {
         constructor(text: string | string[]);
+        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any) => any): void;
     }
 
-    class EditSession {
+    class EditSession implements EventBus {
         constructor(doc: Document);
         clearAnnotations(): void;
         getDocument(): Document;
+        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any) => any): void;
         setAnnotations(annotations: Annotation[]): void;
         setLanguageMode(mode: LanguageMode): void;
         setMode(modeName: string): void;
         setUndoManager(undoManager: UndoManager): void;
     }
 
-    class Editor {
+    class Editor implements EventBus {
         container: HTMLElement;
         constructor(renderer: VirtualRenderer, session: EditSession);
         blockIndent(): void;
@@ -74,7 +78,8 @@ declare module Ace {
         insert(text: string, pasted?: boolean): void;
         jumpToMatching(select: boolean);
         moveCursorToPosition(position: Position): void;
-        on(eventName: string, callback): void;
+        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any) => any): void;
         remove(direction: string);
         resize(force?: boolean): void;
         selectAll(): void;
@@ -85,6 +90,11 @@ declare module Ace {
         splitLine(): void;
         toggleBlockComment(): void;
         toggleCommentLines(): void;
+    }
+
+    interface EventBus {
+        on(eventName: string, callback: (event: any) => any, capturing?: boolean): void;
+        off(eventName: string, callback: (event: any) => any): void;
     }
 
     class HashHandler {

@@ -56,12 +56,12 @@ import Document from "../Document";
 import EditSession from "../EditSession";
 import VirtualRenderer from "../VirtualRenderer";
 import Editor from "../Editor";
+import EventBus from "../EventBus";
 import PixelPosition from "../PixelPosition";
 import Range from "../Range";
 import ThemeLink from "../ThemeLink";
 import {addListener} from "../lib/event";
 import {stringRepeat} from "../lib/lang";
-import EventEmitterClass from "../lib/event_emitter";
 import {addCssClass, createElement, ensureHTMLStyleElement, removeCssClass} from "../lib/dom";
 import ListView from "./ListView";
 
@@ -91,8 +91,6 @@ export default class ListViewPopup implements ListView {
      * @param container {Node}
      */
     constructor(container: Node) {
-        // Cache the 'this' pointer for event handlers.
-        var self = this;
 
         function createEditor(el: HTMLDivElement) {
             var renderer = new VirtualRenderer(el);
@@ -135,10 +133,10 @@ export default class ListViewPopup implements ListView {
         }
         el.style.display = "none";
 
-        this.editor.on("mousedown", function(e) {
+        this.editor.on("mousedown", (e) => {
             var pos = e.getDocumentPosition();
-            self.editor.selection.moveToPosition(pos);
-            self.selectionMarker.start.row = self.selectionMarker.end.row = pos.row;
+            this.editor.selection.moveToPosition(pos);
+            this.selectionMarker.start.row = this.selectionMarker.end.row = pos.row;
             e.stop();
         });
 
@@ -146,37 +144,37 @@ export default class ListViewPopup implements ListView {
 
         this.setSelectOnHover(false);
 
-        this.editor.on("mousemove", function(e: MouseEvent) {
-            if (!self.lastMouseEvent) {
-                self.lastMouseEvent = e;
+        this.editor.on("mousemove", (e: MouseEvent) => {
+            if (!this.lastMouseEvent) {
+                this.lastMouseEvent = e;
                 return;
             }
-            if (self.lastMouseEvent.x === e.x && self.lastMouseEvent.y === e.y) {
+            if (this.lastMouseEvent.x === e.x && this.lastMouseEvent.y === e.y) {
                 return;
             }
-            self.lastMouseEvent = e;
-            self.lastMouseEventScrollTop = self.editor.renderer.scrollTop;
-            var row = self.lastMouseEvent.getDocumentPosition().row;
-            if (self.hoverMarker.start.row != row) {
-                if (!self.hoverMarkerId) {
-                    self.setRow(row);
+            this.lastMouseEvent = e;
+            this.lastMouseEventScrollTop = this.editor.renderer.scrollTop;
+            var row = this.lastMouseEvent.getDocumentPosition().row;
+            if (this.hoverMarker.start.row != row) {
+                if (!this.hoverMarkerId) {
+                    this.setRow(row);
                 }
-                self.setHoverMarker(row);
+                this.setHoverMarker(row);
             }
         });
-        this.editor.renderer.on("beforeRender", function() {
-            if (self.lastMouseEvent && self.hoverMarker.start.row != -1) {
-                self.lastMouseEvent.$pos = null;
-                var row = self.lastMouseEvent.getDocumentPosition().row;
-                if (!self.hoverMarkerId) {
-                    self.setRow(row);
+        this.editor.renderer.on("beforeRender", () => {
+            if (this.lastMouseEvent && this.hoverMarker.start.row != -1) {
+                this.lastMouseEvent.$pos = null;
+                var row = this.lastMouseEvent.getDocumentPosition().row;
+                if (!this.hoverMarkerId) {
+                    this.setRow(row);
                 }
-                self.setHoverMarker(row, true);
+                this.setHoverMarker(row, true);
             }
         });
-        this.editor.renderer.on("afterRender", function() {
-            var row = self.getRow();
-            var t = self.editor.renderer.$textLayer;
+        this.editor.renderer.on("afterRender", () => {
+            var row = this.getRow();
+            var t = this.editor.renderer.$textLayer;
             var selected = <HTMLElement>t.element.childNodes[row - t.config.firstRow];
             // FIXME: DGH Don't know why selectedNode is not found.
             if (selected == t['selectedNode'])
@@ -188,17 +186,17 @@ export default class ListViewPopup implements ListView {
                 addCssClass(selected, "ace_selected");
         });
 
-        function hideHoverMarker() { self.setHoverMarker(-1) }
+        var hideHoverMarker = () => { this.setHoverMarker(-1) };
 
         addListener(this.editor.container, "mouseout", hideHoverMarker);
         this.editor.on("hide", hideHoverMarker);
         this.editor.on("changeSelection", hideHoverMarker);
 
-        this.editor.getSession().doc.getLength = function() {
-            return self.data.length;
+        this.editor.getSession().doc.getLength = () => {
+            return this.data.length;
         };
-        this.editor.getSession().doc.getLine = function(i) {
-            var data = self.data[i];
+        this.editor.getSession().doc.getLine = (i: number) => {
+            var data = this.data[i];
             if (typeof data == "string") {
                 return data;
             }
@@ -206,8 +204,8 @@ export default class ListViewPopup implements ListView {
         };
 
         var bgTokenizer: BackgroundTokenizer = this.editor.getSession().bgTokenizer;
-        bgTokenizer.tokenizeRow = function(row: number) {
-            var data = self.data[row];
+        bgTokenizer.tokenizeRow = (row: number) => {
+            var data = this.data[row];
             var tokens = [];
             if (!data)
                 return tokens;
@@ -230,7 +228,7 @@ export default class ListViewPopup implements ListView {
             }
 
             if (data.meta) {
-                var maxW = self.editor.renderer.$size.scrollerWidth / self.editor.renderer.layerConfig.characterWidth;
+                var maxW = this.editor.renderer.$size.scrollerWidth / this.editor.renderer.layerConfig.characterWidth;
                 if (data.meta.length + data.caption.length < maxW - 2)
                     tokens.push({ type: "rightAlignedText", value: data.meta });
             }
@@ -239,8 +237,8 @@ export default class ListViewPopup implements ListView {
         bgTokenizer.updateOnChange = noop;
         bgTokenizer.start = noop;
 
-        this.editor.getSession().$computeWidth = function() {
-            return self.screenWidth = 0;
+        this.editor.getSession().$computeWidth = () => {
+            return this.screenWidth = 0;
         };
 
         this.editor.on("changeSelection", function() {
@@ -311,15 +309,19 @@ export default class ListViewPopup implements ListView {
         return this.data[row];
     }
 
-    on(eventName: string, callback: (event, ee: EventEmitterClass) => any, capturing?: boolean) {
+    on(eventName: string, callback: (event, ee: Editor) => any, capturing?: boolean): void {
         return this.editor.on(eventName, callback, capturing);
+    }
+
+    off(eventName: string, callback: (event, ee: Editor) => any): void {
+        return this.editor.off(eventName, callback);
     }
 
     getTextLeftOffset(): number {
         return this.$borderSize + this.editor.renderer.$padding + this.$imageSize;
     }
 
-    setSelectOnHover(val) {
+    setSelectOnHover(val: boolean): void {
         if (!val) {
             this.hoverMarkerId = this.editor.getSession().addMarker(this.hoverMarker, "ace_line-hover", "fullLine");
         }
@@ -360,14 +362,6 @@ export default class ListViewPopup implements ListView {
         }
     }
 
-    /**
-     * @method importThemeLink
-     * @param themeName {string}
-     * @return {Promise<ThemeLink>}
-     */
-    //importThemeLink(themeName: string): Promise<ThemeLink> {
-    //    return this.editor.importThemeLink(themeName);
-    //}
     setFontSize(fontSize: string): void {
         this.editor.setFontSize(fontSize);
     }
@@ -380,7 +374,7 @@ export default class ListViewPopup implements ListView {
         return this.editor.getSession().getLength();
     }
 
-    get container() {
+    get container(): HTMLElement {
         return this.editor.container;
     }
 }

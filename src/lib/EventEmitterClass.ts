@@ -1,3 +1,5 @@
+import EventBus from "../EventBus";
+
 "use strict";
 
 var stopPropagation = function() { this.propagationStopped = true; };
@@ -10,15 +12,15 @@ var preventDefault = function() { this.defaultPrevented = true; };
  *
  * @class EventEmitterClass
  */
-export default class EventEmitterClass {
+export default class EventEmitterClass implements EventBus {
     /**
      * Each event name has multiple callbacks.
      */
-    public _eventRegistry: { [name: string]: ((event, ee: EventEmitterClass) => any)[] };
+    public _eventRegistry: { [name: string]: ((event, ee: EventBus) => any)[] };
     /**
      * There may be one default handler for an event too.
      */
-    private _defaultHandlers: { [name: string]: (event, ee: EventEmitterClass) => any };
+    private _defaultHandlers: { [name: string]: (event, ee: EventBus) => any };
 
     /**
      * @class EventEmitterClass
@@ -78,6 +80,17 @@ export default class EventEmitterClass {
     }
 
     /**
+     * @method hasListeners
+     * @param eventName {string}
+     * @return {boolean}
+     */
+    hasListeners(eventName: string): boolean {
+        var registry = this._eventRegistry;
+        var listeners = registry && registry[eventName];
+        return listeners && listeners.length > 0;
+    }
+
+    /**
      * @method _emit
      * @param eventName {string}
      * @param event {any}
@@ -105,11 +118,12 @@ export default class EventEmitterClass {
         // It's a bit expensive though?
         listeners = listeners.slice();
         for (var i = 0, iLength = listeners.length; i < iLength; i++) {
+            // FIXME: When used standalone, EventEmitter is not the source.
             listeners[i](e, this);
         }
     }
 
-    once(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+    once(eventName: string, callback: (event, ee: EventBus) => any) {
         var _self = this;
         callback && this.addEventListener(eventName, function newCallback() {
             _self.removeEventListener(eventName, newCallback);
@@ -117,7 +131,7 @@ export default class EventEmitterClass {
         });
     }
 
-    setDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+    setDefaultHandler(eventName: string, callback: (event, ee: EventBus) => any) {
         // FIXME: All this casting is creepy.
         var handlers: any = this._defaultHandlers
         if (!handlers) {
@@ -137,7 +151,7 @@ export default class EventEmitterClass {
         handlers[eventName] = callback;
     }
 
-    removeDefaultHandler(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+    removeDefaultHandler(eventName: string, callback: (event, ee: EventBus) => any) {
         // FIXME: All this casting is creepy.
         var handlers: any = this._defaultHandlers
         if (!handlers) {
@@ -158,7 +172,7 @@ export default class EventEmitterClass {
     }
 
     // Discourage usage.
-    private addEventListener(eventName: string, callback: (event, ee: EventEmitterClass) => void, capturing?: boolean) {
+    private addEventListener(eventName: string, callback: (event, ee: EventBus) => void, capturing?: boolean) {
         this._eventRegistry = this._eventRegistry || {};
 
         var listeners = this._eventRegistry[eventName];
@@ -177,12 +191,19 @@ export default class EventEmitterClass {
         return callback;
     }
 
-    on(eventName: string, callback: (event, ee: EventEmitterClass) => any, capturing?: boolean) {
-        return this.addEventListener(eventName, callback, capturing);
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: EventBus) => any}
+     * @param [capturing] {boolean}
+     * @retutrn {void}
+     */
+    on(eventName: string, callback: (event, source: EventBus) => any, capturing?: boolean): void {
+        this.addEventListener(eventName, callback, capturing);
     }
 
     // Discourage usage.
-    private removeEventListener(eventName, callback: (event, ee: EventEmitterClass) => any) {
+    private removeEventListener(eventName, callback: (event, ee: EventBus) => any) {
         this._eventRegistry = this._eventRegistry || {};
 
         var listeners = this._eventRegistry[eventName];
@@ -196,11 +217,18 @@ export default class EventEmitterClass {
     }
 
     // Discourage usage.
-    private removeListener(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+    private removeListener(eventName: string, callback: (event, ee: EventBus) => any) {
         return this.removeEventListener(eventName, callback);
     }
 
-    public off(eventName: string, callback: (event, ee: EventEmitterClass) => any) {
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: EventBus) => any}
+     * @param [capturing] {boolean}
+     * @return {void}
+     */
+    public off(eventName: string, callback: (event, ee: EventBus) => any): void {
         return this.removeEventListener(eventName, callback);
     }
 

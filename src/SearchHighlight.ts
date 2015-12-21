@@ -53,6 +53,7 @@
 "use strict";
 
 import { getMatchOffsets } from "./lib/lang";
+import DynamicMarker from "./DynamicMarker";
 import Range from "./Range";
 import EditSession from "./EditSession";
 import Marker from "./layer/Marker";
@@ -64,10 +65,10 @@ var MAX_RANGES = 500;
 /**
  * @class SearchHighlight
  */
-export default class SearchHighlight {
+export default class SearchHighlight implements DynamicMarker {
     private regExp: RegExp;
     public clazz: string;
-    private type: string;
+    public type: string;
     private cache: Range[][];
 
     /**

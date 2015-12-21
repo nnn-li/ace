@@ -54,7 +54,7 @@
 
 import { createElement } from "./lib/dom";
 import { addListener, preventDefault } from "./lib/event";
-import EventEmitterClass from "./lib/event_emitter";
+import EventEmitterClass from "./lib/EventEmitterClass";
 
 /**
  * An abstract class representing a native scrollbar control.

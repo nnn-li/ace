@@ -53,7 +53,6 @@
 import {copyObject} from "./lib/lang";
 import {implement} from "./lib/oop";
 import {loadScript} from "./lib/net";
-import EventEmitterClass from './lib/event_emitter';
 
 var global = (function() {
     return this || typeof window !== 'undefined' && window;
@@ -86,21 +85,6 @@ export function set(key: string, value) {
 export function all() {
     return copyObject(options);
 }
-
-// module loading
-// FIXME: This is a lazy way of transferring functions from EventEmitter to config.
-// It breaks TypeScript analysis. Use the explicit approach as below, as needed.
-//declare var exports: any;
-//var eventEmitter = new EventEmitterClass();
-//implement(exports, eventEmitter);
-
-//export function _emit(eventName: string, e?: any) {
-//    return eventEmitter._emit(eventName, e);
-//}
-
-//export function _signal(eventName: string, e?: any) {
-//    return eventEmitter._signal(eventName, e);
-//}
 
 /**
  *
@@ -150,7 +134,7 @@ export var $loading: { [name: string]: ((m) => any)[] } = {};
 // FIXME. It would be more type-safe if the first argument where an array of strings.
 // What is the type of the module returned by the require function?
 // We're actually going to insert a script tag.
-export function loadModule(what: string|string[], onLoad: (m) => any, doc: Document = document) {
+export function loadModule(what: string | string[], onLoad: (m) => any, doc: Document = document) {
     var module;
     var moduleName: string;
     var moduleType: string;
@@ -159,7 +143,7 @@ export function loadModule(what: string|string[], onLoad: (m) => any, doc: Docum
         moduleName = what[1];
     }
     else {
-      moduleName = what;
+        moduleName = what;
     }
 
     try {
