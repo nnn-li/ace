@@ -1,6 +1,6 @@
 {
   "name": "ace",
-  "version": "0.1.88",
+  "version": "0.1.89",
   "description": "Browser Code Editor targeting ES6 written in TypeScript.",
   "author":
   {

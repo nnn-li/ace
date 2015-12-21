@@ -47,6 +47,49 @@ declare module Ace {
     interface Command {
     }
 
+    interface Completion {
+
+        /**
+         *
+         */
+        value?: string;
+
+        /**
+         *
+         */
+        caption?: string;
+
+        /**
+         *
+         */
+        snippet?: string;
+
+        /**
+         *
+         */
+        matchMask?: number;
+
+        /**
+         *
+         */
+        exactMatch?: number;
+
+        /**
+         *
+         */
+        score?: number;
+
+        /**
+         *
+         */
+        identifierRegex?: RegExp;
+
+        /**
+         *
+         */
+        meta?: string;
+    }
+
     interface Delta {
     }
 
