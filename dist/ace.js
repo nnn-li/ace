@@ -10646,20 +10646,21 @@ define('EditSession',["require", "exports", "./lib/lang", "./config", "./lib/Eve
             return this.doc.remove(range);
         };
         EditSession.prototype.undoChanges = function (deltas, dontSelect) {
+            var _this = this;
             if (!deltas.length)
                 return;
             this.$fromUndo = true;
             var lastUndoRange = null;
             for (var i = deltas.length - 1; i != -1; i--) {
                 var delta = deltas[i];
-                if (delta.group == "doc") {
+                if (delta.group === "doc") {
                     this.doc.revertDeltas(delta.deltas);
                     lastUndoRange =
                         this.$getUndoSelection(delta.deltas, true, lastUndoRange);
                 }
                 else {
                     delta.deltas.forEach(function (foldDelta) {
-                        this.addFolds(foldDelta.folds);
+                        _this.addFolds(foldDelta.folds);
                     }, this);
                 }
             }

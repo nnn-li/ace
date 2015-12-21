@@ -521,6 +521,7 @@ export default class EditSession implements EventBus<EditSession> {
      * @method getTokenAt
      * @param {Number} row The row number to retrieve from
      * @param {Number} column The column number to retrieve from.
+     * @return {Token}
      */
     public getTokenAt(row: number, column?: number): Token {
         if (this.bgTokenizer) {
@@ -691,45 +692,55 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Returns `true` if the character at the position is a soft tab.
-     * @param {Object} position The position to check
      *
-     *
+     * @method isTabStop
+     * @param position {Position} The position to check.
+     * @return {boolean}
      */
-    public isTabStop(position: { column: number }) {
+    public isTabStop(position: Position): boolean {
         return this.$useSoftTabs && (position.column % this.$tabSize === 0);
     }
 
     /**
-    * Pass in `true` to enable overwrites in your session, or `false` to disable.
-    *
-    * If overwrites is enabled, any text you enter will type over any text after it. If the value of `overwrite` changes, this function also emites the `changeOverwrite` event.
-    *
-    * @param {Boolean} overwrite Defines whether or not to set overwrites
-    *
-    *
-    **/
-    public setOverwrite(overwrite: boolean) {
+     * Pass in `true` to enable overwrites in your session, or `false` to disable.
+     *
+     * If overwrites is enabled, any text you enter will type over any text after it. If the value of `overwrite` changes, this function also emites the `changeOverwrite` event.
+     *
+     * @method setOverwrite
+     * @param overwrite {boolean} Defines whether or not to set overwrites.
+     * @return {void}
+     */
+    public setOverwrite(overwrite: boolean): void {
         this.setOption("overwrite", overwrite);
     }
 
     /**
-    * Returns `true` if overwrites are enabled; `false` otherwise.
-    **/
+     * Returns `true` if overwrites are enabled; `false` otherwise.
+     *
+     * @method getOverwrite
+     * @return {boolean}
+     */
     public getOverwrite(): boolean {
         return this.$overwrite;
     }
 
     /**
-    * Sets the value of overwrite to the opposite of whatever it currently is.
-    **/
+     * Sets the value of overwrite to the opposite of whatever it currently is.
+     *
+     * @method toggleOverwrite
+     * @return {void}
+     */
     public toggleOverwrite(): void {
         this.setOverwrite(!this.$overwrite);
     }
 
     /**
      * Adds `className` to the `row`, to be used for CSS stylings and whatnot.
+     *
+     * @method addGutterDecoration
      * @param {Number} row The row number
      * @param {String} className The class to add
+     * @return {void}
      */
     public addGutterDecoration(row: number, className: string): void {
         if (!this.$decorations[row]) {
@@ -744,8 +755,11 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Removes `className` from the `row`.
+     *
+     * @method removeGutterDecoration
      * @param {Number} row The row number
      * @param {String} className The class to add
+     * @return {void}
      */
     public removeGutterDecoration(row: number, className: string): void {
         this.$decorations[row] = (this.$decorations[row] || "").replace(" " + className, "");
@@ -756,20 +770,23 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Returns an array of numbers, indicating which rows have breakpoints.
-    * @return {[Number]}
-    **/
+     * Returns an array of strings, indicating which rows have breakpoints.
+     *
+     * @method getBreakpoints
+     * @return {string[]}
+     */
     private getBreakpoints(): string[] {
         return this.$breakpoints;
     }
 
     /**
-    * Sets a breakpoint on every row number given by `rows`. This function also emites the `'changeBreakpoint'` event.
-    * @param {Array} rows An array of row indices
-    *
-    *
-    *
-    **/
+     * Sets a breakpoint on every row number given by `rows`.
+     * This function also emites the `'changeBreakpoint'` event.
+     *
+     * @method setBreakpoints
+     * @param {number[]} rows An array of row indices
+     * @return {void}
+     */
     private setBreakpoints(rows: number[]): void {
         this.$breakpoints = [];
         for (var i = 0; i < rows.length; i++) {
@@ -782,9 +799,13 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-     * Removes all breakpoints on the rows. This function also emites the `'changeBreakpoint'` event.
+     * Removes all breakpoints on the rows.
+     * This function also emites the `'changeBreakpoint'` event.
+     *
+     * @method clearBreakpoints
+     * @return {void}
      */
-    private clearBreakpoints() {
+    private clearBreakpoints(): void {
         this.$breakpoints = [];
         /**
          * @event changeBreakpoint
@@ -793,12 +814,14 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Sets a breakpoint on the row number given by `rows`. This function also emites the `'changeBreakpoint'` event.
-    * @param {Number} row A row index
-    * @param {String} className Class of the breakpoint
-    *
-    *
-    **/
+     * Sets a breakpoint on the row number given by `rows`.
+     * This function also emites the `'changeBreakpoint'` event.
+     *
+     * @method setBreakpoint
+     * @param {Number} row A row index
+     * @param {String} className Class of the breakpoint
+     * @return {void}
+     */
     private setBreakpoint(row: number, className: string): void {
         if (className === undefined)
             className = "ace_breakpoint";
@@ -813,11 +836,13 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Removes a breakpoint on the row number given by `rows`. This function also emites the `'changeBreakpoint'` event.
-    * @param {Number} row A row index
-    *
-    *
-    **/
+     * Removes a breakpoint on the row number given by `rows`.
+     * This function also emites the `'changeBreakpoint'` event.
+     *
+     * @method clearBreakpoint
+     * @param {Number} row A row index
+     * @return {void}
+     */
     private clearBreakpoint(row: number): void {
         delete this.$breakpoints[row];
         /**
@@ -827,15 +852,16 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Adds a new marker to the given `Range`. If `inFront` is `true`, a front marker is defined, and the `'changeFrontMarker'` event fires; otherwise, the `'changeBackMarker'` event fires.
-    * @param {Range} range Define the range of the marker
-    * @param {String} clazz Set the CSS class for the marker
-    * @param {Function | String} type Identify the type of the marker.
-    * @param {Boolean} inFront Set to `true` to establish a front marker
-    *
-    *
-    * @return {Number} The new marker id
-    **/
+     * Adds a new marker to the given `Range`.
+     * If `inFront` is `true`, a front marker is defined, and the `'changeFrontMarker'` event fires; otherwise, the `'changeBackMarker'` event fires.
+     *
+     * @method addMarker
+     * @param {Range} range Define the range of the marker
+     * @param {String} clazz Set the CSS class for the marker
+     * @param {Function | String} type Identify the type of the marker.
+     * @param {Boolean} inFront Set to `true` to establish a front marker
+     * @return {Number} The new marker id
+     */
     public addMarker(range: Range, clazz: string, type: string, inFront?: boolean): number {
         var id = this.$markerId++;
 
@@ -901,12 +927,14 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Removes the marker with the specified ID. If this marker was in front, the `'changeFrontMarker'` event is emitted. If the marker was in the back, the `'changeBackMarker'` event is emitted.
-    * @param {Number} markerId A number representing a marker
-    *
-    *
-    *
-    **/
+     * Removes the marker with the specified ID.
+     * If this marker was in front, the `'changeFrontMarker'` event is emitted.
+     * If the marker was in the back, the `'changeBackMarker'` event is emitted.
+     *
+     * @method removeMarker
+     * @param {Number} markerId A number representing a marker
+     * @return {void}
+     */
     public removeMarker(markerId: number): void {
         var marker: DynamicMarker = this.$frontMarkers[markerId] || this.$backMarkers[markerId];
         if (!marker)
@@ -921,8 +949,10 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Returns an array containing the IDs of all the markers, either front or back.
+     *
+     * @method getMarkers
      * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers.
-     * @return {Array}
+     * @return {{[id: number]: DynamicMarker}}
      */
     public getMarkers(inFront: boolean): { [id: number]: DynamicMarker } {
         return inFront ? this.$frontMarkers : this.$backMarkers;
@@ -1320,17 +1350,23 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * [Returns the value of the distance between the top of the editor and the topmost part of the visible content.]{: #EditSession.getScrollTop}
-    * @return {Number}
-    **/
+     * Returns the value of the distance between the top of the editor and the topmost part of the visible content.
+     *
+     * @method getScrollTop
+     * @return {number}
+     */
     public getScrollTop(): number {
         return this.$scrollTop;
     }
 
     /**
-    * [Sets the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.setScrollLeft}
-    **/
-    public setScrollLeft(scrollLeft: number) {
+     * Sets the value of the distance between the left of the editor and the leftmost part of the visible content.
+     *
+     * @method setScrollLeft
+     * @param scrollLeft {number}
+     * @return {void}
+     */
+    public setScrollLeft(scrollLeft: number): void {
         // scrollLeft = Math.round(scrollLeft);
         if (this.$scrollLeft === scrollLeft || isNaN(scrollLeft))
             return;
@@ -1343,17 +1379,21 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * [Returns the value of the distance between the left of the editor and the leftmost part of the visible content.]{: #EditSession.getScrollLeft}
-    * @return {Number}
-    **/
+     * Returns the value of the distance between the left of the editor and the leftmost part of the visible content.
+     *
+     * @method getScrollLeft
+     * @return {number}
+     */
     public getScrollLeft(): number {
         return this.$scrollLeft;
     }
 
     /**
-    * Returns the width of the screen.
-    * @return {Number}
-    **/
+     * Returns the width of the screen.
+     *
+     * @method getScreenWidth
+     * @return {number}
+     */
     public getScreenWidth(): number {
         this.$computeWidth();
         if (this.lineWidgets)
@@ -1361,6 +1401,11 @@ export default class EditSession implements EventBus<EditSession> {
         return this.screenWidth;
     }
 
+    /**
+     * @method getLineWidgetMaxWidth
+     * @return {number}
+     * @private
+     */
     private getLineWidgetMaxWidth(): number {
         if (this.lineWidgetsWidth != null) return this.lineWidgetsWidth;
         var width = 0;
@@ -1407,43 +1452,46 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-     * Returns a verbatim copy of the given line as it is in the document
-     * @param {Number} row The row to retrieve from
+     * Returns a verbatim copy of the given line as it is in the document.
      *
-    *
-     * @return {String}
-    *
-    **/
+     * @method getLine
+     * @param row {number} The row to retrieve from.
+     * @return {string}
+     */
     public getLine(row: number): string {
         return this.doc.getLine(row);
     }
 
     /**
-     * Returns an array of strings of the rows between `firstRow` and `lastRow`. This function is inclusive of `lastRow`.
+     * Returns an array of strings of the rows between `firstRow` and `lastRow`.
+     * This function is inclusive of `lastRow`.
+     *
+     * @method getLines
      * @param {Number} firstRow The first row index to retrieve
      * @param {Number} lastRow The final row index to retrieve
-     *
-     * @return {[String]}
-     *
-     **/
+     * @return {string[]}
+     */
     public getLines(firstRow: number, lastRow: number): string[] {
         return this.doc.getLines(firstRow, lastRow);
     }
 
     /**
      * Returns the number of rows in the document.
-     * @return {Number}
-     **/
+     *
+     * @method getLength
+     * @return {number}
+     */
     public getLength(): number {
         return this.doc.getLength();
     }
 
     /**
      * {:Document.getTextRange.desc}
-     * @param {Range} range The range to work with
      *
+     * @method getTextRange
+     * @param range {Range} The range to work with.
      * @return {string}
-     **/
+     */
     public getTextRange(range: Range): string {
         return this.doc.getTextRange(range || this.selection.getRange());
     }
@@ -1475,13 +1523,15 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Reverts previous changes to your document.
-     * @param {Array} deltas An array of previous changes
+     *
+     * @method undoChanges
+     * @param deltas {Delta[]} An array of previous changes.
      * @param {Boolean} dontSelect [If `true`, doesn't select the range of where the change occured]{: #dontSelect}
      *
      *
      * @return {Range}
     **/
-    public undoChanges(deltas, dontSelect?: boolean): Range {
+    public undoChanges(deltas: Delta[], dontSelect?: boolean): Range {
         if (!deltas.length)
             return;
 
@@ -1489,13 +1539,13 @@ export default class EditSession implements EventBus<EditSession> {
         var lastUndoRange: Range = null;
         for (var i = deltas.length - 1; i != -1; i--) {
             var delta = deltas[i];
-            if (delta.group == "doc") {
+            if (delta.group === "doc") {
                 this.doc.revertDeltas(delta.deltas);
                 lastUndoRange =
                     this.$getUndoSelection(delta.deltas, true, lastUndoRange);
             }
             else {
-                delta.deltas.forEach(function(foldDelta) {
+                delta.deltas.forEach((foldDelta) => {
                     this.addFolds(foldDelta.folds);
                 }, this);
             }
@@ -1510,13 +1560,13 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Re-implements a previously undone change to your document.
-     * @param {Array} deltas An array of previous changes
-     * @param {Boolean} dontSelect {:dontSelect}
      *
-    *
+     * @method redoChanges
+     * @param deltas {Delta[]} An array of previous changes
+     * @param [dontSelect] {boolean}
      * @return {Range}
-    **/
-    public redoChanges(deltas, dontSelect?: boolean): Range {
+     */
+    public redoChanges(deltas: Delta[], dontSelect?: boolean): Range {
         if (!deltas.length)
             return;
 
@@ -1540,9 +1590,11 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Enables or disables highlighting of the range where an undo occurred.
-     * @param {Boolean} enable If `true`, selects the range of the reinserted change
-    *
-    **/
+     *
+     * @method setUndoSelect
+     * @param enable {boolean} If `true`, selects the range of the reinserted change.
+     * @return {void}
+     */
     private setUndoSelect(enable: boolean): void {
         this.$undoSelect = enable;
     }
@@ -1623,18 +1675,17 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Moves a range of text from the given range to the given position. `toPosition` is an object that looks like this:
+     * Moves a range of text from the given range to the given position. `toPosition` is an object that looks like this:
      *  ```json
-    *    { row: newRowLocation, column: newColumnLocation }
+     *    { row: newRowLocation, column: newColumnLocation }
      *  ```
-     * @param {Range} fromRange The range of text you want moved within the document
-     * @param {Object} toPosition The location (row and column) where you want to move the text to
+     * @method moveText
+     * @param fromRange {Range} The range of text you want moved within the document
+     * @param toPosition {Position} The location (row and column) where you want to move the text to.
+     * @param copy {boolean}
      * @return {Range} The new range where the text was moved to.
-    *
-    *
-    *
-    **/
-    public moveText(fromRange: Range, toPosition: Position, copy) {
+     */
+    public moveText(fromRange: Range, toPosition: Position, copy: boolean): Range {
         var text = this.getTextRange(fromRange);
         var folds = this.getFoldsInRange(fromRange);
         var rowDiff: number;
@@ -1683,15 +1734,16 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Indents all the rows, from `startRow` to `endRow` (inclusive), by prefixing each row with the token in `indentString`.
-    *
-    * If `indentString` contains the `'\t'` character, it's replaced by whatever is defined by [[EditSession.getTabString `getTabString()`]].
-    * @param {Number} startRow Starting row
-    * @param {Number} endRow Ending row
-    * @param {String} indentString The indent token
-    *
-    *
-    **/
+     * Indents all the rows, from `startRow` to `endRow` (inclusive), by prefixing each row with the token in `indentString`.
+     *
+     *  If `indentString` contains the `'\t'` character, it's replaced by whatever is defined by [[EditSession.getTabString `getTabString()`]].
+     *
+     * @method indentRows
+     * @param {Number} startRow Starting row
+     * @param {Number} endRow Ending row
+     * @param {String} indentString The indent token
+     * @return {void}
+     */
     public indentRows(startRow: number, endRow: number, indentString: string): void {
         indentString = indentString.replace(/\t/g, this.getTabString());
         for (var row = startRow; row <= endRow; row++)
@@ -1699,11 +1751,13 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Outdents all the rows defined by the `start` and `end` properties of `range`.
-    * @param {Range} range A range of rows
-    *
-    *
-    **/
+     * Outdents all the rows defined by the `start` and `end` properties of `range`.
+     *
+     * @method outdentRows
+     * @param range {Range} A range of rows.
+     * @return {void}
+     *
+     */
     public outdentRows(range: Range): void {
         var rowRange = range.collapseRows();
         var deleteRange = new Range(0, 0, 0, 0);
@@ -1758,15 +1812,16 @@ export default class EditSession implements EventBus<EditSession> {
         folds.length && this.addFolds(folds);
         return diff;
     }
+
     /**
-    * Shifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.
-    * @param {Number} firstRow The starting row to move up
-    * @param {Number} lastRow The final row to move up
-    * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
-    *
-    * @related Document.insertLines
-    *
-    **/
+     * Shifts all the lines in the document up one, starting from `firstRow` and ending at `lastRow`.
+     * @param {Number} firstRow The starting row to move up
+     * @param {Number} lastRow The final row to move up
+     * @return {Number} If `firstRow` is less-than or equal to 0, this function returns 0. Otherwise, on success, it returns -1.
+     *
+     * @related Document.insertLines
+     *
+     */
     private moveLinesUp(firstRow: number, lastRow: number): number {
         return this.$moveLines(firstRow, lastRow, -1);
     }
@@ -1784,13 +1839,13 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Duplicates all the text between `firstRow` and `lastRow`.
-    * @param {Number} firstRow The starting row to duplicate
-    * @param {Number} lastRow The final row to duplicate
-    * @return {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
-    *
-    *
-    **/
+     * Duplicates all the text between `firstRow` and `lastRow`.
+     *
+     * @method duplicateLines
+     * @param {Number} firstRow The starting row to duplicate
+     * @param {Number} lastRow The final row to duplicate
+     * @return {Number} Returns the number of new rows added; in other words, `lastRow - firstRow + 1`.
+     */
     public duplicateLines(firstRow: number, lastRow: number): number {
         return this.$moveLines(firstRow, lastRow, 0);
     }
@@ -1831,6 +1886,11 @@ export default class EditSession implements EventBus<EditSession> {
         };
     }
 
+    /**
+     * @method $clipRangeToDocument
+     * @param range {Range}
+     * @return {Range}
+     */
     public $clipRangeToDocument(range: Range): Range {
         if (range.start.row < 0) {
             range.start.row = 0;
@@ -1884,9 +1944,11 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Returns `true` if wrap mode is being used; `false` otherwise.
-    * @return {Boolean}
-    **/
+     * Returns `true` if wrap mode is being used; `false` otherwise.
+     *
+     * @method getUseWrapMode
+     * @return {Boolean}
+     */
     getUseWrapMode(): boolean {
         return this.$useWrapMode;
     }
@@ -1896,12 +1958,15 @@ export default class EditSession implements EventBus<EditSession> {
     // in that direction. Or set both parameters to the same number to pin
     // the limit to that value.
     /**
-     * Sets the boundaries of wrap. Either value can be `null` to have an unconstrained wrap, or, they can be the same number to pin the limit. If the wrap limits for `min` or `max` are different, this method also emits the `'changeWrapMode'` event.
+     * Sets the boundaries of wrap.
+     * Either value can be `null` to have an unconstrained wrap, or, they can be the same number to pin the limit.
+     * If the wrap limits for `min` or `max` are different, this method also emits the `'changeWrapMode'` event.
+     *
+     * @method setWrapLimitRange
      * @param {Number} min The minimum wrap value (the left side wrap)
      * @param {Number} max The maximum wrap value (the right side wrap)
-     *
-    *
-    **/
+     * @return {void}
+     */
     setWrapLimitRange(min: number, max: number): void {
         if (this.$wrapLimitRange.min !== min || this.$wrapLimitRange.max !== max) {
             this.$wrapLimitRange = {
@@ -1918,12 +1983,12 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * This should generally only be called by the renderer when a resize is detected.
-    * @param {Number} desiredLimit The new wrap limit
-    * @return {Boolean}
-    *
-    * @private
-    **/
+     * This should generally only be called by the renderer when a resize is detected.
+     * @param {Number} desiredLimit The new wrap limit
+     * @return {Boolean}
+     *
+     * @private
+     */
     public adjustWrapLimit(desiredLimit: number, $printMargin: number): boolean {
         var limits = this.$wrapLimitRange
         if (limits.max < 0)
@@ -2365,11 +2430,12 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Returns number of screenrows in a wrapped line.
-    * @param {Number} row The row number to check
-    *
-    * @return {Number}
-    **/
+     * Returns number of screenrows in a wrapped line.
+     *
+     * @method getRowLength
+     * @param row {number} The row number to check
+     * @return {Number}
+     */
     public getRowLength(row: number): number {
         if (this.lineWidgets)
             var h = this.lineWidgets[row] && this.lineWidgets[row].rowCount || 0;
@@ -2382,6 +2448,11 @@ export default class EditSession implements EventBus<EditSession> {
         }
     }
 
+    /**
+     * @method getRowLineCount
+     * @param row {number}
+     * @return {number}
+     */
     public getRowLineCount(row: number): number {
         if (!this.$useWrapMode || !this.$wrapData[row]) {
             return 1;
@@ -2394,7 +2465,7 @@ export default class EditSession implements EventBus<EditSession> {
     public getRowWrapIndent(screenRow: number) {
         if (this.$useWrapMode) {
             var pos = this.screenToDocumentPosition(screenRow, Number.MAX_VALUE);
-            var splits = this.$wrapData[pos.row];
+            var splits: number[] = this.$wrapData[pos.row];
             // FIXME: indent does not exists on number[]
             return splits.length && splits[0] < pos.column ? splits['indent'] : 0;
         }
@@ -2405,55 +2476,65 @@ export default class EditSession implements EventBus<EditSession> {
 
     /**
      * Returns the position (on screen) for the last character in the provided screen row.
-     * @param {Number} screenRow The screen row to check
-     * @return {Number}
+     *
+     * @method getScreenLastRowColumn
+     * @param screenRow {number} The screen row to check
+     * @return {number}
      *
      * @related EditSession.documentToScreenColumn
-    **/
+     */
     public getScreenLastRowColumn(screenRow: number): number {
         var pos = this.screenToDocumentPosition(screenRow, Number.MAX_VALUE);
         return this.documentToScreenColumn(pos.row, pos.column);
     }
 
     /**
-    * For the given document row and column, this returns the column position of the last screen row.
-    * @param {Number} docRow
-    *
-    * @param {Number} docColumn
-    **/
+     * For the given document row and column, this returns the column position of the last screen row.
+     *
+     * @method getDocumentLastRowColumn
+     * @param docRow {number}
+     * @param docColumn {number}
+     * @return {number}
+     */
     public getDocumentLastRowColumn(docRow: number, docColumn: number): number {
         var screenRow = this.documentToScreenRow(docRow, docColumn);
         return this.getScreenLastRowColumn(screenRow);
     }
 
     /**
-    * For the given document row and column, this returns the document position of the last row.
-    * @param {Number} docRow
-    * @param {Number} docColumn
-    *
-    *
-    **/
-    public getDocumentLastRowColumnPosition(docRow, docColumn) {
+     * For the given document row and column, this returns the document position of the last row.
+     *
+     * @method getDocumentLastRowColumnPosition
+     * @param {Number} docRow
+     * @param {Number} docColumn
+     * @return {Position}
+     */
+    public getDocumentLastRowColumnPosition(docRow: number, docColumn: number): Position {
         var screenRow = this.documentToScreenRow(docRow, docColumn);
         return this.screenToDocumentPosition(screenRow, Number.MAX_VALUE / 10);
     }
 
     /**
-    * For the given row, this returns the split data.
-    * @return {String}
-    **/
+     * For the given row, this returns the split data.
+     *
+     * @method getRowSplitData
+     * @param row {number}
+     * @return {String}
+     */
     public getRowSplitData(row: number): number[] {
         if (!this.$useWrapMode) {
             return undefined;
-        } else {
+        }
+        else {
             return this.$wrapData[row];
         }
     }
 
     /**
      * The distance to the next tab stop at the specified screen column.
-     * @methos getScreenTabSize
-     * @param screenColumn {number} The screen column to check
+     *
+     * @method getScreenTabSize
+     * @param screenColumn {number} The screen column to check.
      * @return {number}
      */
     public getScreenTabSize(screenColumn: number): number {
@@ -2571,7 +2652,7 @@ export default class EditSession implements EventBus<EditSession> {
      * @method documentToScreenPosition
      * @param {Number} docRow The document row to check
      * @param {Number} docColumn The document column to check
-     * @return {Object} The object returned by this method has two properties: `row` and `column`.
+     * @return {Position} The object returned by this method has two properties: `row` and `column`.
      */
     public documentToScreenPosition(docRow: number, docColumn: number): Position {
         var pos: { row: number; column: number };
@@ -2669,25 +2750,34 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * For the given document row and column, returns the screen column.
-    * @param {Number} docRow
-    * @param {Number} docColumn
-    * @return {Number}
-    *
-    **/
+     * For the given document row and column, returns the screen column.
+     *
+     * @method documentToScreenColumn
+     * @param {Number} docRow
+     * @param {Number} docColumn
+     * @return {Number}
+     */
     public documentToScreenColumn(docRow: number, docColumn: number): number {
         return this.documentToScreenPosition(docRow, docColumn).column;
     }
 
     /**
-    * For the given document row and column, returns the screen row.
-    * @param {Number} docRow
-    * @param {Number} docColumn
-    **/
+     * For the given document row and column, returns the screen row.
+     *
+     * @method documentToScreenRow
+     * @param {Number} docRow
+     * @param {Number} docColumn
+     * @return {number}
+     */
     public documentToScreenRow(docRow: number, docColumn: number): number {
         return this.documentToScreenPosition(docRow, docColumn).row;
     }
 
+    /**
+     * @method documentToScreenRange
+     * @param range {Range}
+     * @return {Range}
+     */
     public documentToScreenRange(range: Range): Range {
         var screenPosStart = this.documentToScreenPosition(range.start.row, range.start.column);
         var screenPosEnd = this.documentToScreenPosition(range.end.row, range.end.column);
@@ -2695,9 +2785,11 @@ export default class EditSession implements EventBus<EditSession> {
     }
 
     /**
-    * Returns the length of the screen.
-    * @return {Number}
-    **/
+     * Returns the length of the screen.
+     *
+     * @method getScreenLength
+     * @return {number}
+     */
     public getScreenLength(): number {
         var screenRows = 0;
         var fold: FoldLine = null;
@@ -2794,10 +2886,17 @@ export default class EditSession implements EventBus<EditSession> {
         "markbeginend": 1
     }
     $foldStyle = "markbegin";
+
     /*
      * Looks up a fold at a given row/column. Possible values for side:
      *   -1: ignore a fold if fold.start = row/column
      *   +1: ignore a fold if fold.end = row/column
+     *
+     * @method getFoldAt
+     * @param row {number}
+     * @param column {number}
+     * @param [side] {number}
+     * @return {Fold}
      */
     getFoldAt(row: number, column: number, side?: number): Fold {
         var foldLine = this.getFoldLine(row);
@@ -2822,6 +2921,9 @@ export default class EditSession implements EventBus<EditSession> {
     /*
      * Returns all folds in the given range. Note, that this will return folds
      *
+     * @method getFoldsInRange
+     * @param range {Range}
+     * @return {Fold[]}
      */
     getFoldsInRange(range: Range): Fold[] {
         var start = range.start;
@@ -2867,6 +2969,9 @@ export default class EditSession implements EventBus<EditSession> {
         return foundFolds;
     }
 
+    /**
+     * @method getFoldsInRangeList
+     */
     getFoldsInRangeList(ranges): Fold[] {
         if (Array.isArray(ranges)) {
             var folds: Fold[] = [];
@@ -2880,8 +2985,11 @@ export default class EditSession implements EventBus<EditSession> {
         return folds;
     }
     
-    /*
+    /**
      * Returns all folds in the document
+     *
+     * @method getAllFolds
+     * @return {Fold[]}
      */
     getAllFolds(): Fold[] {
         var folds = [];
@@ -3587,8 +3695,6 @@ export default class EditSession implements EventBus<EditSession> {
 
         return range;
     }
-
-
 
     toggleFoldWidget(toggleParent) {
         var row: number = this.selection.getCursor().row;

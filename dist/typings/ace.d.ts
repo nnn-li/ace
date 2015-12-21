@@ -81,10 +81,44 @@ declare module Ace {
         setValue(text: string): void;
     }
 
+    interface DynamicMarker {
+    }
+
     class EditSession implements EventBus<EditSession> {
         constructor(doc: Document);
+        addDynamicMarker(marker: DynamicMarker, inFront?: boolean): DynamicMarker;
+        addGutterDecoration(row: number, className: string): void;
+        addMarker(range: Range, clazz: string, type: Function | string, inFront: boolean): number;
         clearAnnotations(): void;
+        clearBreakpoint(row: number): void;
+        clearBreakpoints(): void;
+        documentToScreenColumn(docRow: number, docColumn: number): number;
+        documentToScreenPosition(docRow: number, docColumn: number): Position;
+        documentToScreenRange(range: Range): Range;
+        documentToScreenRow(docRow: number, docColumn: number): number;
+        duplicateLines(firstRow: number, lastRow: number): number;
+        findClosingBracket(bracket: string, position: Position, typeRe?: RegExp): Position;
+        findMatchingBracket(bracket: string, position: Position, typeRe?: RegExp): Position;
+        findOpeningBracket(bracket: string, position: Position, typeRe?: RegExp): Position;
+        getAllFolds(): Fold[];
+        getAnnotations(): Annotation[];
+        getAWordRange(row: number, column: number): Range;
+        getBracketRange(position: Position): Range;
+        getBreakpoints(): string[];
         getDocument(): Document;
+        getDocumentLastRowColumn(docRow: number, docColumn: number): number;
+        getDocumentLastRowColumnPosition(docRow: number, docColumn: number): Position;
+        getLength(): number;
+        getLine(row: number): string;
+        getLines(firstRow: number, lastRow: number): string[];
+        getMarkers(inFront: boolean): { [id: number]: DynamicMarker };
+        getMode(): LanguageMode;
+        getNewLineMode(): string;
+        getOverwrite(): boolean;
+        getRowLength(row: number): number;
+        getRowLineCount(row: number): number;
+        getTextRange(range: Range): string;
+        getValue(): string;
         on(eventName: string, callback: (event: any, source: EditSession) => any, capturing?: boolean): void;
         off(eventName: string, callback: (event: any, source: EditSession) => any): void;
         setAnnotations(annotations: Annotation[]): void;
@@ -128,12 +162,20 @@ declare module Ace {
         off(eventName: string, callback: (event: any, source: T) => any): void;
     }
 
+    class Fold {
+    }
+
     class HashHandler {
         constructor(config?: {}, platform?: string);
         addCommand(command: Command): void;
     }
 
     interface LanguageMode {
+    }
+
+    interface PixelPosition {
+        left: number;
+        top: number;
     }
 
     interface Position {

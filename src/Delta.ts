@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ***** END LICENSE BLOCK ***** */
+import Fold from "./Fold";
 import Range from "./Range";
 
 /**
@@ -58,6 +59,10 @@ interface Delta {
      * @optional
      */
     ignore?: boolean;
+
+    group?: string;
+    deltas?: Delta[];
+    folds?: Fold[];
 }
 
 export default Delta;
