@@ -1003,6 +1003,14 @@ export default class Editor implements EventBus<Editor> {
      * @private
      */
     private onChangeFrontMarker(event, session: EditSession): void {
+        this.updateFrontMarkers();
+    }
+
+    /**
+     * @method updateFrontMarkers
+     * @return {void}
+     */
+    public updateFrontMarkers(): void {
         this.renderer.updateFrontMarkers();
     }
 
@@ -1017,6 +1025,13 @@ export default class Editor implements EventBus<Editor> {
         this.renderer.updateBackMarkers();
     }
 
+    /**
+     * @method updateBackMarkers
+     * @return {void}
+     */
+    public updateBackMarkers(): void {
+        this.renderer.updateBackMarkers();
+    }
 
     private onChangeBreakpoint(event, editSession: EditSession) {
         this.renderer.updateBreakpoints();

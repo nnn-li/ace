@@ -5452,9 +5452,15 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             return re;
         };
         Editor.prototype.onChangeFrontMarker = function (event, session) {
+            this.updateFrontMarkers();
+        };
+        Editor.prototype.updateFrontMarkers = function () {
             this.renderer.updateFrontMarkers();
         };
         Editor.prototype.onChangeBackMarker = function (event, session) {
+            this.renderer.updateBackMarkers();
+        };
+        Editor.prototype.updateBackMarkers = function () {
             this.renderer.updateBackMarkers();
         };
         Editor.prototype.onChangeBreakpoint = function (event, editSession) {

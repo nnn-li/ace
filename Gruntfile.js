@@ -50,7 +50,7 @@ module.exports = function(grunt) {
     copy: {
       typings: {
         expand: true,
-        cwd: 'src/modules/',
+        cwd: 'typings/',
         src: ['ace.d.ts'],
         dest: 'dist/typings'
       },

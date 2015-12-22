@@ -238,6 +238,8 @@ declare module Ace {
         splitLine(): void;
         toggleBlockComment(): void;
         toggleCommentLines(): void;
+        updateBackMarkers(): void;
+        updateFrontMarkers(): void;
     }
 
     interface EventBus<T> {
