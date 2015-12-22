@@ -5451,31 +5451,31 @@ define('Editor',["require", "exports", "./lib/oop", "./lib/dom", "./lib/lang", "
             });
             return re;
         };
-        Editor.prototype.onChangeFrontMarker = function (event, editSession) {
+        Editor.prototype.onChangeFrontMarker = function (event, session) {
             this.renderer.updateFrontMarkers();
         };
-        Editor.prototype.onChangeBackMarker = function (event, editSession) {
+        Editor.prototype.onChangeBackMarker = function (event, session) {
             this.renderer.updateBackMarkers();
         };
         Editor.prototype.onChangeBreakpoint = function (event, editSession) {
             this.renderer.updateBreakpoints();
             this.eventBus._emit("changeBreakpoint", event);
         };
-        Editor.prototype.onChangeAnnotation = function (event, editSession) {
-            this.renderer.setAnnotations(editSession.getAnnotations());
+        Editor.prototype.onChangeAnnotation = function (event, session) {
+            this.renderer.setAnnotations(session.getAnnotations());
             this.eventBus._emit("changeAnnotation", event);
         };
-        Editor.prototype.onChangeMode = function (event, editSession) {
+        Editor.prototype.onChangeMode = function (event, session) {
             this.renderer.updateText();
             this.eventBus._emit("changeMode", event);
         };
-        Editor.prototype.onChangeWrapLimit = function (event, editSession) {
+        Editor.prototype.onChangeWrapLimit = function (event, session) {
             this.renderer.updateFull();
         };
-        Editor.prototype.onChangeWrapMode = function (event, editSession) {
+        Editor.prototype.onChangeWrapMode = function (event, session) {
             this.renderer.onResize(true);
         };
-        Editor.prototype.onChangeFold = function (event, editSession) {
+        Editor.prototype.onChangeFold = function (event, session) {
             this.$updateHighlightActiveLine();
             this.renderer.updateFull();
         };

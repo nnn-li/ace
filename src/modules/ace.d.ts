@@ -158,6 +158,13 @@ declare module Ace {
     }
 
     interface DynamicMarker {
+        id?: number;
+        type: string;
+        clazz: string;
+        inFront?: boolean;
+        renderer?;
+        range?: Range;
+        update?;
     }
 
     class EditSession implements EventBus<EditSession> {

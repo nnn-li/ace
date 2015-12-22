@@ -995,43 +995,65 @@ export default class Editor implements EventBus<Editor> {
         return re;
     }
 
-
-    onChangeFrontMarker(event, editSession: EditSession) {
+    /**
+     * @method onChangeFrontMarker
+     * @param event
+     * @param session {EditSession}
+     * @return {void}
+     * @private
+     */
+    private onChangeFrontMarker(event, session: EditSession): void {
         this.renderer.updateFrontMarkers();
     }
 
-    onChangeBackMarker(event, editSession: EditSession) {
+    /**
+     * @method onChangeBackMarker
+     * @param event
+     * @param session {EditSession}
+     * @return {void}
+     * @private
+     */
+    private onChangeBackMarker(event, session: EditSession): void {
         this.renderer.updateBackMarkers();
     }
 
 
-    onChangeBreakpoint(event, editSession: EditSession) {
+    private onChangeBreakpoint(event, editSession: EditSession) {
         this.renderer.updateBreakpoints();
+        /**
+         * @event changeBreakpoint
+         */
         this.eventBus._emit("changeBreakpoint", event);
     }
 
-    onChangeAnnotation(event, editSession: EditSession) {
-        this.renderer.setAnnotations(editSession.getAnnotations());
+    private onChangeAnnotation(event, session: EditSession) {
+        this.renderer.setAnnotations(session.getAnnotations());
+        /**
+         * @event changeAnnotation
+         */
         this.eventBus._emit("changeAnnotation", event);
     }
 
 
-    onChangeMode(event, editSession: EditSession) {
+    private onChangeMode(event, session: EditSession) {
         this.renderer.updateText();
+        /**
+         * @event changeMode
+         */
         this.eventBus._emit("changeMode", event);
     }
 
 
-    onChangeWrapLimit(event, editSession: EditSession) {
+    private onChangeWrapLimit(event, session: EditSession) {
         this.renderer.updateFull();
     }
 
-    onChangeWrapMode(event, editSession: EditSession) {
+    private onChangeWrapMode(event, session: EditSession) {
         this.renderer.onResize(true);
     }
 
 
-    onChangeFold(event, editSession: EditSession) {
+    private onChangeFold(event, session: EditSession) {
         // Update the active line marker as due to folding changes the current
         // line range on the screen might have changed.
         this.$updateHighlightActiveLine();
@@ -1041,9 +1063,11 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * Returns the string of text currently highlighted.
-     * @return {String}
-     **/
-    getSelectedText() {
+     *
+     * @method getSelectedText
+     * @return {string}
+     */
+    getSelectedText(): string {
         return this.session.getTextRange(this.getSelectionRange());
     }
 
@@ -1060,6 +1084,9 @@ export default class Editor implements EventBus<Editor> {
      **/
     getCopyText() {
         var text = this.getSelectedText();
+        /**
+         * @event copy
+         */
         this.eventBus._signal("copy", text);
         return text;
     }
@@ -1096,6 +1123,9 @@ export default class Editor implements EventBus<Editor> {
         if (this.$readOnly)
             return;
         var e = { text: text };
+        /**
+         * @event paste
+         */
         this.eventBus._signal("paste", e);
         this.insert(e.text, true);
     }
