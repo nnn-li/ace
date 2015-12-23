@@ -28,11 +28,12 @@ import HashHandler from "../keyboard/HashHandler";
 import EventEmitterClass from "../lib/EventEmitterClass";
 import Command from './Command';
 import Editor from '../Editor';
+import EventBus from '../EventBus';
 
 /**
  * @class CommandManager
  */
-export default class CommandManager extends EventEmitterClass<CommandManager> implements HashHandler {
+export default class CommandManager implements EventBus<CommandManager>, HashHandler {
     // We actually contain a HashHandler but implement it like an interface.
     private hashHandler: HashHandler;
     private $inReplay: boolean;
@@ -40,6 +41,7 @@ export default class CommandManager extends EventEmitterClass<CommandManager> im
     private macro: any[][];
     private oldMacro;
     private $addCommandToMacro: (event, cm: CommandManager) => any;
+    private eventBus: EventEmitterClass<CommandManager>;
     _buildKeyHash
 
     /**
@@ -49,9 +51,9 @@ export default class CommandManager extends EventEmitterClass<CommandManager> im
      * @param commands {Command[]} A list of commands
      */
     constructor(platform: string, commands: Command[]) {
-        super(this);
+        this.eventBus = new EventEmitterClass<CommandManager>(this);
         this.hashHandler = new HashHandler(commands, platform)
-        this.setDefaultHandler("exec", function(e: { command: Command; editor: Editor; args }) {
+        this.eventBus.setDefaultHandler("exec", function(e: { command: Command; editor: Editor; args }) {
             return e.command.exec(e.editor, e.args || {});
         });
     }
@@ -118,20 +120,26 @@ export default class CommandManager extends EventEmitterClass<CommandManager> im
         }
 
         var e = { editor: editor, command: command, args: args };
-        var retvalue = this._emit("exec", e);
-        this._signal("afterExec", e);
+        /**
+         * @event exec
+         */
+        var retvalue = this.eventBus._emit("exec", e);
+        /**
+         * @event afterExec
+         */
+        this.eventBus._signal("afterExec", e);
 
         return retvalue === false ? false : true;
     }
 
-    toggleRecording(editor: Editor) {
+    toggleRecording(editor: Editor): boolean {
         if (this.$inReplay)
             return;
 
         editor && editor._emit("changeStatus");
         if (this.recording) {
             this.macro.pop();
-            this.off("exec", this.$addCommandToMacro);
+            this.eventBus.off("exec", this.$addCommandToMacro);
 
             if (!this.macro.length)
                 this.macro = this.oldMacro;
@@ -146,7 +154,7 @@ export default class CommandManager extends EventEmitterClass<CommandManager> im
 
         this.oldMacro = this.macro;
         this.macro = [];
-        this.on("exec", this.$addCommandToMacro);
+        this.eventBus.on("exec", this.$addCommandToMacro);
         return this.recording = true;
     }
 
@@ -178,6 +186,26 @@ export default class CommandManager extends EventEmitterClass<CommandManager> im
                 x = x[0];
             return x;
         });
+    }
+
+    /**
+     * @method on
+     * @param eventName {string}
+     * @param callback {(event, source: CommandManager) => any}
+     * @return {void}
+     */
+    on(eventName: string, callback: (event: any, source: CommandManager) => any, capturing?: boolean): void {
+        this.eventBus.on(eventName, callback, capturing);
+    }
+
+    /**
+     * @method off
+     * @param eventName {string}
+     * @param callback {(event, source: CommandManager) => any}
+     * @return {void}
+     */
+    off(eventName: string, callback: (event: any, source: CommandManager) => any): void {
+        this.eventBus.off(eventName, callback);
     }
 }
 

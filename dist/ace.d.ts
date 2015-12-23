@@ -344,7 +344,7 @@ declare module Ace {
 }
 
 // This is the AMD module name.
-declare module 'ace'
+declare module 'ace.js'
 {
     export default Ace;
 }

@@ -48,6 +48,7 @@ interface Command {
     bindKey?: any/*: { win: string; mac: string }*/;
 
     /**
+     * "fileJump", what else?
      * @property aceCommandGroup
      * @type string
      */

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "es6",
     "target": "es6",
-    "outDir": "lib",
+    "outDir": ".",
     "noImplicitAny": false,
     "noLib": true,
     "removeComments": true,
@@ -17,6 +17,8 @@
     "./src/autocomplete/util.ts",
 
     "./src/commands/Command.ts",
+    "./src/commands/CommandManager.ts",
+    "./src/commands/default_commands.ts",
 
     "./src/ext/language_tools.ts",
 
@@ -83,7 +85,7 @@
 
     "./src/worker/WorkerClient.ts",
 
-    "./src/ace.ts",
+    "./ace.ts",
     "./src/Anchor.ts",
     "./src/Annotation.ts",
     "./src/BackgroundTokenizer.ts",

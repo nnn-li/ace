@@ -71,6 +71,7 @@ import TextAndSelection from "./TextAndSelection";
 import CursorRange from './CursorRange';
 import EventBus from "./EventBus";
 import EventEmitterClass from "./lib/EventEmitterClass";
+import Command from "./commands/Command";
 import CommandManager from "./commands/CommandManager";
 import defaultCommands from "./commands/default_commands";
 import {defineOptions, loadModule, resetOptions} from "./config";
@@ -147,7 +148,7 @@ export default class Editor implements EventBus<Editor> {
     private $scrollAnchor;
     private $search: Search;
     private _$emitInputEvent;
-    private selections;
+    private selections: any[];
     private $selectionStyle;
     private $opResetTimer;
     private curOp;
@@ -252,24 +253,24 @@ export default class Editor implements EventBus<Editor> {
         function last<T>(a: T[]): T { return a[a.length - 1] }
 
         this.selections = [];
-        this.commands.on("exec", function(e) {
+        this.commands.on("exec", (e: {command: Command}) => {
             this.startOperation(e);
 
             var command = e.command;
-            if (command.aceCommandGroup == "fileJump") {
+            if (command.aceCommandGroup === "fileJump") {
                 var prev = this.prevOp;
-                if (!prev || prev.command.aceCommandGroup != "fileJump") {
+                if (!prev || prev.command.aceCommandGroup !== "fileJump") {
                     this.lastFileJumpPos = last(this.selections);
                 }
             } else {
                 this.lastFileJumpPos = null;
             }
-        }.bind(this), true);
+        }, true);
 
-        this.commands.on("afterExec", (e) => {
+        this.commands.on("afterExec", (e: {command: Command}, cm: CommandManager) => {
             var command = e.command;
 
-            if (command.aceCommandGroup == "fileJump") {
+            if (command.aceCommandGroup === "fileJump") {
                 if (this.lastFileJumpPos && !this.curOp.selectionChanged) {
                     this.selection.fromJSON(this.lastFileJumpPos);
                 }

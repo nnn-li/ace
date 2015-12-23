@@ -52,7 +52,7 @@ module.exports = function(grunt) {
         expand: true,
         cwd: 'typings/',
         src: ['ace.d.ts'],
-        dest: 'dist/typings'
+        dest: 'dist'
       },
       themes: {
         expand: true,
@@ -139,20 +139,20 @@ module.exports = function(grunt) {
   });
 
   /**
-   * tsc(tsgile: string, options): Promise
+   * tsc(tsfile: string, options): Promise
    */
-  function tsc(tsfile, option) {
+  function tsc(options) {
     var command = "node " + path.resolve(path.dirname(require.resolve("typescript")), "tsc ");
-    var optArray = Object.keys(option || {}).reduce(function(res, key) {
+    var optArray = Object.keys(options || {}).reduce(function(res, key) {
             res.push(key);
-            if(option[key]){
-                res.push(option[key]);
+            if(options[key]){
+                res.push(options[key]);
             }
             return res;
         }, []);
 
     return Q.Promise(function(resolve, reject) {
-      var cmd = command + " " + tsfile + " " + optArray.join(" ");
+      var cmd = command + " " + optArray.join(" ");
       var childProcess = cp.exec(cmd, {});
       childProcess.stdout.on('data', function (d) { grunt.log.writeln(d); });
       childProcess.stderr.on('data', function (d) { grunt.log.error(d); });
@@ -178,70 +178,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-complexity');
   grunt.loadNpmTasks('grunt-exec');
 
-  var compilerSources = [
-      "src/ace.ts",
-      "src/lib/dom.ts",
-      "src/mode/HtmlMode.ts",
-      "src/mode/JavaScriptMode.ts",
-      "src/mode/TypeScriptMode.ts",
-      "./node_modules/typescript/lib/lib.es6.d.ts",
-      "./typings/systemjs.d.ts"
-  ];
-
-  function ES5(xs) {
-      return ['--target ES5'].concat(xs);
-  }
-
-  function AMD(xs) {
-      return ['--module amd'].concat(xs);
-  }
-
-  function COMMONJS(xs) {
-      return ['--module commonjs'].concat(xs);
-  }
-
-  function TARGET(xs, target) {
-      return ['--target ' + target].concat(xs);
-  }
-
-  function MODULE(xs, module) {
-      return ['--module ' + module].concat(xs);
-  }
-
-  function noImplicitAny(xs) {
-      return ['--noImplicitAny'].concat(xs);
-  }
-
-  function removeComments(xs) {
-      return ['--removeComments'].concat(xs);
-  }
-
-  function outDir(where, xs) {
-      return ['--outDir', where].concat(xs);
-  }
-
-  grunt.registerTask('buildAMD', "Build", function() {
-    var args = compilerSources;
-    args = TARGET(args, 'ES5');
-    args = MODULE(args, 'amd');
-    args = removeComments(args);
+  grunt.registerTask('compile', "Compile TypeScript to ES6", function() {
     var done = this.async();
-    tsc(outDir('amd', args).join(" "))
-    .then(function(){
-      done(true);
-    })
-    .catch(function(){
-      done(false);
-    });
-  });
-
-  grunt.registerTask('buildES6', "Build", function() {
-    var args = compilerSources;
-    args = TARGET(args, 'ES6');
-    args = MODULE(args, 'es6');
-    args = removeComments(args);
-    var done = this.async();
-    tsc(outDir('es6', args).join(" "))
+    tsc()
     .then(function(){
       done(true);
     })
@@ -251,11 +190,19 @@ module.exports = function(grunt) {
   });
 
   function bundle() {
-    var builder = new Builder('es6', './config.js');
-    return builder.bundle('ace.js', 'lib/ace.js');
+    var builder = new Builder('.', './config.js');
+
+    var options = {
+      minify: false,
+      mangle: true,
+      sourceMaps: true,
+      lowResSourceMaps: true
+    };
+
+    return builder.bundle('ace.js', 'dist/ace.js', options);
   }
 
-  grunt.registerTask('bundle', "Bundle", function() {
+  grunt.registerTask('bundle', "Bundle ES6 into system modules", function() {
     var done = this.async();
     bundle()
     .then(function(){
@@ -269,13 +216,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', ['connect:test', 'jasmine']);
 
-  // Register 'docs' so that we can do `grunt docs` from the command line. 
-  grunt.registerTask('docs', ['yuidoc']);
-
   grunt.registerTask('testAll', ['exec:test', 'test']);
 
   // This creates a bundle in amd format and targeting ES5.
-  grunt.registerTask('default', ['clean', 'buildAMD', 'docs', 'copy', 'requirejs', 'uglify']);
+  //grunt.registerTask('docs', ['clean', 'buildAMD', 'yuidoc', 'copy', 'requirejs', 'uglify']);
 
-  // grunt.registerTask('default', ['clean', 'buildES6', 'copy', 'bundle']);
+  grunt.registerTask('default', ['clean', 'compile', 'bundle', 'copy', 'yuidoc']);
 };

@@ -51,23 +51,23 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import {getInnerText} from "./lib/dom";
-import {addListener, removeListener} from "./lib/event";
-import Editor from "./Editor";
-import Document from "./Document";
-import EditSession from "./EditSession";
-import Position from "./Position";
-import Range from "./Range";
-import UndoManager from "./UndoManager";
-import VirtualRenderer from "./VirtualRenderer";
-import {isDark, cssClass} from "./theme/twilight"
+import {getInnerText} from "./src/lib/dom";
+import {addListener, removeListener} from "./src/lib/event";
+import Editor from "./src/Editor";
+import Document from "./src/Document";
+import EditSession from "./src/EditSession";
+import Position from "./src/Position";
+import Range from "./src/Range";
+import UndoManager from "./src/UndoManager";
+import VirtualRenderer from "./src/VirtualRenderer";
+import {isDark, cssClass} from "./src/theme/twilight"
 
-import CssMode from "./mode/CssMode";
-import HtmlMode from "./mode/HtmlMode";
-import JavaScriptMode from "./mode/JavaScriptMode";
-import TextMode from "./mode/TextMode";
-import TypeScriptMode from "./mode/TypeScriptMode";
-import WorkerClient from "./worker/WorkerClient";
+import CssMode from "./src/mode/CssMode";
+import HtmlMode from "./src/mode/HtmlMode";
+import JavaScriptMode from "./src/mode/JavaScriptMode";
+import TextMode from "./src/mode/TextMode";
+import TypeScriptMode from "./src/mode/TypeScriptMode";
+import WorkerClient from "./src/worker/WorkerClient";
 
 var ace = {
     get Document() { return Document },
