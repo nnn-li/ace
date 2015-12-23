@@ -315,6 +315,7 @@ declare module Ace {
     class WorkerClient implements EventBus<WorkerClient> {
         constructor(workerUrl: string);
         attachToDocument(doc: Document): void;
+        detachFromDocument(): void;
         init(scriptImports: string[], moduleName: string, className: string): void;
         on(eventName: string, callback: (event: MessageEvent, source: WorkerClient) => any): void;
         off(eventName: string, callback: (event: MessageEvent, source: WorkerClient) => any): void;

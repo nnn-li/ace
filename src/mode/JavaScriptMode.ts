@@ -91,6 +91,13 @@ export default class JavaScriptMode extends TextMode {
         this.$id = "ace/mode/javascript";
     }
 
+    /**
+     * @method getNextLineIndent
+     * @param state {string}
+     * @param line {string}
+     * @param tab {string}
+     * @return {string}
+     */
     getNextLineIndent(state: string, line: string, tab: string): string {
         var indent = this.$getIndent(line);
 
@@ -98,11 +105,13 @@ export default class JavaScriptMode extends TextMode {
         var tokens = tokenizedLine.tokens;
         var endState = tokenizedLine.state;
 
-        if (tokens.length && tokens[tokens.length - 1].type == "comment") {
+        // If the type of the last token is a comment, there is no change of indentation.
+        if (tokens.length && tokens[tokens.length - 1].type === "comment") {
             return indent;
         }
 
         if (state === "start" || state === "no_regex") {
+            // Indent for case statements or things like opening braces.
             var match = line.match(/^.*(?:\bcase\b.*\:|[\{\(\[])\s*$/);
             if (match) {
                 indent += tab;
@@ -112,6 +121,7 @@ export default class JavaScriptMode extends TextMode {
             if (endState == "start" || endState == "no_regex") {
                 return "";
             }
+            // Indent for block comments.
             var match = line.match(/^\s*(\/?)\*/);
             if (match) {
                 if (match[1]) {
@@ -132,19 +142,24 @@ export default class JavaScriptMode extends TextMode {
         return this.$outdent.autoOutdent(session, row);
     };
 
+    /**
+     * @method createWorker
+     * @param session {EditSession}
+     * @return {Promise<WorkerClient>}
+     */
     createWorker(session: EditSession): Promise<WorkerClient> {
 
-        var workerUrl = this.workerUrl;
-        var scriptImports = this.scriptImports;
+        return new Promise<WorkerClient>((resolve, reject) => {
 
-        // FIXME: How do we communicate fail.
-        return new Promise<WorkerClient>(function(success, fail) {
-
-            var worker = new WorkerClient(workerUrl);
+            var worker = new WorkerClient(this.workerUrl);
 
             worker.on("initAfter", function() {
                 worker.attachToDocument(session.getDocument());
-                success(worker);
+                resolve(worker);
+            });
+
+            worker.on("initFailed", function(event: MessageEvent) {
+                reject(event.data);
             });
 
             worker.on("errors", function(errors: { data: Annotation[] }) {
@@ -157,7 +172,7 @@ export default class JavaScriptMode extends TextMode {
             });
 
             // FIXME: Must be able to inject the module name.
-            worker.init(scriptImports, 'ace-workers.js', 'JavaScriptWorker');
+            worker.init(this.scriptImports, 'ace-workers.js', 'JavaScriptWorker');
         })
     }
 }

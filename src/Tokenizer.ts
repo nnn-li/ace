@@ -53,6 +53,7 @@
 "use strict";
 
 import Rule from "./Rule";
+import TokenizedLine from './TokenizedLine';
 
 // tokenizing lines longer than this makes editor very slow
 var MAX_TOKEN_COUNT = 1000;
@@ -255,9 +256,9 @@ export default class Tokenizer {
      * `tokens`, which contains all the tokens; and `state`, the current state.
      *
      * @method getLineTokens
-     * @return {Object}
+     * @return {TokenizedLine}
      */
-    public getLineTokens(line: string, startState: string) {
+    public getLineTokens(line: string, startState: string): TokenizedLine {
         var stack;
         if (startState && typeof startState !== 'string') {
             stack = startState.slice(0);

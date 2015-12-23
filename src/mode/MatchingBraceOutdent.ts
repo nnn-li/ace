@@ -55,10 +55,24 @@
 import Range from "../Range";
 import EditSession from "../EditSession";
 
+/**
+ * @class MatchingBraceOutdent
+ */
 export default class MatchingBraceOutdent {
+
+    /**
+     * @class MatchingBraceOutdent
+     * @constructor
+     */
     constructor() {
     }
 
+    /**
+     * @method checkOutdent
+     * @param line {string}
+     * @param text {string}
+     * @return {boolean}
+     */
     checkOutdent(line: string, text: string): boolean {
         if (! /^\s+$/.test(line)) {
             return false;
@@ -66,6 +80,15 @@ export default class MatchingBraceOutdent {
         return /^\s*\}/.test(text);
     }
 
+    /**
+     * FIXME: The return value is either 0 or undefined.
+     * What are the semantics?
+     *
+     * @method autoOutdent
+     * @param session {EditSession}
+     * @param row {number}
+     * @return {number}
+     */
     autoOutdent(session: EditSession, row: number): number {
         var line = session.getLine(row);
         var match = line.match(/^(\s*\})/);
@@ -81,6 +104,13 @@ export default class MatchingBraceOutdent {
         session.replace(new Range(row, 0, row, column - 1), indent);
     }
 
+    /**
+     * FIXME: Why isn't this a static method?
+     *
+     * @method $getIndent
+     * @param line {string}
+     * @return {string}
+     */
     $getIndent(line: string): string {
         return line.match(/^\s*/)[0];
     }

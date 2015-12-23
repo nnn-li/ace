@@ -17118,7 +17118,7 @@ System.register("src/mode/JavaScriptMode.js", ["npm:babel-runtime@5.8.34/helpers
                         var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
                         var tokens = tokenizedLine.tokens;
                         var endState = tokenizedLine.state;
-                        if (tokens.length && tokens[tokens.length - 1].type == "comment") {
+                        if (tokens.length && tokens[tokens.length - 1].type === "comment") {
                             return indent;
                         }
                         if (state === "start" || state === "no_regex") {
@@ -17153,13 +17153,16 @@ System.register("src/mode/JavaScriptMode.js", ["npm:babel-runtime@5.8.34/helpers
                 }, {
                     key: "createWorker",
                     value: function createWorker(session) {
-                        var workerUrl = this.workerUrl;
-                        var scriptImports = this.scriptImports;
-                        return new _Promise(function (success, fail) {
-                            var worker = new WorkerClient(workerUrl);
+                        var _this = this;
+
+                        return new _Promise(function (resolve, reject) {
+                            var worker = new WorkerClient(_this.workerUrl);
                             worker.on("initAfter", function () {
                                 worker.attachToDocument(session.getDocument());
-                                success(worker);
+                                resolve(worker);
+                            });
+                            worker.on("initFailed", function (event) {
+                                reject(event.data);
                             });
                             worker.on("errors", function (errors) {
                                 session.setAnnotations(errors.data);
@@ -17168,7 +17171,7 @@ System.register("src/mode/JavaScriptMode.js", ["npm:babel-runtime@5.8.34/helpers
                                 worker.detachFromDocument();
                                 session.clearAnnotations();
                             });
-                            worker.init(scriptImports, 'ace-workers.js', 'JavaScriptWorker');
+                            worker.init(_this.scriptImports, 'ace-workers.js', 'JavaScriptWorker');
                         });
                     }
                 }]);

@@ -35,7 +35,6 @@ import {get} from "../config";
  * </ul>
  *
  * @class WorkerClient
- * @extends EventEmitter
  */
 export default class WorkerClient implements EventBus<WorkerClient> {
 
@@ -65,13 +64,17 @@ export default class WorkerClient implements EventBus<WorkerClient> {
     private callbackId: number = 1;
 
     /**
-     * 
      * @property editorDocument
      * @type Document
      * @private
      */
     private $doc: Document;
 
+    /**
+     * @property eventBus
+     * @type EventEmitterClass<WorkerClient>
+     * @private
+     */
     private eventBus: EventEmitterClass<WorkerClient>;
 
     /**
@@ -131,15 +134,19 @@ export default class WorkerClient implements EventBus<WorkerClient> {
     /**
      * This method is is used as the callback function for the Worker thread
      * and so it receives all messages posted back from that thread.
+     *
      * @method onMessage
      * @param event {MessageEvent}
      * @return {void}
+     * @private
      */
-    onMessage(event: MessageEvent): void {
+    private onMessage(event: MessageEvent): void {
         var origin: string = event.origin;
         var source: Window = event.source;
         var msg = event.data;
+        // TODO: Interfaces for data exchanged.
         switch (msg.type) {
+
             case "log":
                 window.console && console.log && console.log.apply(console, msg.data);
                 break;

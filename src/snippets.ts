@@ -54,7 +54,6 @@
 import {ensureHTMLStyleElement} from "./lib/dom";
 import EventEmitterClass from "./lib/EventEmitterClass";
 import {delayedCall, escapeRegExp} from "./lib/lang";
-import Range from "./Range";
 import comparePoints from "./comparePoints"
 import Anchor from "./Anchor";
 import HashHandler from "./keyboard/HashHandler";
@@ -62,6 +61,8 @@ import Tokenizer from "./Tokenizer";
 import Editor from './Editor';
 import EventBus from './EventBus';
 import Change from "./Change";
+import Range from "./Range";
+import Token from "./Token";
 
 var TABSTOP_MANAGER = 'tabstopManager';
 
@@ -335,6 +336,9 @@ export class SnippetManager implements EventBus<SnippetManager> {
         return result;
     }
 
+    /**
+     * FIXME: The choice of string | Token makes it very difficult to impose type safety.
+     */
     private insertSnippetForSelection(editor: Editor, snippetText: string) {
         var cursor = editor.getCursorPosition();
         var session = editor.getSession();
@@ -348,16 +352,18 @@ export class SnippetManager implements EventBus<SnippetManager> {
         var tokens = this.tokenizeTmSnippet(snippetText);
         tokens = this.resolveVariables(tokens, editor);
         // indent
-        tokens = tokens.map(function(x) {
-            if (x == "\n")
+        tokens = tokens.map(function(x: /* string | Token*/any) {
+            if (x == "\n") {
                 return x + indentString;
-            if (typeof x == "string")
+            }
+            if (typeof x === "string") {
                 return x.replace(/\t/g, tabString);
+            }
             return x;
         });
         // tabstop values
-        var tabstops = [];
-        tokens.forEach(function(p, i) {
+        var tabstops/*: {index;value}[][]*/ = [];
+        tokens.forEach(function(p: any, i: number) {
             if (typeof p != "object")
                 return;
             var id = p.tabstopId;
@@ -386,11 +392,11 @@ export class SnippetManager implements EventBus<SnippetManager> {
         // expand tabstop values
         tabstops.forEach(function(ts) { ts.length = 0 });
         var expanding = {};
-        function copyValue(val) {
+        function copyValue(val: any[]) {
             var copy = [];
             for (var i = 0; i < val.length; i++) {
                 var p = val[i];
-                if (typeof p == "object") {
+                if (typeof p === "object") {
                     if (expanding[p.tabstopId])
                         continue;
                     var j = val.lastIndexOf(p, i - 1);
@@ -401,8 +407,8 @@ export class SnippetManager implements EventBus<SnippetManager> {
             return copy;
         }
         for (var i = 0; i < tokens.length; i++) {
-            var p = tokens[i];
-            if (typeof p != "object")
+            var p: any = tokens[i];
+            if (typeof p !== "object")
                 continue;
             var id = p.tabstopId;
             var i1 = tokens.indexOf(p, i + 1);
@@ -415,7 +421,7 @@ export class SnippetManager implements EventBus<SnippetManager> {
             }
 
             var ts = tabstops[id];
-            var arg = typeof ts.value == "string" ? [ts.value] : copyValue(ts.value);
+            var arg = (typeof ts.value === "string") ? [ts.value] : copyValue(ts.value);
             arg.unshift(i + 1, Math.max(0, i1 - i));
             arg.push(p);
             expanding[id] = p;
@@ -428,7 +434,9 @@ export class SnippetManager implements EventBus<SnippetManager> {
         // convert to plain text
         var row = 0, column = 0;
         var text = "";
-        tokens.forEach(function(t) {
+        // FIXME: t should be string or Token, but below we use start and end.
+        // That looks more like a Range!
+        tokens.forEach(function(t: any) {
             if (typeof t === "string") {
                 if (t[0] === "\n") {
                     column = t.length - 1;
@@ -436,7 +444,8 @@ export class SnippetManager implements EventBus<SnippetManager> {
                 } else
                     column += t.length;
                 text += t;
-            } else {
+            }
+            else {
                 if (!t.start)
                     t.start = { row: row, column: column };
                 else

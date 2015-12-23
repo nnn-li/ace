@@ -123,6 +123,12 @@ export default class TextMode implements LanguageMode {
      * @protected
      */
     protected workerUrl: string;
+
+    /**
+     * @property scriptImports
+     * @type string[]
+     * @protected
+     */
     protected scriptImports: string[] = [];
 
     /**
@@ -354,6 +360,13 @@ export default class TextMode implements LanguageMode {
         session.getSelection().fromOrientedRange(initialRange);
     }
 
+    /**
+     * @method getNextLineIndent
+     * @param state {string}
+     * @param line {string}
+     * @param tab {string}
+     * @return {string}
+     */
     getNextLineIndent(state: string, line: string, tab: string): string {
         return this.$getIndent(line);
     }
@@ -366,10 +379,16 @@ export default class TextMode implements LanguageMode {
         return 0;
     }
 
+    // FIXME: This should be standalone method.
     $getIndent(line: string): string {
         return line.match(/^\s*/)[0];
     }
 
+    /**
+     * @method createWorker
+     * @param session {EditSession}
+     * @return {Promize<WorkerClient>}
+     */
     createWorker(session: EditSession): Promise<WorkerClient> {
         return new Promise<WorkerClient>(function(success, fail) {
             // TextMode does not create a WorkerClient.
@@ -453,7 +472,7 @@ export default class TextMode implements LanguageMode {
         }
     }
 
-    getKeywords(append: boolean) {
+    getKeywords(append: boolean): string[] {
         // this is for autocompletion to pick up regexp'ed keywords
         if (!this.completionKeywords) {
 
@@ -486,15 +505,15 @@ export default class TextMode implements LanguageMode {
         return completionKeywords.concat(this.$keywordList || []);
     }
 
-    $createKeywordList() {
+    $createKeywordList(): string[] {
         if (!this.$highlightRules)
             this.getTokenizer();
         return this.$keywordList = this.$highlightRules.$keywordList || [];
     }
 
     getCompletions(state: string, session: EditSession, pos: Position, prefix: string): Completion[] {
-        var keywords = this.$keywordList || this.$createKeywordList();
-        return keywords.map(function(word) {
+        var keywords: string[] = this.$keywordList || this.$createKeywordList();
+        return keywords.map(function(word: string) {
             return {
                 name: word,
                 value: word,
