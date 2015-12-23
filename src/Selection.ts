@@ -101,8 +101,8 @@ export default class Selection implements EventBus<Selection> {
         this.doc = session.getDocument();
 
         this.clearSelection();
-        this.lead = this.selectionLead = this.doc.createAnchor(0, 0);
-        this.anchor = this.selectionAnchor = this.doc.createAnchor(0, 0);
+        this.lead = this.selectionLead = new Anchor(this.doc, 0, 0);
+        this.anchor = this.selectionAnchor = new Anchor(this.doc, 0, 0);
 
         var self = this;
         this.lead.on("change", function(e) {

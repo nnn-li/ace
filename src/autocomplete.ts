@@ -210,7 +210,7 @@ export class CompleterAggregate implements Completer {
      */
     public getCompletions(editor: Editor, session: EditSession, pos: Position, prefix: string, callback) {
 
-        this.base = session.doc.createAnchor(pos.row, pos.column - prefix.length);
+        this.base = new Anchor(session.doc, pos.row, pos.column - prefix.length);
 
         var matches: Completion[] = [];
         var total = editor.completers.length;

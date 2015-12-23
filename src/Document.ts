@@ -52,7 +52,6 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import Anchor from './Anchor';
 import Delta from './Delta';
 import EventBus from './EventBus';
 import EventEmitterClass from './lib/EventEmitterClass';
@@ -170,18 +169,6 @@ export default class Document implements EventBus<Document> {
      */
     getValue(): string {
         return this.getAllLines().join(this.getNewLineCharacter());
-    }
-
-    /** 
-     * Creates a new `Anchor` to define a floating point in the document.
-     *
-     * @method createAnchor
-     * @param row {number} The row number to use.
-     * @param column {number} The column number to use.
-     * @return {Anchor}
-     */
-    createAnchor(row: number, column: number): Anchor {
-        return new Anchor(this, row, column);
     }
 
     /** 

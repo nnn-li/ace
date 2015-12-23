@@ -7018,8 +7018,160 @@ System.register("src/Fold.js", ["npm:babel-runtime@5.8.34/helpers/get", "npm:bab
         }
     };
 });
-System.register("src/Selection.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/lang.js", "src/lib/EventEmitterClass.js", "src/Range.js"], function (_export) {
-    var _createClass, _classCallCheck, stringReverse, EventEmitterClass, Range, Selection;
+System.register('src/Anchor.js', ['npm:babel-runtime@5.8.34/helpers/create-class', 'npm:babel-runtime@5.8.34/helpers/class-call-check', 'src/lib/EventEmitterClass.js', 'src/lib/asserts.js'], function (_export) {
+    var _createClass, _classCallCheck, EventEmitterClass, assert, Anchor;
+
+    return {
+        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
+            _createClass = _npmBabelRuntime5834HelpersCreateClass['default'];
+        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
+            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck['default'];
+        }, function (_srcLibEventEmitterClassJs) {
+            EventEmitterClass = _srcLibEventEmitterClassJs['default'];
+        }, function (_srcLibAssertsJs) {
+            assert = _srcLibAssertsJs.assert;
+        }],
+        execute: function () {
+            "use strict";
+
+            Anchor = (function () {
+                function Anchor(doc, row, column) {
+                    _classCallCheck(this, Anchor);
+
+                    assert(typeof row === 'number', "row must be a number");
+                    assert(typeof column === 'number', "column must be a number");
+                    this.eventBus = new EventEmitterClass(this);
+                    this.$onChange = this.onChange.bind(this);
+                    this.attach(doc);
+                    this.setPosition(row, column);
+                    this.$insertRight = false;
+                }
+
+                _createClass(Anchor, [{
+                    key: 'getPosition',
+                    value: function getPosition() {
+                        return this.$clipPositionToDocument(this.row, this.column);
+                    }
+                }, {
+                    key: 'getDocument',
+                    value: function getDocument() {
+                        return this.document;
+                    }
+                }, {
+                    key: 'onChange',
+                    value: function onChange(e, doc) {
+                        var delta = e.data;
+                        var range = delta.range;
+                        if (range.start.row == range.end.row && range.start.row != this.row) return;
+                        if (range.start.row > this.row) return;
+                        if (range.start.row == this.row && range.start.column > this.column) return;
+                        var row = this.row;
+                        var column = this.column;
+                        var start = range.start;
+                        var end = range.end;
+                        if (delta.action === "insertText") {
+                            if (start.row === row && start.column <= column) {
+                                if (start.column === column && this.$insertRight) {} else if (start.row === end.row) {
+                                    column += end.column - start.column;
+                                } else {
+                                    column -= start.column;
+                                    row += end.row - start.row;
+                                }
+                            } else if (start.row !== end.row && start.row < row) {
+                                row += end.row - start.row;
+                            }
+                        } else if (delta.action === "insertLines") {
+                            if (start.row === row && column === 0 && this.$insertRight) {} else if (start.row <= row) {
+                                row += end.row - start.row;
+                            }
+                        } else if (delta.action === "removeText") {
+                            if (start.row === row && start.column < column) {
+                                if (end.column >= column) column = start.column;else column = Math.max(0, column - (end.column - start.column));
+                            } else if (start.row !== end.row && start.row < row) {
+                                if (end.row === row) column = Math.max(0, column - end.column) + start.column;
+                                row -= end.row - start.row;
+                            } else if (end.row === row) {
+                                row -= end.row - start.row;
+                                column = Math.max(0, column - end.column) + start.column;
+                            }
+                        } else if (delta.action == "removeLines") {
+                            if (start.row <= row) {
+                                if (end.row <= row) row -= end.row - start.row;else {
+                                    row = start.row;
+                                    column = 0;
+                                }
+                            }
+                        }
+                        this.setPosition(row, column, true);
+                    }
+                }, {
+                    key: 'setPosition',
+                    value: function setPosition(row, column, noClip) {
+                        var pos;
+                        if (noClip) {
+                            pos = { row: row, column: column };
+                        } else {
+                            pos = this.$clipPositionToDocument(row, column);
+                        }
+                        if (this.row === pos.row && this.column === pos.column) {
+                            return;
+                        }
+                        var old = { row: this.row, column: this.column };
+                        this.row = pos.row;
+                        this.column = pos.column;
+                        this.eventBus._signal("change", { old: old, value: pos });
+                    }
+                }, {
+                    key: 'detach',
+                    value: function detach() {
+                        this.document.off("change", this.$onChange);
+                    }
+                }, {
+                    key: 'attach',
+                    value: function attach(doc) {
+                        this.document = doc || this.document;
+                        this.document.on("change", this.$onChange);
+                    }
+                }, {
+                    key: 'on',
+                    value: function on(eventName, callback) {
+                        this.eventBus.on(eventName, callback, false);
+                    }
+                }, {
+                    key: 'off',
+                    value: function off(eventName, callback) {
+                        this.eventBus.off(eventName, callback);
+                    }
+                }, {
+                    key: '$clipPositionToDocument',
+                    value: function $clipPositionToDocument(row, column) {
+                        var pos = { row: 0, column: 0 };
+                        if (row >= this.document.getLength()) {
+                            pos.row = Math.max(0, this.document.getLength() - 1);
+                            pos.column = this.document.getLine(pos.row).length;
+                        } else if (row < 0) {
+                            pos.row = 0;
+                            pos.column = 0;
+                        } else {
+                            pos.row = row;
+                            pos.column = Math.min(this.document.getLine(pos.row).length, Math.max(0, column));
+                        }
+                        if (column < 0) {
+                            pos.column = 0;
+                        }
+                        return pos;
+                    }
+                }]);
+
+                return Anchor;
+            })();
+
+            _export('default', Anchor);
+        }
+    };
+});
+System.register("src/Selection.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/lang.js", "src/lib/EventEmitterClass.js", "src/Range.js", "src/Anchor.js"], function (_export) {
+    var _createClass, _classCallCheck, stringReverse, EventEmitterClass, Range, Anchor, Selection;
 
     return {
         setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
@@ -7032,6 +7184,8 @@ System.register("src/Selection.js", ["npm:babel-runtime@5.8.34/helpers/create-cl
             EventEmitterClass = _srcLibEventEmitterClassJs["default"];
         }, function (_srcRangeJs) {
             Range = _srcRangeJs["default"];
+        }, function (_srcAnchorJs) {
+            Anchor = _srcAnchorJs["default"];
         }],
         execute: function () {
             "use strict";
@@ -7044,8 +7198,8 @@ System.register("src/Selection.js", ["npm:babel-runtime@5.8.34/helpers/create-cl
                     this.session = session;
                     this.doc = session.getDocument();
                     this.clearSelection();
-                    this.lead = this.selectionLead = this.doc.createAnchor(0, 0);
-                    this.anchor = this.selectionAnchor = this.doc.createAnchor(0, 0);
+                    this.lead = this.selectionLead = new Anchor(this.doc, 0, 0);
+                    this.anchor = this.selectionAnchor = new Anchor(this.doc, 0, 0);
                     var self = this;
                     this.lead.on("change", function (e) {
                         self.eventBus._emit("changeCursor");
@@ -7690,160 +7844,8 @@ System.register("src/Selection.js", ["npm:babel-runtime@5.8.34/helpers/create-cl
         }
     };
 });
-System.register('src/Anchor.js', ['npm:babel-runtime@5.8.34/helpers/create-class', 'npm:babel-runtime@5.8.34/helpers/class-call-check', 'src/lib/EventEmitterClass.js', 'src/lib/asserts.js'], function (_export) {
-    var _createClass, _classCallCheck, EventEmitterClass, assert, Anchor;
-
-    return {
-        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
-            _createClass = _npmBabelRuntime5834HelpersCreateClass['default'];
-        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
-            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck['default'];
-        }, function (_srcLibEventEmitterClassJs) {
-            EventEmitterClass = _srcLibEventEmitterClassJs['default'];
-        }, function (_srcLibAssertsJs) {
-            assert = _srcLibAssertsJs.assert;
-        }],
-        execute: function () {
-            "use strict";
-
-            Anchor = (function () {
-                function Anchor(doc, row, column) {
-                    _classCallCheck(this, Anchor);
-
-                    assert(typeof row === 'number', "row must be a number");
-                    assert(typeof column === 'number', "column must be a number");
-                    this.eventBus = new EventEmitterClass(this);
-                    this.$onChange = this.onChange.bind(this);
-                    this.attach(doc);
-                    this.setPosition(row, column);
-                    this.$insertRight = false;
-                }
-
-                _createClass(Anchor, [{
-                    key: 'getPosition',
-                    value: function getPosition() {
-                        return this.$clipPositionToDocument(this.row, this.column);
-                    }
-                }, {
-                    key: 'getDocument',
-                    value: function getDocument() {
-                        return this.document;
-                    }
-                }, {
-                    key: 'onChange',
-                    value: function onChange(e, doc) {
-                        var delta = e.data;
-                        var range = delta.range;
-                        if (range.start.row == range.end.row && range.start.row != this.row) return;
-                        if (range.start.row > this.row) return;
-                        if (range.start.row == this.row && range.start.column > this.column) return;
-                        var row = this.row;
-                        var column = this.column;
-                        var start = range.start;
-                        var end = range.end;
-                        if (delta.action === "insertText") {
-                            if (start.row === row && start.column <= column) {
-                                if (start.column === column && this.$insertRight) {} else if (start.row === end.row) {
-                                    column += end.column - start.column;
-                                } else {
-                                    column -= start.column;
-                                    row += end.row - start.row;
-                                }
-                            } else if (start.row !== end.row && start.row < row) {
-                                row += end.row - start.row;
-                            }
-                        } else if (delta.action === "insertLines") {
-                            if (start.row === row && column === 0 && this.$insertRight) {} else if (start.row <= row) {
-                                row += end.row - start.row;
-                            }
-                        } else if (delta.action === "removeText") {
-                            if (start.row === row && start.column < column) {
-                                if (end.column >= column) column = start.column;else column = Math.max(0, column - (end.column - start.column));
-                            } else if (start.row !== end.row && start.row < row) {
-                                if (end.row === row) column = Math.max(0, column - end.column) + start.column;
-                                row -= end.row - start.row;
-                            } else if (end.row === row) {
-                                row -= end.row - start.row;
-                                column = Math.max(0, column - end.column) + start.column;
-                            }
-                        } else if (delta.action == "removeLines") {
-                            if (start.row <= row) {
-                                if (end.row <= row) row -= end.row - start.row;else {
-                                    row = start.row;
-                                    column = 0;
-                                }
-                            }
-                        }
-                        this.setPosition(row, column, true);
-                    }
-                }, {
-                    key: 'setPosition',
-                    value: function setPosition(row, column, noClip) {
-                        var pos;
-                        if (noClip) {
-                            pos = { row: row, column: column };
-                        } else {
-                            pos = this.$clipPositionToDocument(row, column);
-                        }
-                        if (this.row === pos.row && this.column === pos.column) {
-                            return;
-                        }
-                        var old = { row: this.row, column: this.column };
-                        this.row = pos.row;
-                        this.column = pos.column;
-                        this.eventBus._signal("change", { old: old, value: pos });
-                    }
-                }, {
-                    key: 'detach',
-                    value: function detach() {
-                        this.document.off("change", this.$onChange);
-                    }
-                }, {
-                    key: 'attach',
-                    value: function attach(doc) {
-                        this.document = doc || this.document;
-                        this.document.on("change", this.$onChange);
-                    }
-                }, {
-                    key: 'on',
-                    value: function on(eventName, callback) {
-                        this.eventBus.on(eventName, callback, false);
-                    }
-                }, {
-                    key: 'off',
-                    value: function off(eventName, callback) {
-                        this.eventBus.off(eventName, callback);
-                    }
-                }, {
-                    key: '$clipPositionToDocument',
-                    value: function $clipPositionToDocument(row, column) {
-                        var pos = { row: 0, column: 0 };
-                        if (row >= this.document.getLength()) {
-                            pos.row = Math.max(0, this.document.getLength() - 1);
-                            pos.column = this.document.getLine(pos.row).length;
-                        } else if (row < 0) {
-                            pos.row = 0;
-                            pos.column = 0;
-                        } else {
-                            pos.row = row;
-                            pos.column = Math.min(this.document.getLine(pos.row).length, Math.max(0, column));
-                        }
-                        if (column < 0) {
-                            pos.column = 0;
-                        }
-                        return pos;
-                    }
-                }]);
-
-                return Anchor;
-            })();
-
-            _export('default', Anchor);
-        }
-    };
-});
-System.register('src/Document.js', ['npm:babel-runtime@5.8.34/helpers/create-class', 'npm:babel-runtime@5.8.34/helpers/class-call-check', 'src/Anchor.js', 'src/lib/EventEmitterClass.js', 'src/Range.js'], function (_export) {
-    var _createClass, _classCallCheck, Anchor, EventEmitterClass, Range, $split, Document;
+System.register('src/Document.js', ['npm:babel-runtime@5.8.34/helpers/create-class', 'npm:babel-runtime@5.8.34/helpers/class-call-check', 'src/lib/EventEmitterClass.js', 'src/Range.js'], function (_export) {
+    var _createClass, _classCallCheck, EventEmitterClass, Range, $split, Document;
 
     function $clipPosition(doc, position) {
         var length = doc.getLength();
@@ -7860,8 +7862,6 @@ System.register('src/Document.js', ['npm:babel-runtime@5.8.34/helpers/create-cla
             _createClass = _npmBabelRuntime5834HelpersCreateClass['default'];
         }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
             _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck['default'];
-        }, function (_srcAnchorJs) {
-            Anchor = _srcAnchorJs['default'];
         }, function (_srcLibEventEmitterClassJs) {
             EventEmitterClass = _srcLibEventEmitterClassJs['default'];
         }, function (_srcRangeJs) {
@@ -7912,11 +7912,6 @@ System.register('src/Document.js', ['npm:babel-runtime@5.8.34/helpers/create-cla
                     key: 'getValue',
                     value: function getValue() {
                         return this.getAllLines().join(this.getNewLineCharacter());
-                    }
-                }, {
-                    key: 'createAnchor',
-                    value: function createAnchor(row, column) {
-                        return new Anchor(this, row, column);
                     }
                 }, {
                     key: '$detectNewLine',

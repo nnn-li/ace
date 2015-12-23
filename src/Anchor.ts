@@ -82,6 +82,7 @@ export default class Anchor implements EventBus<Anchor> {
      * @private
      */
     private document: Document;
+
     private $onChange: (event, doc: Document) => void;
 
     /**
