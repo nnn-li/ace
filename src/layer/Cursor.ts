@@ -83,6 +83,7 @@ export default class Cursor {
     /**
      * @class Cursor
      * @constructor
+     * @param container {HTMLDivElement}
      */
     constructor(container: HTMLDivElement) {
         this.element = <HTMLDivElement>createElement("div");
@@ -112,6 +113,11 @@ export default class Cursor {
         }
     }
 
+    /**
+     * @method setPadding
+     * @param padding {number}
+     * @return {void}
+     */
     public setPadding(padding: number): void {
         if (typeof padding === 'number') {
             this.$padding = padding;
@@ -121,7 +127,12 @@ export default class Cursor {
         }
     }
 
-    public setSession(session: EditSession) {
+    /**
+     * @method setSession
+     * @param session {EditSession}
+     * @return {void}
+     */
+    public setSession(session: EditSession): void {
         this.session = session;
     }
 
@@ -139,6 +150,11 @@ export default class Cursor {
         }
     }
 
+    /**
+     * @method setSmoothBlinking
+     * @param smoothBlinking {boolean}
+     * @return {void}
+     */
     public setSmoothBlinking(smoothBlinking: boolean): void {
         if (smoothBlinking != this.smoothBlinking && !IE8) {
             this.smoothBlinking = smoothBlinking;
@@ -152,34 +168,46 @@ export default class Cursor {
     }
 
     private addCursor(): HTMLDivElement {
-        var el: HTMLDivElement = <HTMLDivElement>createElement("div");
-        el.className = "ace_cursor";
-        this.element.appendChild(el);
-        this.cursors.push(el);
-        return el;
+        var cursor: HTMLDivElement = <HTMLDivElement>createElement("div");
+        cursor.className = "ace_cursor";
+        this.element.appendChild(cursor);
+        this.cursors.push(cursor);
+        return cursor;
     }
 
     private removeCursor(): HTMLDivElement {
         if (this.cursors.length > 1) {
-            var el = this.cursors.pop();
-            el.parentNode.removeChild(el);
-            return el;
+            var cursor = this.cursors.pop();
+            cursor.parentNode.removeChild(cursor);
+            return cursor;
         }
     }
 
+    /**
+     * @method hideCursor
+     * @return {void}
+     */
     public hideCursor(): void {
         this.isVisible = false;
         addCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
+    /**
+     * @method showCursor
+     * @return {void}
+     */
     public showCursor(): void {
         this.isVisible = true;
         removeCssClass(this.element, "ace_hidden-cursors");
         this.restartTimer();
     }
 
-    public restartTimer() {
+    /**
+     * @method restartTimer
+     * @return {void}
+     */
+    public restartTimer(): void {
         var update = this.$updateCursors;
         clearInterval(this.intervalId);
         clearTimeout(this.timeoutId);
@@ -212,8 +240,13 @@ export default class Cursor {
         blink();
     }
 
-    // TODO: Create PixelPosition with left and top?
-    public getPixelPosition(position: Position, onScreen?: boolean): PixelPosition {
+    /**
+     * @method getPixelPosition
+     * @param [position] {Position}
+     * @param [onScreen] {boolean}
+     * @return {PixelPosition}
+     */
+    public getPixelPosition(position?: Position, onScreen?: boolean): PixelPosition {
 
         if (!this.config || !this.session) {
             return { left: 0, top: 0 };
@@ -231,7 +264,12 @@ export default class Cursor {
         return { left: cursorLeft, top: cursorTop };
     }
 
-    public update(config: CursorConfig) {
+    /**
+     * @method update
+     * @param config {CursorConfig}
+     * @return {void}
+     */
+    public update(config: CursorConfig): void {
 
         this.config = config;
 
@@ -282,7 +320,11 @@ export default class Cursor {
         }
     }
 
-    public destroy() {
+    /**
+     * @method destroy
+     * @return {void}
+     */
+    public destroy(): void {
         clearInterval(this.intervalId);
         clearTimeout(this.timeoutId);
     }

@@ -79,6 +79,7 @@ import TokenIterator from "./TokenIterator";
 import {COMMAND_NAME_AUTO_COMPLETE} from './editor_protocol';
 import VirtualRenderer from './VirtualRenderer';
 import {Completer} from "./autocomplete";
+import SearchOptions from './SearchOptions';
 import Selection from './Selection';
 import {addListener, addMouseWheelListener, addMultiMouseDownListener, capture, getButton, preventDefault, stopEvent, stopPropagation} from "./lib/event";
 import {touchManager} from './touch/touch';
@@ -141,7 +142,7 @@ export default class Editor implements EventBus<Editor> {
     private $blockScrolling;
     private $highlightActiveLine;
     private $highlightPending;
-    private $highlightSelectedWord;
+    private $highlightSelectedWord: boolean;
     private $highlightTagPending;
     private $mergeUndoDeltas;
     public $readOnly;
@@ -253,7 +254,7 @@ export default class Editor implements EventBus<Editor> {
         function last<T>(a: T[]): T { return a[a.length - 1] }
 
         this.selections = [];
-        this.commands.on("exec", (e: {command: Command}) => {
+        this.commands.on("exec", (e: { command: Command }) => {
             this.startOperation(e);
 
             var command = e.command;
@@ -267,7 +268,7 @@ export default class Editor implements EventBus<Editor> {
             }
         }, true);
 
-        this.commands.on("afterExec", (e: {command: Command}, cm: CommandManager) => {
+        this.commands.on("afterExec", (e: { command: Command }, cm: CommandManager) => {
             var command = e.command;
 
             if (command.aceCommandGroup === "fileJump") {
@@ -576,16 +577,17 @@ export default class Editor implements EventBus<Editor> {
      *
      * @method getValue
      * @return {string}
-     **/
+     */
     getValue(): string {
         return this.session.getValue();
     }
 
     /**
-     *
      * Returns the currently highlighted selection.
-     * @return {String} The highlighted selection
-     **/
+     *
+     * @method getSelection
+     * @return {Selection} The highlighted selection
+     */
     getSelection(): Selection {
         return this.selection;
     }
@@ -600,11 +602,9 @@ export default class Editor implements EventBus<Editor> {
     }
 
     /**
-     * {:VirtualRenderer.getTheme}
-     *
-     * @return {String} The set theme
-     * @related VirtualRenderer.getTheme
-     **/
+     * @method getTheme
+     * @return {string} The set theme
+     */
     getTheme(): string {
         return this.renderer.getTheme();
     }
@@ -958,13 +958,13 @@ export default class Editor implements EventBus<Editor> {
             this.$updateHighlightActiveLine();
         }
 
-        var re = this.$highlightSelectedWord && this.$getSelectionHighLightRegexp();
+        var re: RegExp = this.$highlightSelectedWord && this.$getSelectionHighLightRegexp();
         this.session.highlight(re);
 
         this.eventBus._signal("changeSelection");
     }
 
-    $getSelectionHighLightRegexp() {
+    $getSelectionHighLightRegexp(): RegExp {
         var session = this.session;
 
         var selection = this.getSelectionRange();
@@ -987,7 +987,9 @@ export default class Editor implements EventBus<Editor> {
         if (!/^[\w\d]+$/.test(needle))
             return;
 
-        var re = this.$search.$assembleRegExp({
+        // When the needle is a string, the return type will be a RegExp.
+        // TODO: Split out this functionality for cleaner type safety.
+        var re = <RegExp>this.$search.$assembleRegExp({
             wholeWord: true,
             caseSensitive: true,
             needle: needle
@@ -1430,10 +1432,12 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * If `showInvisibles` is set to `true`, invisible characters&mdash;like spaces or new lines&mdash;are show in the editor.
-     * @param {Boolean} showInvisibles Specifies whether or not to show invisible characters
      *
-     **/
-    setShowInvisibles(showInvisibles: boolean) {
+     * @method setShowInvisibles
+     * @param {Boolean} showInvisibles Specifies whether or not to show invisible characters.
+     * @return {void}
+     */
+    setShowInvisibles(showInvisibles: boolean): void {
         this.renderer.setShowInvisibles(showInvisibles);
     }
 
@@ -1487,10 +1491,12 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * If `readOnly` is true, then the editor is set to read-only mode, and none of the content can change.
-     * @param {Boolean} readOnly Specifies whether the editor can be modified or not
      *
-     **/
-    setReadOnly(readOnly: boolean) {
+     * @method setReadOnly
+     * @param {Boolean} readOnly Specifies whether the editor can be modified or not.
+     * @return {void}
+     */
+    setReadOnly(readOnly: boolean): void {
         this.setOption("readOnly", readOnly);
     }
 
@@ -2675,11 +2681,12 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * Replaces all occurances of `options.needle` with the value in `replacement`.
-     * @param {String} replacement The text to replace with
-     * @param {Object} options The [[Search `Search`]] options to use
      *
-     *
-     **/
+     * @method replaceAll
+     * @param replacement {string} The text to replace with
+     * @param options The [[Search `Search`]] options to use
+     * @return {number}
+     */
     replaceAll(replacement: string, options): number {
         if (options) {
             this.$search.set(options);
@@ -2713,37 +2720,38 @@ export default class Editor implements EventBus<Editor> {
         if (replacement !== null) {
             range.end = this.session.replace(range, replacement);
             return range;
-        } else {
+        }
+        else {
             return null;
         }
     }
 
     /**
-     * {:Search.getOptions} For more information on `options`, see [[Search `Search`]].
-     * @related Search.getOptions
-     * @return {Object}
-     **/
-    getLastSearchOptions() {
+     * @method getLastSearchOptions
+     * @return {SearchOptions}
+     */
+    getLastSearchOptions(): SearchOptions {
         return this.$search.getOptions();
     }
 
     /**
-     * Attempts to find `needle` within the document. For more information on `options`, see [[Search `Search`]].
-     * @param {String} needle The text to search for (optional)
-     * @param {Object} options An object defining various search properties
-     * @param {Boolean} animate If `true` animate scrolling
+     * Attempts to find `needle` within the document.
+     * For more information on `options`, see [[Search `Search`]].
      *
-     *
-     * @related Search.find
-     **/
-    find(needle: (string | RegExp), options, animate?: boolean): Range {
-        if (!options)
-            options = {};
+     * @method find
+     * @param needle {object | string | RegExp} The text to search for (optional).
+     * @param [options] {SearchOptions} An object defining various search properties
+     * @param [animate] {boolean} If `true` animate scrolling
+     * @return {Range}
+     */
+    find(needle: (string | RegExp), options: SearchOptions = {}, animate?: boolean): Range {
 
-        if (typeof needle == "string" || needle instanceof RegExp)
+        if (typeof needle === "string" || needle instanceof RegExp) {
             options.needle = needle;
-        else if (typeof needle == "object")
+        }
+        else if (typeof needle == "object") {
             mixin(options, needle);
+        }
 
         var range = this.selection.getRange();
         if (options.needle == null) {
@@ -2756,12 +2764,15 @@ export default class Editor implements EventBus<Editor> {
         }
 
         this.$search.set(options);
-        if (!options.start)
-            this.$search.set({ start: range });
+        if (!options.start) {
+            // TODO: I'm guessing that we need range.start, was just range.
+            this.$search.set({ start: range.start });
+        }
 
         var newRange = this.$search.find(this.session);
-        if (options.preventScroll)
+        if (options.preventScroll) {
             return newRange;
+        }
         if (newRange) {
             this.revealRange(newRange, animate);
             return newRange;
@@ -2775,30 +2786,37 @@ export default class Editor implements EventBus<Editor> {
     }
 
     /**
-     * Performs another search for `needle` in the document. For more information on `options`, see [[Search `Search`]].
-     * @param {Object} options search options
-     * @param {Boolean} animate If `true` animate scrolling
+     * Performs another search for `needle` in the document.
+     * For more information on `options`, see [[Search `Search`]].
      *
-     *
-     * @related Editor.find
+     * @method findNext
+     * @param [needle] {string | RegExp}
+     * @param [animate] {boolean} If `true` animate scrolling
+     * @return {void}
      **/
-    findNext(needle?: (string | RegExp), animate?: boolean) {
-        // FIXME: This looks flipped compared to findPrevious. 
+    findNext(needle?: (string | RegExp), animate?: boolean): void {
         this.find(needle, { skipCurrent: true, backwards: false }, animate);
     }
 
     /**
-     * Performs a search for `needle` backwards. For more information on `options`, see [[Search `Search`]].
-     * @param {Object} options search options
-     * @param {Boolean} animate If `true` animate scrolling
+     * Performs a search for `needle` backwards.
+     * For more information on `options`, see [[Search `Search`]].
      *
-     *
-     * @related Editor.find
-     **/
-    findPrevious(needle?: (string | RegExp), animate?: boolean) {
+     * @method findPrevious
+     * @param [needle] {string | RegExp}
+     * @param [animate] {boolean} If `true` animate scrolling
+     * @return {void}
+     */
+    findPrevious(needle?: (string | RegExp), animate?: boolean): void {
         this.find(needle, { skipCurrent: true, backwards: true }, animate);
     }
 
+    /**
+     * @method revealRange
+     * @param range {Range}
+     * @param animate {boolean}
+     * @return {void}
+     */
     revealRange(range: Range, animate: boolean): void {
         this.$blockScrolling += 1;
         this.session.unfold(range);
@@ -2807,46 +2825,55 @@ export default class Editor implements EventBus<Editor> {
 
         var scrollTop = this.renderer.scrollTop;
         this.renderer.scrollSelectionIntoView(range.start, range.end, 0.5);
-        if (animate !== false)
+        if (animate !== false) {
             this.renderer.animateScrolling(scrollTop);
+        }
     }
 
     /**
-     * {:UndoManager.undo}
-     * @related UndoManager.undo
+     * @method undo
+     * @return {void}
      **/
-    undo() {
+    undo(): void {
         this.$blockScrolling++;
         this.session.getUndoManager().undo();
         this.$blockScrolling--;
-        this.renderer.scrollCursorIntoView(null, 0.5);
+        this.renderer.scrollCursorIntoView(void 0, 0.5);
     }
 
     /**
-     * {:UndoManager.redo}
-     * @related UndoManager.redo
-     **/
-    redo() {
+     * @method redo
+     * @return {void}
+     */
+    redo(): void {
         this.$blockScrolling++;
         this.session.getUndoManager().redo();
         this.$blockScrolling--;
-        this.renderer.scrollCursorIntoView(null, 0.5);
+        this.renderer.scrollCursorIntoView(void 0, 0.5);
     }
 
     /**
-     *
      * Cleans up the entire editor.
-     **/
-    destroy() {
+     *
+     * @method destroy
+     * @return {void}
+     */
+    destroy(): void {
         this.renderer.destroy();
+        /**
+         * @event destroy
+         * @param this {Editor}
+         */
         this._signal("destroy", this);
     }
 
     /**
-     * Enables automatic scrolling of the cursor into view when editor itself is inside scrollable element
-     * @param {Boolean} enable default true
-     **/
-    setAutoScrollEditorIntoView(enable: boolean) {
+     * Enables automatic scrolling of the cursor into view when editor itself is inside scrollable element.
+     *
+     * @method setAutoScrollEditorIntoView
+     * @param enable {boolean} default true
+     */
+    setAutoScrollEditorIntoView(enable: boolean): void {
         if (!enable)
             return;
         var rect;
@@ -3362,8 +3389,10 @@ defineOptions(MouseHandler.prototype, "mouseHandler", {
     tooltipFollowsMouse: { initialValue: true }
 });
 
-/*
+/**
  * Custom Ace mouse event
+ *
+ * @class EditorMouseEvent
  */
 class EditorMouseEvent {
     // We keep the original DOM event
@@ -3375,7 +3404,7 @@ class EditorMouseEvent {
      * Cached text coordinates following getDocumentPosition()
      */
     private $pos: Position;
-    private $inSelection;
+    private $inSelection: boolean;
     private propagationStopped = false;
     private defaultPrevented = false;
     public time: number;
@@ -3383,6 +3412,13 @@ class EditorMouseEvent {
     public wheelX: number;
     public wheelY: number;
     public speed: number;
+
+    /**
+     * @class EditorMouseEvent
+     * @constructor
+     * @param domEvent {MouseEvent}
+     * @param editor {Editor}
+     */
     constructor(domEvent: MouseEvent, editor: Editor) {
         this.domEvent = domEvent;
         this.editor = editor;
@@ -3398,7 +3434,7 @@ class EditorMouseEvent {
         return this.domEvent.toElement;
     }
 
-    stopPropagation() {
+    stopPropagation(): void {
         stopPropagation(this.domEvent);
         this.propagationStopped = true;
     }
@@ -3413,12 +3449,13 @@ class EditorMouseEvent {
         this.preventDefault();
     }
 
-    /*
+    /**
      * Get the document position below the mouse cursor
-     * 
-     * @return {Object} 'row' and 'column' of the document position
+     *
+     * @method getDocumentPosition
+     * @return {Position} 'row' and 'column' of the document position
      */
-    getDocumentPosition(): { row: number; column: number } {
+    getDocumentPosition(): Position {
         if (!this.$pos) {
             this.$pos = this.editor.renderer.screenToTextCoordinates(this.clientX, this.clientY);
         }
@@ -3427,7 +3464,8 @@ class EditorMouseEvent {
     
     /*
      * Check if the mouse cursor is inside of the text selection
-     * 
+     *
+     * @method inSelection
      * @return {Boolean} whether the mouse cursor is inside of the selection
      */
     inSelection() {

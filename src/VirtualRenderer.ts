@@ -1422,16 +1422,29 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
         this.$cursorLayer.showCursor();
     }
 
-    scrollSelectionIntoView(anchor, lead, offset?) {
+    /**
+     * @method scrollSelectionIntoView
+     * @param anchor {Position}
+     * @param lead {Position}
+     * @param [offset] {number}
+     * @return {void}
+     */
+    scrollSelectionIntoView(anchor: Position, lead: Position, offset?: number): void {
         // first scroll anchor into view then scroll lead into view
         this.scrollCursorIntoView(anchor, offset);
         this.scrollCursorIntoView(lead, offset);
     }
 
     /**
-     * Scrolls the cursor into the first visibile area of the editor
+     * Scrolls the cursor into the first visibile area of the editor.
+     *
+     * @method scrollCursorIntoView
+     * @param cursor {Position}
+     * @param [offset] {number}
+     * @param [$viewMargin] {{top: number; bottom: number}}
+     * @return {void}
      */
-    scrollCursorIntoView(cursor?: Position, offset?, $viewMargin?): void {
+    scrollCursorIntoView(cursor?: Position, offset?: number, $viewMargin?: { top: number; bottom: number }): void {
         // the editor is not visible
         if (this.$size.scrollerHeight === 0)
             return;

@@ -55,6 +55,7 @@
 import { copyObject, escapeRegExp, getMatchOffsets } from "./lib/lang";
 import { mixin } from "./lib/oop";
 import Range from "./Range";
+import SearchOptions from "./SearchOptions";
 import EditSession from "./EditSession";
 
 /**
@@ -62,7 +63,12 @@ import EditSession from "./EditSession";
  * @class Search
  */
 export default class Search {
-    $options;
+
+    /**
+     * @property $options
+     * @type SearchOptions
+     */
+    $options: SearchOptions;
     /**
      * Creates a new `Search` object. The following search options are avaliable:
      *
@@ -87,11 +93,11 @@ export default class Search {
      * Sets the search options via the `options` parameter.
      *
      * @method set
-     * @param {Object} options An object containing all the new search properties.
+     * @param options {SearchOptions} An object containing all the new search properties.
      * @return {Search}
      * @chainable
      */
-    set(options): Search {
+    set(options: SearchOptions): Search {
         mixin(this.$options, options);
         return this;
     }
@@ -100,9 +106,9 @@ export default class Search {
      * [Returns an object containing all the search options.]{: #Search.getOptions}
      *
      * @method getOptions
-     * @return {Object}
+     * @return {SearchOptions}
      */
-    getOptions() {
+    getOptions(): SearchOptions {
         return copyObject(this.$options);
     }
     
@@ -110,11 +116,11 @@ export default class Search {
      * Sets the search options via the `options` parameter.
      *
      * @method setOptions
-     * @param {Object} An object containing all the search properties.
+     * @param options {SearchOptions} An object containing all the search properties.
      * @return {void}
      * @related Search.set
      */
-    setOptions(options): void {
+    setOptions(options: SearchOptions): void {
         this.$options = options;
     }
 
@@ -131,11 +137,14 @@ export default class Search {
         var iterator = this.$matchIterator(session, this.$options);
 
         if (!iterator) {
+            // Presumably eliminates the boolean case?
             return void 0;
         }
 
         var firstRange: Range = null;
-        iterator.forEach(function(range, row, offset) {
+        // We must be left with the object with the forEach property.
+        // FIXME: Since when does Range have an offset property?
+        (<{ forEach }>iterator).forEach(function(range, row: number, offset: number) {
             if (!range.start) {
                 var column = range.offset + (offset || 0);
                 firstRange = new Range(row, column, row, column + range.length);
@@ -157,23 +166,32 @@ export default class Search {
      * @return {[Range]}
      */
     findAll(session: EditSession): Range[] {
-        var options = this.$options;
-        if (!options.needle)
+
+        var options: SearchOptions = this.$options;
+
+        if (!options.needle) {
+            // If we are not looking for anything, return an empty array of Range(s).
             return [];
+        }
+
+        // The side-effect of this call is mutation of the options.
         this.$assembleRegExp(options);
 
-        var range = options.range;
-        var lines = range
+        var range: Range = options.range;
+        var lines: string[] = range
             ? session.getLines(range.start.row, range.end.row)
             : session.doc.getAllLines();
 
         var ranges: Range[] = [];
-        var re = options.re;
+        //      var re = options.re;
         if (options.$isMultiLine) {
+            // When multiLine, re is an array of RegExp.
+            let re = <RegExp[]>options.re
             var len = re.length;
             var maxRow = lines.length - len;
-            var prevRange;
-            outer: for (var row = re.offset || 0; row <= maxRow; row++) {
+            var prevRange: Range;
+            // TODO: What is this offset property?
+            outer: for (var row = re['offset'] || 0; row <= maxRow; row++) {
                 for (var j = 0; j < len; j++)
                     if (lines[row + j].search(re[j]) == -1)
                         continue outer;
@@ -196,6 +214,8 @@ export default class Search {
             }
         }
         else {
+            // TOOD: How did we eliminate the case when options.re is false (boolean)?
+            let re = <RegExp>options.re
             for (var i = 0; i < lines.length; i++) {
                 var matches = getMatchOffsets(lines[i], re);
                 for (var j = 0; j < matches.length; j++) {
@@ -238,18 +258,23 @@ export default class Search {
     replace(input: string, replacement: string): string {
         var options = this.$options;
 
-        var re = this.$assembleRegExp(options);
-        if (options.$isMultiLine)
+        var re: boolean | RegExp | RegExp[] = this.$assembleRegExp(options);
+        if (options.$isMultiLine) {
+            // This eliminates the RegExp[]
             return replacement;
+        }
 
-        if (!re)
+        if (!re) {
+            // Presumably, the boolean is always false?
             return;
+        }
 
-        var match = re.exec(input);
-        if (!match || match[0].length != input.length)
+        var match: RegExpExecArray = (<RegExp>re).exec(input);
+        if (!match || match[0].length !== input.length) {
             return null;
+        }
 
-        replacement = input.replace(re, replacement);
+        replacement = input.replace(<RegExp>re, replacement);
         if (options.preserveCase) {
             var parts: string[] = replacement.split("");
             for (var i = Math.min(input.length, input.length); i--;) {
@@ -265,16 +290,19 @@ export default class Search {
         return replacement;
     }
 
-    private $matchIterator(session: EditSession, options: { backwards: boolean; $isMultiLine: boolean }): any {
-        var re = this.$assembleRegExp(options);
-        if (!re)
+    private $matchIterator(session: EditSession, options: SearchOptions): boolean | { forEach } {
+        var re: boolean | RegExp | RegExp[] = this.$assembleRegExp(options);
+
+        if (!re) {
+            // This eliminates the case where re is a boolean.
             return false;
+        }
 
         var self = this, callback, backwards = options.backwards;
 
         if (options.$isMultiLine) {
-            var len = re.length;
-            var matchIterator = function(line, row, offset) {
+            var len = (<RegExp[]>re).length;
+            var matchIterator = function(line: string, row: number, offset: number) {
                 var startIndex = line.search(re[0]);
                 if (startIndex == -1)
                     return;
@@ -287,10 +315,12 @@ export default class Search {
                 var endIndex = line.match(re[len - 1])[0].length;
 
                 var range = new Range(row, startIndex, row + len - 1, endIndex);
-                if (re.offset == 1) {
+                // FIXME: What's going on here?
+                if ((<RegExp[]>re)['offset'] == 1) {
                     range.start.row--;
                     range.start.column = Number.MAX_VALUE;
-                } else if (offset)
+                }
+                else if (offset)
                     range.start.column += offset;
 
                 if (callback(range))
@@ -298,16 +328,16 @@ export default class Search {
             };
         }
         else if (backwards) {
-            var matchIterator = function(line, row, startIndex) {
-                var matches = getMatchOffsets(line, re);
+            var matchIterator = function(line: string, row: number, startIndex: number) {
+                var matches = getMatchOffsets(line, <RegExp>re);
                 for (var i = matches.length - 1; i >= 0; i--)
                     if (callback(matches[i], row, startIndex))
                         return true;
             };
         }
         else {
-            var matchIterator = function(line, row, startIndex) {
-                var matches = getMatchOffsets(line, re);
+            var matchIterator = function(line: string, row: number, startIndex: number) {
+                var matches = getMatchOffsets(line, <RegExp>re);
                 for (var i = 0; i < matches.length; i++)
                     if (callback(matches[i], row, startIndex))
                         return true;
@@ -322,39 +352,50 @@ export default class Search {
         };
     }
 
-    // FIXME: Editor needs access.
-    public $assembleRegExp(options, $disableFakeMultiline?: boolean) {
-        if (options.needle instanceof RegExp)
-            return options.re = options.needle;
+    // FIXME: This should be a standalone function, not a method.
+    public $assembleRegExp(options: SearchOptions, $disableFakeMultiline?: boolean): boolean | RegExp | RegExp[] {
 
-        var needle = options.needle;
-
-        if (!options.needle)
-            return options.re = false;
-
-        if (!options.regExp)
-            needle = escapeRegExp(needle);
-
-        if (options.wholeWord)
-            needle = "\\b" + needle + "\\b";
-
-        var modifier = options.caseSensitive ? "g" : "gi";
-
-        options.$isMultiLine = !$disableFakeMultiline && /[\n\r]/.test(needle);
-        if (options.$isMultiLine)
-            return options.re = this.$assembleMultilineRegExp(needle, modifier);
-
-        try {
-            var re: any = new RegExp(needle, modifier);
+        if (!options.needle) {
+            options.re = false;
         }
-        catch (e) {
-            re = false;
+        else if (options.needle instanceof RegExp) {
+            options.re = <RegExp>options.needle;
         }
-        return options.re = re;
+        else if (typeof options.needle === 'string') {
+
+            let needleString = <string>options.needle;
+
+            // TODO: Is this a BUG?
+            if (!options.regExp) {
+                needleString = escapeRegExp(needleString);
+            }
+
+            if (options.wholeWord) {
+                needleString = "\\b" + needleString + "\\b";
+            }
+
+            var modifier: string = options.caseSensitive ? "g" : "gi";
+
+            options.$isMultiLine = !$disableFakeMultiline && /[\n\r]/.test(needleString);
+            if (options.$isMultiLine)
+                return options.re = this.$assembleMultilineRegExp(needleString, modifier);
+
+            try {
+                options.re = new RegExp(needleString, modifier);
+            }
+            catch (e) {
+                options.re = false;
+            }
+        }
+        else {
+            throw new Error(`typeof options.needle => ${typeof options.needle}`);
+        }
+        return options.re;
     }
 
-    private $assembleMultilineRegExp(needle: string, modifier): RegExp[] {
-        var parts = needle.replace(/\r\n|\r|\n/g, "$\n^").split("\n");
+    // FIXME: This should be a standalone function, not a method.
+    private $assembleMultilineRegExp(needle: string, modifier: string): RegExp[] {
+        var parts: string[] = needle.replace(/\r\n|\r|\n/g, "$\n^").split("\n");
         var re: RegExp[] = [];
         for (var i = 0; i < parts.length; i++) {
             try {
@@ -364,7 +405,9 @@ export default class Search {
                 return void 0;
             }
         }
-        if (parts[0] == "") {
+        // FIXME: We're sneaking a property onto the array of RegExp.
+        // Better to return a class with {offset: number; regExps: RegExp[]}
+        if (parts[0] === "") {
             re.shift();
             re['offset'] = 1;
         }
@@ -374,17 +417,22 @@ export default class Search {
         return re;
     }
 
-    private $lineIterator(session: EditSession, options) {
+    private $lineIterator(session: EditSession, options: SearchOptions) {
         var backwards = options.backwards == true;
         var skipCurrent = options.skipCurrent != false;
 
         var range = options.range;
         var start = options.start;
-        if (!start)
-            start = range ? range[backwards ? "end" : "start"] : session.getSelection().getRange();
 
-        if (start.start)
-            start = start[skipCurrent != backwards ? "end" : "start"];
+        if (!start) {
+            if (range) {
+                start = backwards ? range.end : range.start;
+            }
+            else {
+                let x = session.getSelection().getRange();
+                start = (skipCurrent !== backwards) ? x.end : x.start;
+            }
+        }
 
         var firstRow = range ? range.start.row : 0;
         var lastRow = range ? range.end.row : session.getLength() - 1;

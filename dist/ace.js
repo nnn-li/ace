@@ -632,17 +632,19 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                     key: "findAll",
                     value: function findAll(session) {
                         var options = this.$options;
-                        if (!options.needle) return [];
+                        if (!options.needle) {
+                            return [];
+                        }
                         this.$assembleRegExp(options);
                         var range = options.range;
                         var lines = range ? session.getLines(range.start.row, range.end.row) : session.doc.getAllLines();
                         var ranges = [];
-                        var re = options.re;
                         if (options.$isMultiLine) {
+                            var re = options.re;
                             var len = re.length;
                             var maxRow = lines.length - len;
                             var prevRange;
-                            outer: for (var row = re.offset || 0; row <= maxRow; row++) {
+                            outer: for (var row = re['offset'] || 0; row <= maxRow; row++) {
                                 for (var j = 0; j < len; j++) if (lines[row + j].search(re[j]) == -1) continue outer;
                                 var startLine = lines[row];
                                 var line = lines[row + len - 1];
@@ -655,6 +657,7 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                                 if (len > 2) row = row + len - 2;
                             }
                         } else {
+                            var re = options.re;
                             for (var i = 0; i < lines.length; i++) {
                                 var matches = getMatchOffsets(lines[i], re);
                                 for (var j = 0; j < matches.length; j++) {
@@ -683,10 +686,16 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                     value: function replace(input, replacement) {
                         var options = this.$options;
                         var re = this.$assembleRegExp(options);
-                        if (options.$isMultiLine) return replacement;
-                        if (!re) return;
+                        if (options.$isMultiLine) {
+                            return replacement;
+                        }
+                        if (!re) {
+                            return;
+                        }
                         var match = re.exec(input);
-                        if (!match || match[0].length != input.length) return null;
+                        if (!match || match[0].length !== input.length) {
+                            return null;
+                        }
                         replacement = input.replace(re, replacement);
                         if (options.preserveCase) {
                             var parts = replacement.split("");
@@ -702,7 +711,9 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                     key: "$matchIterator",
                     value: function $matchIterator(session, options) {
                         var re = this.$assembleRegExp(options);
-                        if (!re) return false;
+                        if (!re) {
+                            return false;
+                        }
                         var self = this,
                             callback,
                             backwards = options.backwards;
@@ -717,7 +728,7 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                                 }
                                 var endIndex = line.match(re[len - 1])[0].length;
                                 var range = new Range(row, startIndex, row + len - 1, endIndex);
-                                if (re.offset == 1) {
+                                if (re['offset'] == 1) {
                                     range.start.row--;
                                     range.start.column = Number.MAX_VALUE;
                                 } else if (offset) range.start.column += offset;
@@ -744,20 +755,30 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                 }, {
                     key: "$assembleRegExp",
                     value: function $assembleRegExp(options, $disableFakeMultiline) {
-                        if (options.needle instanceof RegExp) return options.re = options.needle;
-                        var needle = options.needle;
-                        if (!options.needle) return options.re = false;
-                        if (!options.regExp) needle = escapeRegExp(needle);
-                        if (options.wholeWord) needle = "\\b" + needle + "\\b";
-                        var modifier = options.caseSensitive ? "g" : "gi";
-                        options.$isMultiLine = !$disableFakeMultiline && /[\n\r]/.test(needle);
-                        if (options.$isMultiLine) return options.re = this.$assembleMultilineRegExp(needle, modifier);
-                        try {
-                            var re = new RegExp(needle, modifier);
-                        } catch (e) {
-                            re = false;
+                        if (!options.needle) {
+                            options.re = false;
+                        } else if (options.needle instanceof RegExp) {
+                            options.re = options.needle;
+                        } else if (typeof options.needle === 'string') {
+                            var needleString = options.needle;
+                            if (!options.regExp) {
+                                needleString = escapeRegExp(needleString);
+                            }
+                            if (options.wholeWord) {
+                                needleString = "\\b" + needleString + "\\b";
+                            }
+                            var modifier = options.caseSensitive ? "g" : "gi";
+                            options.$isMultiLine = !$disableFakeMultiline && /[\n\r]/.test(needleString);
+                            if (options.$isMultiLine) return options.re = this.$assembleMultilineRegExp(needleString, modifier);
+                            try {
+                                options.re = new RegExp(needleString, modifier);
+                            } catch (e) {
+                                options.re = false;
+                            }
+                        } else {
+                            throw new Error("typeof options.needle => " + typeof options.needle);
                         }
-                        return options.re = re;
+                        return options.re;
                     }
                 }, {
                     key: "$assembleMultilineRegExp",
@@ -771,7 +792,7 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                                 return void 0;
                             }
                         }
-                        if (parts[0] == "") {
+                        if (parts[0] === "") {
                             re.shift();
                             re['offset'] = 1;
                         } else {
@@ -786,8 +807,14 @@ System.register("src/Search.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                         var skipCurrent = options.skipCurrent != false;
                         var range = options.range;
                         var start = options.start;
-                        if (!start) start = range ? range[backwards ? "end" : "start"] : session.getSelection().getRange();
-                        if (start.start) start = start[skipCurrent != backwards ? "end" : "start"];
+                        if (!start) {
+                            if (range) {
+                                start = backwards ? range.end : range.start;
+                            } else {
+                                var x = session.getSelection().getRange();
+                                start = skipCurrent !== backwards ? x.end : x.start;
+                            }
+                        }
                         var firstRow = range ? range.start.row : 0;
                         var lastRow = range ? range.end.row : session.getLength() - 1;
                         var forEach = backwards ? function (callback) {
@@ -5691,8 +5718,13 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                 }, {
                     key: "find",
                     value: function find(needle, options, animate) {
-                        if (!options) options = {};
-                        if (typeof needle == "string" || needle instanceof RegExp) options.needle = needle;else if (typeof needle == "object") mixin(options, needle);
+                        if (options === undefined) options = {};
+
+                        if (typeof needle === "string" || needle instanceof RegExp) {
+                            options.needle = needle;
+                        } else if (typeof needle == "object") {
+                            mixin(options, needle);
+                        }
                         var range = this.selection.getRange();
                         if (options.needle == null) {
                             needle = this.session.getTextRange(range) || this.$search.$options.needle;
@@ -5703,9 +5735,13 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                             this.$search.set({ needle: needle });
                         }
                         this.$search.set(options);
-                        if (!options.start) this.$search.set({ start: range });
+                        if (!options.start) {
+                            this.$search.set({ start: range.start });
+                        }
                         var newRange = this.$search.find(this.session);
-                        if (options.preventScroll) return newRange;
+                        if (options.preventScroll) {
+                            return newRange;
+                        }
                         if (newRange) {
                             this.revealRange(newRange, animate);
                             return newRange;
@@ -5732,7 +5768,9 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                         this.$blockScrolling -= 1;
                         var scrollTop = this.renderer.scrollTop;
                         this.renderer.scrollSelectionIntoView(range.start, range.end, 0.5);
-                        if (animate !== false) this.renderer.animateScrolling(scrollTop);
+                        if (animate !== false) {
+                            this.renderer.animateScrolling(scrollTop);
+                        }
                     }
                 }, {
                     key: "undo",
@@ -5740,7 +5778,7 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                         this.$blockScrolling++;
                         this.session.getUndoManager().undo();
                         this.$blockScrolling--;
-                        this.renderer.scrollCursorIntoView(null, 0.5);
+                        this.renderer.scrollCursorIntoView(void 0, 0.5);
                     }
                 }, {
                     key: "redo",
@@ -5748,7 +5786,7 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                         this.$blockScrolling++;
                         this.session.getUndoManager().redo();
                         this.$blockScrolling--;
-                        this.renderer.scrollCursorIntoView(null, 0.5);
+                        this.renderer.scrollCursorIntoView(void 0, 0.5);
                     }
                 }, {
                     key: "destroy",
@@ -12429,19 +12467,19 @@ System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create
                 }, {
                     key: "addCursor",
                     value: function addCursor() {
-                        var el = createElement("div");
-                        el.className = "ace_cursor";
-                        this.element.appendChild(el);
-                        this.cursors.push(el);
-                        return el;
+                        var cursor = createElement("div");
+                        cursor.className = "ace_cursor";
+                        this.element.appendChild(cursor);
+                        this.cursors.push(cursor);
+                        return cursor;
                     }
                 }, {
                     key: "removeCursor",
                     value: function removeCursor() {
                         if (this.cursors.length > 1) {
-                            var el = this.cursors.pop();
-                            el.parentNode.removeChild(el);
-                            return el;
+                            var cursor = this.cursors.pop();
+                            cursor.parentNode.removeChild(cursor);
+                            return cursor;
                         }
                     }
                 }, {
