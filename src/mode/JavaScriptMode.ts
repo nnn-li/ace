@@ -157,7 +157,7 @@ export default class JavaScriptMode extends TextMode {
             });
 
             // FIXME: Must be able to inject the module name.
-            worker.init(scriptImports, 'ace-workers', 'JavaScriptWorker');
+            worker.init(scriptImports, 'ace-workers.js', 'JavaScriptWorker');
         })
     }
 }

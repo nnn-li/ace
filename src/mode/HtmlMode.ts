@@ -130,6 +130,7 @@ export default class HtmlMode extends TextMode {
         var mode = this;
 
         return new Promise<WorkerClient>(function(resolve, reject) {
+
             var worker = new WorkerClient(workerUrl);
 
             worker.on("initAfter", function() {
@@ -154,7 +155,7 @@ export default class HtmlMode extends TextMode {
             });
 
             // FIXME: Must be able to inject the module name.
-            worker.init(scriptImports, 'ace-workers', 'HtmlWorker');
+            worker.init(scriptImports, 'ace-workers.js', 'HtmlWorker');
         });
     };
 }

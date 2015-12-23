@@ -15114,7 +15114,7 @@ System.register("src/mode/CssMode.js", ["npm:babel-runtime@5.8.34/helpers/get", 
                                 worker.detachFromDocument();
                                 session.clearAnnotations();
                             });
-                            worker.init(scriptImports, 'ace', 'CssWorker');
+                            worker.init(scriptImports, 'ace-workers.js', 'CssWorker');
                         });
                     }
                 }]);
@@ -16399,7 +16399,7 @@ System.register("src/mode/HtmlMode.js", ["npm:babel-runtime@5.8.34/helpers/get",
                                 worker.detachFromDocument();
                                 session.clearAnnotations();
                             });
-                            worker.init(scriptImports, 'ace-workers', 'HtmlWorker');
+                            worker.init(scriptImports, 'ace-workers.js', 'HtmlWorker');
                         });
                     }
                 }]);
@@ -17173,7 +17173,7 @@ System.register("src/mode/JavaScriptMode.js", ["npm:babel-runtime@5.8.34/helpers
                                 worker.detachFromDocument();
                                 session.clearAnnotations();
                             });
-                            worker.init(scriptImports, 'ace-workers', 'JavaScriptWorker');
+                            worker.init(scriptImports, 'ace-workers.js', 'JavaScriptWorker');
                         });
                     }
                 }]);
@@ -19357,7 +19357,7 @@ System.register("src/mode/TypeScriptMode.js", ["npm:babel-runtime@5.8.34/helpers
                             worker.on("getFileNames", function (event) {
                                 session._emit("getFileNames", { data: event.data });
                             });
-                            worker.init(scriptImports, 'ace-workers', 'TypeScriptWorker');
+                            worker.init(scriptImports, 'ace-workers.js', 'TypeScriptWorker');
                         });
                     }
                 }]);

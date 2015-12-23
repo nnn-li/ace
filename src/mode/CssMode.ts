@@ -136,7 +136,7 @@ export default class CssMode extends TextMode {
                 session.clearAnnotations();
             });
 
-            worker.init(scriptImports, 'ace', 'CssWorker');
+            worker.init(scriptImports, 'ace-workers.js', 'CssWorker');
         });
     }
 }
