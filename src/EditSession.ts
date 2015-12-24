@@ -3329,23 +3329,36 @@ export default class EditSession implements EventBus<EditSession> {
         }, this);
     }
 
-    unfold(location?: any, expandInner?: boolean): Fold[] {
+    /**
+     * @method unfold
+     * @param [location] {number | Position | Range}
+     * @param [expandInner] {boolean}
+     * @return {Fold[]}
+     */
+    unfold(location?: number | Position | Range, expandInner?: boolean): Fold[] {
         var range: Range;
         var folds: Fold[];
+        // FIXME: Not handling undefined.
         if (location == null) {
             range = new Range(0, 0, this.getLength(), 0);
             expandInner = true;
-        } else if (typeof location == "number")
+        }
+        else if (typeof location === "number")
             range = new Range(location, 0, location, this.getLine(location).length);
         else if ("row" in location)
-            range = Range.fromPoints(location, location);
-        else
+            range = Range.fromPoints(<Position>location, <Position>location);
+        else if (location instanceof Range) {
             range = location;
+        }
+        else {
+          throw new TypeError("location must be one of number | Position | Range");
+        }
 
         folds = this.getFoldsInRangeList(range);
         if (expandInner) {
             this.removeFolds(folds);
-        } else {
+        }
+        else {
             var subFolds = folds;
             // TODO: might be better to remove and add folds in one go instead of using
             // expandFolds several times.
@@ -3528,12 +3541,21 @@ export default class EditSession implements EventBus<EditSession> {
         }
     }
 
-    foldAll(startRow: number, endRow: number, depth: number): void {
-        if (depth == undefined)
-            depth = 100000; // JSON.stringify doesn't hanle Infinity
+    /**
+     * @method foldAll
+     * @param [startRow] {number}
+     * @param [endRow] {number}
+     * @param [depth] {number}
+     * @return {void}
+     */
+    foldAll(startRow?: number, endRow?: number, depth?: number): void {
+        if (depth === void 0) {
+            depth = 100000; // JSON.stringify doesn't handle Infinity
+        }
         var foldWidgets = this.foldWidgets;
-        if (!foldWidgets)
+        if (!foldWidgets) {
             return; // mode doesn't support folding
+        }
         endRow = endRow || this.getLength();
         startRow = startRow || 0;
         for (var row = startRow; row < endRow; row++) {
@@ -3696,13 +3718,19 @@ export default class EditSession implements EventBus<EditSession> {
         return range;
     }
 
-    toggleFoldWidget(toggleParent) {
+    /**
+     * @method toggleFoldWidget
+     * @param [toggleParent] {boolean} WARNING: unused
+     * @return {void}
+     */
+    toggleFoldWidget(toggleParent?: boolean): void {
         var row: number = this.selection.getCursor().row;
         row = this.getRowFoldStart(row);
         var range = this.$toggleFoldWidget(row, {});
 
-        if (range)
+        if (range) {
             return;
+        }
         // handle toggleParent
         var data = this.getParentFoldRangeData(row, true);
         range = data.range || data.firstRange;
@@ -3713,7 +3741,8 @@ export default class EditSession implements EventBus<EditSession> {
 
             if (fold) {
                 this.removeFold(fold);
-            } else {
+            }
+            else {
                 this.addFold("...", range);
             }
         }

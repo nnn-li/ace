@@ -394,6 +394,9 @@ export default class Selection implements EventBus<Selection> {
 
     /**
      * Moves the selection up one row.
+     *
+     * @method selectUp
+     * @return {void}
      */
     selectUp(): void {
         this.$moveSelection(this.moveCursorUp);
@@ -436,16 +439,21 @@ export default class Selection implements EventBus<Selection> {
 
     /**
      * Moves the selection to the end of the file.
+     *
+     * @method selectFileEnd
+     * @return {void}
      */
-    selectFileEnd() {
+    selectFileEnd(): void {
         this.$moveSelection(this.moveCursorFileEnd);
     }
 
     /**
-    *
-    * Moves the selection to the start of the file.
-    **/
-    selectFileStart() {
+     * Moves the selection to the start of the file.
+     *
+     * @method selectFileStart
+     * @return {void}
+     */
+    selectFileStart(): void {
         this.$moveSelection(this.moveCursorFileStart);
     }
 

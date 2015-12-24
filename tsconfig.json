@@ -85,6 +85,7 @@
 
     "./src/worker/WorkerClient.ts",
 
+    "./app.ts",
     "./ace.ts",
     "./src/Anchor.ts",
     "./src/Annotation.ts",
@@ -127,6 +128,12 @@
 
     "./src/theme/textmate.ts",
     "./src/theme/twilight.ts",
+
+    "./src/workspace/AutoCompleteView.ts",
+    "./src/workspace/CompletionService.ts",
+    "./src/workspace/DocumentPositionUtil.ts",
+    "./src/workspace/EditorPosition.ts",
+    "./src/workspace/Workspace.ts",
 
     "./node_modules/typescript/lib/lib.es6.d.ts",
     "./typings/jshint.d.ts",

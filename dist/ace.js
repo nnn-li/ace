@@ -1281,7 +1281,6 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 exec: function exec(editor) {
                     loadModule("ace/ext/settings_menu", function (module) {
                         module.init(editor);
-                        editor.showSettingsMenu();
                     });
                 },
                 readOnly: true
@@ -1333,7 +1332,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "fold",
                 bindKey: bindKey("Alt-L|Ctrl-F1", "Command-Alt-L|Command-F1"),
                 exec: function exec(editor) {
-                    editor.session.toggleFold(false);
+                    editor.getSession().toggleFold(false);
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1341,7 +1340,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "unfold",
                 bindKey: bindKey("Alt-Shift-L|Ctrl-Shift-F1", "Command-Alt-Shift-L|Command-Shift-F1"),
                 exec: function exec(editor) {
-                    editor.session.toggleFold(true);
+                    editor.getSession().toggleFold(true);
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1349,7 +1348,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "toggleFoldWidget",
                 bindKey: bindKey("F2", "F2"),
                 exec: function exec(editor) {
-                    editor.session.toggleFoldWidget();
+                    editor.getSession().toggleFoldWidget();
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1357,7 +1356,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "toggleParentFoldWidget",
                 bindKey: bindKey("Alt-F2", "Alt-F2"),
                 exec: function exec(editor) {
-                    editor.session.toggleFoldWidget(true);
+                    editor.getSession().toggleFoldWidget(true);
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1365,7 +1364,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "foldall",
                 bindKey: bindKey("Ctrl-Alt-0", "Ctrl-Command-Option-0"),
                 exec: function exec(editor) {
-                    editor.session.foldAll();
+                    editor.getSession().foldAll();
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1373,8 +1372,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "foldOther",
                 bindKey: bindKey("Alt-0", "Command-Option-0"),
                 exec: function exec(editor) {
-                    editor.session.foldAll();
-                    editor.session.unfold(editor.selection.getAllRanges());
+                    editor.getSession().foldAll();
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1382,7 +1380,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 name: "unfoldall",
                 bindKey: bindKey("Alt-Shift-0", "Command-Option-Shift-0"),
                 exec: function exec(editor) {
-                    editor.session.unfold();
+                    editor.getSession().unfold();
                 },
                 scrollIntoView: "center",
                 readOnly: true
@@ -1740,7 +1738,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                     var range = editor.getSelectionRange();
                     editor._emit("cut", range);
                     if (!editor.selection.isEmpty()) {
-                        editor.session.remove(range);
+                        editor.getSession().remove(range);
                         editor.clearSelection();
                     }
                 },
@@ -1968,9 +1966,7 @@ System.register("src/commands/default_commands.js", ["src/lib/lang.js", "src/con
                 exec: function exec(editor) {
                     editor.transposeLetters();
                 },
-                multiSelectAction: function multiSelectAction(editor) {
-                    editor.transposeSelections(1);
-                },
+                multiSelectAction: function multiSelectAction(editor) {},
                 scrollIntoView: "cursor"
             }, {
                 name: "touppercase",
@@ -10726,7 +10722,11 @@ System.register("src/EditSession.js", ["npm:babel-runtime@5.8.34/helpers/create-
                         if (location == null) {
                             range = new Range(0, 0, this.getLength(), 0);
                             expandInner = true;
-                        } else if (typeof location == "number") range = new Range(location, 0, location, this.getLine(location).length);else if ("row" in location) range = Range.fromPoints(location, location);else range = location;
+                        } else if (typeof location === "number") range = new Range(location, 0, location, this.getLine(location).length);else if ("row" in location) range = Range.fromPoints(location, location);else if (location instanceof Range) {
+                            range = location;
+                        } else {
+                            throw new TypeError("location must be one of number | Position | Range");
+                        }
                         folds = this.getFoldsInRangeList(range);
                         if (expandInner) {
                             this.removeFolds(folds);
@@ -10883,9 +10883,13 @@ System.register("src/EditSession.js", ["npm:babel-runtime@5.8.34/helpers/create-
                 }, {
                     key: "foldAll",
                     value: function foldAll(startRow, endRow, depth) {
-                        if (depth == undefined) depth = 100000;
+                        if (depth === void 0) {
+                            depth = 100000;
+                        }
                         var foldWidgets = this.foldWidgets;
-                        if (!foldWidgets) return;
+                        if (!foldWidgets) {
+                            return;
+                        }
                         endRow = endRow || this.getLength();
                         startRow = startRow || 0;
                         for (var row = startRow; row < endRow; row++) {
@@ -11012,7 +11016,9 @@ System.register("src/EditSession.js", ["npm:babel-runtime@5.8.34/helpers/create-
                         var row = this.selection.getCursor().row;
                         row = this.getRowFoldStart(row);
                         var range = this.$toggleFoldWidget(row, {});
-                        if (range) return;
+                        if (range) {
+                            return;
+                        }
                         var data = this.getParentFoldRangeData(row, true);
                         range = data.range || data.firstRange;
                         if (range) {

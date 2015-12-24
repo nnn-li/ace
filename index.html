@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ace Development</title>
+<link rel="stylesheet" type="text/css" href="src/css/editor.css">
+<style type="text/css">
+  #wrapper {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  div.ace_editor {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+  }
+  #editor1 { 
+      top: 0;
+      left: 0;
+  }
+  #editor2 {
+      top: 0;
+      left: 50%;
+  }
+</style>
+<script src="jspm_packages/system.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<div id="wrapper">
+  <div id="editor1"></div>
+  <div id="editor2"></div>
+</div>
+<script>
+  System.import('app').then(function(m) {
+    var element1 = document.getElementById("editor1");
+    var element2 = document.getElementById("editor2");
+    m.main(element1, element2);
+  });
+</script>
+</body>
+</html>

@@ -104,9 +104,8 @@ export default class Editor implements EventBus<Editor> {
     /**
      * @property session
      * @type EditSession
-     * @private
      */
-    private session: EditSession;
+    public session: EditSession;
 
     /**
      * @property eventBus
@@ -175,7 +174,7 @@ export default class Editor implements EventBus<Editor> {
     private $onScrollTopChange;
     private $onScrollLeftChange;
     public $onSelectionChange: (event, selection: Selection) => void;
-    public exitMultiSelectMode;
+    public exitMultiSelectMode: () => any;
     public forEachSelection;
 
     /**
@@ -1161,7 +1160,7 @@ export default class Editor implements EventBus<Editor> {
      * @param [pasted] {boolean}
      * @return {void}
      */
-    insert(text: string, pasted: boolean): void {
+    insert(text: string, pasted?: boolean): void {
 
         var session = this.session;
         var mode = session.getMode();
@@ -1683,8 +1682,11 @@ export default class Editor implements EventBus<Editor> {
 
     /**
      * Transposes current line.
-     **/
-    transposeLetters() {
+     *
+     * @method transposeLetters
+     * @return {void}
+     */
+    transposeLetters(): void {
         if (!this.selection.isEmpty()) {
             return;
         }
@@ -2325,10 +2327,10 @@ export default class Editor implements EventBus<Editor> {
      * Moves the cursor's row and column to the next matching bracket or HTML tag.
      *
      * @method jumpToMatching
-     * @param select {boolean}
+     * @param [select] {boolean}
      * @return {void}
      */
-    jumpToMatching(select: boolean): void {
+    jumpToMatching(select?: boolean): void {
         var cursor = this.getCursorPosition();
         var iterator = new TokenIterator(this.session, cursor.row, cursor.column);
         var prevToken = iterator.getCurrentToken();
@@ -2626,10 +2628,13 @@ export default class Editor implements EventBus<Editor> {
     }
 
     /**
+     * Moves the cursor to the start of the current file.
+     * Note that this also de-selects the current selection.
      *
-     * Moves the cursor to the start of the current file. Note that this does de-select the current selection.
-     **/
-    navigateFileStart() {
+     * @method navigateFileStart
+     * @return {void}
+     */
+    navigateFileStart(): void {
         this.selection.moveCursorFileStart();
         this.clearSelection();
     }
