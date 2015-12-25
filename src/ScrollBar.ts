@@ -80,7 +80,7 @@ export default class ScrollBar implements EventBus<ScrollBar> {
      *
      * @class ScrollBar
      * @constructor
-     * @param parent {HTMLlement} A paent of the scrollbar.
+     * @param parent {HTMLElement} A parent of the scrollbar.
      * @param classSuffix {string}
      */
     constructor(parent: HTMLElement, classSuffix: string) {

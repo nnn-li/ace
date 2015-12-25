@@ -3720,7 +3720,7 @@ class GutterHandler {
 
         var tooltipTimeout: number;
         var mouseEvent: EditorMouseEvent;
-        var tooltipAnnotation;
+        var tooltipAnnotation: string;
 
         function showTooltip() {
             var row = mouseEvent.getDocumentPosition().row;
@@ -3739,9 +3739,12 @@ class GutterHandler {
                 }
             }
 
+            // TODO: Looks like the gutter annotation might also be a string?
             if (tooltipAnnotation == annotation) {
                 return;
             }
+            // TODO: The Gutter annotations are subtly different from Annotation
+            // in that the text property is a string[] rather than string.
             tooltipAnnotation = annotation.text.join("<br/>");
 
             tooltip.setHtml(tooltipAnnotation);

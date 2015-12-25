@@ -11500,6 +11500,400 @@ System.register("src/config.js", ["npm:babel-runtime@5.8.34/core-js/object/keys"
         }
     };
 });
+System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js"], function (_export) {
+    var _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, setCssClass, IE8, Cursor;
+
+    return {
+        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
+            _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
+        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
+            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
+        }, function (_srcLibDomJs) {
+            addCssClass = _srcLibDomJs.addCssClass;
+            createElement = _srcLibDomJs.createElement;
+            removeCssClass = _srcLibDomJs.removeCssClass;
+            setCssClass = _srcLibDomJs.setCssClass;
+        }],
+        execute: function () {
+            "use strict";
+
+            Cursor = (function () {
+                function Cursor(container) {
+                    _classCallCheck(this, Cursor);
+
+                    this.isVisible = false;
+                    this.isBlinking = true;
+                    this.blinkInterval = 1000;
+                    this.smoothBlinking = false;
+                    this.cursors = [];
+                    this.$padding = 0;
+                    this.element = createElement("div");
+                    this.element.className = "ace_layer ace_cursor-layer";
+                    container.appendChild(this.element);
+                    if (IE8 === void 0) {
+                        IE8 = "opacity" in this.element;
+                    }
+                    this.cursor = this.addCursor();
+                    addCssClass(this.element, "ace_hidden-cursors");
+                    this.$updateCursors = this.$updateVisibility.bind(this);
+                }
+
+                _createClass(Cursor, [{
+                    key: "$updateVisibility",
+                    value: function $updateVisibility(visible) {
+                        var cursors = this.cursors;
+                        for (var i = cursors.length; i--;) {
+                            cursors[i].style.visibility = visible ? "" : "hidden";
+                        }
+                    }
+                }, {
+                    key: "$updateOpacity",
+                    value: function $updateOpacity(opaque) {
+                        var cursors = this.cursors;
+                        for (var i = cursors.length; i--;) {
+                            cursors[i].style.opacity = opaque ? "" : "0";
+                        }
+                    }
+                }, {
+                    key: "setPadding",
+                    value: function setPadding(padding) {
+                        if (typeof padding === 'number') {
+                            this.$padding = padding;
+                        } else {
+                            throw new TypeError("padding must be a number");
+                        }
+                    }
+                }, {
+                    key: "setSession",
+                    value: function setSession(session) {
+                        this.session = session;
+                    }
+                }, {
+                    key: "setBlinking",
+                    value: function setBlinking(blinking) {
+                        if (blinking !== this.isBlinking) {
+                            this.isBlinking = blinking;
+                            this.restartTimer();
+                        }
+                    }
+                }, {
+                    key: "setBlinkInterval",
+                    value: function setBlinkInterval(blinkInterval) {
+                        if (blinkInterval !== this.blinkInterval) {
+                            this.blinkInterval = blinkInterval;
+                            this.restartTimer();
+                        }
+                    }
+                }, {
+                    key: "setSmoothBlinking",
+                    value: function setSmoothBlinking(smoothBlinking) {
+                        if (smoothBlinking != this.smoothBlinking && !IE8) {
+                            this.smoothBlinking = smoothBlinking;
+                            setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
+                            this.$updateCursors(true);
+                            this.$updateCursors = (smoothBlinking ? this.$updateOpacity : this.$updateVisibility).bind(this);
+                            this.restartTimer();
+                        }
+                    }
+                }, {
+                    key: "addCursor",
+                    value: function addCursor() {
+                        var cursor = createElement("div");
+                        cursor.className = "ace_cursor";
+                        this.element.appendChild(cursor);
+                        this.cursors.push(cursor);
+                        return cursor;
+                    }
+                }, {
+                    key: "removeCursor",
+                    value: function removeCursor() {
+                        if (this.cursors.length > 1) {
+                            var cursor = this.cursors.pop();
+                            cursor.parentNode.removeChild(cursor);
+                            return cursor;
+                        }
+                    }
+                }, {
+                    key: "hideCursor",
+                    value: function hideCursor() {
+                        this.isVisible = false;
+                        addCssClass(this.element, "ace_hidden-cursors");
+                        this.restartTimer();
+                    }
+                }, {
+                    key: "showCursor",
+                    value: function showCursor() {
+                        this.isVisible = true;
+                        removeCssClass(this.element, "ace_hidden-cursors");
+                        this.restartTimer();
+                    }
+                }, {
+                    key: "restartTimer",
+                    value: function restartTimer() {
+                        var update = this.$updateCursors;
+                        clearInterval(this.intervalId);
+                        clearTimeout(this.timeoutId);
+                        if (this.smoothBlinking) {
+                            removeCssClass(this.element, "ace_smooth-blinking");
+                        }
+                        update(true);
+                        if (!this.isBlinking || !this.blinkInterval || !this.isVisible) return;
+                        if (this.smoothBlinking) {
+                            setTimeout((function () {
+                                addCssClass(this.element, "ace_smooth-blinking");
+                            }).bind(this));
+                        }
+                        var blink = (function () {
+                            this.timeoutId = setTimeout(function () {
+                                update(false);
+                            }, 0.6 * this.blinkInterval);
+                        }).bind(this);
+                        this.intervalId = setInterval(function () {
+                            update(true);
+                            blink();
+                        }, this.blinkInterval);
+                        blink();
+                    }
+                }, {
+                    key: "getPixelPosition",
+                    value: function getPixelPosition(position, onScreen) {
+                        if (!this.config || !this.session) {
+                            return { left: 0, top: 0 };
+                        }
+                        if (!position) {
+                            position = this.session.getSelection().getCursor();
+                        }
+                        var pos = this.session.documentToScreenPosition(position.row, position.column);
+                        var cursorLeft = this.$padding + pos.column * this.config.characterWidth;
+                        var cursorTop = (pos.row - (onScreen ? this.config.firstRowScreen : 0)) * this.config.lineHeight;
+                        return { left: cursorLeft, top: cursorTop };
+                    }
+                }, {
+                    key: "update",
+                    value: function update(config) {
+                        this.config = config;
+                        var selections = this.session['$selectionMarkers'];
+                        var i = 0,
+                            cursorIndex = 0;
+                        if (selections === undefined || selections.length === 0) {
+                            selections = [{ cursor: null }];
+                        }
+                        for (var i = 0, n = selections.length; i < n; i++) {
+                            var pixelPos = this.getPixelPosition(selections[i].cursor, true);
+                            if ((pixelPos.top > config.height + config.offset || pixelPos.top < 0) && i > 1) {
+                                continue;
+                            }
+                            var style = (this.cursors[cursorIndex++] || this.addCursor()).style;
+                            style.left = pixelPos.left + "px";
+                            style.top = pixelPos.top + "px";
+                            style.width = config.characterWidth + "px";
+                            style.height = config.lineHeight + "px";
+                        }
+                        while (this.cursors.length > cursorIndex) {
+                            this.removeCursor();
+                        }
+                        var overwrite = this.session.getOverwrite();
+                        this.$setOverwrite(overwrite);
+                        this.$pixelPos = pixelPos;
+                        this.restartTimer();
+                    }
+                }, {
+                    key: "$setOverwrite",
+                    value: function $setOverwrite(overwrite) {
+                        if (overwrite !== this.overwrite) {
+                            this.overwrite = overwrite;
+                            if (overwrite) addCssClass(this.element, "ace_overwrite-cursors");else removeCssClass(this.element, "ace_overwrite-cursors");
+                        }
+                    }
+                }, {
+                    key: "destroy",
+                    value: function destroy() {
+                        clearInterval(this.intervalId);
+                        clearTimeout(this.timeoutId);
+                    }
+                }]);
+
+                return Cursor;
+            })();
+
+            _export("default", Cursor);
+        }
+    };
+});
+System.register("src/layer/FontMetrics.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/core-js/object/create", "src/lib/dom.js", "src/lib/lang.js", "src/lib/useragent.js", "src/lib/EventEmitterClass.js"], function (_export) {
+    var _createClass, _classCallCheck, _Object$create, createElement, stringRepeat, isIE, EventEmitterClass, CHAR_COUNT, FontMetrics;
+
+    return {
+        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
+            _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
+        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
+            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
+        }, function (_npmBabelRuntime5834CoreJsObjectCreate) {
+            _Object$create = _npmBabelRuntime5834CoreJsObjectCreate["default"];
+        }, function (_srcLibDomJs) {
+            createElement = _srcLibDomJs.createElement;
+        }, function (_srcLibLangJs) {
+            stringRepeat = _srcLibLangJs.stringRepeat;
+        }, function (_srcLibUseragentJs) {
+            isIE = _srcLibUseragentJs.isIE;
+        }, function (_srcLibEventEmitterClassJs) {
+            EventEmitterClass = _srcLibEventEmitterClassJs["default"];
+        }],
+        execute: function () {
+            "use strict";
+            CHAR_COUNT = 0;
+
+            FontMetrics = (function () {
+                function FontMetrics(container, pollingInterval) {
+                    _classCallCheck(this, FontMetrics);
+
+                    this.$characterSize = { width: 0, height: 0 };
+                    this.eventBus = new EventEmitterClass(this);
+                    this.el = createElement("div");
+                    this.$setMeasureNodeStyles(this.el.style, true);
+                    this.$main = createElement("div");
+                    this.$setMeasureNodeStyles(this.$main.style);
+                    this.$measureNode = createElement("div");
+                    this.$setMeasureNodeStyles(this.$measureNode.style);
+                    this.el.appendChild(this.$main);
+                    this.el.appendChild(this.$measureNode);
+                    container.appendChild(this.el);
+                    if (!CHAR_COUNT) {
+                        this.$testFractionalRect();
+                    }
+                    this.$measureNode.innerHTML = stringRepeat("X", CHAR_COUNT);
+                    this.$characterSize = { width: 0, height: 0 };
+                    this.checkForSizeChanges();
+                }
+
+                _createClass(FontMetrics, [{
+                    key: "on",
+                    value: function on(eventName, callback) {
+                        this.eventBus.on(eventName, callback, false);
+                    }
+                }, {
+                    key: "off",
+                    value: function off(eventName, callback) {
+                        this.eventBus.off(eventName, callback);
+                    }
+                }, {
+                    key: "$testFractionalRect",
+                    value: function $testFractionalRect() {
+                        var el = createElement("div");
+                        this.$setMeasureNodeStyles(el.style);
+                        el.style.width = "0.2px";
+                        document.documentElement.appendChild(el);
+                        var w = el.getBoundingClientRect().width;
+                        if (w > 0 && w < 1) {
+                            CHAR_COUNT = 1;
+                        } else {
+                            CHAR_COUNT = 100;
+                        }
+                        el.parentNode.removeChild(el);
+                    }
+                }, {
+                    key: "$setMeasureNodeStyles",
+                    value: function $setMeasureNodeStyles(style, isRoot) {
+                        style.width = style.height = "auto";
+                        style.left = style.top = "-100px";
+                        style.visibility = "hidden";
+                        style.position = "fixed";
+                        style.whiteSpace = "pre";
+                        if (isIE < 8) {
+                            style["font-family"] = "inherit";
+                        } else {
+                            style.font = "inherit";
+                        }
+                        style.overflow = isRoot ? "hidden" : "visible";
+                    }
+                }, {
+                    key: "checkForSizeChanges",
+                    value: function checkForSizeChanges() {
+                        var size = this.$measureSizes();
+                        if (size && (this.$characterSize.width !== size.width || this.$characterSize.height !== size.height)) {
+                            this.$measureNode.style.fontWeight = "bold";
+                            var boldSize = this.$measureSizes();
+                            this.$measureNode.style.fontWeight = "";
+                            this.$characterSize = size;
+                            this.charSizes = _Object$create(null);
+                            this.allowBoldFonts = boldSize && boldSize.width === size.width && boldSize.height === size.height;
+                            this.eventBus._emit("changeCharacterSize", { data: size });
+                        }
+                    }
+                }, {
+                    key: "$pollSizeChanges",
+                    value: function $pollSizeChanges() {
+                        if (this.$pollSizeChangesTimer) {
+                            return this.$pollSizeChangesTimer;
+                        }
+                        var self = this;
+                        return this.$pollSizeChangesTimer = setInterval(function () {
+                            self.checkForSizeChanges();
+                        }, 500);
+                    }
+                }, {
+                    key: "setPolling",
+                    value: function setPolling(val) {
+                        if (val) {
+                            this.$pollSizeChanges();
+                        } else {
+                            if (this.$pollSizeChangesTimer) {
+                                this.$pollSizeChangesTimer;
+                            }
+                        }
+                    }
+                }, {
+                    key: "$measureSizes",
+                    value: function $measureSizes() {
+                        if (CHAR_COUNT === 1) {
+                            var rect = null;
+                            try {
+                                rect = this.$measureNode.getBoundingClientRect();
+                            } catch (e) {
+                                rect = { width: 0, height: 0, left: 0, right: 0, top: 0, bottom: 0 };
+                            }
+                            var size = { height: rect.height, width: rect.width };
+                        } else {
+                            var size = { height: this.$measureNode.clientHeight, width: this.$measureNode.clientWidth / CHAR_COUNT };
+                        }
+                        if (size.width === 0 || size.height === 0) {
+                            return null;
+                        }
+                        return size;
+                    }
+                }, {
+                    key: "$measureCharWidth",
+                    value: function $measureCharWidth(ch) {
+                        this.$main.innerHTML = stringRepeat(ch, CHAR_COUNT);
+                        var rect = this.$main.getBoundingClientRect();
+                        return rect.width / CHAR_COUNT;
+                    }
+                }, {
+                    key: "getCharacterWidth",
+                    value: function getCharacterWidth(ch) {
+                        var w = this.charSizes[ch];
+                        if (w === undefined) {
+                            this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;
+                        }
+                        return w;
+                    }
+                }, {
+                    key: "destroy",
+                    value: function destroy() {
+                        clearInterval(this.$pollSizeChangesTimer);
+                        if (this.el && this.el.parentNode) {
+                            this.el.parentNode.removeChild(this.el);
+                        }
+                    }
+                }]);
+
+                return FontMetrics;
+            })();
+
+            _export("default", FontMetrics);
+        }
+    };
+});
 System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/lib/lang.js", "src/lib/EventEmitterClass.js"], function (_export) {
     var _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, escapeHTML, EventEmitterClass, Gutter;
 
@@ -11584,7 +11978,7 @@ System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create
                         var range = delta.range;
                         var firstRow = range.start.row;
                         var len = range.end.row - firstRow;
-                        if (len === 0) {} else if (delta.action == "removeText" || delta.action == "removeLines") {
+                        if (len === 0) {} else if (delta.action === "removeText" || delta.action === "removeLines") {
                             this.$annotations.splice(firstRow, len + 1, null);
                         } else {
                             var args = new Array(len + 1);
@@ -12377,226 +12771,6 @@ System.register("src/layer/Text.js", ["npm:babel-runtime@5.8.34/helpers/create-c
         }
     };
 });
-System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js"], function (_export) {
-    var _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, setCssClass, IE8, Cursor;
-
-    return {
-        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
-            _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
-        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
-            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
-        }, function (_srcLibDomJs) {
-            addCssClass = _srcLibDomJs.addCssClass;
-            createElement = _srcLibDomJs.createElement;
-            removeCssClass = _srcLibDomJs.removeCssClass;
-            setCssClass = _srcLibDomJs.setCssClass;
-        }],
-        execute: function () {
-            "use strict";
-
-            Cursor = (function () {
-                function Cursor(container) {
-                    _classCallCheck(this, Cursor);
-
-                    this.isVisible = false;
-                    this.isBlinking = true;
-                    this.blinkInterval = 1000;
-                    this.smoothBlinking = false;
-                    this.cursors = [];
-                    this.$padding = 0;
-                    this.element = createElement("div");
-                    this.element.className = "ace_layer ace_cursor-layer";
-                    container.appendChild(this.element);
-                    if (IE8 === undefined) {
-                        IE8 = "opacity" in this.element;
-                    }
-                    this.cursor = this.addCursor();
-                    addCssClass(this.element, "ace_hidden-cursors");
-                    this.$updateCursors = this.$updateVisibility.bind(this);
-                }
-
-                _createClass(Cursor, [{
-                    key: "$updateVisibility",
-                    value: function $updateVisibility(val) {
-                        var cursors = this.cursors;
-                        for (var i = cursors.length; i--;) {
-                            cursors[i].style.visibility = val ? "" : "hidden";
-                        }
-                    }
-                }, {
-                    key: "$updateOpacity",
-                    value: function $updateOpacity(val) {
-                        var cursors = this.cursors;
-                        for (var i = cursors.length; i--;) {
-                            cursors[i].style.opacity = val ? "" : "0";
-                        }
-                    }
-                }, {
-                    key: "setPadding",
-                    value: function setPadding(padding) {
-                        if (typeof padding === 'number') {
-                            this.$padding = padding;
-                        } else {
-                            throw new TypeError("padding must be a number");
-                        }
-                    }
-                }, {
-                    key: "setSession",
-                    value: function setSession(session) {
-                        this.session = session;
-                    }
-                }, {
-                    key: "setBlinking",
-                    value: function setBlinking(blinking) {
-                        if (blinking !== this.isBlinking) {
-                            this.isBlinking = blinking;
-                            this.restartTimer();
-                        }
-                    }
-                }, {
-                    key: "setBlinkInterval",
-                    value: function setBlinkInterval(blinkInterval) {
-                        if (blinkInterval !== this.blinkInterval) {
-                            this.blinkInterval = blinkInterval;
-                            this.restartTimer();
-                        }
-                    }
-                }, {
-                    key: "setSmoothBlinking",
-                    value: function setSmoothBlinking(smoothBlinking) {
-                        if (smoothBlinking != this.smoothBlinking && !IE8) {
-                            this.smoothBlinking = smoothBlinking;
-                            setCssClass(this.element, "ace_smooth-blinking", smoothBlinking);
-                            this.$updateCursors(true);
-                            this.$updateCursors = (smoothBlinking ? this.$updateOpacity : this.$updateVisibility).bind(this);
-                            this.restartTimer();
-                        }
-                    }
-                }, {
-                    key: "addCursor",
-                    value: function addCursor() {
-                        var cursor = createElement("div");
-                        cursor.className = "ace_cursor";
-                        this.element.appendChild(cursor);
-                        this.cursors.push(cursor);
-                        return cursor;
-                    }
-                }, {
-                    key: "removeCursor",
-                    value: function removeCursor() {
-                        if (this.cursors.length > 1) {
-                            var cursor = this.cursors.pop();
-                            cursor.parentNode.removeChild(cursor);
-                            return cursor;
-                        }
-                    }
-                }, {
-                    key: "hideCursor",
-                    value: function hideCursor() {
-                        this.isVisible = false;
-                        addCssClass(this.element, "ace_hidden-cursors");
-                        this.restartTimer();
-                    }
-                }, {
-                    key: "showCursor",
-                    value: function showCursor() {
-                        this.isVisible = true;
-                        removeCssClass(this.element, "ace_hidden-cursors");
-                        this.restartTimer();
-                    }
-                }, {
-                    key: "restartTimer",
-                    value: function restartTimer() {
-                        var update = this.$updateCursors;
-                        clearInterval(this.intervalId);
-                        clearTimeout(this.timeoutId);
-                        if (this.smoothBlinking) {
-                            removeCssClass(this.element, "ace_smooth-blinking");
-                        }
-                        update(true);
-                        if (!this.isBlinking || !this.blinkInterval || !this.isVisible) return;
-                        if (this.smoothBlinking) {
-                            setTimeout((function () {
-                                addCssClass(this.element, "ace_smooth-blinking");
-                            }).bind(this));
-                        }
-                        var blink = (function () {
-                            this.timeoutId = setTimeout(function () {
-                                update(false);
-                            }, 0.6 * this.blinkInterval);
-                        }).bind(this);
-                        this.intervalId = setInterval(function () {
-                            update(true);
-                            blink();
-                        }, this.blinkInterval);
-                        blink();
-                    }
-                }, {
-                    key: "getPixelPosition",
-                    value: function getPixelPosition(position, onScreen) {
-                        if (!this.config || !this.session) {
-                            return { left: 0, top: 0 };
-                        }
-                        if (!position) {
-                            position = this.session.getSelection().getCursor();
-                        }
-                        var pos = this.session.documentToScreenPosition(position.row, position.column);
-                        var cursorLeft = this.$padding + pos.column * this.config.characterWidth;
-                        var cursorTop = (pos.row - (onScreen ? this.config.firstRowScreen : 0)) * this.config.lineHeight;
-                        return { left: cursorLeft, top: cursorTop };
-                    }
-                }, {
-                    key: "update",
-                    value: function update(config) {
-                        this.config = config;
-                        var selections = this.session['$selectionMarkers'];
-                        var i = 0,
-                            cursorIndex = 0;
-                        if (selections === undefined || selections.length === 0) {
-                            selections = [{ cursor: null }];
-                        }
-                        for (var i = 0, n = selections.length; i < n; i++) {
-                            var pixelPos = this.getPixelPosition(selections[i].cursor, true);
-                            if ((pixelPos.top > config.height + config.offset || pixelPos.top < 0) && i > 1) {
-                                continue;
-                            }
-                            var style = (this.cursors[cursorIndex++] || this.addCursor()).style;
-                            style.left = pixelPos.left + "px";
-                            style.top = pixelPos.top + "px";
-                            style.width = config.characterWidth + "px";
-                            style.height = config.lineHeight + "px";
-                        }
-                        while (this.cursors.length > cursorIndex) {
-                            this.removeCursor();
-                        }
-                        var overwrite = this.session.getOverwrite();
-                        this.$setOverwrite(overwrite);
-                        this.$pixelPos = pixelPos;
-                        this.restartTimer();
-                    }
-                }, {
-                    key: "$setOverwrite",
-                    value: function $setOverwrite(overwrite) {
-                        if (overwrite !== this.overwrite) {
-                            this.overwrite = overwrite;
-                            if (overwrite) addCssClass(this.element, "ace_overwrite-cursors");else removeCssClass(this.element, "ace_overwrite-cursors");
-                        }
-                    }
-                }, {
-                    key: "destroy",
-                    value: function destroy() {
-                        clearInterval(this.intervalId);
-                        clearTimeout(this.timeoutId);
-                    }
-                }]);
-
-                return Cursor;
-            })();
-
-            _export("default", Cursor);
-        }
-    };
-});
 System.register("src/VScrollBar.js", ["npm:babel-runtime@5.8.34/helpers/get", "npm:babel-runtime@5.8.34/helpers/inherits", "npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/event.js", "src/ScrollBar.js", "src/lib/dom.js"], function (_export) {
     var _get, _inherits, _createClass, _classCallCheck, addListener, ScrollBar, scrollbarWidth, VScrollBar;
 
@@ -12964,6 +13138,105 @@ System.register('src/lib/keys.js', ['src/lib/oop.js'], function (_export) {
         }
     };
 });
+System.register("src/lib/useragent.js", [], function (_export) {
+    "use strict";
+    var OS, os, ua, isWin, isMac, isLinux, isIE, isOldIE, isGecko, isMozilla, isOldGecko, isOpera, isWebKit, isChrome, isChromeOS, isAIR, isAndroid, isIPad, isTouchPad, isMobile;
+
+    _export("getOS", getOS);
+
+    function getOS() {
+        if (isMac) {
+            return OS.MAC;
+        } else if (isLinux) {
+            return OS.LINUX;
+        } else {
+            return OS.WINDOWS;
+        }
+    }
+
+    return {
+        setters: [],
+        execute: function () {
+            OS = {
+                LINUX: "LINUX",
+                MAC: "MAC",
+                WINDOWS: "WINDOWS"
+            };
+
+            _export("OS", OS);
+
+            os = (navigator.platform.match(/mac|win|linux/i) || ["other"])[0].toLowerCase();
+            ua = navigator.userAgent;
+            isWin = os == "win";
+
+            _export("isWin", isWin);
+
+            isMac = os == "mac";
+
+            _export("isMac", isMac);
+
+            isLinux = os == "linux";
+
+            _export("isLinux", isLinux);
+
+            isIE = navigator.appName == "Microsoft Internet Explorer" || navigator.appName.indexOf("MSAppHost") >= 0 ? parseFloat((ua.match(/(?:MSIE |Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/) || [])[1]) : parseFloat((ua.match(/(?:Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/) || [])[1]);
+
+            _export("isIE", isIE);
+
+            isOldIE = isIE && isIE < 9;
+
+            _export("isOldIE", isOldIE);
+
+            isGecko = ('Controllers' in window || 'controllers' in window) && window.navigator.product === "Gecko";
+
+            _export("isGecko", isGecko);
+
+            isMozilla = isGecko;
+
+            _export("isMozilla", isMozilla);
+
+            isOldGecko = isGecko && parseInt((ua.match(/rv\:(\d+)/) || [])[1], 10) < 4;
+
+            _export("isOldGecko", isOldGecko);
+
+            isOpera = 'opera' in window && Object.prototype.toString.call(window['opera']) == "[object Opera]";
+
+            _export("isOpera", isOpera);
+
+            isWebKit = parseFloat(ua.split("WebKit/")[1]) || undefined;
+
+            _export("isWebKit", isWebKit);
+
+            isChrome = parseFloat(ua.split(" Chrome/")[1]) || undefined;
+
+            _export("isChrome", isChrome);
+
+            isChromeOS = ua.indexOf(" CrOS ") >= 0;
+
+            _export("isChromeOS", isChromeOS);
+
+            isAIR = ua.indexOf("AdobeAIR") >= 0;
+
+            _export("isAIR", isAIR);
+
+            isAndroid = ua.indexOf("Android") >= 0;
+
+            _export("isAndroid", isAndroid);
+
+            isIPad = ua.indexOf("iPad") >= 0;
+
+            _export("isIPad", isIPad);
+
+            isTouchPad = ua.indexOf("TouchPad") >= 0;
+
+            _export("isTouchPad", isTouchPad);
+
+            isMobile = isAndroid || isIPad || isTouchPad;
+
+            _export("isMobile", isMobile);
+        }
+    };
+});
 System.register('src/lib/event.js', ['npm:babel-runtime@5.8.34/core-js/object/create', 'src/lib/keys.js', 'src/lib/useragent.js'], function (_export) {
     var _Object$create, FUNCTION_KEYS, KEY_MODS, MODIFIER_KEYS, PRINTABLE_KEYS, isChromeOS, isIE, isMac, isOldGecko, isOldIE, isOpera, getModifierHash, pressedKeys, ts, nextFrameCandidate, requestAnimationFrame;
 
@@ -13326,279 +13599,6 @@ System.register("src/RenderLoop.js", ["npm:babel-runtime@5.8.34/helpers/create-c
         }
     };
 });
-System.register("src/lib/useragent.js", [], function (_export) {
-    "use strict";
-    var OS, os, ua, isWin, isMac, isLinux, isIE, isOldIE, isGecko, isMozilla, isOldGecko, isOpera, isWebKit, isChrome, isChromeOS, isAIR, isAndroid, isIPad, isTouchPad, isMobile;
-
-    _export("getOS", getOS);
-
-    function getOS() {
-        if (isMac) {
-            return OS.MAC;
-        } else if (isLinux) {
-            return OS.LINUX;
-        } else {
-            return OS.WINDOWS;
-        }
-    }
-
-    return {
-        setters: [],
-        execute: function () {
-            OS = {
-                LINUX: "LINUX",
-                MAC: "MAC",
-                WINDOWS: "WINDOWS"
-            };
-
-            _export("OS", OS);
-
-            os = (navigator.platform.match(/mac|win|linux/i) || ["other"])[0].toLowerCase();
-            ua = navigator.userAgent;
-            isWin = os == "win";
-
-            _export("isWin", isWin);
-
-            isMac = os == "mac";
-
-            _export("isMac", isMac);
-
-            isLinux = os == "linux";
-
-            _export("isLinux", isLinux);
-
-            isIE = navigator.appName == "Microsoft Internet Explorer" || navigator.appName.indexOf("MSAppHost") >= 0 ? parseFloat((ua.match(/(?:MSIE |Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/) || [])[1]) : parseFloat((ua.match(/(?:Trident\/[0-9]+[\.0-9]+;.*rv:)([0-9]+[\.0-9]+)/) || [])[1]);
-
-            _export("isIE", isIE);
-
-            isOldIE = isIE && isIE < 9;
-
-            _export("isOldIE", isOldIE);
-
-            isGecko = ('Controllers' in window || 'controllers' in window) && window.navigator.product === "Gecko";
-
-            _export("isGecko", isGecko);
-
-            isMozilla = isGecko;
-
-            _export("isMozilla", isMozilla);
-
-            isOldGecko = isGecko && parseInt((ua.match(/rv\:(\d+)/) || [])[1], 10) < 4;
-
-            _export("isOldGecko", isOldGecko);
-
-            isOpera = 'opera' in window && Object.prototype.toString.call(window['opera']) == "[object Opera]";
-
-            _export("isOpera", isOpera);
-
-            isWebKit = parseFloat(ua.split("WebKit/")[1]) || undefined;
-
-            _export("isWebKit", isWebKit);
-
-            isChrome = parseFloat(ua.split(" Chrome/")[1]) || undefined;
-
-            _export("isChrome", isChrome);
-
-            isChromeOS = ua.indexOf(" CrOS ") >= 0;
-
-            _export("isChromeOS", isChromeOS);
-
-            isAIR = ua.indexOf("AdobeAIR") >= 0;
-
-            _export("isAIR", isAIR);
-
-            isAndroid = ua.indexOf("Android") >= 0;
-
-            _export("isAndroid", isAndroid);
-
-            isIPad = ua.indexOf("iPad") >= 0;
-
-            _export("isIPad", isIPad);
-
-            isTouchPad = ua.indexOf("TouchPad") >= 0;
-
-            _export("isTouchPad", isTouchPad);
-
-            isMobile = isAndroid || isIPad || isTouchPad;
-
-            _export("isMobile", isMobile);
-        }
-    };
-});
-System.register("src/layer/FontMetrics.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/core-js/object/create", "src/lib/dom.js", "src/lib/lang.js", "src/lib/useragent.js", "src/lib/EventEmitterClass.js"], function (_export) {
-    var _createClass, _classCallCheck, _Object$create, createElement, stringRepeat, isIE, EventEmitterClass, CHAR_COUNT, FontMetrics;
-
-    return {
-        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
-            _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
-        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
-            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
-        }, function (_npmBabelRuntime5834CoreJsObjectCreate) {
-            _Object$create = _npmBabelRuntime5834CoreJsObjectCreate["default"];
-        }, function (_srcLibDomJs) {
-            createElement = _srcLibDomJs.createElement;
-        }, function (_srcLibLangJs) {
-            stringRepeat = _srcLibLangJs.stringRepeat;
-        }, function (_srcLibUseragentJs) {
-            isIE = _srcLibUseragentJs.isIE;
-        }, function (_srcLibEventEmitterClassJs) {
-            EventEmitterClass = _srcLibEventEmitterClassJs["default"];
-        }],
-        execute: function () {
-            "use strict";
-            CHAR_COUNT = 0;
-
-            FontMetrics = (function () {
-                function FontMetrics(container, pollingInterval) {
-                    _classCallCheck(this, FontMetrics);
-
-                    this.$characterSize = { width: 0, height: 0 };
-                    this.eventBus = new EventEmitterClass(this);
-                    this.el = createElement("div");
-                    this.$setMeasureNodeStyles(this.el.style, true);
-                    this.$main = createElement("div");
-                    this.$setMeasureNodeStyles(this.$main.style);
-                    this.$measureNode = createElement("div");
-                    this.$setMeasureNodeStyles(this.$measureNode.style);
-                    this.el.appendChild(this.$main);
-                    this.el.appendChild(this.$measureNode);
-                    container.appendChild(this.el);
-                    if (!CHAR_COUNT) {
-                        this.$testFractionalRect();
-                    }
-                    this.$measureNode.innerHTML = stringRepeat("X", CHAR_COUNT);
-                    this.$characterSize = { width: 0, height: 0 };
-                    this.checkForSizeChanges();
-                }
-
-                _createClass(FontMetrics, [{
-                    key: "on",
-                    value: function on(eventName, callback) {
-                        this.eventBus.on(eventName, callback, false);
-                    }
-                }, {
-                    key: "off",
-                    value: function off(eventName, callback) {
-                        this.eventBus.off(eventName, callback);
-                    }
-                }, {
-                    key: "$testFractionalRect",
-                    value: function $testFractionalRect() {
-                        var el = createElement("div");
-                        this.$setMeasureNodeStyles(el.style);
-                        el.style.width = "0.2px";
-                        document.documentElement.appendChild(el);
-                        var w = el.getBoundingClientRect().width;
-                        if (w > 0 && w < 1) {
-                            CHAR_COUNT = 1;
-                        } else {
-                            CHAR_COUNT = 100;
-                        }
-                        el.parentNode.removeChild(el);
-                    }
-                }, {
-                    key: "$setMeasureNodeStyles",
-                    value: function $setMeasureNodeStyles(style, isRoot) {
-                        style.width = style.height = "auto";
-                        style.left = style.top = "-100px";
-                        style.visibility = "hidden";
-                        style.position = "fixed";
-                        style.whiteSpace = "pre";
-                        if (isIE < 8) {
-                            style["font-family"] = "inherit";
-                        } else {
-                            style.font = "inherit";
-                        }
-                        style.overflow = isRoot ? "hidden" : "visible";
-                    }
-                }, {
-                    key: "checkForSizeChanges",
-                    value: function checkForSizeChanges() {
-                        var size = this.$measureSizes();
-                        if (size && (this.$characterSize.width !== size.width || this.$characterSize.height !== size.height)) {
-                            this.$measureNode.style.fontWeight = "bold";
-                            var boldSize = this.$measureSizes();
-                            this.$measureNode.style.fontWeight = "";
-                            this.$characterSize = size;
-                            this.charSizes = _Object$create(null);
-                            this.allowBoldFonts = boldSize && boldSize.width === size.width && boldSize.height === size.height;
-                            this.eventBus._emit("changeCharacterSize", { data: size });
-                        }
-                    }
-                }, {
-                    key: "$pollSizeChanges",
-                    value: function $pollSizeChanges() {
-                        if (this.$pollSizeChangesTimer) {
-                            return this.$pollSizeChangesTimer;
-                        }
-                        var self = this;
-                        return this.$pollSizeChangesTimer = setInterval(function () {
-                            self.checkForSizeChanges();
-                        }, 500);
-                    }
-                }, {
-                    key: "setPolling",
-                    value: function setPolling(val) {
-                        if (val) {
-                            this.$pollSizeChanges();
-                        } else {
-                            if (this.$pollSizeChangesTimer) {
-                                this.$pollSizeChangesTimer;
-                            }
-                        }
-                    }
-                }, {
-                    key: "$measureSizes",
-                    value: function $measureSizes() {
-                        if (CHAR_COUNT === 1) {
-                            var rect = null;
-                            try {
-                                rect = this.$measureNode.getBoundingClientRect();
-                            } catch (e) {
-                                rect = { width: 0, height: 0, left: 0, right: 0, top: 0, bottom: 0 };
-                            }
-                            var size = { height: rect.height, width: rect.width };
-                        } else {
-                            var size = { height: this.$measureNode.clientHeight, width: this.$measureNode.clientWidth / CHAR_COUNT };
-                        }
-                        if (size.width === 0 || size.height === 0) {
-                            return null;
-                        }
-                        return size;
-                    }
-                }, {
-                    key: "$measureCharWidth",
-                    value: function $measureCharWidth(ch) {
-                        this.$main.innerHTML = stringRepeat(ch, CHAR_COUNT);
-                        var rect = this.$main.getBoundingClientRect();
-                        return rect.width / CHAR_COUNT;
-                    }
-                }, {
-                    key: "getCharacterWidth",
-                    value: function getCharacterWidth(ch) {
-                        var w = this.charSizes[ch];
-                        if (w === undefined) {
-                            this.charSizes[ch] = this.$measureCharWidth(ch) / this.$characterSize.width;
-                        }
-                        return w;
-                    }
-                }, {
-                    key: "destroy",
-                    value: function destroy() {
-                        clearInterval(this.$pollSizeChangesTimer);
-                        if (this.el && this.el.parentNode) {
-                            this.el.parentNode.removeChild(this.el);
-                        }
-                    }
-                }]);
-
-                return FontMetrics;
-            })();
-
-            _export("default", FontMetrics);
-        }
-    };
-});
 System.register("src/ThemeLink.js", ["npm:babel-runtime@5.8.34/helpers/class-call-check"], function (_export) {
     var _classCallCheck, ThemeLink;
 
@@ -13627,8 +13627,8 @@ System.register("src/ThemeLink.js", ["npm:babel-runtime@5.8.34/helpers/class-cal
         }
     };
 });
-System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/core-js/promise", "src/lib/dom.js", "src/config.js", "src/lib/useragent.js", "src/layer/Gutter.js", "src/layer/Marker.js", "src/layer/Text.js", "src/layer/Cursor.js", "src/VScrollBar.js", "src/HScrollBar.js", "src/RenderLoop.js", "src/layer/FontMetrics.js", "src/lib/EventEmitterClass.js", "src/ThemeLink.js"], function (_export) {
-    var _createClass, _classCallCheck, _Promise, _addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElement, removeCssClass, _setCssClass, defineOptions, resetOptions, isOldIE, Gutter, Marker, Text, Cursor, VScrollBar, HScrollBar, RenderLoop, FontMetrics, EventEmitterClass, ThemeLink, CHANGE_CURSOR, CHANGE_MARKER, CHANGE_GUTTER, CHANGE_SCROLL, CHANGE_LINES, CHANGE_TEXT, CHANGE_SIZE, CHANGE_MARKER_BACK, CHANGE_MARKER_FRONT, CHANGE_FULL, CHANGE_H_SCROLL, VirtualRenderer;
+System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/core-js/promise", "src/lib/dom.js", "src/config.js", "src/lib/useragent.js", "src/layer/Cursor.js", "src/layer/FontMetrics.js", "src/layer/Gutter.js", "src/layer/Marker.js", "src/layer/Text.js", "src/VScrollBar.js", "src/HScrollBar.js", "src/RenderLoop.js", "src/lib/EventEmitterClass.js", "src/ThemeLink.js"], function (_export) {
+    var _createClass, _classCallCheck, _Promise, _addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElement, removeCssClass, _setCssClass, defineOptions, resetOptions, isOldIE, Cursor, FontMetrics, Gutter, Marker, Text, VScrollBar, HScrollBar, RenderLoop, EventEmitterClass, ThemeLink, CHANGE_CURSOR, CHANGE_MARKER, CHANGE_GUTTER, CHANGE_SCROLL, CHANGE_LINES, CHANGE_TEXT, CHANGE_SIZE, CHANGE_MARKER_BACK, CHANGE_MARKER_FRONT, CHANGE_FULL, CHANGE_H_SCROLL, VirtualRenderer;
 
     function changesToString(changes) {
         var a = "";
@@ -13664,22 +13664,22 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
             resetOptions = _srcConfigJs.resetOptions;
         }, function (_srcLibUseragentJs) {
             isOldIE = _srcLibUseragentJs.isOldIE;
+        }, function (_srcLayerCursorJs) {
+            Cursor = _srcLayerCursorJs["default"];
+        }, function (_srcLayerFontMetricsJs) {
+            FontMetrics = _srcLayerFontMetricsJs["default"];
         }, function (_srcLayerGutterJs) {
             Gutter = _srcLayerGutterJs["default"];
         }, function (_srcLayerMarkerJs) {
             Marker = _srcLayerMarkerJs["default"];
         }, function (_srcLayerTextJs) {
             Text = _srcLayerTextJs["default"];
-        }, function (_srcLayerCursorJs) {
-            Cursor = _srcLayerCursorJs["default"];
         }, function (_srcVScrollBarJs) {
             VScrollBar = _srcVScrollBarJs["default"];
         }, function (_srcHScrollBarJs) {
             HScrollBar = _srcHScrollBarJs["default"];
         }, function (_srcRenderLoopJs) {
             RenderLoop = _srcRenderLoopJs["default"];
-        }, function (_srcLayerFontMetricsJs) {
-            FontMetrics = _srcLayerFontMetricsJs["default"];
         }, function (_srcLibEventEmitterClassJs) {
             EventEmitterClass = _srcLibEventEmitterClassJs["default"];
         }, function (_srcThemeLinkJs) {
@@ -13701,6 +13701,8 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
 
             VirtualRenderer = (function () {
                 function VirtualRenderer(container) {
+                    var _this = this;
+
                     _classCallCheck(this, VirtualRenderer);
 
                     this.scrollLeft = 0;
@@ -13732,7 +13734,6 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
                     };
                     this.$changes = 0;
                     this.eventBus = new EventEmitterClass(this);
-                    var _self = this;
                     this.container = container || createElement("div");
                     this.$keepTextAreaAtCursor = !isOldIE;
                     _addCssClass(this.container, "ace_editor");
@@ -13757,13 +13758,13 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
                     this.scrollBarV = new VScrollBar(this.container, this);
                     this.scrollBarH = new HScrollBar(this.container, this);
                     this.scrollBarV.on("scroll", function (event, scrollBar) {
-                        if (!_self.$scrollAnimation) {
-                            _self.session.setScrollTop(event.data - _self.scrollMargin.top);
+                        if (!_this.$scrollAnimation) {
+                            _this.session.setScrollTop(event.data - _this.scrollMargin.top);
                         }
                     });
                     this.scrollBarH.on("scroll", function (event, scrollBar) {
-                        if (!_self.$scrollAnimation) {
-                            _self.session.setScrollLeft(event.data - _self.scrollMargin.left);
+                        if (!this.$scrollAnimation) {
+                            this.session.setScrollLeft(event.data - this.scrollMargin.left);
                         }
                     });
                     this.cursorPos = {
@@ -13773,9 +13774,9 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
                     this.$fontMetrics = new FontMetrics(this.container, 500);
                     this.$textLayer.$setFontMetrics(this.$fontMetrics);
                     this.$textLayer.on("changeCharacterSize", function (event, text) {
-                        _self.updateCharacterSize();
-                        _self.onResize(true, _self.gutterWidth, _self.$size.width, _self.$size.height);
-                        _self.eventBus._signal("changeCharacterSize", event);
+                        _this.updateCharacterSize();
+                        _this.onResize(true, _this.gutterWidth, _this.$size.width, _this.$size.height);
+                        _this.eventBus._signal("changeCharacterSize", event);
                     });
                     this.$size = {
                         width: 0,
@@ -14164,6 +14165,11 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
                     key: "getLastVisibleRow",
                     value: function getLastVisibleRow() {
                         return this.layerConfig.lastRow;
+                    }
+                }, {
+                    key: "getPadding",
+                    value: function getPadding() {
+                        return this.$padding;
                     }
                 }, {
                     key: "setPadding",

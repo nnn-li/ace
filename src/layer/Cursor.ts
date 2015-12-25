@@ -61,6 +61,8 @@ import CursorConfig from './CursorConfig';
 var IE8;
 
 /**
+ * This class is the HTML representation of the Cursor(Layer).
+ *
  * @class Cursor
  */
 export default class Cursor {
@@ -90,7 +92,7 @@ export default class Cursor {
         this.element.className = "ace_layer ace_cursor-layer";
         container.appendChild(this.element);
 
-        if (IE8 === undefined) {
+        if (IE8 === void 0) {
             IE8 = "opacity" in this.element;
         }
 
@@ -99,17 +101,17 @@ export default class Cursor {
         this.$updateCursors = this.$updateVisibility.bind(this);
     }
 
-    private $updateVisibility(val) {
+    private $updateVisibility(visible: boolean): void {
         var cursors = this.cursors;
         for (var i = cursors.length; i--;) {
-            cursors[i].style.visibility = val ? "" : "hidden";
+            cursors[i].style.visibility = visible ? "" : "hidden";
         }
     }
 
-    private $updateOpacity(val) {
+    private $updateOpacity(opaque: boolean): void {
         var cursors = this.cursors;
         for (var i = cursors.length; i--;) {
-            cursors[i].style.opacity = val ? "" : "0";
+            cursors[i].style.opacity = opaque ? "" : "0";
         }
     }
 

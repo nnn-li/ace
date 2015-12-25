@@ -21,52 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ***** END LICENSE BLOCK ***** */
+
 "use strict";
 
+import AbstractLayer from './AbstractLayer';
+
 /**
- * @class Annotation
+ * Work In Progress
+ *
+ * @class PrintMargin
+ * @extends AbstractLayer
  */
-interface Annotation {
+export default class PrintMargin extends AbstractLayer {
 
     /**
-     * @property className
-     * @type string
-     * @optional
+     * @class PrintMargin
      */
-    className?: string;
-
-    /**
-     * @property html
-     * @type string
-     */
-    html?: string;
-
-    /**
-     * @property row
-     * @type number
-     */
-    row: number;
-
-    /**
-     * @property column
-     * @type number
-     */
-    column?: number;
-
-    /**
-     * FIXME: If this were a string[] we would have consistency with the Gutter?
-     *
-     * @property text
-     * @type string
-     */
-    text: string;
-
-    /**
-     * "error", "info", or "warning".
-     * @property type
-     * @type string
-     */
-    type: string;
+    constructor(parent: HTMLDivElement) {
+        // TODO: Why does the PrintMargin not specify ace_layer?
+        // In other words, what does ace_layer do?
+        super(parent, 'ace_print-margin');
+    }
 }
-
-export default Annotation;

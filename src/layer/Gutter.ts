@@ -57,12 +57,16 @@ addCssClass,
 computedStyle,
 createElement,
 removeCssClass} from "../lib/dom";
+
+import AbstractLayer from './AbstractLayer';
 import {escapeHTML} from "../lib/lang";
 import EventEmitterClass from "../lib/EventEmitterClass";
+import Delta from "../Delta";
 import EditSession from "../EditSession";
 import EventBus from "../EventBus";
 import Annotation from "../Annotation";
 import GutterConfig from "./GutterConfig";
+import Padding from './Padding';
 
 /**
  * @class Gutter
@@ -70,6 +74,14 @@ import GutterConfig from "./GutterConfig";
 export default class Gutter implements EventBus<Gutter> {
     public element: HTMLDivElement;
     public gutterWidth = 0;
+
+    /**
+     * FIXME: Issue with the text being string or string[].
+     * Gutter annotation seem to be subtly different from Annotation,
+     * but maybe Annotation text S/B a string[].
+     *
+     * @property $annotations
+     */
     public $annotations: any[] = [];
     public $cells: { element; textNode; foldWidget }[] = [];
     private $fixedWidth = false;
@@ -77,7 +89,7 @@ export default class Gutter implements EventBus<Gutter> {
     private $renderer: any = "";
     private session: EditSession;
     private $showFoldWidgets = true;
-    public $padding;
+    public $padding: Padding;
     private eventBus: EventEmitterClass<Gutter>;
 
     /**
@@ -138,7 +150,7 @@ export default class Gutter implements EventBus<Gutter> {
         for (var i = 0; i < annotations.length; i++) {
             var annotation = annotations[i];
             var row = annotation.row;
-            var rowInfo = this.$annotations[row];
+            var rowInfo: any = this.$annotations[row];
             if (!rowInfo) {
                 rowInfo = this.$annotations[row] = { text: [] };
             }
@@ -159,17 +171,17 @@ export default class Gutter implements EventBus<Gutter> {
         }
     }
 
-    private $updateAnnotations(e, session: EditSession) {
+    private $updateAnnotations(e: { data: Delta }, session: EditSession) {
         if (!this.$annotations.length)
             return;
-        var delta = e.data;
+        var delta: Delta = e.data;
         var range = delta.range;
         var firstRow = range.start.row;
         var len = range.end.row - firstRow;
         if (len === 0) {
             // do nothing
         }
-        else if (delta.action == "removeText" || delta.action == "removeLines") {
+        else if (delta.action === "removeText" || delta.action === "removeLines") {
             this.$annotations.splice(firstRow, len + 1, null);
         }
         else {
@@ -288,7 +300,7 @@ export default class Gutter implements EventBus<Gutter> {
             ? gutterRenderer.getWidth(session, lastLineNumber, config)
             : lastLineNumber.toString().length * config.characterWidth;
 
-        var padding = this.$padding || this.$computePadding();
+        var padding: Padding = this.$padding || this.$computePadding();
         gutterWidth += padding.left + padding.right;
         if (gutterWidth !== this.gutterWidth && !isNaN(gutterWidth)) {
             this.gutterWidth = gutterWidth;
@@ -343,7 +355,7 @@ export default class Gutter implements EventBus<Gutter> {
         return this.$showFoldWidgets;
     }
 
-    $computePadding() {
+    $computePadding(): Padding {
         if (!this.element.firstChild) {
             return { left: 0, right: 0 };
         }
@@ -363,7 +375,7 @@ export default class Gutter implements EventBus<Gutter> {
      * @return {string}
      */
     getRegion(point: { clientX: number; clientY: number }): string {
-        var padding = this.$padding || this.$computePadding();
+        var padding: Padding = this.$padding || this.$computePadding();
         var rect = this.element.getBoundingClientRect();
         if (point.clientX < padding.left + rect.left) {
             return "markers";

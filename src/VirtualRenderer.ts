@@ -56,14 +56,19 @@ import {addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElemen
 import {defineOptions, loadModule, resetOptions} from "./config";
 import {isOldIE} from "./lib/useragent";
 import Annotation from './Annotation';
+
+import Cursor from "./layer/Cursor";
+import FontMetrics from "./layer/FontMetrics";
 import Gutter from "./layer/Gutter";
 import Marker from "./layer/Marker";
+import PrintMargin from "./layer/PrintMargin";
 import Text from "./layer/Text";
-import Cursor from "./layer/Cursor";
+
+// TODO: 
 import VScrollBar from "./VScrollBar";
 import HScrollBar from "./HScrollBar";
+
 import RenderLoop from "./RenderLoop";
-import FontMetrics from "./layer/FontMetrics";
 import EventEmitterClass from "./lib/EventEmitterClass";
 import EditSession from './EditSession';
 import EventBus from './EventBus';
@@ -131,10 +136,45 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
     };
     public $maxLines: number;
     public $minLines: number;
+
+    /**
+     * @property $cursorLayer
+     * @type Cursor
+     */
     public $cursorLayer: Cursor;
+
+    /**
+     * @property $gutterLayer
+     * @type Gutter
+     */
     public $gutterLayer: Gutter;
 
-    public $padding: number = 0;
+    /**
+     * @property $markerFront
+     * @type Marker
+     */
+    private $markerFront: Marker;
+
+    /**
+     * @property $markerBack
+     * @type Marker
+     */
+    private $markerBack: Marker;
+
+    /**
+     * @property $textLayer
+     * @type Text
+     */
+    public $textLayer: Text;
+
+    /**
+     * @property $padding
+     * @type number
+     * @private
+     * @default 0
+     */
+    private $padding: number = 0;
+
     private $frozen = false;
 
     // The themeId is what is communicated in the API.
@@ -150,9 +190,6 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
     public $gutter;
     public scroller: HTMLDivElement;
     public content: HTMLDivElement;
-    public $textLayer: Text;
-    private $markerFront: Marker;
-    private $markerBack: Marker;
     private canvas: HTMLDivElement;
     private $horizScroll: boolean;
     private $vScroll;
@@ -189,8 +226,14 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
     // FIXME: Why do we have two?
     public gutterWidth: number;
     private $gutterWidth: number;
+
+    /**
+     * TODO: Create a PrintMarginLayer class in the layer folder.
+     */
+    private $printMarginEl: HTMLDivElement;
+    private $printMarginColumn;
     private $showPrintMargin;
-    private $printMarginEl;
+
     private getOption;
     private setOption;
 
@@ -206,7 +249,6 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      */
     public lineHeight: number;
 
-    private $printMarginColumn;
     private $extraHeight;
     private $composition: { keepTextAreaAtCursor: boolean; cssText: string };
     private $hScrollBarAlwaysVisible;
@@ -227,8 +269,6 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      */
     constructor(container: HTMLElement) {
         this.eventBus = new EventEmitterClass<VirtualRenderer>(this);
-
-        var _self = this;
 
         this.container = container || <HTMLDivElement>createElement("div");
 
@@ -271,14 +311,14 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
 
         this.scrollBarV = new VScrollBar(this.container, this);
         this.scrollBarH = new HScrollBar(this.container, this);
-        this.scrollBarV.on("scroll", function(event, scrollBar: VScrollBar) {
-            if (!_self.$scrollAnimation) {
-                _self.session.setScrollTop(event.data - _self.scrollMargin.top);
+        this.scrollBarV.on("scroll", (event, scrollBar: VScrollBar) => {
+            if (!this.$scrollAnimation) {
+                this.session.setScrollTop(event.data - this.scrollMargin.top);
             }
         });
         this.scrollBarH.on("scroll", function(event, scrollBar: HScrollBar) {
-            if (!_self.$scrollAnimation) {
-                _self.session.setScrollLeft(event.data - _self.scrollMargin.left);
+            if (!this.$scrollAnimation) {
+                this.session.setScrollLeft(event.data - this.scrollMargin.left);
             }
         });
 
@@ -289,13 +329,13 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
 
         this.$fontMetrics = new FontMetrics(this.container, 500);
         this.$textLayer.$setFontMetrics(this.$fontMetrics);
-        this.$textLayer.on("changeCharacterSize", function(event, text: Text) {
-            _self.updateCharacterSize();
-            _self.onResize(true, _self.gutterWidth, _self.$size.width, _self.$size.height);
+        this.$textLayer.on("changeCharacterSize", (event, text: Text) => {
+            this.updateCharacterSize();
+            this.onResize(true, this.gutterWidth, this.$size.width, this.$size.height);
             /**
              * @event changeCharacterSize
              */
-            _self.eventBus._signal("changeCharacterSize", event);
+            this.eventBus._signal("changeCharacterSize", event);
         });
 
         this.$size = {
@@ -848,7 +888,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
         if (!this.$printMarginEl) {
             var containerEl: HTMLDivElement = <HTMLDivElement>createElement("div");
             containerEl.className = "ace_layer ace_print-margin-layer";
-            this.$printMarginEl = createElement("div");
+            this.$printMarginEl = <HTMLDivElement>createElement("div");
             this.$printMarginEl.className = "ace_print-margin";
             containerEl.appendChild(this.$printMarginEl);
             this.content.insertBefore(containerEl, this.content.firstChild);
@@ -969,6 +1009,16 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      */
     getLastVisibleRow(): number {
         return this.layerConfig.lastRow;
+    }
+
+    /**
+     * Gets the padding.
+     *
+     * @method getPadding
+     * @return {number}
+     */
+    getPadding(): number {
+        return this.$padding;
     }
 
     /**

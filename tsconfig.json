@@ -50,6 +50,10 @@
 
     "./src/layer/Cursor.ts",
     "./src/layer/FontMetrics.ts",
+    "./src/layer/Gutter.ts",
+    "./src/layer/Marker.ts",
+    "./src/layer/PrintMargin.ts",
+    "./src/layer/Text.ts",
 
     "./src/mode/behaviour/CssBehaviour.ts",
     "./src/mode/behaviour/CstyleBehaviour.ts",

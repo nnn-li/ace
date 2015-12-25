@@ -8,7 +8,6 @@ import Position from "./Position";
 interface EditorRenderer {
     $keepTextAreaAtCursor: boolean;
     $maxLines: number;
-    $padding: number;
     scroller: HTMLDivElement;
     /**
      * @property scrollTop

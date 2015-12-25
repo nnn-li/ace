@@ -21,52 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ***** END LICENSE BLOCK ***** */
+
 "use strict";
 
+import {addCssClass, createElement, removeCssClass, setCssClass} from "../lib/dom";
+
 /**
- * @class Annotation
+ * Work In Progress
+ *
+ * @class AbstractLayer
  */
-interface Annotation {
+export default class AbstractLayer {
 
     /**
-     * @property className
-     * @type string
-     * @optional
+     * @property element
+     * @type HTMLDivElement
+     * @protected
      */
-    className?: string;
+    protected element: HTMLDivElement;
 
     /**
-     * @property html
-     * @type string
+     * @class AbstractLayer
+     * @constructor
+     * @param parent {HTMLDivElement}
+     * @param className {string} The className property assigned to the wrapped element.
      */
-    html?: string;
-
-    /**
-     * @property row
-     * @type number
-     */
-    row: number;
-
-    /**
-     * @property column
-     * @type number
-     */
-    column?: number;
-
-    /**
-     * FIXME: If this were a string[] we would have consistency with the Gutter?
-     *
-     * @property text
-     * @type string
-     */
-    text: string;
-
-    /**
-     * "error", "info", or "warning".
-     * @property type
-     * @type string
-     */
-    type: string;
+    constructor(parent: HTMLDivElement, className: string) {
+        // TODO: createHTMLDivElement would be nice convenience to avoid casting?
+        // We should probably pay more attention to the owner document too.
+        this.element = <HTMLDivElement>createElement('div');
+        this.element.className = className;
+        parent.appendChild(this.element);
+    }
 }
-
-export default Annotation;

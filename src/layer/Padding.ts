@@ -21,52 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * ***** END LICENSE BLOCK ***** */
-"use strict";
+'use strict';
 
 /**
- * @class Annotation
+ * @class Padding
  */
-interface Annotation {
+interface Padding {
 
     /**
-     * @property className
-     * @type string
+     * @property left
+     * @type number
      * @optional
      */
-    className?: string;
+    left?: number;
 
     /**
-     * @property html
-     * @type string
-     */
-    html?: string;
-
-    /**
-     * @property row
+     * @property right
      * @type number
+     * @optional
      */
-    row: number;
-
-    /**
-     * @property column
-     * @type number
-     */
-    column?: number;
-
-    /**
-     * FIXME: If this were a string[] we would have consistency with the Gutter?
-     *
-     * @property text
-     * @type string
-     */
-    text: string;
-
-    /**
-     * "error", "info", or "warning".
-     * @property type
-     * @type string
-     */
-    type: string;
+    right?: number;
 }
 
-export default Annotation;
+export default Padding;

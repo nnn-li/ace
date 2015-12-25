@@ -318,7 +318,7 @@ export default class ListViewPopup implements ListView {
     }
 
     getTextLeftOffset(): number {
-        return this.$borderSize + this.editor.renderer.$padding + this.$imageSize;
+        return this.$borderSize + this.editor.renderer.getPadding() + this.$imageSize;
     }
 
     setSelectOnHover(val: boolean): void {
