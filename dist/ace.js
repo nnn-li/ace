@@ -4509,7 +4509,7 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                         var renderer = this.renderer;
                         var highlight;
                         if (this.$highlightActiveLine) {
-                            if (this.$selectionStyle != "line" || !this.selection.isMultiLine()) {
+                            if (this.$selectionStyle !== "line" || !this.selection.isMultiLine()) {
                                 highlight = this.getCursorPosition();
                             }
                             if (renderer.$maxLines && session.getLength() === 1 && !(renderer.$minLines > 1)) {
@@ -4798,8 +4798,8 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                     }
                 }, {
                     key: "setSelectionStyle",
-                    value: function setSelectionStyle(val) {
-                        this.setOption("selectionStyle", val);
+                    value: function setSelectionStyle(selectionStyle) {
+                        this.setOption("selectionStyle", selectionStyle);
                     }
                 }, {
                     key: "getSelectionStyle",
@@ -11735,18 +11735,18 @@ System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create
         }
     };
 });
-System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/Range.js", "src/lib/dom.js"], function (_export) {
-    var _createClass, _classCallCheck, Range, createElement, Marker;
+System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/Range.js"], function (_export) {
+    var _createClass, _classCallCheck, createElement, Range, Marker;
 
     return {
         setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
             _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
         }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
             _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
-        }, function (_srcRangeJs) {
-            Range = _srcRangeJs["default"];
         }, function (_srcLibDomJs) {
             createElement = _srcLibDomJs.createElement;
+        }, function (_srcRangeJs) {
+            Range = _srcRangeJs["default"];
         }],
         execute: function () {
             "use strict";
@@ -11780,11 +11780,13 @@ System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create
                     key: "update",
                     value: function update(config) {
                         var config = config || this.config;
-                        if (!config) return;
+                        if (!config) {
+                            return;
+                        }
                         this.config = config;
                         var html = [];
-                        for (var key in this.markers) {
-                            var marker = this.markers[key];
+                        for (var id in this.markers) {
+                            var marker = this.markers[id];
                             if (!marker.range) {
                                 marker.update(html, this, this.session, config);
                                 continue;
@@ -11796,12 +11798,12 @@ System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create
                                 var top = this.$getTop(range.start.row, config);
                                 var left = this.$padding + range.start.column * config.characterWidth;
                                 marker.renderer(html, range, left, top, config);
-                            } else if (marker.type == "fullLine") {
+                            } else if (marker.type === "fullLine") {
                                 this.drawFullLineMarker(html, range, marker.clazz, config);
-                            } else if (marker.type == "screenLine") {
+                            } else if (marker.type === "screenLine") {
                                 this.drawScreenLineMarker(html, range, marker.clazz, config);
                             } else if (range.isMultiLine()) {
-                                if (marker.type == "text") this.drawTextMarker(html, range, marker.clazz, config);else this.drawMultiLineMarker(html, range, marker.clazz, config);
+                                if (marker.type === "text") this.drawTextMarker(html, range, marker.clazz, config);else this.drawMultiLineMarker(html, range, marker.clazz, config);
                             } else {
                                 this.drawSingleLineMarker(html, range, marker.clazz + " ace_start ace_br15", config);
                             }
@@ -11829,12 +11831,12 @@ System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create
                         var lineRange = new Range(row, range.start.column, row, curr);
                         for (; row <= end; row++) {
                             lineRange.start.row = lineRange.end.row = row;
-                            lineRange.start.column = row == start ? range.start.column : session.getRowWrapIndent(row);
+                            lineRange.start.column = row === start ? range.start.column : session.getRowWrapIndent(row);
                             lineRange.end.column = next;
                             prev = curr;
                             curr = next;
-                            next = row + 1 < end ? session.getScreenLastRowColumn(row + 1) : row == end ? 0 : range.end.column;
-                            this.drawSingleLineMarker(stringBuilder, lineRange, clazz + (row == start ? " ace_start" : "") + " ace_br" + getBorderClass(row == start || row == start + 1 && range.start.column, prev < curr, curr > next, row == end), layerConfig, row == end ? 0 : 1, extraStyle);
+                            next = row + 1 < end ? session.getScreenLastRowColumn(row + 1) : row === end ? 0 : range.end.column;
+                            this.drawSingleLineMarker(stringBuilder, lineRange, clazz + (row === start ? " ace_start" : "") + " ace_br" + getBorderClass(row === start || row === start + 1 && range.start.column !== 0, prev < curr, curr > next, row === end), layerConfig, row == end ? 0 : 1, extraStyle);
                         }
                     }
                 }, {
@@ -11871,7 +11873,7 @@ System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create
                     value: function drawFullLineMarker(stringBuilder, range, clazz, config, extraStyle) {
                         var top = this.$getTop(range.start.row, config);
                         var height = config.lineHeight;
-                        if (range.start.row != range.end.row) {
+                        if (range.start.row !== range.end.row) {
                             height += this.$getTop(range.end.row, config) - top;
                         }
                         stringBuilder.push("<div class='", clazz, "' style='", "height:", height, "px;", "top:", top, "px;", "left:0;right:0;", extraStyle || "", "'></div>");

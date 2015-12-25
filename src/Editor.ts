@@ -149,7 +149,7 @@ export default class Editor implements EventBus<Editor> {
     private $search: Search;
     private _$emitInputEvent;
     private selections: any[];
-    private $selectionStyle;
+    private $selectionStyle: string;
     private $opResetTimer;
     private curOp;
     private prevOp: { command?; args?};
@@ -914,7 +914,7 @@ export default class Editor implements EventBus<Editor> {
 
         var highlight;
         if (this.$highlightActiveLine) {
-            if ((this.$selectionStyle != "line" || !this.selection.isMultiLine())) {
+            if ((this.$selectionStyle !== "line" || !this.selection.isMultiLine())) {
                 highlight = this.getCursorPosition();
             }
             if (renderer.$maxLines && session.getLength() === 1 && !(renderer.$minLines > 1)) {
@@ -1359,23 +1359,24 @@ export default class Editor implements EventBus<Editor> {
     }
 
     /**
-     * Emitted when the selection style changes, via [[Editor.setSelectionStyle]].
-     * @event changeSelectionStyle
-     * @param {Object} data Contains one property, `data`, which indicates the new selection style
-     **/
-    /**
-     * Draw selection markers spanning whole line, or only over selected text. Default value is "line"
-     * @param {String} style The new selection style "line"|"text"
+     * Draw selection markers spanning whole line, or only over selected text.
      *
-     **/
-    setSelectionStyle(val: string) {
-        this.setOption("selectionStyle", val);
+     * Default value is "line"
+     *
+     * @method setSelectionStyle
+     * @param selectionStyle {string} The new selection style "line"|"text"
+     * @return {void}
+     */
+    setSelectionStyle(selectionStyle: string): void {
+        this.setOption("selectionStyle", selectionStyle);
     }
 
     /**
      * Returns the current selection style.
+     *
+     * @method getSelectionStyle
      * @return {String}
-     **/
+     */
     getSelectionStyle(): string {
         return this.getOption("selectionStyle");
     }

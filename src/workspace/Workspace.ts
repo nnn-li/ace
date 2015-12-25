@@ -1,5 +1,6 @@
 import Completion from '../Completion';
 import Delta from '../Delta';
+import DynamicMarker from '../DynamicMarker';
 import Editor from '../Editor';
 import EditorPosition from './EditorPosition';
 
@@ -59,7 +60,7 @@ export default class Workspace {
         var editor = this.editors[fileName];
         var action = delta.action;
         var range = delta.range;
-        var markers = editor.getSession().getMarkers(true);
+        var markers: { [id: number]: DynamicMarker } = editor.getSession().getMarkers(true);
         var line_count = 0;
         var isNewLine = editor.getSession().getDocument().isNewLine;
         if (action === "insertText") {
@@ -83,7 +84,7 @@ export default class Workspace {
         }
         if (line_count !== 0) {
             var markerUpdate = function(id: number) {
-                var marker = markers[id];
+                var marker: DynamicMarker = markers[id];
                 var row = range.start.row;
                 if (line_count > 0) {
                     row = +1;

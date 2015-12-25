@@ -52,11 +52,12 @@
  * ***** END LICENSE BLOCK ***** */
 "use strict";
 
-import Range from "../Range";
 import {createElement} from "../lib/dom";
+import DynamicMarker from '../DynamicMarker';
 import EditSession from '../EditSession';
-import MarkerConfig from "./MarkerConfig";
 import LayerConfig from "./LayerConfig";
+import MarkerConfig from "./MarkerConfig";
+import Range from "../Range";
 
 /**
  * @class Marker
@@ -64,7 +65,7 @@ import LayerConfig from "./LayerConfig";
 export default class Marker {
     private element: HTMLDivElement;
     private session: EditSession;
-    private markers;
+    private markers: { [id: number]: DynamicMarker };
     private config: MarkerConfig;
     private $padding: number = 0;
 
@@ -87,20 +88,23 @@ export default class Marker {
         this.session = session;
     }
 
-    public setMarkers(markers) {
+    public setMarkers(markers: { [id: number]: DynamicMarker }) {
         this.markers = markers;
     }
 
     public update(config: MarkerConfig) {
         var config = config || this.config;
-        if (!config)
+        if (!config) {
             return;
+        }
 
         this.config = config;
 
-        var html = [];
-        for (var key in this.markers) {
-            var marker = this.markers[key];
+        var html: (number | string)[] = [];
+
+        for (var id in this.markers) {
+
+            var marker: DynamicMarker = this.markers[id];
 
             if (!marker.range) {
                 marker.update(html, this, this.session, config);
@@ -116,14 +120,14 @@ export default class Marker {
                 var left = this.$padding + range.start.column * config.characterWidth;
                 marker.renderer(html, range, left, top, config);
             }
-            else if (marker.type == "fullLine") {
+            else if (marker.type === "fullLine") {
                 this.drawFullLineMarker(html, range, marker.clazz, config);
             }
-            else if (marker.type == "screenLine") {
+            else if (marker.type === "screenLine") {
                 this.drawScreenLineMarker(html, range, marker.clazz, config);
             }
             else if (range.isMultiLine()) {
-                if (marker.type == "text")
+                if (marker.type === "text")
                     this.drawTextMarker(html, range, marker.clazz, config);
                 else
                     this.drawMultiLineMarker(html, range, marker.clazz, config);
@@ -142,7 +146,7 @@ export default class Marker {
     // Draws a marker, which spans a range of text on multiple lines 
     private drawTextMarker(stringBuilder: (number | string)[], range: Range, clazz: string, layerConfig: MarkerConfig, extraStyle?) {
 
-        function getBorderClass(tl, tr, br, bl) {
+        function getBorderClass(tl: boolean, tr: boolean, br: boolean, bl: boolean): number {
             return (tl ? 1 : 0) | (tr ? 2 : 0) | (br ? 4 : 0) | (bl ? 8 : 0);
         }
 
@@ -156,15 +160,15 @@ export default class Marker {
         var lineRange = new Range(row, range.start.column, row, curr);
         for (; row <= end; row++) {
             lineRange.start.row = lineRange.end.row = row;
-            lineRange.start.column = row == start ? range.start.column : session.getRowWrapIndent(row);
+            lineRange.start.column = row === start ? range.start.column : session.getRowWrapIndent(row);
             lineRange.end.column = next;
             prev = curr;
             curr = next;
-            next = row + 1 < end ? session.getScreenLastRowColumn(row + 1) : row == end ? 0 : range.end.column;
+            next = row + 1 < end ? session.getScreenLastRowColumn(row + 1) : row === end ? 0 : range.end.column;
             this.drawSingleLineMarker(
                 stringBuilder,
                 lineRange,
-                clazz + (row == start ? " ace_start" : "") + " ace_br" + getBorderClass(row == start || row == start + 1 && range.start.column, prev < curr, curr > next, row == end),
+                clazz + (row === start ? " ace_start" : "") + " ace_br" + getBorderClass(row === start || row === start + 1 && range.start.column !== 0, prev < curr, curr > next, row === end),
                 layerConfig,
                 row == end ? 0 : 1,
                 extraStyle);
@@ -219,8 +223,10 @@ export default class Marker {
         );
     }
 
-    // Draws a marker which covers part or whole width of a single screen line
-    public drawSingleLineMarker(stringBuilder, range: Range, clazz: string, config: MarkerConfig, extraLength?: number, extraStyle?: string): void {
+    /**
+     * Draws a marker which covers part or whole width of a single screen line.
+     */
+    public drawSingleLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: MarkerConfig, extraLength?: number, extraStyle?: string): void {
         var height = config.lineHeight;
         var width = (range.end.column + (extraLength || 0) - range.start.column) * config.characterWidth;
 
@@ -236,10 +242,10 @@ export default class Marker {
         );
     }
 
-    private drawFullLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: LayerConfig, extraStyle?: string): void {
+    private drawFullLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: MarkerConfig, extraStyle?: string): void {
         var top = this.$getTop(range.start.row, config);
         var height = config.lineHeight;
-        if (range.start.row != range.end.row) {
+        if (range.start.row !== range.end.row) {
             height += this.$getTop(range.end.row, config) - top;
         }
 
@@ -251,7 +257,7 @@ export default class Marker {
         );
     }
 
-    private drawScreenLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: LayerConfig, extraStyle?: string): void {
+    private drawScreenLineMarker(stringBuilder: (number | string)[], range: Range, clazz: string, config: MarkerConfig, extraStyle?: string): void {
         var top = this.$getTop(range.start.row, config);
         var height = config.lineHeight;
 

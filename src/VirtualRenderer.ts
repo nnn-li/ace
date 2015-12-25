@@ -1370,7 +1370,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      * Schedules an update to all the front markers in the document.
      */
     updateFrontMarkers() {
-        this.$markerFront.setMarkers(this.session.getMarkers(true));
+        this.$markerFront.setMarkers(this.session.getMarkers(/*inFront=*/true));
         this.$loop.schedule(CHANGE_MARKER_FRONT);
     }
 
