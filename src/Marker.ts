@@ -2,9 +2,9 @@ import MarkerConfig from './layer/MarkerConfig';
 import Range from './Range';
 
 /**
- * @class DynamicMarker
+ * @class Marker
  */
-interface DynamicMarker {
+interface Marker {
 
     /**
      * @property id
@@ -14,13 +14,17 @@ interface DynamicMarker {
     id?: number;
 
     /**
-     * One of "fullLine", "line", "text", "screenLine".
+     * One of "fullLine", "line", "text", or "screenLine".
      *
      * @property type
      * @type string
      */
     type: string;
 
+    /**
+     * @property clazz
+     * @type string
+     */
     clazz: string;
 
     /**
@@ -30,9 +34,21 @@ interface DynamicMarker {
      */
     inFront?: boolean;
 
+    /**
+     * @property renderer
+     */
     renderer?/*: (builder: (number | string)[], range: Range, left: number, top: number, config: MarkerConfig) => any*/;
+
+    /**
+     * @property range
+     * @type Range
+     */
     range?: Range;
+
+    /**
+     * @property update
+     */
     update?;
 }
 
-export default DynamicMarker;
+export default Marker;

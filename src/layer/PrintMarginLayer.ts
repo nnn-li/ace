@@ -29,17 +29,15 @@ import AbstractLayer from './AbstractLayer';
 /**
  * Work In Progress
  *
- * @class PrintMargin
+ * @class PrintMarginLayer
  * @extends AbstractLayer
  */
-export default class PrintMargin extends AbstractLayer {
+export default class PrintMarginLayer extends AbstractLayer {
 
     /**
-     * @class PrintMargin
+     * @class PrintMarginLayer
      */
     constructor(parent: HTMLDivElement) {
-        // TODO: Why does the PrintMargin not specify ace_layer?
-        // In other words, what does ace_layer do?
-        super(parent, 'ace_print-margin');
+        super(parent, '"ace_layer ace_text-layer"');
     }
 }

@@ -57,12 +57,12 @@ import {defineOptions, loadModule, resetOptions} from "./config";
 import {isOldIE} from "./lib/useragent";
 import Annotation from './Annotation';
 
-import Cursor from "./layer/Cursor";
+import CursorLayer from "./layer/CursorLayer";
 import FontMetrics from "./layer/FontMetrics";
-import Gutter from "./layer/Gutter";
-import Marker from "./layer/Marker";
-import PrintMargin from "./layer/PrintMargin";
-import Text from "./layer/Text";
+import GutterLayer from "./layer/GutterLayer";
+import MarkerLayer from "./layer/MarkerLayer";
+import PrintMarginLayer from "./layer/PrintMarginLayer";
+import TextLayer from "./layer/TextLayer";
 
 // TODO: 
 import VScrollBar from "./VScrollBar";
@@ -139,33 +139,33 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
 
     /**
      * @property $cursorLayer
-     * @type Cursor
+     * @type CursorLayer
      */
-    public $cursorLayer: Cursor;
+    public $cursorLayer: CursorLayer;
 
     /**
      * @property $gutterLayer
-     * @type Gutter
+     * @type GutterLayer
      */
-    public $gutterLayer: Gutter;
+    public $gutterLayer: GutterLayer;
 
     /**
      * @property $markerFront
-     * @type Marker
+     * @type MarkerLayer
      */
-    private $markerFront: Marker;
+    private $markerFront: MarkerLayer;
 
     /**
      * @property $markerBack
-     * @type Marker
+     * @type MarkerLayer
      */
-    private $markerBack: Marker;
+    private $markerBack: MarkerLayer;
 
     /**
      * @property $textLayer
-     * @type Text
+     * @type TextLayer
      */
-    public $textLayer: Text;
+    public $textLayer: TextLayer;
 
     /**
      * @property $padding
@@ -187,12 +187,12 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
     private $timer;
     private STEPS = 8;
     public $keepTextAreaAtCursor: boolean;
-    public $gutter;
+    public $gutter: HTMLDivElement;
     public scroller: HTMLDivElement;
     public content: HTMLDivElement;
     private canvas: HTMLDivElement;
     private $horizScroll: boolean;
-    private $vScroll;
+    private $vScroll: boolean;
     public scrollBarH: HScrollBar;
     public scrollBarV: VScrollBar;
     private $scrollAnimation: { from: number; to: number; steps: number[] };
@@ -232,7 +232,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      */
     private $printMarginEl: HTMLDivElement;
     private $printMarginColumn;
-    private $showPrintMargin;
+    private $showPrintMargin: boolean;
 
     private getOption;
     private setOption;
@@ -258,7 +258,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
     private $animatedScroll: boolean;
     private $scrollPastEnd;
     private $highlightGutterLine;
-    private desiredHeight;
+    private desiredHeight: number;
 
     /**
      * Constructs a new `VirtualRenderer` within the `container` specified.
@@ -281,7 +281,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
 
         addCssClass(this.container, "ace_editor");
 
-        this.$gutter = createElement("div");
+        this.$gutter = <HTMLDivElement>createElement("div");
         this.$gutter.className = "ace_gutter";
         this.container.appendChild(this.$gutter);
 
@@ -293,17 +293,17 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
         this.content.className = "ace_content";
         this.scroller.appendChild(this.content);
 
-        this.$gutterLayer = new Gutter(this.$gutter);
+        this.$gutterLayer = new GutterLayer(this.$gutter);
         this.$gutterLayer.on("changeGutterWidth", this.onGutterResize.bind(this));
 
-        this.$markerBack = new Marker(this.content);
+        this.$markerBack = new MarkerLayer(this.content);
 
-        var textLayer = this.$textLayer = new Text(this.content);
+        var textLayer = this.$textLayer = new TextLayer(this.content);
         this.canvas = textLayer.element;
 
-        this.$markerFront = new Marker(this.content);
+        this.$markerFront = new MarkerLayer(this.content);
 
-        this.$cursorLayer = new Cursor(this.content);
+        this.$cursorLayer = new CursorLayer(this.content);
 
         // Indicates whether the horizontal scrollbar is visible
         this.$horizScroll = false;
@@ -316,7 +316,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
                 this.session.setScrollTop(event.data - this.scrollMargin.top);
             }
         });
-        this.scrollBarH.on("scroll", function(event, scrollBar: HScrollBar) {
+        this.scrollBarH.on("scroll", (event, scrollBar: HScrollBar) => {
             if (!this.$scrollAnimation) {
                 this.session.setScrollLeft(event.data - this.scrollMargin.left);
             }
@@ -329,7 +329,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
 
         this.$fontMetrics = new FontMetrics(this.container, 500);
         this.$textLayer.$setFontMetrics(this.$fontMetrics);
-        this.$textLayer.on("changeCharacterSize", (event, text: Text) => {
+        this.$textLayer.on("changeCharacterSize", (event, text: TextLayer) => {
             this.updateCharacterSize();
             this.onResize(true, this.gutterWidth, this.$size.width, this.$size.height);
             /**
@@ -421,7 +421,7 @@ export default class VirtualRenderer implements EventBus<VirtualRenderer>, Edito
      * @return {void}
      */
     updateCharacterSize(): void {
-        // FIXME: DGH allowBoldFonts does not exist on Text
+        // FIXME: DGH allowBoldFonts does not exist on TextLayer
         if (this.$textLayer['allowBoldFonts'] != this.$allowBoldFonts) {
             this.$allowBoldFonts = this.$textLayer['allowBoldFonts'];
             this.setStyle("ace_nobold", !this.$allowBoldFonts);

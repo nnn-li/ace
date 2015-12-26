@@ -53,31 +53,31 @@
 "use strict";
 
 import {createElement} from "../lib/dom";
-import DynamicMarker from '../DynamicMarker';
+import AbstractLayer from './AbstractLayer';
+import Marker from '../Marker';
 import EditSession from '../EditSession';
 import LayerConfig from "./LayerConfig";
 import MarkerConfig from "./MarkerConfig";
 import Range from "../Range";
 
 /**
- * @class Marker
+ * @class MarkerLayer
+ * @extends AbstractLayer
  */
-export default class Marker {
-    private element: HTMLDivElement;
+export default class MarkerLayer extends AbstractLayer {
+
     private session: EditSession;
-    private markers: { [id: number]: DynamicMarker };
+    private markers: { [id: number]: Marker };
     private config: MarkerConfig;
     private $padding: number = 0;
 
     /**
-     * @class Marker
+     * @class MarkerLayer
      * @constructor
-     * @param container {Node}
+     * @param parent {HTMLDivElement}
      */
-    constructor(container: Node) {
-        this.element = <HTMLDivElement>createElement("div");
-        this.element.className = "ace_layer ace_marker-layer";
-        container.appendChild(this.element);
+    constructor(parent: HTMLDivElement) {
+        super(parent, "ace_layer ace_marker-layer")
     }
 
     public setPadding(padding: number) {
@@ -88,7 +88,7 @@ export default class Marker {
         this.session = session;
     }
 
-    public setMarkers(markers: { [id: number]: DynamicMarker }) {
+    public setMarkers(markers: { [id: number]: Marker }) {
         this.markers = markers;
     }
 
@@ -104,7 +104,7 @@ export default class Marker {
 
         for (var id in this.markers) {
 
-            var marker: DynamicMarker = this.markers[id];
+            var marker: Marker = this.markers[id];
 
             if (!marker.range) {
                 marker.update(html, this, this.session, config);

@@ -47,11 +47,11 @@ export default class FontMetrics implements EventBus<FontMetrics> {
     /**
      * @class FontMetrics
      * @constructor
-     * @param container {HTMLElement}
+     * @param parent {HTMLElement}
      * @param pollingInterval {number}
      */
     // FIXME: The interval should be being used to configure the polling interval (normally 500ms)
-    constructor(container: HTMLElement, pollingInterval: number) {
+    constructor(parent: HTMLElement, pollingInterval: number) {
         this.eventBus = new EventEmitterClass<FontMetrics>(this);
         this.el = <HTMLDivElement>createElement("div");
         this.$setMeasureNodeStyles(this.el.style, true);
@@ -64,7 +64,7 @@ export default class FontMetrics implements EventBus<FontMetrics> {
 
         this.el.appendChild(this.$main);
         this.el.appendChild(this.$measureNode);
-        container.appendChild(this.el);
+        parent.appendChild(this.el);
 
         if (!CHAR_COUNT) {
             this.$testFractionalRect();
@@ -207,6 +207,7 @@ export default class FontMetrics implements EventBus<FontMetrics> {
         }
     }
 }
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Distributed under the BSD license:
  *

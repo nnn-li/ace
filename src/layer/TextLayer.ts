@@ -54,6 +54,7 @@
 
 import {createElement} from "../lib/dom";
 import {stringRepeat} from "../lib/lang";
+import AbstractLayer from './AbstractLayer';
 import EditSession from "../EditSession";
 import EventBus from "./EventBus";
 import EventEmitterClass from "../lib/EventEmitterClass";
@@ -62,10 +63,10 @@ import FontMetrics from "../layer/FontMetrics";
 import Token from "../Token";
 
 /**
- * @class Text
+ * @class TextLayer
+ * @extends AbstractLayer
  */
-export default class Text implements EventBus<Text> {
-    public element = <HTMLDivElement>createElement("div");
+export default class TextLayer extends AbstractLayer implements EventBus<TextLayer> {
     private $padding = 0;
     private EOF_CHAR = "\xB6";
     private EOL_CHAR_LF = "\xAC";
@@ -84,17 +85,16 @@ export default class Text implements EventBus<Text> {
     private $indentGuideRe: RegExp;
     public config;
     private $measureNode: Node;
-    private eventBus: EventEmitterClass<Text>;
+    private eventBus: EventEmitterClass<TextLayer>;
 
     /**
-     * @class Text
+     * @class TextLayer
      * @constructor
-     * @param container {HTMLElement}
+     * @param parent {HTMLElement}
      */
-    constructor(container: HTMLElement) {
-        this.eventBus = new EventEmitterClass<Text>(this);
-        this.element.className = "ace_layer ace_text-layer";
-        container.appendChild(this.element);
+    constructor(parent: HTMLElement) {
+        super(parent, "ace_layer ace_text-layer");
+        this.eventBus = new EventEmitterClass<TextLayer>(this);
         this.EOL_CHAR = this.EOL_CHAR_LF;
     }
 
@@ -177,20 +177,20 @@ export default class Text implements EventBus<Text> {
     /**
      * @method on
      * @param eventName {string}
-     * @param callback {(event, source: Text) => any}
+     * @param callback {(event, source: TextLayer) => any}
      * @return {void}
      */
-    on(eventName: string, callback: (event: any, source: Text) => any): void {
+    on(eventName: string, callback: (event: any, source: TextLayer) => any): void {
         this.eventBus.on(eventName, callback, false);
     }
 
     /**
      * @method off
      * @param eventName {string}
-     * @param callback {(event, source: Text) => any}
+     * @param callback {(event, source: TextLayer) => any}
      * @return {void}
      */
-    off(eventName: string, callback: (event: any, source: Text) => any): void {
+    off(eventName: string, callback: (event: any, source: TextLayer) => any): void {
         this.eventBus.off(eventName, callback);
     }
 
@@ -328,7 +328,7 @@ export default class Text implements EventBus<Text> {
         }
     }
 
-    private $renderLinesFragment(config, firstRow, lastRow) {
+    private $renderLinesFragment(config, firstRow: number, lastRow: number) {
         var fragment = this.element.ownerDocument.createDocumentFragment();
         var row = firstRow;
         var foldLine = this.session.getNextFoldLine(row);
@@ -345,7 +345,7 @@ export default class Text implements EventBus<Text> {
 
             var container = <HTMLDivElement>createElement("div");
 
-            var html = [];
+            var html: (number | string)[] = [];
             // Get the tokens per line as there might be some lines in between
             // beeing folded.
             this.$renderLine(html, row, false, row == foldStart ? foldLine : false);
@@ -357,7 +357,8 @@ export default class Text implements EventBus<Text> {
                 fragment.appendChild(container);
                 container.style.height = config.lineHeight * this.session.getRowLength(row) + "px";
 
-            } else {
+            }
+            else {
                 while (container.firstChild)
                     fragment.appendChild(container.firstChild);
             }

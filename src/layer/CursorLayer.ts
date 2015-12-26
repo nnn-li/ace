@@ -53,6 +53,7 @@
 "use strict";
 
 import {addCssClass, createElement, removeCssClass, setCssClass} from "../lib/dom";
+import AbstractLayer from './AbstractLayer';
 import EditSession from '../EditSession';
 import Position from '../Position';
 import PixelPosition from '../PixelPosition';
@@ -61,12 +62,12 @@ import CursorConfig from './CursorConfig';
 var IE8;
 
 /**
- * This class is the HTML representation of the Cursor(Layer).
+ * This class is the HTML representation of the CursorLayer.
  *
- * @class Cursor
+ * @class CursorLayer
+ * @extends AbstractLayer
  */
-export default class Cursor {
-    public element: HTMLDivElement;
+export default class CursorLayer extends AbstractLayer {
     private session: EditSession;
     private isVisible = false;
     public isBlinking = true;
@@ -83,14 +84,12 @@ export default class Cursor {
     public $pixelPos: PixelPosition;
 
     /**
-     * @class Cursor
+     * @class CursorLayer
      * @constructor
-     * @param container {HTMLDivElement}
+     * @param parent {HTMLElement}
      */
-    constructor(container: HTMLDivElement) {
-        this.element = <HTMLDivElement>createElement("div");
-        this.element.className = "ace_layer ace_cursor-layer";
-        container.appendChild(this.element);
+    constructor(parent: HTMLElement) {
+        super(parent, "ace_layer ace_cursor-layer")
 
         if (IE8 === void 0) {
             IE8 = "opacity" in this.element;

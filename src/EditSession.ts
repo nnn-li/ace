@@ -58,7 +58,7 @@ import {defineOptions, loadModule, resetOptions} from "./config";
 import Annotation from './Annotation';
 import Delta from "./Delta";
 import DeltaEvent from "./DeltaEvent";
-import DynamicMarker from "./DynamicMarker";
+import Marker from "./Marker";
 import EventBus from "./EventBus";
 import EventEmitterClass from "./lib/EventEmitterClass";
 import FoldLine from "./FoldLine";
@@ -139,8 +139,8 @@ function isFullWidth(c: number): boolean {
 export default class EditSession implements EventBus<EditSession> {
     public $breakpoints: string[] = [];
     public $decorations: string[] = [];
-    private $frontMarkers: { [id: number]: DynamicMarker } = {};
-    public $backMarkers: { [id: number]: DynamicMarker } = {};
+    private $frontMarkers: { [id: number]: Marker } = {};
+    public $backMarkers: { [id: number]: Marker } = {};
     private $markerId = 1;
     private $undoSelect = true;
     private $deltas;
@@ -865,7 +865,7 @@ export default class EditSession implements EventBus<EditSession> {
     public addMarker(range: Range, clazz: string, type: string, inFront?: boolean): number {
         var id = this.$markerId++;
 
-        var marker: DynamicMarker = {
+        var marker: Marker = {
             range: range,
             type: type || "line",
             renderer: typeof type === "function" ? type : null,
@@ -896,11 +896,11 @@ export default class EditSession implements EventBus<EditSession> {
      * Adds a dynamic marker to the session.
      *
      * @method addDynamicMarker
-     * @param marker {DynamicMarker} object with update method.
+     * @param marker {Marker} object with update method.
      * @param [inFront] {boolean} Set to `true` to establish a front marker.
-     * @return {DynamicMarker} The added marker
+     * @return {Marker} The added marker
      */
-    private addDynamicMarker(marker: DynamicMarker, inFront?: boolean): DynamicMarker {
+    private addDynamicMarker(marker: Marker, inFront?: boolean): Marker {
         if (!marker.update) {
             return;
         }
@@ -936,11 +936,11 @@ export default class EditSession implements EventBus<EditSession> {
      * @return {void}
      */
     public removeMarker(markerId: number): void {
-        var marker: DynamicMarker = this.$frontMarkers[markerId] || this.$backMarkers[markerId];
+        var marker: Marker = this.$frontMarkers[markerId] || this.$backMarkers[markerId];
         if (!marker)
             return;
 
-        var markers: { [id: number]: DynamicMarker } = marker.inFront ? this.$frontMarkers : this.$backMarkers;
+        var markers: { [id: number]: Marker } = marker.inFront ? this.$frontMarkers : this.$backMarkers;
         if (marker) {
             delete (markers[markerId]);
             this.eventBus._signal(marker.inFront ? "changeFrontMarker" : "changeBackMarker");
@@ -952,9 +952,9 @@ export default class EditSession implements EventBus<EditSession> {
      *
      * @method getMarkers
      * @param {boolean} inFront If `true`, indicates you only want front markers; `false` indicates only back markers.
-     * @return {{[id: number]: DynamicMarker}}
+     * @return {{[id: number]: Marker}}
      */
-    public getMarkers(inFront: boolean): { [id: number]: DynamicMarker } {
+    public getMarkers(inFront: boolean): { [id: number]: Marker } {
         return inFront ? this.$frontMarkers : this.$backMarkers;
     }
 

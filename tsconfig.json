@@ -48,12 +48,12 @@
     "./src/keyboard/KeyBinding.ts",
     "./src/keyboard/TextInput.ts",
 
-    "./src/layer/Cursor.ts",
+    "./src/layer/CursorLayer.ts",
     "./src/layer/FontMetrics.ts",
-    "./src/layer/Gutter.ts",
-    "./src/layer/Marker.ts",
-    "./src/layer/PrintMargin.ts",
-    "./src/layer/Text.ts",
+    "./src/layer/GutterLayer.ts",
+    "./src/layer/MarkerLayer.ts",
+    "./src/layer/PrintMarginLayer.ts",
+    "./src/layer/TextLayer.ts",
 
     "./src/mode/behaviour/CssBehaviour.ts",
     "./src/mode/behaviour/CstyleBehaviour.ts",

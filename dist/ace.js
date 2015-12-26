@@ -3811,7 +3811,7 @@ System.register("src/Tooltip.js", ["npm:babel-runtime@5.8.34/helpers/create-clas
     };
 });
 System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/helpers/get", "npm:babel-runtime@5.8.34/helpers/inherits", "src/lib/oop.js", "src/lib/dom.js", "src/lib/lang.js", "src/lib/useragent.js", "src/keyboard/KeyBinding.js", "src/keyboard/TextInput.js", "src/Search.js", "src/Range.js", "src/lib/EventEmitterClass.js", "src/commands/CommandManager.js", "src/commands/default_commands.js", "src/config.js", "src/TokenIterator.js", "src/editor_protocol.js", "src/lib/event.js", "src/touch/touch.js", "src/Tooltip.js"], function (_export) {
-    var _createClass, _classCallCheck, _get, _inherits, mixin, computedStyle, hasCssClass, setCssClass, delayedCall, stringRepeat, isIE, isMac, isMobile, isOldIE, isWebKit, KeyBinding, TextInput, Search, Range, EventEmitterClass, CommandManager, defaultCommands, defineOptions, loadModule, resetOptions, TokenIterator, COMMAND_NAME_AUTO_COMPLETE, addListener, addMouseWheelListener, addMultiMouseDownListener, capture, _getButton, _preventDefault, stopEvent, _stopPropagation, touchManager, Tooltip, Editor, FoldHandler, MouseHandler, EditorMouseEvent, DRAG_OFFSET, GutterHandler, GutterTooltip;
+    var _createClass, _classCallCheck, _get, _inherits, mixin, computedStyle, hasCssClass, delayedCall, stringRepeat, isIE, isMac, isMobile, isOldIE, isWebKit, KeyBinding, TextInput, Search, Range, EventEmitterClass, CommandManager, defaultCommands, defineOptions, loadModule, resetOptions, TokenIterator, COMMAND_NAME_AUTO_COMPLETE, addListener, addMouseWheelListener, addMultiMouseDownListener, capture, _getButton, _preventDefault, stopEvent, _stopPropagation, touchManager, Tooltip, Editor, FoldHandler, MouseHandler, EditorMouseEvent, DRAG_OFFSET, GutterHandler, GutterTooltip;
 
     function makeMouseDownHandler(editor, mouseHandler) {
         return function (ev) {
@@ -3958,7 +3958,6 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
         }, function (_srcLibDomJs) {
             computedStyle = _srcLibDomJs.computedStyle;
             hasCssClass = _srcLibDomJs.hasCssClass;
-            setCssClass = _srcLibDomJs.setCssClass;
         }, function (_srcLibLangJs) {
             delayedCall = _srcLibLangJs.delayedCall;
             stringRepeat = _srcLibLangJs.stringRepeat;
@@ -4009,6 +4008,8 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
 
             Editor = (function () {
                 function Editor(renderer, session) {
+                    var _this = this;
+
                     _classCallCheck(this, Editor);
 
                     this.eventBus = new EventEmitterClass(this);
@@ -4034,13 +4035,12 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                     this.$historyTracker = this.$historyTracker.bind(this);
                     this.commands.on("exec", this.$historyTracker);
                     this.$initOperationListeners();
-                    this._$emitInputEvent = delayedCall((function () {
-                        this._signal("input", {});
-                        this.session.bgTokenizer && this.session.bgTokenizer.scheduleStart();
-                    }).bind(this));
-                    var self = this;
+                    this._$emitInputEvent = delayedCall(function () {
+                        _this._signal("input", {});
+                        _this.session.bgTokenizer && _this.session.bgTokenizer.scheduleStart();
+                    });
                     this.on("change", function () {
-                        self._$emitInputEvent.schedule(31);
+                        _this._$emitInputEvent.schedule(31);
                     });
                     this.setSession(session);
                     resetOptions(this);
@@ -4054,41 +4054,41 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                 }, {
                     key: "$initOperationListeners",
                     value: function $initOperationListeners() {
-                        var _this = this;
+                        var _this2 = this;
 
                         function last(a) {
                             return a[a.length - 1];
                         }
                         this.selections = [];
                         this.commands.on("exec", function (e) {
-                            _this.startOperation(e);
+                            _this2.startOperation(e);
                             var command = e.command;
                             if (command.aceCommandGroup === "fileJump") {
-                                var prev = _this.prevOp;
+                                var prev = _this2.prevOp;
                                 if (!prev || prev.command.aceCommandGroup !== "fileJump") {
-                                    _this.lastFileJumpPos = last(_this.selections);
+                                    _this2.lastFileJumpPos = last(_this2.selections);
                                 }
                             } else {
-                                _this.lastFileJumpPos = null;
+                                _this2.lastFileJumpPos = null;
                             }
                         }, true);
                         this.commands.on("afterExec", function (e, cm) {
                             var command = e.command;
                             if (command.aceCommandGroup === "fileJump") {
-                                if (_this.lastFileJumpPos && !_this.curOp.selectionChanged) {
-                                    _this.selection.fromJSON(_this.lastFileJumpPos);
+                                if (_this2.lastFileJumpPos && !_this2.curOp.selectionChanged) {
+                                    _this2.selection.fromJSON(_this2.lastFileJumpPos);
                                 }
                             }
-                            _this.endOperation(e);
+                            _this2.endOperation(e);
                         }, true);
                         this.$opResetTimer = delayedCall(this.endOperation.bind(this));
                         this.eventBus.on("change", function () {
-                            _this.curOp || _this.startOperation();
-                            _this.curOp.docChanged = true;
+                            _this2.curOp || _this2.startOperation();
+                            _this2.curOp.docChanged = true;
                         }, true);
                         this.eventBus.on("changeSelection", function () {
-                            _this.curOp || _this.startOperation();
-                            _this.curOp.selectionChanged = true;
+                            _this2.curOp || _this2.startOperation();
+                            _this2.curOp.selectionChanged = true;
                         }, true);
                     }
                 }, {
@@ -5846,8 +5846,8 @@ System.register("src/Editor.js", ["npm:babel-runtime@5.8.34/helpers/create-class
                             return;
                         }
                         cursorLayer.setSmoothBlinking(/smooth/.test(style));
-                        cursorLayer.isBlinking = !this.$readOnly && style != "wide";
-                        setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
+                        cursorLayer.isBlinking = !this.$readOnly && style !== "wide";
+                        cursorLayer.setCssClass("ace_slim-cursors", /slim/.test(style));
                     }
                 }, {
                     key: "selection",
@@ -11500,11 +11500,15 @@ System.register("src/config.js", ["npm:babel-runtime@5.8.34/core-js/object/keys"
         }
     };
 });
-System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js"], function (_export) {
-    var _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, setCssClass, IE8, Cursor;
+System.register("src/layer/CursorLayer.js", ["npm:babel-runtime@5.8.34/helpers/get", "npm:babel-runtime@5.8.34/helpers/inherits", "npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/layer/AbstractLayer.js"], function (_export) {
+    var _get, _inherits, _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, setCssClass, AbstractLayer, IE8, CursorLayer;
 
     return {
-        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
+        setters: [function (_npmBabelRuntime5834HelpersGet) {
+            _get = _npmBabelRuntime5834HelpersGet["default"];
+        }, function (_npmBabelRuntime5834HelpersInherits) {
+            _inherits = _npmBabelRuntime5834HelpersInherits["default"];
+        }, function (_npmBabelRuntime5834HelpersCreateClass) {
             _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
         }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
             _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
@@ -11513,23 +11517,25 @@ System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create
             createElement = _srcLibDomJs.createElement;
             removeCssClass = _srcLibDomJs.removeCssClass;
             setCssClass = _srcLibDomJs.setCssClass;
+        }, function (_srcLayerAbstractLayerJs) {
+            AbstractLayer = _srcLayerAbstractLayerJs["default"];
         }],
         execute: function () {
             "use strict";
 
-            Cursor = (function () {
-                function Cursor(container) {
-                    _classCallCheck(this, Cursor);
+            CursorLayer = (function (_AbstractLayer) {
+                _inherits(CursorLayer, _AbstractLayer);
 
+                function CursorLayer(parent) {
+                    _classCallCheck(this, CursorLayer);
+
+                    _get(Object.getPrototypeOf(CursorLayer.prototype), "constructor", this).call(this, parent, "ace_layer ace_cursor-layer");
                     this.isVisible = false;
                     this.isBlinking = true;
                     this.blinkInterval = 1000;
                     this.smoothBlinking = false;
                     this.cursors = [];
                     this.$padding = 0;
-                    this.element = createElement("div");
-                    this.element.className = "ace_layer ace_cursor-layer";
-                    container.appendChild(this.element);
                     if (IE8 === void 0) {
                         IE8 = "opacity" in this.element;
                     }
@@ -11538,7 +11544,7 @@ System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create
                     this.$updateCursors = this.$updateVisibility.bind(this);
                 }
 
-                _createClass(Cursor, [{
+                _createClass(CursorLayer, [{
                     key: "$updateVisibility",
                     value: function $updateVisibility(visible) {
                         var cursors = this.cursors;
@@ -11713,10 +11719,10 @@ System.register("src/layer/Cursor.js", ["npm:babel-runtime@5.8.34/helpers/create
                     }
                 }]);
 
-                return Cursor;
-            })();
+                return CursorLayer;
+            })(AbstractLayer);
 
-            _export("default", Cursor);
+            _export("default", CursorLayer);
         }
     };
 });
@@ -11744,7 +11750,7 @@ System.register("src/layer/FontMetrics.js", ["npm:babel-runtime@5.8.34/helpers/c
             CHAR_COUNT = 0;
 
             FontMetrics = (function () {
-                function FontMetrics(container, pollingInterval) {
+                function FontMetrics(parent, pollingInterval) {
                     _classCallCheck(this, FontMetrics);
 
                     this.$characterSize = { width: 0, height: 0 };
@@ -11757,7 +11763,7 @@ System.register("src/layer/FontMetrics.js", ["npm:babel-runtime@5.8.34/helpers/c
                     this.$setMeasureNodeStyles(this.$measureNode.style);
                     this.el.appendChild(this.$main);
                     this.el.appendChild(this.$measureNode);
-                    container.appendChild(this.el);
+                    parent.appendChild(this.el);
                     if (!CHAR_COUNT) {
                         this.$testFractionalRect();
                     }
@@ -11894,11 +11900,15 @@ System.register("src/layer/FontMetrics.js", ["npm:babel-runtime@5.8.34/helpers/c
         }
     };
 });
-System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/lib/lang.js", "src/lib/EventEmitterClass.js"], function (_export) {
-    var _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, escapeHTML, EventEmitterClass, Gutter;
+System.register("src/layer/GutterLayer.js", ["npm:babel-runtime@5.8.34/helpers/get", "npm:babel-runtime@5.8.34/helpers/inherits", "npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/layer/AbstractLayer.js", "src/lib/lang.js", "src/lib/EventEmitterClass.js"], function (_export) {
+    var _get, _inherits, _createClass, _classCallCheck, addCssClass, createElement, removeCssClass, AbstractLayer, escapeHTML, EventEmitterClass, GutterLayer;
 
     return {
-        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
+        setters: [function (_npmBabelRuntime5834HelpersGet) {
+            _get = _npmBabelRuntime5834HelpersGet["default"];
+        }, function (_npmBabelRuntime5834HelpersInherits) {
+            _inherits = _npmBabelRuntime5834HelpersInherits["default"];
+        }, function (_npmBabelRuntime5834HelpersCreateClass) {
             _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
         }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
             _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
@@ -11906,6 +11916,8 @@ System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create
             addCssClass = _srcLibDomJs.addCssClass;
             createElement = _srcLibDomJs.createElement;
             removeCssClass = _srcLibDomJs.removeCssClass;
+        }, function (_srcLayerAbstractLayerJs) {
+            AbstractLayer = _srcLayerAbstractLayerJs["default"];
         }, function (_srcLibLangJs) {
             escapeHTML = _srcLibLangJs.escapeHTML;
         }, function (_srcLibEventEmitterClassJs) {
@@ -11914,10 +11926,13 @@ System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create
         execute: function () {
             "use strict";
 
-            Gutter = (function () {
-                function Gutter(container) {
-                    _classCallCheck(this, Gutter);
+            GutterLayer = (function (_AbstractLayer) {
+                _inherits(GutterLayer, _AbstractLayer);
 
+                function GutterLayer(parent) {
+                    _classCallCheck(this, GutterLayer);
+
+                    _get(Object.getPrototypeOf(GutterLayer.prototype), "constructor", this).call(this, parent, "ace_layer ace_gutter-layer");
                     this.gutterWidth = 0;
                     this.$annotations = [];
                     this.$cells = [];
@@ -11926,14 +11941,11 @@ System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create
                     this.$renderer = "";
                     this.$showFoldWidgets = true;
                     this.eventBus = new EventEmitterClass(this);
-                    this.element = createElement("div");
-                    this.element.className = "ace_layer ace_gutter-layer";
-                    container.appendChild(this.element);
                     this.setShowFoldWidgets(this.$showFoldWidgets);
                     this.$updateAnnotations = this.$updateAnnotations.bind(this);
                 }
 
-                _createClass(Gutter, [{
+                _createClass(GutterLayer, [{
                     key: "on",
                     value: function on(eventName, callback) {
                         this.eventBus.on(eventName, callback, false);
@@ -12122,40 +12134,44 @@ System.register("src/layer/Gutter.js", ["npm:babel-runtime@5.8.34/helpers/create
                     }
                 }]);
 
-                return Gutter;
-            })();
+                return GutterLayer;
+            })(AbstractLayer);
 
-            _export("default", Gutter);
+            _export("default", GutterLayer);
         }
     };
 });
-System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/Range.js"], function (_export) {
-    var _createClass, _classCallCheck, createElement, Range, Marker;
+System.register("src/layer/MarkerLayer.js", ["npm:babel-runtime@5.8.34/helpers/get", "npm:babel-runtime@5.8.34/helpers/inherits", "npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/layer/AbstractLayer.js", "src/Range.js"], function (_export) {
+    var _get, _inherits, _createClass, _classCallCheck, AbstractLayer, Range, MarkerLayer;
 
     return {
-        setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
+        setters: [function (_npmBabelRuntime5834HelpersGet) {
+            _get = _npmBabelRuntime5834HelpersGet["default"];
+        }, function (_npmBabelRuntime5834HelpersInherits) {
+            _inherits = _npmBabelRuntime5834HelpersInherits["default"];
+        }, function (_npmBabelRuntime5834HelpersCreateClass) {
             _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
         }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
             _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
-        }, function (_srcLibDomJs) {
-            createElement = _srcLibDomJs.createElement;
+        }, function (_srcLayerAbstractLayerJs) {
+            AbstractLayer = _srcLayerAbstractLayerJs["default"];
         }, function (_srcRangeJs) {
             Range = _srcRangeJs["default"];
         }],
         execute: function () {
             "use strict";
 
-            Marker = (function () {
-                function Marker(container) {
-                    _classCallCheck(this, Marker);
+            MarkerLayer = (function (_AbstractLayer) {
+                _inherits(MarkerLayer, _AbstractLayer);
 
+                function MarkerLayer(parent) {
+                    _classCallCheck(this, MarkerLayer);
+
+                    _get(Object.getPrototypeOf(MarkerLayer.prototype), "constructor", this).call(this, parent, "ace_layer ace_marker-layer");
                     this.$padding = 0;
-                    this.element = createElement("div");
-                    this.element.className = "ace_layer ace_marker-layer";
-                    container.appendChild(this.element);
                 }
 
-                _createClass(Marker, [{
+                _createClass(MarkerLayer, [{
                     key: "setPadding",
                     value: function setPadding(padding) {
                         this.$padding = padding;
@@ -12281,15 +12297,15 @@ System.register("src/layer/Marker.js", ["npm:babel-runtime@5.8.34/helpers/create
                     }
                 }]);
 
-                return Marker;
-            })();
+                return MarkerLayer;
+            })(AbstractLayer);
 
-            _export("default", Marker);
+            _export("default", MarkerLayer);
         }
     };
 });
-System.register("src/layer/Text.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/lib/lang.js", "src/lib/EventEmitterClass.js"], function (_export) {
-    var _createClass, _classCallCheck, createElement, stringRepeat, EventEmitterClass, Text;
+System.register("src/layer/AbstractLayer.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js"], function (_export) {
+    var _createClass, _classCallCheck, createElement, _setCssClass, AbstractLayer;
 
     return {
         setters: [function (_npmBabelRuntime5834HelpersCreateClass) {
@@ -12298,19 +12314,65 @@ System.register("src/layer/Text.js", ["npm:babel-runtime@5.8.34/helpers/create-c
             _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
         }, function (_srcLibDomJs) {
             createElement = _srcLibDomJs.createElement;
+            _setCssClass = _srcLibDomJs.setCssClass;
+        }],
+        execute: function () {
+            "use strict";
+
+            AbstractLayer = (function () {
+                function AbstractLayer(parent, className) {
+                    _classCallCheck(this, AbstractLayer);
+
+                    this.element = createElement('div');
+                    this.element.className = className;
+                    parent.appendChild(this.element);
+                }
+
+                _createClass(AbstractLayer, [{
+                    key: "setCssClass",
+                    value: function setCssClass(className, include) {
+                        _setCssClass(this.element, className, include);
+                    }
+                }]);
+
+                return AbstractLayer;
+            })();
+
+            _export("default", AbstractLayer);
+        }
+    };
+});
+System.register("src/layer/TextLayer.js", ["npm:babel-runtime@5.8.34/helpers/get", "npm:babel-runtime@5.8.34/helpers/inherits", "npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "src/lib/dom.js", "src/lib/lang.js", "src/layer/AbstractLayer.js", "src/lib/EventEmitterClass.js"], function (_export) {
+    var _get, _inherits, _createClass, _classCallCheck, createElement, stringRepeat, AbstractLayer, EventEmitterClass, TextLayer;
+
+    return {
+        setters: [function (_npmBabelRuntime5834HelpersGet) {
+            _get = _npmBabelRuntime5834HelpersGet["default"];
+        }, function (_npmBabelRuntime5834HelpersInherits) {
+            _inherits = _npmBabelRuntime5834HelpersInherits["default"];
+        }, function (_npmBabelRuntime5834HelpersCreateClass) {
+            _createClass = _npmBabelRuntime5834HelpersCreateClass["default"];
+        }, function (_npmBabelRuntime5834HelpersClassCallCheck) {
+            _classCallCheck = _npmBabelRuntime5834HelpersClassCallCheck["default"];
+        }, function (_srcLibDomJs) {
+            createElement = _srcLibDomJs.createElement;
         }, function (_srcLibLangJs) {
             stringRepeat = _srcLibLangJs.stringRepeat;
+        }, function (_srcLayerAbstractLayerJs) {
+            AbstractLayer = _srcLayerAbstractLayerJs["default"];
         }, function (_srcLibEventEmitterClassJs) {
             EventEmitterClass = _srcLibEventEmitterClassJs["default"];
         }],
         execute: function () {
             "use strict";
 
-            Text = (function () {
-                function Text(container) {
-                    _classCallCheck(this, Text);
+            TextLayer = (function (_AbstractLayer) {
+                _inherits(TextLayer, _AbstractLayer);
 
-                    this.element = createElement("div");
+                function TextLayer(parent) {
+                    _classCallCheck(this, TextLayer);
+
+                    _get(Object.getPrototypeOf(TextLayer.prototype), "constructor", this).call(this, parent, "ace_layer ace_text-layer");
                     this.$padding = 0;
                     this.EOF_CHAR = "\xB6";
                     this.EOL_CHAR_LF = "\xAC";
@@ -12322,12 +12384,10 @@ System.register("src/layer/Text.js", ["npm:babel-runtime@5.8.34/helpers/create-c
                     this.$tabStrings = [];
                     this.$textToken = { "text": true, "rparen": true, "lparen": true };
                     this.eventBus = new EventEmitterClass(this);
-                    this.element.className = "ace_layer ace_text-layer";
-                    container.appendChild(this.element);
                     this.EOL_CHAR = this.EOL_CHAR_LF;
                 }
 
-                _createClass(Text, [{
+                _createClass(TextLayer, [{
                     key: "updateEolChar",
                     value: function updateEolChar() {
                         var EOL_CHAR = this.session.doc.getNewLineCharacter() === "\n" ? this.EOL_CHAR_LF : this.EOL_CHAR_CRLF;
@@ -12764,10 +12824,10 @@ System.register("src/layer/Text.js", ["npm:babel-runtime@5.8.34/helpers/create-c
                     }
                 }]);
 
-                return Text;
-            })();
+                return TextLayer;
+            })(AbstractLayer);
 
-            _export("default", Text);
+            _export("default", TextLayer);
         }
     };
 });
@@ -13627,8 +13687,8 @@ System.register("src/ThemeLink.js", ["npm:babel-runtime@5.8.34/helpers/class-cal
         }
     };
 });
-System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/core-js/promise", "src/lib/dom.js", "src/config.js", "src/lib/useragent.js", "src/layer/Cursor.js", "src/layer/FontMetrics.js", "src/layer/Gutter.js", "src/layer/Marker.js", "src/layer/Text.js", "src/VScrollBar.js", "src/HScrollBar.js", "src/RenderLoop.js", "src/lib/EventEmitterClass.js", "src/ThemeLink.js"], function (_export) {
-    var _createClass, _classCallCheck, _Promise, _addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElement, removeCssClass, _setCssClass, defineOptions, resetOptions, isOldIE, Cursor, FontMetrics, Gutter, Marker, Text, VScrollBar, HScrollBar, RenderLoop, EventEmitterClass, ThemeLink, CHANGE_CURSOR, CHANGE_MARKER, CHANGE_GUTTER, CHANGE_SCROLL, CHANGE_LINES, CHANGE_TEXT, CHANGE_SIZE, CHANGE_MARKER_BACK, CHANGE_MARKER_FRONT, CHANGE_FULL, CHANGE_H_SCROLL, VirtualRenderer;
+System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/create-class", "npm:babel-runtime@5.8.34/helpers/class-call-check", "npm:babel-runtime@5.8.34/core-js/promise", "src/lib/dom.js", "src/config.js", "src/lib/useragent.js", "src/layer/CursorLayer.js", "src/layer/FontMetrics.js", "src/layer/GutterLayer.js", "src/layer/MarkerLayer.js", "src/layer/TextLayer.js", "src/VScrollBar.js", "src/HScrollBar.js", "src/RenderLoop.js", "src/lib/EventEmitterClass.js", "src/ThemeLink.js"], function (_export) {
+    var _createClass, _classCallCheck, _Promise, _addCssClass, appendHTMLLinkElement, createElement, ensureHTMLStyleElement, removeCssClass, _setCssClass, defineOptions, resetOptions, isOldIE, CursorLayer, FontMetrics, GutterLayer, MarkerLayer, TextLayer, VScrollBar, HScrollBar, RenderLoop, EventEmitterClass, ThemeLink, CHANGE_CURSOR, CHANGE_MARKER, CHANGE_GUTTER, CHANGE_SCROLL, CHANGE_LINES, CHANGE_TEXT, CHANGE_SIZE, CHANGE_MARKER_BACK, CHANGE_MARKER_FRONT, CHANGE_FULL, CHANGE_H_SCROLL, VirtualRenderer;
 
     function changesToString(changes) {
         var a = "";
@@ -13664,16 +13724,16 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
             resetOptions = _srcConfigJs.resetOptions;
         }, function (_srcLibUseragentJs) {
             isOldIE = _srcLibUseragentJs.isOldIE;
-        }, function (_srcLayerCursorJs) {
-            Cursor = _srcLayerCursorJs["default"];
+        }, function (_srcLayerCursorLayerJs) {
+            CursorLayer = _srcLayerCursorLayerJs["default"];
         }, function (_srcLayerFontMetricsJs) {
             FontMetrics = _srcLayerFontMetricsJs["default"];
-        }, function (_srcLayerGutterJs) {
-            Gutter = _srcLayerGutterJs["default"];
-        }, function (_srcLayerMarkerJs) {
-            Marker = _srcLayerMarkerJs["default"];
-        }, function (_srcLayerTextJs) {
-            Text = _srcLayerTextJs["default"];
+        }, function (_srcLayerGutterLayerJs) {
+            GutterLayer = _srcLayerGutterLayerJs["default"];
+        }, function (_srcLayerMarkerLayerJs) {
+            MarkerLayer = _srcLayerMarkerLayerJs["default"];
+        }, function (_srcLayerTextLayerJs) {
+            TextLayer = _srcLayerTextLayerJs["default"];
         }, function (_srcVScrollBarJs) {
             VScrollBar = _srcVScrollBarJs["default"];
         }, function (_srcHScrollBarJs) {
@@ -13746,13 +13806,13 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
                     this.content = createElement("div");
                     this.content.className = "ace_content";
                     this.scroller.appendChild(this.content);
-                    this.$gutterLayer = new Gutter(this.$gutter);
+                    this.$gutterLayer = new GutterLayer(this.$gutter);
                     this.$gutterLayer.on("changeGutterWidth", this.onGutterResize.bind(this));
-                    this.$markerBack = new Marker(this.content);
-                    var textLayer = this.$textLayer = new Text(this.content);
+                    this.$markerBack = new MarkerLayer(this.content);
+                    var textLayer = this.$textLayer = new TextLayer(this.content);
                     this.canvas = textLayer.element;
-                    this.$markerFront = new Marker(this.content);
-                    this.$cursorLayer = new Cursor(this.content);
+                    this.$markerFront = new MarkerLayer(this.content);
+                    this.$cursorLayer = new CursorLayer(this.content);
                     this.$horizScroll = false;
                     this.$vScroll = false;
                     this.scrollBarV = new VScrollBar(this.container, this);
@@ -13763,8 +13823,8 @@ System.register("src/VirtualRenderer.js", ["npm:babel-runtime@5.8.34/helpers/cre
                         }
                     });
                     this.scrollBarH.on("scroll", function (event, scrollBar) {
-                        if (!this.$scrollAnimation) {
-                            this.session.setScrollLeft(event.data - this.scrollMargin.left);
+                        if (!_this.$scrollAnimation) {
+                            _this.session.setScrollLeft(event.data - _this.scrollMargin.left);
                         }
                     });
                     this.cursorPos = {

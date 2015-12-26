@@ -272,9 +272,8 @@ export default class BackgroundTokenizer implements EventBus<BackgroundTokenizer
     /**
      * @method scheduleStart
      * @return {void}
-     * @private
      */
-    private scheduleStart(): void {
+    public scheduleStart(): void {
         if (!this.running) {
             this.running = setTimeout(this.$worker, 700);
         }

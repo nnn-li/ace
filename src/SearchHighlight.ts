@@ -53,10 +53,10 @@
 "use strict";
 
 import { getMatchOffsets } from "./lib/lang";
-import DynamicMarker from "./DynamicMarker";
+import Marker from "./Marker";
 import Range from "./Range";
 import EditSession from "./EditSession";
-import Marker from "./layer/Marker";
+import MarkerLayer from "./layer/MarkerLayer";
 import MarkerConfig from "./layer/MarkerConfig";
 
 // needed to prevent long lines from freezing the browser
@@ -65,7 +65,7 @@ var MAX_RANGES = 500;
 /**
  * @class SearchHighlight
  */
-export default class SearchHighlight implements DynamicMarker {
+export default class SearchHighlight implements Marker {
     private regExp: RegExp;
     public clazz: string;
     public type: string;
@@ -99,12 +99,12 @@ export default class SearchHighlight implements DynamicMarker {
     /**
      * @method update
      * @param html {(number|string)[]}
-     * @param markerLayer {Marker}
+     * @param markerLayer {MarkerLayer}
      * @param session {EditSession}
      * @param config {MarkerConfig}
      * @return {void}
      */
-    update(html: (number | string)[], markerLayer: Marker, session: EditSession, config: MarkerConfig): void {
+    update(html: (number | string)[], markerLayer: MarkerLayer, session: EditSession, config: MarkerConfig): void {
         if (!this.regExp)
             return;
         var start = config.firstRow, end = config.lastRow;

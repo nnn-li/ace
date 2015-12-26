@@ -56,7 +56,7 @@ import {mixin} from "./lib/oop";
 import {computedStyle, hasCssClass, setCssClass} from "./lib/dom";
 import {delayedCall, stringRepeat} from "./lib/lang";
 import {isIE, isMac, isMobile, isOldIE, isWebKit} from "./lib/useragent";
-import Gutter from "./layer/Gutter";
+import GutterLayer from "./layer/GutterLayer";
 import HashHandler from "./keyboard/HashHandler";
 import KeyBinding from "./keyboard/KeyBinding";
 import TextInput from "./keyboard/TextInput";
@@ -217,14 +217,13 @@ export default class Editor implements EventBus<Editor> {
 
         this.$initOperationListeners();
 
-        this._$emitInputEvent = delayedCall(function() {
+        this._$emitInputEvent = delayedCall(() => {
             this._signal("input", {});
             this.session.bgTokenizer && this.session.bgTokenizer.scheduleStart();
-        }.bind(this));
+        });
 
-        var self = this;
-        this.on("change", function() {
-            self._$emitInputEvent.schedule(31);
+        this.on("change", () => {
+            this._$emitInputEvent.schedule(31);
         });
 
         this.setSession(session);
@@ -2933,15 +2932,19 @@ export default class Editor implements EventBus<Editor> {
         };
     }
 
-    public $resetCursorStyle() {
+    /**
+     * @method $resetCursorStyle
+     * @return {void}
+     */
+    public $resetCursorStyle(): void {
         var style = this.$cursorStyle || "ace";
         var cursorLayer = this.renderer.$cursorLayer;
         if (!cursorLayer) {
             return;
         }
         cursorLayer.setSmoothBlinking(/smooth/.test(style));
-        cursorLayer.isBlinking = !this.$readOnly && style != "wide";
-        setCssClass(cursorLayer.element, "ace_slim-cursors", /slim/.test(style));
+        cursorLayer.isBlinking = !this.$readOnly && style !== "wide";
+        cursorLayer.setCssClass("ace_slim-cursors", /slim/.test(style));
     }
 }
 
@@ -3685,7 +3688,7 @@ function calcRangeOrientation(range: Range, cursor: { row: number; column: numbe
 class GutterHandler {
     constructor(mouseHandler: MouseHandler) {
         var editor: Editor = mouseHandler.editor;
-        var gutter: Gutter = editor.renderer.$gutterLayer;
+        var gutter: GutterLayer = editor.renderer.$gutterLayer;
         var tooltip = new GutterTooltip(editor.container);
 
         mouseHandler.editor.setDefaultHandler("guttermousedown", function(e: EditorMouseEvent) {
@@ -3743,7 +3746,7 @@ class GutterHandler {
             if (tooltipAnnotation == annotation) {
                 return;
             }
-            // TODO: The Gutter annotations are subtly different from Annotation
+            // TODO: The GutterLayer annotations are subtly different from Annotation
             // in that the text property is a string[] rather than string.
             tooltipAnnotation = annotation.text.join("<br/>");
 

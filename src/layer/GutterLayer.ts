@@ -69,15 +69,21 @@ import GutterConfig from "./GutterConfig";
 import Padding from './Padding';
 
 /**
- * @class Gutter
+ * @class GutterLayer
+ * @extends AbstractLayer
  */
-export default class Gutter implements EventBus<Gutter> {
-    public element: HTMLDivElement;
+export default class GutterLayer extends AbstractLayer implements EventBus<GutterLayer> {
+
+    /**
+     * @property gutterWidth
+     * @type number
+     * @default 0
+     */
     public gutterWidth = 0;
 
     /**
      * FIXME: Issue with the text being string or string[].
-     * Gutter annotation seem to be subtly different from Annotation,
+     * GutterLayer annotation seem to be subtly different from Annotation,
      * but maybe Annotation text S/B a string[].
      *
      * @property $annotations
@@ -90,18 +96,16 @@ export default class Gutter implements EventBus<Gutter> {
     private session: EditSession;
     private $showFoldWidgets = true;
     public $padding: Padding;
-    private eventBus: EventEmitterClass<Gutter>;
+    private eventBus: EventEmitterClass<GutterLayer>;
 
     /**
-     * @class Gutter
+     * @class GutterLayer
      * @constructor
-     * @param container {HTMLElement}
+     * @param parent {HTMLElement}
      */
-    constructor(container: HTMLElement) {
-        this.eventBus = new EventEmitterClass<Gutter>(this);
-        this.element = <HTMLDivElement>createElement("div");
-        this.element.className = "ace_layer ace_gutter-layer";
-        container.appendChild(this.element);
+    constructor(parent: HTMLElement) {
+        super(parent, "ace_layer ace_gutter-layer")
+        this.eventBus = new EventEmitterClass<GutterLayer>(this);
         this.setShowFoldWidgets(this.$showFoldWidgets);
         this.$updateAnnotations = this.$updateAnnotations.bind(this);
     }
@@ -109,20 +113,20 @@ export default class Gutter implements EventBus<Gutter> {
     /**
      * @method on
      * @param eventName {string}
-     * @param callback {(event, source: Gutter) => any}
+     * @param callback {(event, source: GutterLayer) => any}
      * @return {void}
      */
-    on(eventName: string, callback: (event: any, source: Gutter) => any): void {
+    on(eventName: string, callback: (event: any, source: GutterLayer) => any): void {
         this.eventBus.on(eventName, callback, false);
     }
 
     /**
      * @method off
      * @param eventName {string}
-     * @param callback {(event, source: Gutter) => any}
+     * @param callback {(event, source: GutterLayer) => any}
      * @return {void}
      */
-    off(eventName: string, callback: (event: any, source: Gutter) => any): void {
+    off(eventName: string, callback: (event: any, source: GutterLayer) => any): void {
         this.eventBus.off(eventName, callback);
     }
 
